@@ -128,8 +128,157 @@ sources:
 
   - tag: APP-CALL-FY2026Q2
     kind: transcript
-    title: "AppLovin 2026 年二季度业绩电话会逐字稿（公司官网）"
+    title: "AppLovin 2026 年二季度业绩电话会逐字稿（2026-08-05）"
     date: 2026-08-05
-    url: null
+    url: https://equibles.com/stocks/app/calls/2026-q2
+    primary: false
+    note: "不在 EDGAR；MAX 发布商收入、消费类支出、现金转换与 SEC 调查等表述的出处。公司 IR 网站没有发布逐字稿，挂出的 Q2-2026-AppLovin-Earnings-Presentation.pdf 是业绩演示；按总部裁定 H1，以两份互相独立、原话一致的第三方逐字稿为载体：Equibles（https://equibles.com/stocks/app/calls/2026-q2）与 Gloomberb（https://gloom.sh/stocks/app/transcripts/q2-2026）。locator 写发言人（#CEO、#CFO）；只靠它的读数在档案里注明“公司电话会口径，申报文件未披露”。"
+
+  - tag: APP-10K-FY2024
+    kind: filing
+    title: "AppLovin 10-K：FY2024 年报"
+    issuer_cik: "0001751008"
+    form: 10-K
+    period: FY2024
+    accession: 0001751008-25-000018
+    filed: 2025-02-27
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100825000018/0001751008-25-000018-index.htm
     primary: true
-    note: "公司发布的原始记录，不在 EDGAR；MAX 发布商收入、消费类支出与算力成本等表述的出处。"
+    note: "2023、2024 年营业利润的原始披露口径（应用业务转入终止经营之前）。"
+
+  - tag: APP-10Q-FY2025Q2
+    kind: filing
+    title: "AppLovin 10-Q：截至 2025-06-30 的季度"
+    issuer_cik: "0001751008"
+    form: 10-Q
+    period: FY2025Q2
+    accession: 0001751008-25-000072
+    filed: 2025-08-06
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100825000072/0001751008-25-000072-index.htm
+    primary: true
+
+  - tag: APP-10Q-FY2025Q3
+    kind: filing
+    title: "AppLovin 10-Q：截至 2025-09-30 的季度"
+    issuer_cik: "0001751008"
+    form: 10-Q
+    period: FY2025Q3
+    accession: 0001751008-25-000081
+    filed: 2025-11-05
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100825000081/0001751008-25-000081-index.htm
+    primary: true
+
+  - tag: APP-8K-2025-11-05
+    kind: filing
+    title: "AppLovin 8-K（Item 2.02）：2025 年三季度业绩新闻稿（附件 99.1）"
+    issuer_cik: "0001751008"
+    form: 8-K
+    period: FY2025Q3
+    accession: 0001751008-25-000079
+    date: 2025-11-05
+    filed: 2025-11-05
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100825000079/0001751008-25-000079-index.htm
+    primary: true
+
+  - tag: APP-8K-2025-04-03
+    kind: filing
+    title: "AppLovin 8-K（Item 8.01）：向美国总统提交收购 TikTok 中国以外业务的初步意向"
+    issuer_cik: "0001751008"
+    form: 8-K
+    period: null
+    accession: 0001751008-25-000028
+    date: 2025-04-03
+    filed: 2025-04-03
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100825000028/0001751008-25-000028-index.htm
+    primary: true
+
+  - tag: APP-8K-2022-01-05
+    kind: filing
+    title: "AppLovin 8-K（Item 2.01）：完成对 MoPub 的收购"
+    issuer_cik: "0001751008"
+    form: 8-K
+    period: null
+    accession: 0001193125-22-002630
+    date: 2022-01-05
+    filed: 2022-01-05
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000119312522002630/0001193125-22-002630-index.htm
+    primary: true
+    note: "EDGAR 的 Period of Report 为 2022-01-01，即交易完成日。"
+
+  - tag: APP-FORM3-2026-07-02
+    kind: filing
+    title: "Form 3：Ge Xiaochuan（Giovanni Ge）出任 AppLovin 首席技术官后的首次持股申报"
+    issuer_cik: "0001751008"
+    form: "3"
+    period: null
+    accession: 0002133947-26-000005
+    date: 2026-07-02
+    filed: 2026-07-02
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000213394726000005/0002133947-26-000005-index.htm
+    primary: true
+    note: "事件日 2026-07-01，职务 CTO；由申报人提交，登记号前缀不是公司的 CIK。"
+
+  - tag: APP-WEB-2025-11-13-1
+    kind: press_release
+    title: "CloudX 上线公告：MoPub 与 MAX 的创始人推出 CloudX（PR Newswire，2025-11-13）"
+    date: 2025-11-13
+    url: https://www.prnewswire.com/news-releases/mopub-and-max-founders-launch-cloudx-with-30m-series-a-led-by-addition-to-rebuild-mobile-ad-monetization-for-the-ai-era-302613891.html
+    primary: true
+    note: "CloudX 自己的公告，是 CloudX 事实（创始人、上线日期、首发接入方）的一手来源；公告没有写公司的创立日期。"
+
+  - tag: APP-WEB-2026-06-18-1
+    kind: web
+    title: "Haus 博文《Is AppLovin More Than a Hype Channel?》（2026-06-18）"
+    date: 2026-06-18
+    url: https://www.haus.io/blog/is-applovin-more-than-a-hype-channel
+    primary: false
+    note: "第三方增量测试平台的统计；Haus 同时是 AppLovin 官网案例的合作测量方，属利益相关方，只作旁证。"
+
+  - tag: APP-WEB-2026-09-22-1
+    kind: press_release
+    title: "Pomerantz LLP 依 PSLRA 发布的证券集体诉讼公告：AppLovin，加州北区 26-cv-10584（GlobeNewswire，2026-09-22）"
+    date: 2026-09-22
+    url: https://www.globenewswire.com/news-release/2026/09/22/3366988/1087/en/pomerantz-law-firm-announces-the-filing-of-a-class-action-against-applovin-corporation-and-certain-officers-app.html
+    primary: true
+    note: "按总部裁定 H1 作一手（法院文件的法定公告）；集体期 2026-02-12 至 2026-08-05，首席原告申请截止 2026-11-16；法院卷宗未直接调阅。"
+
+  - tag: U-8K-2026-08-06
+    kind: filing
+    title: "Unity Software 8-K（Item 2.02）：2026 年二季度业绩新闻稿（附件 99.1）"
+    issuer_cik: "0001810806"
+    form: 8-K
+    period: FY2026Q2
+    accession: 0001810806-26-000041
+    date: 2026-08-06
+    filed: 2026-08-06
+    url: https://www.sec.gov/Archives/edgar/data/1810806/000181080626000041/0001810806-26-000041-index.htm
+    primary: true
+
+  - tag: U-8K-2026-05-07
+    kind: filing
+    title: "Unity Software 8-K（Item 2.02）：2026 年一季度业绩新闻稿（附件 99.1）"
+    issuer_cik: "0001810806"
+    form: 8-K
+    period: FY2026Q1
+    accession: 0001810806-26-000030
+    date: 2026-05-07
+    filed: 2026-05-07
+    url: https://www.sec.gov/Archives/edgar/data/1810806/000181080626000030/0001810806-26-000030-index.htm
+    primary: true
+
+  - tag: U-CALL-FY2026Q2
+    kind: transcript
+    title: "Unity Software 2026 年二季度业绩电话会逐字稿（2026-08-06）"
+    issuer_cik: "0001810806"
+    date: 2026-08-06
+    url: https://www.fool.com/earnings/call-transcripts/2026/08/13/unity-u-q2-2026-earnings-call-transcript/
+    primary: false
+    note: "Unity 没有在 EDGAR 提交逐字稿；以两份互相独立、原话一致的第三方逐字稿为载体：The Motley Fool（上面的网址）与 MarketBeat（https://www.marketbeat.com/earnings/reports/2026-8-6-unity-software-inc-stock/）。Vector 的环比增速与三季度的环比假设只在电话会上口头给出。"
+
+  - tag: FED-FOMC-2026-09-16
+    kind: press_release
+    title: "美国联邦储备委员会：FOMC 声明（2026-09-16）"
+    date: 2026-09-16
+    url: https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm
+    primary: true
+    note: "联邦基金利率目标区间上调 1/4 个百分点至 3.75%–4.00%。"
