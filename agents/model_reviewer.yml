@@ -1,6 +1,6 @@
 # Model review: one of the independent oversight roles. It reviews only valuations: the private valuation files, the
 # valuation section of research reports, and whether they are symmetric with the series readings; it decides whether a
-# pending valuation version takes effect.
+# proposed valuation version takes effect.
 # reports_to is null: independent oversight reports to no manager.
 # schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in model_reviewer.md.
 # can_see / cannot_see use the input names from the prompts' front matter; the prompts are in the private repository, so
@@ -23,11 +23,11 @@ can_see:
 cannot_see: []                   # the isolation table sets no extra limits for the model review; the parts of 04 cannot see each other's results, which the can_see allow-list ensures
 outputs:
   - model_checks                 # the fifteen items, one by one
-  - valuation_decision           # only when reviewing a pending valuation version: approved means it takes effect, returned sends it back to the step that produced it
+  - valuation_decision           # only when reviewing a proposed valuation version: approved means it takes effect, returned sends it back to the step that produced it
   - findings
   - questions
 decision_rights:
   - audit                        # L1
-  - valuation_update             # L2: a recalculated valuation takes effect; the recalculation itself is the company manager's drafting, and the pending version takes effect only with this role's approval
+  - valuation_update             # L2: a recalculated valuation takes effect; the recalculation itself is the company manager's drafting, and the proposed version takes effect only with this role's approval
 prompts: ["04C"]
 trust_managed: false

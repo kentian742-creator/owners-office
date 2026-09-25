@@ -1,5 +1,7 @@
 # 0019 Pipeline runner: assemble a bundle locally, execute one prompt part per bundle, place the outputs locally
 
+> **Update (2026-09-25):** the claude-code backend this record leaves to a follow-up is implemented in `pipeline/llm.py`; see [0022](0022-claude-code-backend.md).
+
 ## Background
 
 Phase 1 of the design is "the pipeline, triggered step by step". `pipeline/llm.py` (0015) runs one part of one prompt and says where each output belongs (00 §F2), but writing files and opening pull requests is left to its caller, and no caller existed. The first real use is APP's FY2026Q3 pre-registration (STATUS T11): the question list (14Q) is frozen, then the pre-registration (15A) is written and merged by 2026-10-30. The first monthly letter (18, T12) is due by 2026-11-02. STATUS T7 asks for a persistent call log that the budget guard reads.

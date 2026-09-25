@@ -1,7 +1,8 @@
-"""pipeline/timestamp.py 的测试：预注册的 OpenTimestamps 时间戳（docs/decisions/0018）。
+"""Tests for pipeline/timestamp.py: OpenTimestamps timestamps for pre-registrations (docs/decisions/0018).
 
-不联网：客户端换成 FakeOts，它按 opentimestamps-client 0.7.2 的参数、输出与退出状态作答；输出取自 2026-09-25 的
-真实运行（REAL_* 与各条消息）。预注册文件都是合成的。
+No network: the client is replaced by FakeOts, which answers with the arguments, output and exit statuses of
+opentimestamps-client 0.7.2. The output comes from real runs on 2026-09-25 (REAL_* and the individual messages).
+The pre-registration files are all synthetic.
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ CALENDARS = (
 HEIGHT = 915000
 MERKLE_ROOT = "7ed564d727789259b93385dd9d1a6fe87933e33f1211de0a6bfc212428bd3ee3"
 
-# ots info：冒烟测试里刚打出的证明（四个日历待确认）
+# ots info: a proof just stamped in the smoke test (pending at four calendars)
 SMOKE_SHA256 = "1d89624e1ab526963af98ca35cabaf09a2401aeb54781e719787a172f3b30df0"
 REAL_INFO_PENDING = f"""File sha256 hash: {SMOKE_SHA256}
 Timestamp:
@@ -75,7 +76,7 @@ sha256
     append 38d4a364f234d509
     verify PendingAttestation('https://btc.calendar.catallaxy.com')
 """
-# ots info：一个日历仍待确认、另一个已写进比特币的证明
+# ots info: a proof with one calendar still pending and another one already written into Bitcoin
 REAL_INFO_ATTESTED = f"""File sha256 hash: 8eacc3a70238ec0b6eb687a09e70e3a1d237bcaba4d612fbd9ca588d6f4b9066
 Timestamp:
 append 00000000000000000000000000000000
@@ -109,7 +110,8 @@ def sha256_of(path) -> str:
 
 
 def fake_info(digest: str, height: int | None) -> str:
-    """ots info 的输出：真实的待确认输出换上 digest；有区块时在 alice 一支加上比特币确认（与真实输出同一写法）。"""
+    """ots info output: the real pending output with digest swapped in. With a block height, the alice branch gets a
+    Bitcoin attestation (written the same way as in the real output)."""
     text = REAL_INFO_PENDING.replace(SMOKE_SHA256, digest)
     if height is not None:
         alice = "    verify PendingAttestation('https://alice.btc.calendar.opentimestamps.org')"
@@ -126,10 +128,12 @@ def read_fake(proof) -> dict | None:
 
 
 class FakeOts:
-    """opentimestamps-client 0.7.2 的替身：同样的参数，同样的输出与退出状态，不联网。
+    """Stand-in for opentimestamps-client 0.7.2: the same arguments, the same output and exit statuses, no network.
 
-    证明文件在这里是一段 JSON（真实证明是二进制）：timestamp.py 从不自己读证明，只读 ots info 的输出。
-    confirmed：日历已把承诺写进比特币；node：本机有比特币节点；calendars_up：日历联系得上。
+    Here a proof file is a piece of JSON (a real proof is binary): timestamp.py never reads a proof itself, only the
+    ots info output.
+    confirmed: the calendars have written the commitment into Bitcoin; node: this machine has a Bitcoin node;
+    calendars_up: the calendars can be reached.
     """
 
     def __init__(self, *, confirmed: bool = False, node: bool = False, calendars_up: bool = True):
@@ -150,7 +154,7 @@ class FakeOts:
         submitted = "\n".join(f"Submitting to remote calendar {url}" for url in AGGREGATORS)
         if not self.calendars_up:
             return 1, "\n".join(["Doing 2-of-4 request, timeout is 5 seconds", submitted, *[DNS_FAILURE] * 4, STAMP_FAILED])
-        with open(target + ".ots", "x", encoding="utf-8") as fh:  # 客户端以 'xb' 打开：已存在就失败
+        with open(target + ".ots", "x", encoding="utf-8") as fh:  # the client opens with 'xb': fails if it exists
             json.dump({"sha256": sha256_of(target), "height": None}, fh)
         return 0, f"Doing 2-of-4 request, timeout is 5 seconds\n{submitted}\n0.43 seconds elapsed"
 
@@ -172,21 +176,21 @@ class FakeOts:
             return 1, f"{SSL_FAILURES}\n{timestamp.UPGRADE_PENDING}"
         if not self.confirmed:
             return 1, f"{PENDING_REPLIES}\n{timestamp.UPGRADE_PENDING}"
-        os.rename(proof, proof + ".bak")  # 客户端的做法：旧证明改名为 .bak，再写新证明
+        os.rename(proof, proof + ".bak")  # what the client does: renames the old proof to .bak, then writes the new one
         with open(proof, "x", encoding="utf-8") as fh:
             json.dump({**data, "height": HEIGHT}, fh)
         return 0, f"Got 1 attestation(s) from {CALENDARS[2]}\n{timestamp.UPGRADE_COMPLETE}"
 
     def _verify(self, rest):
-        assert rest[0] == "-f", rest  # 与 C-PREREG-IMMUTABLE 一样显式给出被打时间戳的文件
+        assert rest[0] == "-f", rest  # names the timestamped file explicitly, as C-PREREG-IMMUTABLE does
         target, proof = rest[1], rest[2]
         data = read_fake(proof)
         if data is None:
             return 1, NOT_A_PROOF.format(proof)
-        if sha256_of(target) != data["sha256"]:  # 客户端先在本地比对哈希
+        if sha256_of(target) != data["sha256"]:  # the client compares the hashes locally first
             return 1, MISMATCH
         height = data["height"]
-        if height is None:  # 待确认：先问日历（只在内存里升级）
+        if height is None:  # pending: ask the calendars first (upgrades in memory only)
             if not self.calendars_up:
                 return 1, SSL_FAILURES
             if not self.confirmed:
@@ -215,17 +219,17 @@ author: system
 horizon: mixed
 items:
   - id: APP-FY2026Q3-1
-    statement: 合成的测试条目
+    statement: synthetic test item
     probability: 0.6
-    criterion: 合成
-    data_source: 合成
+    criterion: synthetic
+    data_source: synthetic
     horizon: quarter
     resolves_by: 2026-11-30
     domain: other
     added_by: system
 """
 DEADLINE = dt.datetime(2026, 11, 4, 23, 59, 59, tzinfo=EST)
-BEFORE = dt.datetime(2026, 10, 30, 12, 0, tzinfo=UTC)  # 截止前五天多
+BEFORE = dt.datetime(2026, 10, 30, 12, 0, tzinfo=UTC)  # a little over five days before the deadline
 
 
 def put(root: Path, rel: str, text: str = PREREG) -> Path:
@@ -245,7 +249,7 @@ def stamped(path: Path) -> timestamp.StepResult:
     return result
 
 
-# ---------------------------------------------------------------- ots info 的解析
+# ---------------------------------------------------------------- parsing ots info
 
 
 def test_parse_info_pending_real_output():
@@ -257,20 +261,20 @@ def test_parse_info_attested_real_output():
     info = timestamp.parse_info(REAL_INFO_ATTESTED)
     assert info.bitcoin == ((HEIGHT, MERKLE_ROOT),) and info.calendars == (CALENDARS[1],)
     assert timestamp.parse_info(NOT_A_PROOF.format("x.yml.ots")) is None
-    assert timestamp.parse_info("File sha1 hash: " + "ab" * 20 + "\nTimestamp:\n") is None  # 只认 sha256
+    assert timestamp.parse_info("File sha1 hash: " + "ab" * 20 + "\nTimestamp:\n") is None  # sha256 only
 
 
 # ---------------------------------------------------------------- stamp
 
 
 def test_stamp_writes_the_proof_next_to_the_file_and_never_touches_the_file(tmp_path, ots):
-    path = put(tmp_path, "notes.txt", "任意文件\n")
+    path = put(tmp_path, "notes.txt", "any file\n")
     before = path.read_bytes()
     result = stamped(path)
     assert result.proof == tmp_path / "notes.txt.ots" and result.proof.is_file() and result.ok
     assert path.read_bytes() == before
-    assert "4 个日历" in result.detail and "alice.btc.calendar.opentimestamps.org" in result.detail
-    assert ots.commands() == ["stamp", "info"]  # 打完再读一遍新证明，确认它证明的就是这份内容
+    assert "4 calendar(s)" in result.detail and "alice.btc.calendar.opentimestamps.org" in result.detail
+    assert ots.commands() == ["stamp", "info"]  # reads the new proof back: does it prove this content?
     assert ots.calls[0][:3] == ["--no-cache", "-v", "stamp"] and ots.calls[0][3] == os.path.abspath(path)
 
 
@@ -292,18 +296,19 @@ def test_stamp_refuses_to_replace_a_proof_of_other_content(tmp_path, ots):
     ots.calls.clear()
     (result,) = timestamp.stamp([path], now=BEFORE)
     assert result.action == "refused" and not result.ok
-    assert "另一份内容" in result.detail and "删掉旧证明" in result.detail
+    assert "proves different content" in result.detail and "delete the old proof" in result.detail
     assert proof.read_bytes() == first and "stamp" not in ots.commands()
-    (late,) = timestamp.stamp([path], now=DEADLINE)  # 截止之后：删旧证明重打也不行，只能改回原内容
-    assert late.action == "refused" and "已过" in late.detail and "改回" in late.detail
-    assert "删掉旧证明" not in late.detail and proof.read_bytes() == first
+    # After the deadline, deleting the old proof and stamping again is not allowed either: only restoring the content.
+    (late,) = timestamp.stamp([path], now=DEADLINE)
+    assert late.action == "refused" and "has passed" in late.detail and "restore the file" in late.detail
+    assert "delete the old proof" not in late.detail and proof.read_bytes() == first
 
 
 def test_stamp_refuses_to_overwrite_an_unreadable_proof(tmp_path, ots):
     path = put(tmp_path, "notes.txt", "x\n")
     path.with_name("notes.txt.ots").write_bytes(b"not a proof")
     (result,) = timestamp.stamp([path], now=BEFORE)
-    assert result.action == "refused" and "读不出" in result.detail
+    assert result.action == "refused" and "cannot be read" in result.detail
     assert path.with_name("notes.txt.ots").read_bytes() == b"not a proof" and "stamp" not in ots.commands()
 
 
@@ -311,10 +316,12 @@ def test_stamp_refuses_to_overwrite_an_unreadable_proof(tmp_path, ots):
 @pytest.mark.parametrize("now", [DEADLINE, DEADLINE.astimezone(UTC) + dt.timedelta(seconds=1),
                                  dt.datetime(2026, 11, 20, tzinfo=UTC)])
 def test_stamp_refuses_an_items_file_after_its_deadline(tmp_path, ots, name, now):
-    """系统文件与所有者文件都一样：截止时刻起不再打，客户端一次都不调用。"""
+    """The same for the system's file and the owner's: from the deadline on, nothing is stamped and the client is
+    never called."""
     path = items_file(tmp_path, name)
     (result,) = timestamp.stamp([path], now=now)
-    assert result.action == "refused" and "已过" in result.detail and "2026-11-04T23:59:59-05:00" in result.detail
+    assert result.action == "refused" and "has passed" in result.detail
+    assert "2026-11-04T23:59:59-05:00" in result.detail
     assert not result.proof.exists() and ots.calls == []
 
 
@@ -325,11 +332,11 @@ def test_stamp_accepts_an_items_file_until_the_deadline(tmp_path, ots):
 
 
 @pytest.mark.parametrize("text, why", [
-    (PREREG.replace('deadline: "2026-11-04T23:59:59-05:00"\n', ""), "没有 deadline"),
-    (PREREG.replace('"2026-11-04T23:59:59-05:00"', '"2026-11-04T23:59:59"'), "不是带时区偏移的时间"),
-    (PREREG.replace('"2026-11-04T23:59:59-05:00"', "2026-11-04"), "不是带时区偏移的时间"),
+    (PREREG.replace('deadline: "2026-11-04T23:59:59-05:00"\n', ""), "no deadline"),
+    (PREREG.replace('"2026-11-04T23:59:59-05:00"', '"2026-11-04T23:59:59"'), "is not a time with a time zone offset"),
+    (PREREG.replace('"2026-11-04T23:59:59-05:00"', "2026-11-04"), "is not a time with a time zone offset"),
     (PREREG + 'deadline: "2026-12-31T23:59:59-05:00"\n', "duplicate key"),
-    ("company: [APP\n", "读不出"),
+    ("company: [APP\n", "FY2026Q3.yml cannot be read"),
 ])
 def test_stamp_refuses_an_items_file_whose_deadline_cannot_be_read(tmp_path, ots, text, why):
     (result,) = timestamp.stamp([items_file(tmp_path, text=text)], now=BEFORE)
@@ -355,7 +362,7 @@ def test_stamp_refuses_proofs_and_naive_clocks(tmp_path, ots):
     proof = put(tmp_path, "notes.txt.ots", "{}")
     (result,) = timestamp.stamp([proof], now=BEFORE)
     assert result.action == "refused" and ots.calls == []
-    with pytest.raises(ValueError, match="时区"):
+    with pytest.raises(ValueError, match="now must have a time zone"):
         timestamp.stamp([proof], now=dt.datetime(2026, 10, 30, 12, 0))
 
 
@@ -374,7 +381,7 @@ def test_stamp_failure_keeps_the_calendar_errors(tmp_path, monkeypatch, failure,
     (result,) = timestamp.stamp([put(tmp_path, "notes.txt", "x\n")], now=BEFORE)
     assert result.action == "failed" and not result.proof.exists()
     assert "need at least 2 attestations" in result.detail and expected in result.detail
-    assert result.detail.count(failure) == 1  # 四个日历的同一个错误只写一次
+    assert result.detail.count(failure) == 1  # the same error from four calendars is written once
 
 
 # ---------------------------------------------------------------- upgrade
@@ -387,7 +394,7 @@ def test_upgrade_leaves_a_pending_proof_alone(tmp_path, ots):
     (result,) = timestamp.upgrade([proof])
     assert result.action == "pending" and result.ok and "Pending confirmation" in result.detail
     assert proof.read_bytes() == first
-    assert sorted(p.name for p in proof.parent.iterdir()) == ["FY2026Q3.yml", "FY2026Q3.yml.ots"]  # 没有 .bak
+    assert sorted(p.name for p in proof.parent.iterdir()) == ["FY2026Q3.yml", "FY2026Q3.yml.ots"]  # no .bak
 
 
 def test_upgrade_replaces_the_proof_once_bitcoin_confirms_it(tmp_path, ots):
@@ -396,14 +403,14 @@ def test_upgrade_replaces_the_proof_once_bitcoin_confirms_it(tmp_path, ots):
     proof = stamped(path).proof
     first = proof.read_bytes()
     ots.confirmed = True
-    (result,) = timestamp.upgrade([path])  # 给被打时间戳的文件也行
+    (result,) = timestamp.upgrade([path])  # the timestamped file works too
     assert result.action == "upgraded" and result.block_height == HEIGHT and str(HEIGHT) in result.detail
     assert proof.read_bytes() != first and path.read_bytes() == content
-    assert sorted(p.name for p in proof.parent.iterdir()) == ["FY2026Q3.yml", "FY2026Q3.yml.ots"]  # 没有 .bak、.tmp
+    assert sorted(p.name for p in proof.parent.iterdir()) == ["FY2026Q3.yml", "FY2026Q3.yml.ots"]  # no .bak or .tmp
     assert timestamp.status(path).state == "attested"
     ots.calls.clear()
     (again,) = timestamp.upgrade([proof])
-    assert again.action == "complete" and ots.commands() == ["info"]  # 完整的证明不再问日历
+    assert again.action == "complete" and ots.commands() == ["info"]  # a complete proof: no calendar asked
 
 
 def test_upgrade_fails_when_no_calendar_answers(tmp_path, ots):
@@ -411,7 +418,7 @@ def test_upgrade_fails_when_no_calendar_answers(tmp_path, ots):
     first = proof.read_bytes()
     ots.calendars_up = False
     (result,) = timestamp.upgrade([proof])
-    assert result.action == "failed" and "没有日历答复" in result.detail and "SSL_CERT_FILE" in result.detail
+    assert result.action == "failed" and "no calendar answered" in result.detail and "SSL_CERT_FILE" in result.detail
     assert proof.read_bytes() == first
 
 
@@ -419,7 +426,7 @@ def test_upgrade_reports_missing_and_broken_proofs(tmp_path, ots):
     broken = put(tmp_path, "notes.txt.ots", "garbage")
     missing, bad = timestamp.upgrade([tmp_path / "other.txt", broken])
     assert (missing.action, bad.action) == ("failed", "failed")
-    assert missing.detail == "没有证明" and "not a timestamp file" in bad.detail
+    assert missing.detail == "no proof" and "not a timestamp file" in bad.detail
 
 
 # ---------------------------------------------------------------- status
@@ -435,7 +442,8 @@ def test_status_of_a_pending_proof_is_offline(tmp_path, ots):
 
 
 def test_status_without_a_bitcoin_node(tmp_path, ots):
-    """有比特币确认、没有节点：给出区块高度与 merkle root，区块时间留空，不算失败。"""
+    """A Bitcoin attestation but no node: gives the block height and merkle root, leaves the block time empty, and
+    is not a failure."""
     path = items_file(tmp_path)
     stamped(path)
     ots.confirmed = True
@@ -443,7 +451,7 @@ def test_status_without_a_bitcoin_node(tmp_path, ots):
     st = timestamp.status(path.with_name("FY2026Q3.yml.ots"))
     assert (st.state, st.block_height, st.merkle_root, st.block_time, st.verified) == (
         "attested", HEIGHT, MERKLE_ROOT, None, None)
-    assert "没有比特币节点" in st.detail and MERKLE_ROOT in st.detail
+    assert "no Bitcoin node" in st.detail and MERKLE_ROOT in st.detail
 
 
 def test_status_with_a_bitcoin_node_gives_the_block_date(tmp_path, ots):
@@ -461,7 +469,7 @@ def test_status_catches_a_changed_file_without_the_network(tmp_path, ots):
     path.write_text(PREREG.replace("0.6", "0.65"), encoding="utf-8")
     ots.calls.clear()
     st = timestamp.status(path)
-    assert (st.state, st.verified) == ("error", False) and "打时间戳之后改过" in st.detail
+    assert (st.state, st.verified) == ("error", False) and "changed after it was stamped" in st.detail
     assert ots.commands() == ["info"]
 
 
@@ -470,16 +478,17 @@ def test_status_missing_and_broken(tmp_path, ots):
     assert timestamp.status(path).state == "missing"
     path.with_name("FY2026Q3.yml.ots").write_bytes(b"\x00garbage")
     st = timestamp.status(path)
-    assert st.state == "error" and "证明读不出" in st.detail
+    assert st.state == "error" and "proof cannot be read" in st.detail
 
 
 # ---------------------------------------------------------------- verify
 
 
 @pytest.mark.parametrize("setup, verified, state", [
-    ({}, None, "pending"),  # 日历：还没写进比特币
-    ({"calendars_up": False}, None, "pending"),  # 日历联系不上：哈希已在本地比对相符，只是无法核验（v0.2.1）
-    ({"confirmed": True}, None, "pending"),  # 没有比特币节点
+    ({}, None, "pending"),  # calendars: not yet written into Bitcoin
+    # Calendars unreachable: the hashes already matched locally; it just cannot be verified (v0.2.1).
+    ({"calendars_up": False}, None, "pending"),
+    ({"confirmed": True}, None, "pending"),  # no Bitcoin node
     ({"confirmed": True, "node": True}, True, "attested"),
 ])
 def test_verify_outcomes(tmp_path, ots, setup, verified, state):
@@ -493,30 +502,32 @@ def test_verify_outcomes(tmp_path, ots, setup, verified, state):
 
 
 def test_verify_without_a_node_after_upgrade(tmp_path, ots):
-    """升级后的证明核验时不问日历；没有节点只能核对到“文件与证明相符”。"""
+    """An upgraded proof does not ask the calendars when verified; without a node, verification only gets as far as
+    "the file matches the proof"."""
     path = items_file(tmp_path)
     stamped(path)
     ots.confirmed = True
     timestamp.upgrade([path])
-    ots.calendars_up = False  # 完整的证明用不着日历
+    ots.calendars_up = False  # a complete proof does not need the calendars
     st = timestamp.verify(path)
     assert (st.verified, st.state, st.block_height) == (None, "attested", HEIGHT)
-    assert "文件与证明相符" in st.detail and MERKLE_ROOT in st.detail
+    assert "the file matches the proof" in st.detail and MERKLE_ROOT in st.detail
 
 
 def test_verify_failures(tmp_path, ots):
-    """文件改过、证明读不出都在本地判定，用不着 ots verify，也用不着网络。"""
+    """A changed file and an unreadable proof are both judged locally, without ots verify and without the network."""
     path = items_file(tmp_path)
     missing = timestamp.verify(path)
     assert (missing.state, missing.verified) == ("missing", False)
     stamped(path)
-    path.write_text(PREREG + "# 改了一个字\n", encoding="utf-8")
+    path.write_text(PREREG + "# changed one character\n", encoding="utf-8")
     ots.calls.clear()
     changed = timestamp.verify(path)
-    assert (changed.state, changed.verified) == ("error", False) and "文件与证明不符" in changed.detail
+    assert (changed.state, changed.verified) == ("error", False)
+    assert "the file does not match the proof" in changed.detail
     path.with_name("FY2026Q3.yml.ots").write_bytes(b"garbage")
     unreadable = timestamp.verify(path)
-    assert unreadable.verified is False and "证明读不出" in unreadable.detail
+    assert unreadable.verified is False and "proof cannot be read" in unreadable.detail
     assert ots.commands() == ["info", "info"]
 
 
@@ -530,7 +541,7 @@ def test_verify_timeout_cannot_verify(tmp_path, ots, monkeypatch, slow):
     assert st.verified is None and "timed out" in st.detail
 
 
-# 真实的 ots verify 输出（0.7.2）→ 文件与证明的哈希相符时应有的判定。
+# Real ots verify output (0.7.2) → the expected verdict when the hashes of the file and the proof match.
 VERIFY_SAMPLES = {
     "success": (0, f"Success! Bitcoin block {HEIGHT} attests existence as of 2026-10-02 UTC", True),
     "no-node": (1, NO_NODE, None),
@@ -547,7 +558,7 @@ VERIFY_SAMPLES = {
     "not-a-proof": (1, NOT_A_PROOF.format("FY2026Q3.yml.ots"), False),
     "invalid": (1, "Invalid timestamp file 'FY2026Q3.yml.ots': Tried to read 32 bytes but got only 7 bytes", False),
 }
-# ots info 的回答 → 判定（这些情况下 ots verify 说什么都不影响结果）
+# ots info answer → verdict (in these cases, whatever ots verify says does not change the result)
 INFO_ANSWERS = {"digest-differs": False, "unreadable": False, "info-timeout": None}
 VERDICT_CASES = [("digest-matches", sample) for sample in VERIFY_SAMPLES] + [
     (info, sample) for info in INFO_ANSWERS for sample in ("success", "no-node")]
@@ -555,7 +566,8 @@ VERDICT_CASES = [("digest-matches", sample) for sample in VERIFY_SAMPLES] + [
 
 @pytest.mark.parametrize("info, sample", VERDICT_CASES, ids=[f"{i}/{s}" for i, s in VERDICT_CASES])
 def test_verify_judges_like_c_prereg_immutable(tmp_path, monkeypatch, info, sample):
-    """同一个客户端（同样的 ots info 与 ots verify 回答），本模块的 verify() 与 thesis-ci 的 ots_verify 判定一致。"""
+    """Given the same client (the same ots info and ots verify answers), this module's verify() and thesis-ci's
+    ots_verify reach the same verdict."""
     archive = pytest.importorskip("thesis_ci.checks.archive")
     target = items_file(tmp_path)
     proof = put(tmp_path, "companies/APP/prereg/FY2026Q3.yml.ots", "proof")
@@ -570,13 +582,13 @@ def test_verify_judges_like_c_prereg_immutable(tmp_path, monkeypatch, info, samp
         command = next(a for a in args if a in ("info", "verify"))
         return info_answer if command == "info" else verify_answer
 
-    def run(cmd, **kw):  # thesis-ci：subprocess.run([ots, *args], …)
+    def run(cmd, **kw):  # thesis-ci: subprocess.run([ots, *args], ...)
         returncode, output = answer(cmd[1:])
         if returncode is None:
             raise subprocess.TimeoutExpired(cmd, kw.get("timeout"))
         return subprocess.CompletedProcess(cmd, returncode, "", output)
 
-    def run_ots(args, timeout=None):  # 本模块
+    def run_ots(args, timeout=None):  # this module
         returncode, output = answer(args)
         command = next(a for a in args if a in ("info", "verify"))
         return (None, f"ots {command} timed out after 120 s") if returncode is None else (returncode, output)
@@ -597,7 +609,7 @@ def test_verify_uses_the_checks_own_patterns_and_timeout():
     assert timestamp.OTS_TIMEOUT == archive.OTS_TIMEOUT
 
 
-# ---------------------------------------------------------------- 仓库里的预注册文件与命令行
+# ---------------------------------------------------------------- pre-registration files in the repository; CLI
 
 
 def test_prereg_discovery(tmp_path):
@@ -606,8 +618,9 @@ def test_prereg_discovery(tmp_path):
     items_file(tmp_path, "FY2026Q3.settlement.yml", "company: APP\nperiod: FY2026Q3\nresults: []\n")
     old = put(tmp_path, "companies/PDD/prereg/FY2026Q2.yml", PREREG.replace("2026-11-04T", "2026-08-24T"))
     broken = put(tmp_path, "companies/PDD/prereg/FY2026Q3.yml", "company: PDD\n")
-    assert timestamp.prereg_items_files(tmp_path) == [owner, current, old, broken]  # 按路径排序："-owner" 在 "." 之前
-    assert timestamp.files_to_stamp(tmp_path, BEFORE) == [owner, current, broken]  # 截止已过的补不了，不在其中
+    assert timestamp.prereg_items_files(tmp_path) == [owner, current, old, broken]  # by path: "-owner" before "."
+    # Past the deadline, stamping cannot fix a file, so it is not included.
+    assert timestamp.files_to_stamp(tmp_path, BEFORE) == [owner, current, broken]
     put(tmp_path, "companies/APP/prereg/FY2026Q3.yml.ots", "{}")
     assert timestamp.prereg_proofs(tmp_path) == [tmp_path / "companies/APP/prereg/FY2026Q3.yml.ots"]
 
@@ -630,20 +643,20 @@ def test_cli_exit_codes(tmp_path, ots, monkeypatch, capsys):
     monkeypatch.setattr(timestamp, "_utcnow", lambda: BEFORE)
     path = items_file(tmp_path)
     assert timestamp.main(["stamp", str(path)]) == timestamp.EXIT_OK
-    assert timestamp.main(["upgrade", str(path)]) == timestamp.EXIT_OK  # 仍待确认不算失败
+    assert timestamp.main(["upgrade", str(path)]) == timestamp.EXIT_OK  # still pending is not a failure
     ots.confirmed = True
     assert timestamp.main(["upgrade", "--prereg", "--root", str(tmp_path)]) == timestamp.EXIT_OK
-    assert timestamp.main(["verify", str(path)]) == timestamp.EXIT_UNVERIFIED  # 没有比特币节点
+    assert timestamp.main(["verify", str(path)]) == timestamp.EXIT_UNVERIFIED  # no Bitcoin node
     ots.node = True
     assert timestamp.main(["verify", str(path) + ".ots"]) == timestamp.EXIT_OK
-    path.write_text(PREREG + "# 截止前改了\n", encoding="utf-8")
+    path.write_text(PREREG + "# changed before the deadline\n", encoding="utf-8")
     assert timestamp.main(["verify", str(path)]) == timestamp.EXIT_FAILED
     assert timestamp.main(["status", str(path)]) == timestamp.EXIT_FAILED
-    assert timestamp.main(["stamp", str(path)]) == timestamp.EXIT_FAILED  # 不覆盖证明
+    assert timestamp.main(["stamp", str(path)]) == timestamp.EXIT_FAILED  # does not overwrite the proof
     out = capsys.readouterr().out
     assert re.search(r"^refused\s", out, re.M) and re.search(r"^verified\s", out, re.M)
     with pytest.raises(SystemExit):
-        timestamp.main(["status"])  # 既没有文件也没有 --prereg
+        timestamp.main(["status"])  # neither files nor --prereg
 
 
 def test_run_ots_passes_utc_and_reports_timeouts(tmp_path, monkeypatch):
@@ -671,12 +684,13 @@ def test_missing_client_is_an_error(tmp_path, monkeypatch):
         timestamp.ots_executable()
 
 
-# ---------------------------------------------------------------- 工作流
+# ---------------------------------------------------------------- workflow
 
 
 def test_timestamp_workflow_permissions_and_loop_guard():
-    """只有打时间戳的 job 能写仓库，且只在 main 上；它提交的 *.ots 不匹配触发它的 paths；提交带固定尾注；
-    lint 装了客户端（C-PREREG-IMMUTABLE 才能核验），版本取自 requirements.txt。"""
+    """Only the stamping job can write to the repository, and only on main; the *.ots files it commits do not match
+    the paths that trigger it; its commits carry a fixed trailer. lint installs the client (so C-PREREG-IMMUTABLE
+    can verify), with the version taken from requirements.txt."""
     workflows = REPO_ROOT / ".github" / "workflows"
     wf = yaml.safe_load((workflows / "timestamp.yml").read_text(encoding="utf-8"))
     assert wf["permissions"] == {"contents": "read"}

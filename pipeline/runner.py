@@ -19,10 +19,10 @@ Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/
 2. execute. Verifies the bundle against its manifest (input hashes, prompt hashes, the pinned public commit, the
    thesis-ci schemas), runs llm.complete() once and writes outputs/, run.yml, calls.jsonl and reply.txt next to the
    inputs; every request is also appended to runs/llm-log.jsonl, the call log the budget guard reads (T7). Backends
-   (passed to llm.complete() as backend= once pipeline/llm.py accepts it):
-   - claude-code (default): the Claude Code CLI on the owner's subscription, run locally; implemented in llm.py by a
-     follow-up change, until then it stops with BackendUnavailable before touching the bundle;
-   - api: the Anthropic API, locally or in the private repository's Actions (pipeline-step.yml, the phase-2 route);
+   (passed to llm.complete() as backend=; docs/decisions/0022):
+   - claude-code (default): the Claude Code CLI on the owner's Claude subscription, run locally; no API spend;
+   - api: the Anthropic API (the fallback), locally or in the private repository's Actions (pipeline-step.yml, the
+     phase-2 route); its spend counts against the monthly budget;
    - fake: pipeline/fake_client.py, for dry runs; its outputs are never placed.
    Only counts, hashes and cost are printed; model calls refuse to run in the Actions of a public repository.
 3. place (local, after review). Re-checks the outputs, applies the deterministic parts (the pre-registration header
@@ -41,7 +41,6 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import datetime as dt
-import inspect
 import json
 import os
 import re
@@ -72,9 +71,9 @@ MANIFEST_VERSION = 1
 RUN_RECORD_VERSION = 1
 DRY_RUN_DIR = Path("work") / "pipeline-dry-run"  # under the workspace root, outside both repositories
 
-BACKENDS = ("claude-code", "api", "fake")
-DEFAULT_BACKEND = "claude-code"  # owner decision 2026-09-25: the Claude Code CLI on the owner's subscription
-REAL_BACKENDS = ("claude-code", "api")
+BACKENDS = llm.BACKENDS  # claude-code, api, fake
+DEFAULT_BACKEND = llm.DEFAULT_BACKEND  # owner decision 2026-09-25: the Claude Code CLI on the owner's subscription
+REAL_BACKENDS = (llm.CLAUDE_CODE, llm.API)
 BUNDLE_REL_RE = re.compile(r"^runs/([A-Z][A-Z0-9.]{0,9}|hq)/(\d{4}-\d{2}-\d{2})-(\d{2}[A-Za-z0-9-]*)$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 # Public paths whose uncommitted changes would make the pinned commit misstate the code and roles that run.
@@ -93,8 +92,8 @@ class RunnerError(RuntimeError):
     """A runner command refused or failed. Messages name steps, files, hashes and counts, never input or output text."""
 
 
-class BackendUnavailable(RunnerError, NotImplementedError):
-    """The chosen backend is not implemented in pipeline/llm.py yet. Raised before the bundle is touched."""
+class BackendUnavailable(RunnerError):
+    """The chosen backend cannot be used. Raised before the bundle is touched."""
 
 
 @dataclasses.dataclass(frozen=True)
@@ -542,18 +541,16 @@ def _repo_owner(public_root: Path) -> str:
 
 
 def backend_kwargs(backend: str) -> dict[str, Any]:
-    """The keyword that selects the backend in llm.complete(). Passed as backend= once pipeline/llm.py accepts it;
-    until then the API path (llm.py today) serves api and fake, and claude-code is unavailable."""
+    """The keyword that selects the backend in llm.complete(). For claude-code, the CLI must be findable (checked
+    before the bundle is touched)."""
     if backend not in BACKENDS:
         raise RunnerError(f"backend must be one of {', '.join(BACKENDS)}, got {backend!r}")
-    supported = "backend" in inspect.signature(llm.complete).parameters
-    if backend == "claude-code":
-        if not supported:
-            raise BackendUnavailable(
-                "the claude-code backend (the Claude Code CLI on the owner's subscription) is not implemented in "
-                "pipeline/llm.py yet; run with --backend api (Anthropic API credentials) or --backend fake")
-        return {"backend": "claude-code"}
-    return {"backend": "api"} if supported else {}  # fake is the API path with the fake SDK client
+    if backend == llm.CLAUDE_CODE:
+        try:
+            llm.find_claude_binary()
+        except llm.ClaudeCodeUnavailable as exc:
+            raise BackendUnavailable(f"{exc}") from None
+    return {"backend": backend}
 
 
 def check_environment(backend: str, env: Mapping[str, str], private_root: Path) -> None:
@@ -591,6 +588,14 @@ def error_summary(exc: BaseException) -> str:
         return f"LLMTruncated: the reply hit max_tokens; details in {RUN_RECORD}"
     if isinstance(exc, llm.LLMRefusal):
         return f"LLMRefusal: category {exc.category or 'unknown'}; details in {RUN_RECORD}"
+    if isinstance(exc, llm.PlanLimitReached):
+        return (f"PlanLimitReached: the subscription's usage limit was reached; run again later, or with --backend api "
+                f"(counts against the budget); details in {RUN_RECORD}")
+    if isinstance(exc, llm.ClaudeCodeUnavailable):
+        return (f"ClaudeCodeUnavailable: the Claude Code CLI is missing or not logged in (claude auth login); details "
+                f"in {RUN_RECORD}")
+    if isinstance(exc, llm.ClaudeCodeError):  # its message may quote the CLI's output, so it is not printed
+        return f"ClaudeCodeError: the Claude Code CLI failed; details in {RUN_RECORD}"
     if isinstance(exc, SAFE_MESSAGE_ERRORS):
         return f"{type(exc).__name__}: {exc}"
     status = getattr(exc, "status_code", None)
@@ -618,8 +623,10 @@ def _new_log_lines(log: Path, start: int) -> bytes:
 
 
 def summarize_calls(lines: bytes) -> dict[str, Any]:
+    """Requests, API cost and token usage of the new log lines; the Claude Code CLI's own estimate is kept apart as
+    notional_cost_usd (it is not API spend, decisions/0022)."""
     usage: dict[str, int] = {}
-    cost, count = 0.0, 0
+    cost, notional, count = 0.0, 0.0, 0
     for line in lines.decode("utf-8", "replace").splitlines():
         try:
             record = json.loads(line)
@@ -629,10 +636,14 @@ def summarize_calls(lines: bytes) -> dict[str, Any]:
             continue
         count += 1
         cost += float(record.get("cost_usd") or 0.0)
+        notional += float(record.get("notional_cost_usd") or 0.0)
         for key, value in (record.get("usage") or {}).items():
             if isinstance(value, int):
                 usage[key] = usage.get(key, 0) + value
-    return {"requests": count, "cost_usd": round(cost, 6), "usage": usage}
+    summary: dict[str, Any] = {"requests": count, "cost_usd": round(cost, 6), "usage": usage}
+    if notional:
+        summary["notional_cost_usd"] = round(notional, 6)
+    return summary
 
 
 def _write_outputs(bundle_dir: Path, call: Any, result: llm.LLMResult) -> dict[str, dict[str, Any]]:
@@ -707,7 +718,7 @@ def _archive_failed_attempt(bundle_dir: Path) -> int:
     return number
 
 
-def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backend: str = DEFAULT_BACKEND,
+def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backend: str | None = None,
             log_path: str | os.PathLike[str] | None = None, client: Any = None, retry: bool = False,
             allow_unpinned: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
             env: Mapping[str, str] | None = None, out: TextIO | None = None) -> dict[str, Any]:
@@ -718,8 +729,12 @@ def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backe
     can still be executed later. Once llm.complete() is entered, the outcome is always recorded: outputs/ on success,
     run.yml with status failed otherwise, and calls.jsonl with every request llm.py logged (the same lines go to the
     call log at `log_path`, by default runs/llm-log.jsonl of the private checkout). `client` injects a test double.
-    Only counts, hashes and cost are printed.
+    Only counts, hashes and cost are printed. `backend` defaults to OWNERS_OFFICE_BACKEND, else claude-code.
     """
+    try:
+        backend = llm.resolve_backend(backend)
+    except ValueError as exc:
+        raise RunnerError(str(exc)) from None
     env = os.environ if env is None else env
     out = out or sys.stdout
     roots = roots or resolve_roots()
@@ -810,7 +825,9 @@ def _print_execution(record: Mapping[str, Any], failure: BaseException | None, o
     usage = record.get("usage") or {}
     print(f"  {record.get('requests', 0)} request(s); tokens in {usage.get('input_tokens', 0):,} / out "
           f"{usage.get('output_tokens', 0):,} / cache write {usage.get('cache_creation_input_tokens', 0):,} / cache "
-          f"read {usage.get('cache_read_input_tokens', 0):,}; cost {record.get('cost_usd', 0.0):.4f} USD", file=out)
+          f"read {usage.get('cache_read_input_tokens', 0):,}; API cost {record.get('cost_usd', 0.0):.4f} USD"
+          + (f" (Claude Code's own estimate {record['notional_cost_usd']:.4f} USD, not API spend)"
+             if record.get("notional_cost_usd") else ""), file=out)
     if record.get("status") == "succeeded":
         print(f"  model {record.get('model')} (requested {record.get('requested_model')}), attempts "
               f"{record.get('attempts')}, stop {record.get('stop_reason')}", file=out)
@@ -1335,9 +1352,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("bundle")
     p = sub.add_parser("execute", parents=[roots], help="run a bundle's model call and record it in the bundle")
     p.add_argument("bundle")
-    p.add_argument("--backend", choices=BACKENDS, default=DEFAULT_BACKEND,
-                   help=f"claude-code: the Claude Code CLI on the owner's subscription (default); api: the Anthropic "
-                        f"API; fake: placeholders for dry runs (default: {DEFAULT_BACKEND})")
+    p.add_argument("--backend", choices=BACKENDS, default=None,
+                   help=f"claude-code: the Claude Code CLI on the owner's Claude subscription; api: the Anthropic API "
+                        f"(the fallback; counts against the monthly budget); fake: placeholders for dry runs "
+                        f"(default: {llm.BACKEND_ENV}, else {DEFAULT_BACKEND})")
     p.add_argument("--llm-log", type=Path, default=None,
                    help=f"call log the budget guard reads (default: <private>/{registry.LLM_LOG_REL})")
     p.add_argument("--retry", action="store_true", help="run a failed bundle again; the failed attempt is kept")
@@ -1383,9 +1401,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(describe_bundle(resolve_bundle(args.bundle, roots.private)))
             return 0
         if args.command == "execute":
-            if args.backend == "fake" and _inside(resolve_bundle(args.bundle, roots.private), roots.private):
+            try:
+                backend = llm.resolve_backend(args.backend)
+            except ValueError as exc:
+                raise RunnerError(str(exc)) from None
+            if backend == "fake" and _inside(resolve_bundle(args.bundle, roots.private), roots.private):
                 raise RunnerError("fake outputs never go into the private repository; use dry-run")
-            record = execute(args.bundle, roots=roots, backend=args.backend, log_path=args.llm_log, retry=args.retry,
+            record = execute(args.bundle, roots=roots, backend=backend, log_path=args.llm_log, retry=args.retry,
                              allow_unpinned=args.allow_unpinned, schemas_dir=args.schemas_dir)
             return 0 if record.get("status") == "succeeded" else 1
         if args.command == "pr-body":

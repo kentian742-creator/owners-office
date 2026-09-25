@@ -32,8 +32,7 @@ CANARY_FILING = "CANARY-FILING-5d1e"
 CANARY_OUTPUT = "CANARY-OUTPUT-9a4f"
 CANARIES = (CANARY_THESIS, CANARY_REPORT, CANARY_FILING, CANARY_OUTPUT)
 
-PREREG_CANDIDATE = "\u9884\u6ce8\u518c\u5019\u9009"  # the 15A todo label, as the Chinese archive writes it
-FULL_WIDTH_COLON = "\uff1a"
+PREREG_CANDIDATE = "Pre-registration candidate"  # the todo label of prompts 01B and 15A ("Pre-registration candidate:")
 
 RULES = """---
 id: "00"
@@ -99,7 +98,8 @@ THESIS_APP = {
                "pillars": [{"id": "P1", "claim": "Synthetic pillar."}],
                "permanent_loss_paths": ["Synthetic loss path."]},
     "todo": [
-        f"2026 Q3 {PREREG_CANDIDATE} (synthetic){FULL_WIDTH_COLON}buybacks at least as large as Q2 {CANARY_THESIS}",
+        f"{PREREG_CANDIDATE} for Q3 2026 (synthetic): buybacks at least as large as Q2 {CANARY_THESIS}",
+        "Watch: pre-registration candidates are named in the todo label only, not in the text: a mention later on",
         "Culture rating: left empty until there is first-hand evidence.",
     ],
 }

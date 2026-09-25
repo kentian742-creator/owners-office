@@ -207,7 +207,7 @@ def _read_env_value(path: Path, key: str) -> str | None:
     except FileNotFoundError:
         return None
     except (OSError, UnicodeDecodeError) as exc:
-        raise MissingUserAgent(f"读不了 {path}（{type(exc).__name__}）") from None
+        raise MissingUserAgent(f"cannot read {path} ({type(exc).__name__})") from None
     value: str | None = None
     for raw in text.splitlines():
         line = raw.strip()
@@ -231,19 +231,21 @@ def load_user_agent(env: Mapping[str, str] | None = None, env_file: str | os.Pat
     """SEC_USER_AGENT: the environment variable first, then .env. Raises MissingUserAgent if neither has it."""
     env = os.environ if env is None else env
     value = (env.get(UA_ENV) or "").strip()
-    where = f"环境变量 {UA_ENV}"
+    where = "the environment"
     if not value:
         path = Path(env_file) if env_file else Path(env.get(ENV_FILE_ENV) or DEFAULT_ENV_FILE)
         value = (_read_env_value(path, UA_ENV) or "").strip()
         where = str(path)
         if not value:
             raise MissingUserAgent(
-                f"没有 SEC 的 User-Agent：设环境变量 {UA_ENV}，或在 {path} 里写一行 {UA_ENV}=<项目名 联系邮箱>"
-                "（docs/decisions/0013）。没有它不访问 EDGAR。"
+                f"no SEC User-Agent: set the environment variable {UA_ENV}, or add the line "
+                f"{UA_ENV}=<project name> <contact email> to {path} (docs/decisions/0013); "
+                "EDGAR is not accessed without it"
             )
     _remember_sensitive(value)
     if not _valid_user_agent(value):
-        raise MissingUserAgent(f"{where} 的 {UA_ENV} 不能用作 User-Agent：应当是一行可打印的 ASCII 文本并含联系邮箱（值不显示）")
+        raise MissingUserAgent(f"{UA_ENV} from {where} cannot be used as the User-Agent: it must be one line of "
+                               "printable ASCII text that includes a contact email (value not shown)")
     return value
 
 
@@ -286,7 +288,8 @@ class RateLimiter:
     def __init__(self, max_per_second: float = MAX_REQUESTS_PER_SECOND, *, clock: Callable[[], float] = time.monotonic,
                  sleep: Callable[[float], None] = time.sleep):
         if not 0 < max_per_second <= MAX_REQUESTS_PER_SECOND:
-            raise ValueError(f"请求频率必须在 0 到 {MAX_REQUESTS_PER_SECOND:g} 次/秒之间，收到 {max_per_second}")
+            raise ValueError(f"the request rate must be above 0 and at most {MAX_REQUESTS_PER_SECOND:g} requests per "
+                             f"second, got {max_per_second}")
         self.interval = 1.0 / max_per_second
         self._clock = clock
         self._sleep = sleep
@@ -377,9 +380,9 @@ def _validate_json(body: bytes) -> None:
         json.loads(body)
     except ValueError:
         if _looks_like_html(body):
-            raise EdgarAccessDenied("EDGAR 返回的是网页而不是 JSON（多半是 SEC 的拦截页：检查 User-Agent 与请求频率）",
-                                    url="", status=None) from None
-        raise EdgarDataError("EDGAR 返回的内容不是 JSON") from None
+            raise EdgarAccessDenied("EDGAR returned a web page instead of JSON (most likely the SEC block page: "
+                                    "check the User-Agent and the request rate)", url="", status=None) from None
+        raise EdgarDataError("EDGAR returned something that is not JSON") from None
 
 
 def _is_cert_error(exc: BaseException) -> bool:
@@ -442,7 +445,8 @@ class EdgarClient:
         if user_agent is not None:
             _remember_sensitive(user_agent)
             if not _valid_user_agent(user_agent.strip()):
-                raise MissingUserAgent("传入的 User-Agent 不能用：应当是一行可打印的 ASCII 文本并含联系邮箱（值不显示）")
+                raise MissingUserAgent("the User-Agent passed in cannot be used: it must be one line of printable "
+                                       "ASCII text that includes a contact email (value not shown)")
             self._ua = user_agent.strip()
         elif not offline:
             self._ua = load_user_agent(env_file=env_file)
@@ -465,20 +469,20 @@ class EdgarClient:
             try:
                 if validate:
                     validate(cached)
-                LOG.debug("缓存命中 %s", url)
+                LOG.debug("cache hit: %s", url)
                 return cached
             except EdgarError:
                 if self.offline:
                     raise
-                LOG.warning("缓存内容无效，重新取：%s", url)
+                LOG.warning("cached content is invalid, fetching again: %s", url)
         if self.offline:
-            raise EdgarOffline(f"离线模式，缓存里没有：{url}（缓存目录 {self.cache_dir}）")
+            raise EdgarOffline(f"offline mode, and the cache does not have {url} (cache directory {self.cache_dir})")
         body = self._fetch(url)
         if validate:
             try:
                 validate(body)
             except EdgarHTTPError as exc:
-                raise type(exc)(str(exc) + f"：{url}", url=url, status=exc.status) from None
+                raise type(exc)(str(exc) + f": {url}", url=url, status=exc.status) from None
         self._cache_write(path, url, body)
         return body
 
@@ -490,10 +494,10 @@ class EdgarClient:
     def _cache_path(self, url: str) -> Path:
         parts = urllib.parse.urlsplit(url)
         if parts.scheme != "https" or parts.hostname not in ALLOWED_HOSTS:
-            raise EdgarError(f"本模块只访问 SEC 的 {sorted(ALLOWED_HOSTS)}，收到 {url}")
+            raise EdgarError(f"this module accesses only the SEC hosts {sorted(ALLOWED_HOSTS)}, got {url}")
         segments = [s for s in parts.path.split("/") if s]
         if not segments or any(s in (".", "..") or "\\" in s or "\x00" in s for s in segments):
-            raise EdgarError(f"看不懂的 EDGAR 地址：{url}")
+            raise EdgarError(f"unrecognized EDGAR URL: {url}")
         name = segments[-1]
         if parts.query:
             name += "@" + hashlib.sha256(parts.query.encode()).hexdigest()[:16]
@@ -541,11 +545,11 @@ class EdgarClient:
 
     def _fetch(self, url: str) -> bytes:
         if not self._ua:
-            raise MissingUserAgent(f"没有 SEC 的 User-Agent，不访问 EDGAR：{url}")
+            raise MissingUserAgent(f"no SEC User-Agent, so EDGAR is not accessed: {url}")
         if self._transport is None:
             self._transport = UrllibTransport()
         headers = {"User-Agent": self._ua, "Accept-Encoding": "gzip, deflate"}
-        last = "没有响应"
+        last = "no response"
         last_status: int | None = None
         for attempt in range(1, self.max_attempts + 1):
             self.limiter.acquire()
@@ -554,8 +558,8 @@ class EdgarClient:
                 status, response_headers, body = self._transport(url, headers, self.timeout)
             except (OSError, http.client.HTTPException) as exc:
                 if _is_cert_error(exc):
-                    raise EdgarError(f"TLS 证书校验失败：{url}。装上 certifi（requirements.txt），"
-                                     "或设 SSL_CERT_FILE 指向 CA 证书文件。") from None
+                    raise EdgarError(f"TLS certificate verification failed: {url}; install certifi (requirements.txt) "
+                                     "or point SSL_CERT_FILE to a CA certificate file") from None
                 last = f"{type(exc).__name__}: {redact(str(exc))[:200]}"
             else:
                 response_headers = {str(k).lower(): v for k, v in dict(response_headers).items()}
@@ -565,24 +569,25 @@ class EdgarClient:
                     try:
                         return _decode_body(body, response_headers)
                     except (OSError, EOFError, zlib.error) as exc:
-                        last = f"解压失败（{type(exc).__name__}）"
+                        last = f"decompression failed ({type(exc).__name__})"
                 elif status == 404:
-                    raise EdgarNotFound(f"EDGAR 没有这个地址（404）：{url}", url=url, status=404)
+                    raise EdgarNotFound(f"EDGAR has no such URL (404): {url}", url=url, status=404)
                 elif status in (401, 403):
                     raise EdgarAccessDenied(
-                        f"EDGAR 拒绝访问（HTTP {status}）：{url}。检查 {UA_ENV} 是否写了项目名与联系邮箱、"
-                        "请求是否过快（docs/decisions/0013）", url=url, status=status)
+                        f"EDGAR denied access (HTTP {status}): {url}; check that {UA_ENV} gives a project name and a "
+                        "contact email, and that requests are not too fast (docs/decisions/0013)",
+                        url=url, status=status)
                 elif status == 429 or 500 <= status < 600:
                     last = f"HTTP {status}"
                     retry_after = _retry_after(response_headers.get("retry-after"))
                 else:
-                    raise EdgarHTTPError(f"EDGAR 返回 HTTP {status}：{url}", url=url, status=status)
+                    raise EdgarHTTPError(f"EDGAR returned HTTP {status}: {url}", url=url, status=status)
             if attempt < self.max_attempts:
                 delay = self._backoff_delay(attempt, retry_after)
-                LOG.warning("EDGAR 请求没有成功（%s），%.1f 秒后重试（%d/%d）：%s", last, delay, attempt,
+                LOG.warning("EDGAR request failed (%s); retrying in %.1f seconds (%d/%d): %s", last, delay, attempt,
                             self.max_attempts, url)
                 self._sleep(delay)
-        raise EdgarHTTPError(f"EDGAR 请求 {self.max_attempts} 次都没有成功（最后一次：{last}）：{url}",
+        raise EdgarHTTPError(f"EDGAR request failed on all {self.max_attempts} attempts (last: {last}): {url}",
                              url=url, status=last_status)
 
 
@@ -605,7 +610,7 @@ def normalize_cik(value: Any) -> str:
     if text.upper().startswith("CIK"):
         text = text[3:]
     if not text.isdigit() or len(text) > 10:
-        raise ValueError(f"CIK 应当是最多 10 位数字，收到 {value!r}")
+        raise ValueError(f"a CIK must be at most 10 digits, got {value!r}")
     return text.zfill(10)
 
 
@@ -614,7 +619,7 @@ def normalize_accession(value: Any) -> str:
     if re.fullmatch(r"\d{18}", text):
         text = f"{text[:10]}-{text[10:12]}-{text[12:]}"
     if not ACCESSION_RE.match(text):
-        raise ValueError(f"登记号应当写成 0000000000-00-000000，收到 {value!r}")
+        raise ValueError(f"an accession number must be written 0000000000-00-000000, got {value!r}")
     return text
 
 
@@ -770,7 +775,7 @@ def submissions(cik: Any, *, client: EdgarClient | None = None, since: dt.date |
     for page in pages:
         name = str(page.get("name") or "")
         if not _OVERFLOW_PAGE_RE.match(name):
-            raise EdgarDataError(f"CIK {cik10} 的 submissions 列了看不懂的续页 {name!r}")
+            raise EdgarDataError(f"the submissions of CIK {cik10} list an unrecognized continuation page {name!r}")
         if since is not None and str(page.get("filingTo") or "9999") < since.isoformat():
             continue
         rows.extend(_rows(client.get_json(f"{DATA_BASE}/submissions/{name}", max_age=client.ttl)))
@@ -1003,7 +1008,7 @@ def _snap_to_month_end(day: dt.date) -> dt.date:
 def parse_period(value: str) -> tuple[int, int | None]:
     m = PERIOD_RE.match(str(value).strip())
     if not m:
-        raise ValueError(f"期间应当写成 FY<年>Q<季> 或 FY<年>，收到 {value!r}")
+        raise ValueError(f"a period must be written FY<year>Q<quarter> or FY<year>, got {value!r}")
     return int(m.group(1)), (int(m.group(2)) if m.group(2) else None)
 
 
@@ -1022,10 +1027,10 @@ class FiscalCalendar:
     def parse(cls, value: Any) -> FiscalCalendar:
         m = re.fullmatch(r"-*(\d{1,2})-?(\d{2})", str(value).strip())
         if not m:
-            raise ValueError(f"财年年末应当写成 MM-DD（如 12-31、06-30），收到 {value!r}")
+            raise ValueError(f"a fiscal year end must be written MM-DD (e.g. 12-31, 06-30), got {value!r}")
         month, day = int(m.group(1)), int(m.group(2))
         if not (1 <= month <= 12 and 1 <= day <= 31):
-            raise ValueError(f"财年年末应当写成 MM-DD（如 12-31、06-30），收到 {value!r}")
+            raise ValueError(f"a fiscal year end must be written MM-DD (e.g. 12-31, 06-30), got {value!r}")
         return cls(month, day)
 
     @property
@@ -1044,7 +1049,7 @@ class FiscalCalendar:
         snapped = _snap_to_month_end(day)
         offset = (snapped.month - self.month) % 12
         if offset % 3:
-            raise ValueError(f"{day} 不是财年年末为 {self.label} 的公司的季末")
+            raise ValueError(f"{day} is not a quarter end for a company whose fiscal year ends on {self.label}")
         quarter = {3: 1, 6: 2, 9: 3, 0: 4}[offset]
         fiscal_year = snapped.year if snapped.month <= self.month else snapped.year + 1
         return fiscal_year, quarter
@@ -1165,7 +1170,7 @@ def merge_by(deadline: dt.datetime, hours: int = MERGE_HOURS) -> dt.datetime:
     Converts to UTC before subtracting, so it is also correct across a daylight-saving change.
     """
     if deadline.tzinfo is None:
-        raise ValueError("截止时间必须带时区")
+        raise ValueError("the deadline must have a time zone")
     return (deadline.astimezone(UTC) - dt.timedelta(hours=hours)).astimezone(NY)
 
 
@@ -1296,7 +1301,7 @@ def _domestic_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | No
         label = cal.quarter_label(period_end)
         if label in events:
             events[label].related.append(f)
-            events[label].notes.append(f"同一期间另有第 2.02 项 8-K {f.accession}（{f.filing_date}）")
+            events[label].notes.append(f"another Item 2.02 8-K for the same period: {f.accession} ({f.filing_date})")
             continue
         event = EarningsEvent(cik=subs.cik, period=label, period_end=period_end, filing=f, release_date=release,
                               release_basis=basis)
@@ -1306,7 +1311,8 @@ def _domestic_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | No
             # the 10-Q/10-K was accepted before the 8-K (Berkshire): the results first became public on EDGAR in the
             # periodic report
             event.release_date, event.release_basis = closing_et.date(), "closing"
-            event.notes.append(f"{closing.form} 比 8-K 先入库，发布日取它的接收日期")
+            event.notes.append(f"the {closing.form} was accepted before the 8-K, so the release date is the "
+                                f"{closing.form}'s acceptance date")
         t_plus_5 = add_business_days(f.filing_date, 5)
         event.closing = closing
         if closing and closing.filing_date <= t_plus_5:
@@ -1314,7 +1320,7 @@ def _domestic_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | No
         else:
             event.closes_on, event.closed_by = t_plus_5, "T+5"
         if closing is None:
-            event.notes.append("还没有这一期的 10-Q/10-K")
+            event.notes.append("no 10-Q/10-K for this period yet")
         events[label] = event
     for amendment in amendments:
         release, _ = _release_date_8k(amendment)
@@ -1350,11 +1356,13 @@ def _foreign_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | Non
                 if cal.period_of(day)[1] == release_info.quarter:
                     break
                 day = cal.last_quarter_end_before(day)
-            notes.append(f"标题写的是第 {release_info.quarter} 季度，期间按标题取，而不是发布日前最近的季末")
+            notes.append(f"the press-release title names quarter {release_info.quarter}; the period follows the title, "
+                          "not the last quarter end before the release date")
             period_end = day
             fiscal_year, quarter = cal.period_of(day)
         if release_info.year and cal.month == 12 and release_info.year != fiscal_year:
-            notes.append(f"标题的年份 {release_info.year} 与推出的财年 FY{fiscal_year} 不一致")
+            notes.append(f"the year in the title ({release_info.year}) does not match the derived fiscal year "
+                          f"FY{fiscal_year}")
         label = f"FY{fiscal_year}Q{quarter}"
         if f.form != "6-K":
             if label in events:
@@ -1362,7 +1370,7 @@ def _foreign_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | Non
             continue
         if label in events:
             events[label].related.append(f)
-            events[label].notes.append(f"同一期间另有业绩 6-K {f.accession}（{f.filing_date}）")
+            events[label].notes.append(f"another results 6-K for the same period: {f.accession} ({f.filing_date})")
             continue
         events[label] = EarningsEvent(
             cik=subs.cik, period=label, period_end=period_end, filing=f, release_date=release, release_basis=basis,
@@ -1375,12 +1383,14 @@ def _foreign_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | Non
 def _calendar_for(subs: Submissions, fiscal_year_end: Any = None) -> FiscalCalendar:
     value = fiscal_year_end or subs.fiscal_year_end
     if not value:
-        raise EdgarDataError(f"CIK {subs.cik} 没有财年年末：请传 fiscal_year_end（thesis.yml 的 filer.fiscal_year_end）")
+        raise EdgarDataError(f"CIK {subs.cik}: no fiscal year end given and none on EDGAR; pass fiscal_year_end "
+                              "(filer.fiscal_year_end in thesis.yml)")
     cal = FiscalCalendar.parse(value)
     if fiscal_year_end and subs.fiscal_year_end:
         edgar = FiscalCalendar.parse(subs.fiscal_year_end)
         if edgar.month != cal.month:
-            LOG.warning("CIK %s：传入的财年年末 %s 与 EDGAR 的 %s 不一致，按传入的算", subs.cik, cal.label, edgar.label)
+            LOG.warning("CIK %s: the fiscal year end passed in (%s) differs from EDGAR's (%s); using the one passed in",
+                        subs.cik, cal.label, edgar.label)
     return cal
 
 
@@ -1515,15 +1525,18 @@ def estimate_release(fiscal_year: int, period_end: dt.date, same_quarter: Sequen
                          key=lambda pair: (pair[0], pair[1].period))
         earliest, source = shifted[0]
         expected = previous_business_day(earliest - lead)
-        basis = (f"release_history：同一财季历年月日最早的是 {source.period} 的 {source.release_date}，"
-                 f"换到 {earliest.year} 年为 {earliest}；往前 {ESTIMATE_LEAD_DAYS} 个日历日并退到工作日 → {expected}")
+        basis = (f"release_history: the earliest month-day among past releases of this fiscal quarter is "
+                 f"{source.release_date} ({source.period}), which is {earliest} in {earliest.year}; "
+                 f"{ESTIMATE_LEAD_DAYS} calendar days earlier, moved back to a business day -> {expected}")
         return expected, basis, (shifted[0][0], shifted[-1][0])
     if latest is None:
-        raise EdgarDataError("没有同一财季的发布记录，也没有最近一期的发布日，无法估计；请用 --announced 或 --window")
+        raise EdgarDataError("cannot estimate the release date: no past release of this fiscal quarter and no "
+                             "release of an earlier period; use --announced or --window")
     lag = (latest.release_date - latest.period_end).days
     expected = previous_business_day(period_end + dt.timedelta(days=lag) - lead)
-    basis = (f"没有同一财季的发布记录：最近一期 {latest.period} 在季末后第 {lag} 天发布，"
-             f"套到本季（季末 {period_end}）再往前 {ESTIMATE_LEAD_DAYS} 天并退到工作日 → {expected}")
+    basis = (f"no past release of this fiscal quarter: the latest period, {latest.period}, was released {lag} days "
+             f"after its quarter end; the same lag from this quarter end ({period_end}), then {ESTIMATE_LEAD_DAYS} "
+             f"calendar days earlier, moved back to a business day -> {expected}")
     return expected, basis, None
 
 
@@ -1541,7 +1554,7 @@ def next_release(cik: Any, period: str, *, fiscal_year_end: Any = None, filer_ty
     as_of = as_of or today_et()
     fiscal_year, quarter = parse_period(period)
     if quarter is None:
-        raise ValueError(f"预注册按季度登记，期间要写到季度（FY2026Q3），收到 {period!r}")
+        raise ValueError(f"pre-registration is by quarter; the period must name a quarter (FY2026Q3), got {period!r}")
     # the continuation pages need only cover the past three fiscal years; one more year back is a margin in case
     # the fiscal year and the calendar year do not line up
     subs = submissions(cik, client=client, since=dt.date(fiscal_year - HISTORY_YEARS - 2, 1, 1))
@@ -1561,24 +1574,24 @@ def next_release(cik: Any, period: str, *, fiscal_year_end: Any = None, filer_ty
     estimated_window = None
     if released:
         expected, placeholder, status = released.release_date, False, "released"
-        basis = f"已在 EDGAR 上发布：{released.form} {released.accession}（{released.release_date}）"
+        basis = f"already released on EDGAR: {released.form} {released.accession} ({released.release_date})"
     elif announced is not None:
         expected, placeholder, status = parse_release_date(announced), False, "announced"
-        basis = f"公司公布的发布日 {expected}"
+        basis = f"release date announced by the company: {expected}"
     elif window is not None:
         start, end = parse_release_date(window[0]), parse_release_date(window[1])
         if end < start:
-            raise ValueError(f"发布窗口的起点 {start} 晚于终点 {end}")
+            raise ValueError(f"the release window starts ({start}) after it ends ({end})")
         expected = next_business_day(start)
         if expected > end:
-            raise ValueError(f"公布的窗口 {start}..{end} 里没有工作日")
+            raise ValueError(f"the announced window {start}..{end} has no business day")
         placeholder, status = True, "announced_window"
-        basis = f"公司公布的发布窗口 {start}..{end} 里最早的工作日"
+        basis = f"the earliest business day in the release window announced by the company ({start}..{end})"
     else:
         expected, basis, estimated_window = estimate_release(fiscal_year, period_end, history, latest)
         placeholder, status = True, "estimated"
         if len(history) < HISTORY_YEARS:
-            notes.append(f"同一财季只找到 {len(history)} 次发布（应有 {HISTORY_YEARS} 次）")
+            notes.append(f"only {len(history)} of {HISTORY_YEARS} past releases of this fiscal quarter were found")
     if not released and history:
         shifted = sorted(_shift_years(e.release_date, fiscal_year - e.fiscal_year) for e in history)
         estimated_window = estimated_window or (shifted[0], shifted[-1])
@@ -1588,11 +1601,12 @@ def next_release(cik: Any, period: str, *, fiscal_year_end: Any = None, filer_ty
     now_et = dt.datetime.now(NY) if as_of == today_et() else dt.datetime.combine(as_of, dt.time(0, 0), tzinfo=NY)
     if not released:
         if expected <= period_end:
-            notes.append(f"发布日 {expected} 不晚于季末 {period_end}，请核对")
+            notes.append(f"the release date {expected} is not after the quarter end {period_end}; check it")
         if as_of >= expected:
-            notes.append(f"{as_of} 已到（预计）发布日 {expected}，EDGAR 上还没有这一期的业绩文件")
+            notes.append(f"{as_of} is on or after the (expected) release date {expected}, and EDGAR has no results "
+                          "filing for this period yet")
         elif now_et > merge_time:
-            notes.append(f"合并时限 {iso(merge_time)} 已过")
+            notes.append(f"the merge-by time {iso(merge_time)} has passed")
     return ReleaseEstimate(
         cik=subs.cik, period=f"FY{fiscal_year}Q{quarter}", period_end=period_end, form=form, status=status,
         expected_release=expected, placeholder=placeholder, basis=basis, deadline=deadline, merge_by=merge_time,
@@ -1624,11 +1638,11 @@ def load_filer(company: str, repo_root: str | os.PathLike | None = None) -> File
     ticker = text.upper()
     path = Path(repo_root or REPO_ROOT) / "companies" / ticker / "thesis.yml"
     if not path.is_file():
-        raise ValueError(f"找不到 {path}：公司写 companies/ 下的代码，或者直接写 CIK")
+        raise ValueError(f"{path} not found: give a ticker under companies/, or a CIK")
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     filer = data.get("filer") or {}
     if not filer.get("cik"):
-        raise ValueError(f"{path} 没有 filer.cik")
+        raise ValueError(f"{path} has no filer.cik")
     return Filer(
         ticker=str(data.get("company") or ticker),
         cik=normalize_cik(filer["cik"]),
@@ -1808,13 +1822,13 @@ def _resolve_from_tag(entry: Mapping[str, Any], tag: SourceTag | None, issuer: _
     form = entry.get("form")
     key = form_key(form) if form else (form_key(tag.form) if tag else "")
     if not key:
-        return None, "既没有 form，标签里也看不出表格"
+        return None, "no form given, and the tag names no form"
     candidates = [f for f in issuer.subs.filings if form_key(f.form) == key]
     if tag and tag.date:
         same_day = sorted((f for f in candidates if f.filing_date == tag.date), key=lambda f: f.accession)
         if len(same_day) >= tag.ordinal:
             return same_day[tag.ordinal - 1], ""
-        return None, f"EDGAR 上 {tag.date} 没有第 {tag.ordinal} 份 {form or tag.form}"
+        return None, f"EDGAR has fewer than {tag.ordinal} {form or tag.form} filings on {tag.date}"
     if tag and tag.period:
         candidates = [f for f in candidates
                       if f.form in PERIODIC_FORMS and expected_period(f, issuer, client) == tag.period]
@@ -1822,12 +1836,12 @@ def _resolve_from_tag(entry: Mapping[str, Any], tag: SourceTag | None, issuer: _
         filed = to_date(entry.get("filed"))
         candidates = [f for f in candidates if f.filing_date == filed]
     else:
-        return None, "标签里没有期间或日期，也没有 filed"
+        return None, "the tag has no period or date, and filed is not set"
     if len(candidates) == 1:
         return candidates[0], ""
     if not candidates:
-        return None, "EDGAR 上找不到对应的文件"
-    return None, f"EDGAR 上有 {len(candidates)} 份候选：{'、'.join(f.accession for f in candidates[:5])}"
+        return None, "no matching filing on EDGAR"
+    return None, f"EDGAR has {len(candidates)} candidates: {', '.join(f.accession for f in candidates[:5])}"
 
 
 def _tag_problems(tag: SourceTag | None, filing: Filing, period: str | None, issuer: _Issuer,
@@ -1843,15 +1857,16 @@ def _tag_problems(tag: SourceTag | None, filing: Filing, period: str | None, iss
         return []
     problems = []
     if form_key(tag.form) != form_key(filing.form):
-        problems.append(f"标签的表格 {tag.form} 与 EDGAR 的 {filing.form} 不一致")
+        problems.append(f"the tag's form {tag.form} does not match EDGAR's {filing.form}")
     if filing.form in PERIODIC_FORMS:
         if tag.period and period and tag.period != period:
-            problems.append(f"标签的期间 {tag.period} 与 EDGAR 推出的 {period} 不一致")
+            problems.append(f"the tag's period {tag.period} does not match the one derived from EDGAR ({period})")
         elif tag.date:
-            problems.append("定期报告的标签应当写财年期间（SPEC §3.3）")
+            problems.append("a periodic report's tag must give the fiscal period (SPEC §3.3)")
     elif tag.date:
         if tag.date != filing.filing_date:
-            problems.append(f"临时报告的标签应当用 EDGAR filing date：应为 …-{filing.filing_date}，写的是 …-{tag.date}")
+            problems.append(f"a current report's tag must use the EDGAR filing date: expected "
+                            f"...-{filing.filing_date}, found ...-{tag.date}")
         else:
             same_day = sorted(f.accession for f in issuer.subs.filings
                               if f.filing_date == filing.filing_date and form_key(f.form) == form_key(filing.form))
@@ -1859,11 +1874,12 @@ def _tag_problems(tag: SourceTag | None, filing: Filing, period: str | None, iss
             listed = [a for a in same_day if a in registered or a == filing.accession]
             in_file = listed.index(filing.accession) + 1 if filing.accession in listed else 1
             if tag.ordinal not in (on_edgar, in_file):
-                want = f"…-{filing.filing_date}" + (f"-{in_file}" if in_file > 1 else "")
-                problems.append(f"同一天 EDGAR 上有 {len(same_day)} 份 {filing.form}，这一份按登记号排第 {on_edgar}、"
-                                f"在本表登记的几份里排第 {in_file}：标签应为 {want}")
+                want = f"...-{filing.filing_date}" + (f"-{in_file}" if in_file > 1 else "")
+                problems.append(f"EDGAR has {len(same_day)} {filing.form} filings on this day; by accession number "
+                                f"this one is number {on_edgar} on EDGAR and number {in_file} among those "
+                                f"registered in this table, so the tag should be {want}")
     elif tag.period:
-        problems.append("临时报告的标签应当写 EDGAR filing date（SPEC §3.3）")
+        problems.append("a current report's tag must give the EDGAR filing date (SPEC §3.3)")
     return problems
 
 
@@ -1875,9 +1891,9 @@ def _check_entry(entry: Mapping[str, Any], company: Filer | None, client: EdgarC
     raw_cik = entry.get("issuer_cik")
     if not raw_cik and company and tag and tag.ticker == company.ticker:
         raw_cik = company.cik
-        finding.notes.append("issuer_cik 没写，按标签取本公司的 CIK")
+        finding.notes.append("issuer_cik not set; the tag names this company, so its CIK is used")
     if not raw_cik:
-        finding.unresolved = "没有 issuer_cik，标签也不是本公司的，无法核对"
+        finding.unresolved = "no issuer_cik, and the tag does not name this company; cannot check"
         return finding
     try:
         cik = normalize_cik(raw_cik)
@@ -1894,12 +1910,12 @@ def _check_entry(entry: Mapping[str, Any], company: Filer | None, client: EdgarC
             finding.problems.append(str(exc))
             return finding
         if filing is None:
-            finding.problems.append(f"EDGAR 上 CIK {cik} 的申报里没有登记号 {accession}")
+            finding.problems.append(f"EDGAR has no accession number {accession} among the filings of CIK {cik}")
             return finding
     else:
         filing, why = _resolve_from_tag(entry, tag, issuer, client)
         if filing is None:
-            finding.unresolved = f"缺 accession，{why}"
+            finding.unresolved = f"accession missing; {why}"
             return finding
         finding.fills["accession"] = filing.accession
     period = expected_period(filing, issuer, client)
@@ -1910,30 +1926,30 @@ def _check_entry(entry: Mapping[str, Any], company: Filer | None, client: EdgarC
     if form in (None, ""):
         finding.fills["form"] = filing.form
     elif form_key(str(form)) != form_key(filing.form):
-        finding.problems.append(f"form 写的是 {form}，EDGAR 是 {filing.form}")
+        finding.problems.append(f"form says {form}; EDGAR has {filing.form}")
 
     try:
         filed = to_date(entry.get("filed"))
     except ValueError:
-        finding.problems.append(f"filed 写的是 {entry.get('filed')!r}，不是日期")
+        finding.problems.append(f"filed says {entry.get('filed')!r}, which is not a date")
         filed = filing.filing_date
     if filed is None:
         finding.fills["filed"] = filing.filing_date
     elif filed != filing.filing_date:
-        finding.problems.append(f"filed 写的是 {filed}，EDGAR 的 filing date 是 {filing.filing_date}")
+        finding.problems.append(f"filed says {filed}; EDGAR's filing date is {filing.filing_date}")
 
     entry_period = entry.get("period")
     if period:
         if entry_period in (None, ""):
             finding.fills["period"] = period
         elif str(entry_period) != period:
-            finding.problems.append(f"period 写的是 {entry_period}，按 EDGAR 应为 {period}")
+            finding.problems.append(f"period says {entry_period}; by EDGAR it should be {period}")
 
     finding.problems.extend(_tag_problems(tag, filing, period, issuer, registered or set()))
     url = entry.get("url")
     m = re.search(r"/Archives/edgar/data/\d+/(\d{18})(?:/|$)", str(url or ""))
     if m and m.group(1) != filing.accession.replace("-", ""):
-        finding.problems.append(f"url 指向另一份文件（{m.group(1)}），不是 {filing.accession}")
+        finding.problems.append(f"url points to another filing ({m.group(1)}), not {filing.accession}")
     return finding
 
 
@@ -1986,7 +2002,7 @@ def fill_missing_fields(text: str, fills: Mapping[str, Mapping[str, Any]]) -> st
     replaces: dict[int, str] = {}
     for tag, fields in fills.items():
         if tag not in blocks:
-            raise EdgarDataError(f"来源表里找不到“- tag: {tag}”这一行，没有写入")
+            raise EdgarDataError(f"the sources table (sources.yml) has no \"- tag: {tag}\" line; nothing written")
         start, end, key_indent = blocks[tag]
         keys: dict[str, int] = {}
         key_re = re.compile(rf"^ {{{key_indent}}}(?P<key>[A-Za-z_][A-Za-z0-9_]*):(?P<rest>.*)$")
@@ -2001,13 +2017,13 @@ def fill_missing_fields(text: str, fills: Mapping[str, Mapping[str, Any]]) -> st
         pending: dict[int, list[tuple[str, str]]] = {}
         for field, value in fields.items():
             if field not in FILL_FIELDS:
-                raise ValueError(f"只补 {FILL_FIELDS} 这几个字段，收到 {field}")
+                raise ValueError(f"only the fields {FILL_FIELDS} are filled, got {field}")
             rendered = f"{' ' * key_indent}{field}: {_yaml_scalar(value)}\n"
             if field in keys:
                 j = keys[field]
                 rest = key_re.match(lines[j].rstrip("\n")).group("rest")
                 if not re.fullmatch(r"\s*(?:null|Null|NULL|~)?\s*(?:#.*)?", rest):
-                    raise EdgarDataError(f"{tag} 的 {field} 已经有值，不覆盖")
+                    raise EdgarDataError(f"{tag}: {field} already has a value and is not overwritten")
                 replaces[j] = rendered
                 continue
             anchor = start
@@ -2047,18 +2063,18 @@ def _verify_fill(old_text: str, new_text: str, fills: Mapping[str, Mapping[str, 
     new = yaml.safe_load(new_text) or {}
     old_entries, new_entries = old.get("sources") or [], new.get("sources") or []
     if {k: v for k, v in old.items() if k != "sources"} != {k: v for k, v in new.items() if k != "sources"}:
-        raise EdgarDataError("写入会改动 sources 以外的内容，已放弃")
+        raise EdgarDataError("the write would change content outside sources; aborted")
     if len(old_entries) != len(new_entries):
-        raise EdgarDataError("写入会改变条目数，已放弃")
+        raise EdgarDataError("the write would change the number of entries; aborted")
     for before, after in zip(old_entries, new_entries):
         tag = before.get("tag") if isinstance(before, dict) else None
         wanted = {k: _normalized(v) for k, v in (fills.get(tag) or {}).items()}
         for key in set(before) | set(after):
             if key in wanted:
                 if before.get(key) not in (None, "") or _normalized(after.get(key)) != wanted[key]:
-                    raise EdgarDataError(f"{tag} 的 {key} 写入后不对，已放弃")
+                    raise EdgarDataError(f"{tag}: {key} is wrong after the write; aborted")
             elif _normalized(before.get(key)) != _normalized(after.get(key)):
-                raise EdgarDataError(f"写入会改动 {tag} 的 {key}，已放弃")
+                raise EdgarDataError(f"the write would change {key} of {tag}; aborted")
 
 
 def check_sources(path: str | os.PathLike, *, client: EdgarClient | None = None,
@@ -2122,7 +2138,7 @@ def _date_arg(value: str) -> dt.date:
     try:
         return dt.date.fromisoformat(value)
     except ValueError:
-        raise argparse.ArgumentTypeError(f"日期写成 YYYY-MM-DD，收到 {value!r}") from None
+        raise argparse.ArgumentTypeError(f"a date must be written YYYY-MM-DD, got {value!r}") from None
 
 
 def _company_header(filer: Filer, subs: Submissions) -> dict[str, Any]:
@@ -2145,7 +2161,7 @@ def _cmd_release_history(args: argparse.Namespace) -> int:
     out = _company_header(filer, subs)
     out.update({
         "window": {"from": _shift_years(as_of, -args.years).isoformat(), "to": as_of.isoformat(),
-                   "rule": "EDGAR filing date 落在窗口内"},
+                   "rule": "EDGAR filing date falls in the window"},
         "quarter": args.quarter,
         "events": [e.to_dict() for e in events],
     })
@@ -2167,24 +2183,26 @@ def _cmd_next_release(args: argparse.Namespace) -> int:
 
 def _print_sources_report(report: SourcesReport) -> None:
     counts = report.counts()
-    print(f"{report.path}：{len(report.findings)} 条 kind: filing；与 EDGAR 一致 {counts['ok']}，"
-          f"缺字段可补 {counts['missing']}，不一致 {counts['mismatch']}，无法核对 {counts['unresolved']}")
+    print(f"{report.path}: {len(report.findings)} kind: filing entries; {counts['ok']} match EDGAR, "
+          f"{counts['missing']} have fillable missing fields, {counts['mismatch']} mismatch, "
+          f"{counts['unresolved']} cannot be checked")
     for finding in report.findings:
-        where = f"（第 {finding.line} 行）" if finding.line else ""
+        where = f" (line {finding.line})" if finding.line else ""
         for problem in finding.problems:
-            print(f"  不一致  {finding.tag}{where}：{problem}")
+            print(f"  mismatch   {finding.tag}{where}: {problem}")
         if finding.unresolved:
-            print(f"  无法核对 {finding.tag}{where}：{finding.unresolved}")
+            print(f"  unresolved {finding.tag}{where}: {finding.unresolved}")
         for field, value in finding.fills.items():
             value = value.isoformat() if isinstance(value, dt.date) else value
-            print(f"  可补    {finding.tag}{where}：{field}: {value}")
+            print(f"  fillable   {finding.tag}{where}: {field}: {value}")
         for note in finding.notes:
-            print(f"  说明    {finding.tag}{where}：{note}")
+            print(f"  note       {finding.tag}{where}: {note}")
     if report.written:
-        print("已写入（只补缺的字段）：")
+        print("Written (missing fields only):")
         print(report.diff.rstrip())
     elif any(f.fills for f in report.findings):
-        print("只读：加 --write 补上缺的字段（不改已有的值；有不一致的条目不补）。")
+        print("Read-only: add --write to fill the missing fields (existing values are not changed; entries with "
+              "mismatches are not filled).")
 
 
 def _cmd_check_sources(args: argparse.Namespace) -> int:
@@ -2247,47 +2265,56 @@ def _cmd_submissions(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--env-file", type=Path, default=None,
-                        help=f"读 {UA_ENV} 的 .env（默认 {ENV_FILE_ENV} 或 {DEFAULT_ENV_FILE}）")
-    common.add_argument("--cache-dir", type=Path, default=None, help=f"缓存目录（默认 {CACHE_ENV} 或 ~/.cache/owners-office/edgar）")
-    common.add_argument("--offline", action="store_true", help="只用缓存，不联网（不需要 User-Agent）")
-    common.add_argument("--refresh", action="store_true", help="submissions 不用缓存，重新取")
-    common.add_argument("--repo", type=Path, default=REPO_ROOT, help="公开仓库根目录（读 companies/<代码>/thesis.yml）")
-    common.add_argument("--json", action="store_true", help="输出 JSON（默认 YAML）")
-    common.add_argument("-v", "--verbose", action="store_true", help="打印每次请求（不含请求头）")
+                        help=f".env file to read {UA_ENV} from (default: {ENV_FILE_ENV} or {DEFAULT_ENV_FILE})")
+    common.add_argument("--cache-dir", type=Path, default=None,
+                        help=f"cache directory (default: {CACHE_ENV} or ~/.cache/owners-office/edgar)")
+    common.add_argument("--offline", action="store_true",
+                        help="use the cache only, no network access (no User-Agent needed)")
+    common.add_argument("--refresh", action="store_true", help="fetch submissions again instead of using the cache")
+    common.add_argument("--repo", type=Path, default=REPO_ROOT,
+                        help="public repo root (reads companies/<ticker>/thesis.yml)")
+    common.add_argument("--json", action="store_true", help="output JSON (default: YAML)")
+    common.add_argument("-v", "--verbose", action="store_true", help="log every request (without request headers)")
 
-    parser = argparse.ArgumentParser(prog="python -m pipeline.edgar", description="SEC EDGAR 访问（decisions/0017）")
+    parser = argparse.ArgumentParser(prog="python -m pipeline.edgar", description="SEC EDGAR access (decisions/0017)")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p = sub.add_parser("release-history", parents=[common], help="过去几年的业绩事件")
-    p.add_argument("company", help="公司代码（companies/ 下的目录名）或 CIK")
+    p = sub.add_parser("release-history", parents=[common], help="earnings events of the past few years")
+    p.add_argument("company", help="ticker (a directory name under companies/) or CIK")
     p.add_argument("--years", type=int, default=HISTORY_YEARS)
-    p.add_argument("--as-of", type=_date_arg, default=None, help="窗口终点（默认今天，美东）")
-    p.add_argument("--quarter", type=int, choices=(1, 2, 3, 4), default=None, help="只看这个财季")
+    p.add_argument("--as-of", type=_date_arg, default=None, help="end of the window (default: today, US Eastern)")
+    p.add_argument("--quarter", type=int, choices=(1, 2, 3, 4), default=None, help="only this fiscal quarter")
     p.set_defaults(func=_cmd_release_history)
 
-    p = sub.add_parser("next-release", parents=[common], help="一个财季的（预计）发布日、截止时间与合并时限")
+    p = sub.add_parser("next-release", parents=[common],
+                       help="(expected) release date, deadline and merge-by time for one fiscal quarter")
     p.add_argument("company")
-    p.add_argument("period", help="FY<年>Q<季>，按公司财年")
+    p.add_argument("period", help="FY<year>Q<quarter>, in the company's fiscal year")
     group = p.add_mutually_exclusive_group()
     group.add_argument("--announced", default=None,
-                       help="公司公布的发布日（YYYY-MM-DD 美东日期，或带时区的时刻）；替换估计，placeholder: false")
-    group.add_argument("--window", nargs=2, metavar=("START", "END"), default=None, help="公司公布的发布窗口")
-    p.add_argument("--as-of", type=_date_arg, default=None, help="按哪一天判断（默认今天，美东）")
+                       help="release date announced by the company (a YYYY-MM-DD US Eastern date, or a time with a "
+                            "time zone); replaces the estimate, placeholder: false")
+    group.add_argument("--window", nargs=2, metavar=("START", "END"), default=None,
+                       help="release window announced by the company")
+    p.add_argument("--as-of", type=_date_arg, default=None, help="date to judge from (default: today, US Eastern)")
     p.set_defaults(func=_cmd_next_release)
 
-    p = sub.add_parser("check-sources", parents=[common], help="核对来源表里 kind: filing 条目的登记号")
+    p = sub.add_parser("check-sources", parents=[common],
+                       help="check the accession numbers of kind: filing entries in a sources table (sources.yml)")
     p.add_argument("path", type=Path)
-    p.add_argument("--write", action="store_true", help="补上缺的 accession/filed/form/period（不改已有的值）")
+    p.add_argument("--write", action="store_true",
+                   help="fill missing accession/filed/form/period (existing values are not changed)")
     p.set_defaults(func=_cmd_check_sources)
 
-    p = sub.add_parser("documents", parents=[common], help="一份申报的文件清单；可下载主文档与 EX-99.x")
+    p = sub.add_parser("documents", parents=[common],
+                       help="file list of one filing; can download the primary document and EX-99.x")
     p.add_argument("company")
     p.add_argument("accession")
-    p.add_argument("--download", type=Path, default=None, help="下载到这个目录（<目录>/<登记号>/）")
-    p.add_argument("--all", action="store_true", help="列出全部文件（默认只列主文档与 EX-99.x）")
+    p.add_argument("--download", type=Path, default=None, help="download into this directory (<dir>/<accession>/)")
+    p.add_argument("--all", action="store_true", help="list all files (default: only the primary document and EX-99.x)")
     p.set_defaults(func=_cmd_documents)
 
-    p = sub.add_parser("submissions", parents=[common], help="submissions 概况（含续页）")
+    p = sub.add_parser("submissions", parents=[common], help="submissions summary (including continuation pages)")
     p.add_argument("company")
     p.set_defaults(func=_cmd_submissions)
     return parser
@@ -2299,13 +2326,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         return args.func(args)
     except MissingUserAgent as exc:
-        print(f"错误：{exc}", file=sys.stderr)
+        print(f"error: {exc}", file=sys.stderr)
         return 2
     except EdgarError as exc:
-        print(f"EDGAR：{exc}", file=sys.stderr)
+        print(f"EDGAR: {exc}", file=sys.stderr)
         return 3
     except (ValueError, OSError, yaml.YAMLError) as exc:
-        print(f"错误：{redact(str(exc))}", file=sys.stderr)
+        print(f"error: {redact(str(exc))}", file=sys.stderr)
         return 2
 
 

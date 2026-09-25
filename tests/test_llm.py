@@ -1,7 +1,11 @@
-"""pipeline/llm.py 的测试：全部用假客户端，不联网，也不需要安装模型 SDK。
+"""Tests of pipeline/llm.py: all with test-double clients; no network, and the model SDK need not be installed.
 
-提示词、角色定义和 schema 都是临时目录里的合成文件（tests/llm_fixtures.py），不读私有仓库的提示词。
-只有 test_role_table_* 读公开仓库真实的 agents/*.yml：它们是角色表的唯一来源。
+The prompts, role definitions and schemas are synthetic files in a temporary directory (tests/llm_fixtures.py); the
+private repository's prompts are not read. Only test_role_table_* read the public repository's real agents/*.yml: they
+are the one source of the role table.
+
+The Claude Code CLI backend is tested in tests/test_claude_code.py. Here an autouse fixture selects the API backend,
+so the injected test-double clients take the SDK path.
 """
 
 from __future__ import annotations
@@ -10,6 +14,7 @@ import base64
 import datetime as dt
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -17,7 +22,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from pipeline import llm
+from pipeline import fake_client, llm
 from tests.llm_fixtures import (
     DRAFT_REPLY,
     DRAFT_VARIABLES,
@@ -31,7 +36,13 @@ from tests.llm_fixtures import (
 )
 
 NOW = dt.datetime(2026, 9, 24, 12, 0, tzinfo=dt.timezone.utc)
-DRAFT_INPUTS = {"run_date": "2026-09-24", "filings": "营收同比增长。", "thesis": "论点摘要"}
+DRAFT_INPUTS = {"run_date": "2026-09-24", "filings": "Revenue grew year on year.", "thesis": "Thesis summary."}
+
+
+@pytest.fixture(autouse=True)
+def api_backend(monkeypatch):
+    """Run complete() on the API backend unless a test passes backend= (the default backend is claude-code)."""
+    monkeypatch.setenv(llm.BACKEND_ENV, llm.API)
 
 
 @pytest.fixture
@@ -41,7 +52,7 @@ def env(tmp_path, monkeypatch):
 
 
 def call(env, client, role="company_manager", prompt_id="03", inputs=None, **kwargs):
-    """默认跑合成提示词 03 的 draft 部分。"""
+    """Runs the draft part of the synthetic prompt 03 by default."""
     kwargs.setdefault("budget_usd", 20.0)
     kwargs.setdefault("schemas_dir", env.schemas)
     if prompt_id == "03":
@@ -68,16 +79,16 @@ def only_request(client):
     return kwargs
 
 
-# ---------------------------------------------------------------- 哈希
+# ---------------------------------------------------------------- Hashes
 
 
 def test_input_hash_is_deterministic_and_independent_of_key_order():
-    a = llm.input_sha256("03", "提示词", {"b": "2", "a": "1"})
-    b = llm.input_sha256("03", "提示词", {"a": "1", "b": "2"})
+    a = llm.input_sha256("03", "prompt text", {"b": "2", "a": "1"})
+    b = llm.input_sha256("03", "prompt text", {"a": "1", "b": "2"})
     assert a == b
     expected = hashlib.sha256(
         json.dumps(
-            {"inputs": {"a": "1", "b": "2"}, "prompt": "提示词", "prompt_id": "03"},
+            {"inputs": {"a": "1", "b": "2"}, "prompt": "prompt text", "prompt_id": "03"},
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
@@ -87,19 +98,19 @@ def test_input_hash_is_deterministic_and_independent_of_key_order():
 
 
 def test_input_hash_changes_with_prompt_id_prompt_or_inputs():
-    base = llm.input_sha256("03", "提示词", {"a": "1"})
-    assert llm.input_sha256("04", "提示词", {"a": "1"}) != base
-    assert llm.input_sha256("03", "提示词。", {"a": "1"}) != base
-    assert llm.input_sha256("03", "提示词", {"a": "2"}) != base
-    assert llm.input_sha256("03", "提示词", {"a": "1", "b": ""}) != base
-    assert llm.input_sha256("03", "提示词", {"a": "1"}, run={"part": "draft"}) != base
+    base = llm.input_sha256("03", "prompt text", {"a": "1"})
+    assert llm.input_sha256("04", "prompt text", {"a": "1"}) != base
+    assert llm.input_sha256("03", "prompt text.", {"a": "1"}) != base
+    assert llm.input_sha256("03", "prompt text", {"a": "2"}) != base
+    assert llm.input_sha256("03", "prompt text", {"a": "1", "b": ""}) != base
+    assert llm.input_sha256("03", "prompt text", {"a": "1"}, run={"part": "draft"}) != base
 
 
 def test_rendered_inputs_are_sorted_and_stable():
-    text = llm.render_inputs({"z": "后", "a": "前"})
+    text = llm.render_inputs({"z": "last", "a": "first"})
     assert text.index('<input name="a">') < text.index('<input name="z">')
-    assert text == llm.render_inputs({"a": "前", "z": "后"})
-    assert llm.render_inputs({"z": "后", "a": "前"}, order=["z", "a"]).startswith('<input name="z">')
+    assert text == llm.render_inputs({"a": "first", "z": "last"})
+    assert llm.render_inputs({"z": "last", "a": "first"}, order=["z", "a"]).startswith('<input name="z">')
 
 
 def test_same_call_twice_logs_same_input_hash(env):
@@ -113,13 +124,13 @@ def test_same_call_twice_logs_same_input_hash(env):
 def test_input_hash_covers_the_whole_system_prompt(env):
     first = call(env, FakeClient(make_response()))
     (env.prompts / "00-series-rules.md").write_text(
-        (env.prompts / "00-series-rules.md").read_text(encoding="utf-8") + "新增一条。\n", encoding="utf-8"
+        (env.prompts / "00-series-rules.md").read_text(encoding="utf-8") + "One more rule.\n", encoding="utf-8"
     )
     second = call(env, FakeClient(make_response()))
     assert first.input_sha256 != second.input_sha256
 
 
-# ---------------------------------------------------------------- 日志
+# ---------------------------------------------------------------- Log
 
 
 def test_log_line_has_required_fields_and_cost(env):
@@ -129,6 +140,7 @@ def test_log_line_has_required_fields_and_cost(env):
     (record,) = read_log(env.log)
     for field in (
         "timestamp",
+        "backend",
         "role",
         "prompt_id",
         "part",
@@ -146,6 +158,7 @@ def test_log_line_has_required_fields_and_cost(env):
         "stop_reason",
     ):
         assert field in record, field
+    assert record["backend"] == "api"
     assert record["role"] == "company_manager"
     assert record["prompt_id"] == "03"
     assert record["part"] == "draft"
@@ -164,28 +177,30 @@ def test_log_line_has_required_fields_and_cost(env):
 
     assert result.text == DRAFT_REPLY
     assert result.cost_usd == record["cost_usd"]
+    assert result.backend == "api"
+    assert result.notional_cost_usd is None  # only the claude-code backend has a notional cost
     assert result.to_dict()["input_sha256"] == record["input_sha256"]
 
 
 def test_versions_of_00_and_the_prompt_are_logged_separately(env):
     call(env, FakeClient(make_response()))
     (record,) = read_log(env.log)
-    # front matter 的 version
+    # the front matter versions
     assert record["rules_version"] == "9.0"
     assert record["prompt_version"] == "3.1"
-    # 文件修订（不在 git 里：内容哈希 + dirty）
+    # file revisions (not in git: content hash + dirty)
     assert record["rules_revision"] == llm.file_revision(env.prompts / "00-series-rules.md")
     assert record["prompt_revision"] == llm.file_revision(env.prompts / "03-update.md")
-    # 03 不排版：没有加载 00D
+    # 03 lays out no pages: 00D is not loaded
     assert record["design_version"] is None and record["design_revision"] is None
 
 
 def test_only_text_blocks_are_read(env):
     head, tail = DRAFT_REPLY[:40], DRAFT_REPLY[40:]
     content = [
-        SimpleNamespace(type="thinking", thinking="不该出现"),
+        SimpleNamespace(type="thinking", thinking="must not appear"),
         SimpleNamespace(type="text", text=head),
-        SimpleNamespace(type="fallback", text="不该出现"),
+        SimpleNamespace(type="fallback", text="must not appear"),
         SimpleNamespace(type="text", text=tail),
     ]
     result = call(env, FakeClient(make_response(content=content)))
@@ -194,16 +209,17 @@ def test_only_text_blocks_are_read(env):
 
 
 def test_api_error_is_logged_and_reraised(env):
-    client = FakeClient(error=RuntimeError("连接中断"))
+    client = FakeClient(error=RuntimeError("connection reset"))
     with pytest.raises(RuntimeError):
         call(env, client)
     (record,) = read_log(env.log)
+    assert record["backend"] == "api"
     assert record["cost_usd"] == 0.0
     assert record["stop_reason"] is None
-    assert "连接中断" in record["error"]
+    assert record["error"] == "RuntimeError: connection reset"
 
 
-# ---------------------------------------------------------------- 文件修订（00 §H5 的 git 哈希）
+# ---------------------------------------------------------------- File revisions (the git hashes of 00 §H5)
 
 
 def test_file_revision_falls_back_to_content_hash_outside_git(env):
@@ -242,20 +258,20 @@ def test_logged_prompt_revision_matches_file(env):
     assert record["prompt_revision"] == llm.file_revision(env.prompts / "03-update.md")
 
 
-# ---------------------------------------------------------------- 拒答与截断
+# ---------------------------------------------------------------- Refusals and truncation
 
 
 class ExplodingContent:
-    """读取 content 就失败：证明拒答时先看 stop_reason、不读内容。"""
+    """Fails as soon as content is read: shows that a refusal is detected from stop_reason, without reading content."""
 
     def __iter__(self):
-        raise AssertionError("拒答时不应读取 content")
+        raise AssertionError("content must not be read on a refusal")
 
 
 def audit(env, client, **kwargs):
-    kwargs.setdefault("variables", {"被审对象": "季度更新"})
+    kwargs.setdefault("variables", {"subject": "quarterly update"})
     return call(env, client, role="auditor", prompt_id="04", part="A",
-                inputs={"fact_table": "- 营收 100", "sources": "原文"}, **kwargs)
+                inputs={"fact_table": "- revenue 100", "sources": "Source text."}, **kwargs)
 
 
 def test_refusal_raises_before_reading_content_and_is_logged(env):
@@ -265,11 +281,12 @@ def test_refusal_raises_before_reading_content_and_is_logged(env):
         input_tokens=0,
         output_tokens=0,
         content=ExplodingContent(),
-        stop_details=SimpleNamespace(category="cyber", explanation="分类器拒绝"),
+        stop_details=SimpleNamespace(category="cyber", explanation="classifier refused"),
     )
     with pytest.raises(llm.LLMRefusal) as info:
         audit(env, FakeClient(response))
     assert info.value.category == "cyber"
+    assert "model claude-fable-5-1 refused the request (stop_reason=refusal, category=cyber)" in str(info.value)
     (record,) = read_log(env.log)
     assert record["stop_reason"] == "refusal"
     assert record["refusal_category"] == "cyber"
@@ -278,22 +295,22 @@ def test_refusal_raises_before_reading_content_and_is_logged(env):
 
 def test_refusal_with_null_stop_details_still_raises(env):
     response = make_response(stop_reason="refusal", content=[], stop_details=None)
-    with pytest.raises(llm.LLMRefusal):
+    with pytest.raises(llm.LLMRefusal, match="category=unknown"):
         call(env, FakeClient(response))
 
 
 def test_truncated_output_raises_unless_allowed(env):
-    response = make_response("半截", stop_reason="max_tokens")
-    with pytest.raises(llm.LLMTruncated) as info:
+    response = make_response("Half an ans", stop_reason="max_tokens")
+    with pytest.raises(llm.LLMTruncated, match="the output hit max_tokens and was truncated") as info:
         call(env, FakeClient(response))
-    assert info.value.result.text == "半截"
+    assert info.value.result.text == "Half an ans"
     result = call(env, FakeClient(response), allow_truncated=True)
     assert result.stop_reason == "max_tokens"
-    assert result.outputs == {}  # 截断的回答不校验、不交出输出
+    assert result.outputs == {}  # a truncated reply is not validated and yields no outputs
     assert len(read_log(env.log)) == 2
 
 
-# ---------------------------------------------------------------- 预算
+# ---------------------------------------------------------------- Budget
 
 
 def write_log(log_path, records, *, raw_lines=()):
@@ -302,19 +319,24 @@ def write_log(log_path, records, *, raw_lines=()):
     log_path.write_text("".join(line + "\n" for line in lines), encoding="utf-8")
 
 
-def this_month(cost):
-    return {"timestamp": llm._utcnow().isoformat(timespec="seconds"), "cost_usd": cost}
+def this_month(cost, backend=None):
+    """A log line from this month; without backend it is an old-style line, which counts as an API call."""
+    record = {"timestamp": llm._utcnow().isoformat(timespec="seconds"), "cost_usd": cost}
+    if backend is not None:
+        record["backend"] = backend
+    return record
 
 
 def test_budget_guard_blocks_call_when_month_spend_reaches_budget(env):
-    write_log(env.log, [this_month(0.6), this_month(0.4)], raw_lines=["{坏行", '"不是对象"'])
+    write_log(env.log, [this_month(0.6), this_month(0.4, "api")], raw_lines=["{bad line", '"not an object"'])
     client = FakeClient(make_response())
     with pytest.raises(llm.BudgetExceeded) as info:
         call(env, client, budget_usd=1.0)
     assert info.value.spent_usd == pytest.approx(1.0)
+    assert "this month's API spend of 1.0000 USD has reached the budget of 1.00 USD" in str(info.value)
     assert client.call_count == 0
     lines = env.log.read_text(encoding="utf-8").splitlines()
-    assert len(lines) == 4  # 没有发出请求，也就不追加日志
+    assert len(lines) == 4  # no request was sent, so no log line was appended
 
 
 def test_budget_guard_allows_call_below_budget(env):
@@ -325,10 +347,10 @@ def test_budget_guard_allows_call_below_budget(env):
 
 
 def test_budget_guard_also_stops_the_retry(env):
-    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML))  # 缺 questions
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML))  # questions is missing
     client = FakeClient(bad, make_response())
     with pytest.raises(llm.BudgetExceeded):
-        call(env, client, budget_usd=0.005)  # 第一次花 0.007，重试前就已超预算
+        call(env, client, budget_usd=0.005)  # the first attempt costs 0.007: the budget is spent before the retry
     assert client.call_count == 1
     assert len(read_log(env.log)) == 1
 
@@ -346,6 +368,27 @@ def test_budget_guard_ignores_previous_months(env):
     status = llm.budget_status(log_path=env.log, budget_usd=1.0, now=NOW)
     assert status["month"] == "2026-09"
     assert status["stage"] == "normal"
+
+
+def test_month_spend_counts_only_api_lines(env):
+    write_log(
+        env.log,
+        [
+            {"timestamp": "2026-09-10T00:00:00+00:00", "cost_usd": 1.0, "backend": "api"},
+            {"timestamp": "2026-09-11T00:00:00+00:00", "cost_usd": 0.5},  # no backend field: an API call
+            {"timestamp": "2026-09-12T00:00:00+00:00", "cost_usd": 2.0, "backend": "claude-code"},
+            {"timestamp": "2026-09-13T00:00:00+00:00", "cost_usd": 4.0, "backend": "fake"},
+        ],
+    )
+    assert llm.month_spend(env.log, now=NOW) == pytest.approx(1.5)
+    assert llm.budget_status(log_path=env.log, budget_usd=2.0, now=NOW)["spent_usd"] == pytest.approx(1.5)
+
+
+def test_claude_code_and_fake_spend_do_not_stop_an_api_call(env):
+    write_log(env.log, [this_month(5.0, "claude-code"), this_month(5.0, "fake"), this_month(0.2)])
+    client = FakeClient(make_response())
+    call(env, client, budget_usd=1.0)
+    assert client.call_count == 1
 
 
 def test_budget_status_stages(env):
@@ -373,7 +416,7 @@ def test_default_budget_without_constitution(env):
     assert llm.monthly_budget(repo_root=env.repo) == llm.DEFAULT_MONTHLY_BUDGET_USD
 
 
-# ---------------------------------------------------------------- 角色表（agents/*.yml）
+# ---------------------------------------------------------------- Role table (agents/*.yml)
 
 
 DRAFTING = ("company_manager", "industry_researcher", "hq_capital_allocator", "extractor", "typesetter")
@@ -383,7 +426,7 @@ OVERSIGHT = (
 
 
 def test_role_table_has_the_thirteen_roles_from_agents_yml():
-    roles = llm.load_roles()  # 公开仓库真实的 agents/*.yml
+    roles = llm.load_roles()  # the public repository's real agents/*.yml
     assert set(roles) == set(DRAFTING) | set(OVERSIGHT)
     for name, role in roles.items():
         assert role.prompts is not None and role.can_see is not None and role.cannot_see is not None, name
@@ -400,12 +443,14 @@ def test_role_table_models_follow_decision_0003():
 
 
 def test_unknown_role_and_unpriced_model_are_rejected(env):
-    with pytest.raises(ValueError, match="未知角色"):
+    with pytest.raises(ValueError, match="unknown role 'trader'"):
         call(env, FakeClient(make_response()), role="trader")
     client = FakeClient(make_response())
-    with pytest.raises(ValueError):
-        call(env, client, model="claude-unknown-9")
+    for backend in ("api", "fake"):
+        with pytest.raises(ValueError, match="model claude-unknown-9 is not in the price table"):
+            call(env, client, model="claude-unknown-9", backend=backend)
     assert client.call_count == 0
+    assert not env.log.exists()
 
 
 def test_agent_yaml_found_by_role_field(tmp_path):
@@ -424,7 +469,7 @@ def test_explicit_arguments_beat_agent_yaml(tmp_path):
         encoding="utf-8",
     )
     assert llm.resolve_model("auditor", repo_root=tmp_path) == ("claude-fable-5-1", "high", "claude-opus-4-8")
-    # 换了模型，原模型的回退配置不再沿用
+    # after switching models, the fallbacks configured for the original model no longer apply
     assert llm.resolve_model("auditor", model="claude-haiku-4-5", repo_root=tmp_path) == (
         "claude-haiku-4-5",
         None,
@@ -436,27 +481,28 @@ def test_role_without_model_id_or_defined_twice_fails_loudly(tmp_path):
     agents = tmp_path / "agents"
     agents.mkdir()
     (agents / "judge.yml").write_text("role: judge\nmodel:\n  effort: high\n", encoding="utf-8")
-    with pytest.raises(llm.PromptError, match="model.id"):
+    with pytest.raises(llm.PromptError, match="judge.yml has no model.id"):
         llm.load_roles(tmp_path)
     (agents / "judge.yml").write_text("role: judge\nmodel:\n  id: claude-fable-5-1\n", encoding="utf-8")
     (agents / "judge2.yml").write_text("role: judge\nmodel:\n  id: claude-fable-5-1\n", encoding="utf-8")
-    with pytest.raises(llm.PromptError, match="两次"):
+    with pytest.raises(llm.PromptError, match="role judge is defined twice"):
         llm.load_roles(tmp_path)
 
 
 def test_role_file_must_be_complete_to_be_called(env):
     write_agent(env.repo, "company_manager", model="claude-sonnet-5", can_see=None)
     client = FakeClient(make_response())
-    with pytest.raises(llm.PromptError, match="can_see"):
+    with pytest.raises(llm.PromptError, match="company_manager.yml has no can_see"):
         call(env, client)
     assert client.call_count == 0
 
 
-# ---------------------------------------------------------------- 提示词、部分与所有权
+# ---------------------------------------------------------------- Prompts, parts and ownership
 
 
 def test_prompts_dir_comes_from_argument_env_or_sibling_checkout(env, monkeypatch):
-    assert llm.resolve_prompts_dir(repo_root=env.repo) == env.prompts  # 默认：与公开仓库并列的私有仓库
+    # default: the private repository checked out beside the public one
+    assert llm.resolve_prompts_dir(repo_root=env.repo) == env.prompts
     other = env.prompts.parent.parent / "elsewhere"
     other.mkdir()
     monkeypatch.setenv(llm.PROMPTS_ENV, str(other))
@@ -473,17 +519,18 @@ def test_system_prompt_is_00_then_the_prompt(env):
     kwargs = only_request(client)
     texts = [block["text"] for block in kwargs["system"]]
     assert texts[0] == (env.prompts / "00-series-rules.md").read_text(encoding="utf-8")
-    assert len(texts) == 2  # 03 不排版，不加 00D
+    assert len(texts) == 2  # 03 lays out no pages: no 00D
     assert texts[1].startswith("---\nid: \"03\"")
-    assert "测试公司（TEST）" in texts[1] and "FY2026Q3" in texts[1]  # {{变量}} 已填
+    # the {{variables}} are filled
+    assert "Synthetic quarterly update prompt for Test Co (TEST), FY2026Q3." in texts[1]
     assert "{{" not in texts[1]
-    assert "{{日期}}" in texts[0]  # 00 原样放入，不填变量
+    assert "{{date}}" in texts[0]  # 00 goes in as it is, with its variables unfilled
 
 
 def test_design_prompts_also_get_00d(env):
-    client = FakeClient(make_response(envelope(report=REPORT_MD, questions="无")))
+    client = FakeClient(make_response(envelope(report=REPORT_MD, questions="none")))
     result = call(env, client, prompt_id="02", mode="report",
-                  inputs={"run_date": "2026-09-24", "dossier": "档案"}, variables=DRAFT_VARIABLES)
+                  inputs={"run_date": "2026-09-24", "dossier": "Dossier."}, variables=DRAFT_VARIABLES)
     texts = [block["text"] for block in only_request(client)["system"]]
     assert len(texts) == 3
     assert texts[1] == (env.prompts / "00D-design-system.md").read_text(encoding="utf-8")
@@ -494,8 +541,8 @@ def test_design_prompts_also_get_00d(env):
 
 def test_missing_variables_are_refused_before_the_call(env):
     client = FakeClient(make_response())
-    with pytest.raises(llm.PromptError, match="期间"):
-        call(env, client, variables={"公司": "测试公司", "代码": "TEST"})
+    with pytest.raises(llm.PromptError, match="prompt 03 needs the variables period"):
+        call(env, client, variables={"company": "Test Co", "ticker": "TEST"})
     assert client.call_count == 0
 
 
@@ -508,9 +555,9 @@ def test_parts_are_chosen_by_key_or_label(env):
     assert revise.key == "revise"
     assert [name for name, _ in revise.outputs] == ["update", "thesis", "questions", "escalation", "story", "revision_notes"]
     assert dict(revise.outputs)["escalation"] is False
-    with pytest.raises(llm.PromptError, match="part"):
+    with pytest.raises(llm.PromptError, match="part must be one of"):
         llm.prompt_part(prompt, "Z")
-    with pytest.raises(llm.PromptError, match="part"):
+    with pytest.raises(llm.PromptError, match="part must be one of"):
         llm.prompt_part(prompt)
 
 
@@ -537,8 +584,8 @@ def write_prompt(env, name, front, body="Synthetic prompt.\n"):
 
 def test_calls_and_per_pass_outputs_must_match_the_passes(env):
     parts = "  B: {role: red_team, calls: %s, inputs_pass1: [x], inputs_pass2: [y], %s}\n"
-    bad_calls = write_prompt(env, "05-bad.md", 'id: "05"\nversion: "1"\nparts:\n' + parts % ('"2（注释）"', "outputs_pass1: [findings], outputs_pass2: [findings]"))
-    with pytest.raises(llm.PromptError, match="calls"):
+    bad_calls = write_prompt(env, "05-bad.md", 'id: "05"\nversion: "1"\nparts:\n' + parts % ('"2 (note)"', "outputs_pass1: [findings], outputs_pass2: [findings]"))
+    with pytest.raises(llm.PromptError, match="calls of 05B should be the integer 2"):
         llm.prompt_part(bad_calls, "B", pass_no=1)
     (env.prompts / "05-bad.md").unlink()
     no_pass_outputs = write_prompt(env, "05-bad.md", 'id: "05"\nversion: "1"\nparts:\n' + parts % ("2", "outputs: [findings]"))
@@ -547,11 +594,12 @@ def test_calls_and_per_pass_outputs_must_match_the_passes(env):
 
 
 def test_second_pass_of_red_team_runs_with_pass_one_outputs(env):
-    reply = envelope(findings="- id: 04B-01\n  group: 建议改", weakest_sentence="“……”这一句。", questions="无")
+    reply = envelope(findings="- id: 04B-01\n  group: should_change", weakest_sentence='The sentence "...".',
+                     questions="none")
     client = FakeClient(make_response(reply, model="claude-fable-5-1"))
     result = call(env, client, role="red_team", prompt_id="04", part="B", pass_no=2,
-                  inputs={"pass1": "第一遍的输出", "product_counter_section": "被删去的反方内容"},
-                  variables={"被审对象": "研报"})
+                  inputs={"pass1": "The first pass's outputs.", "product_counter_section": "The removed counter case."},
+                  variables={"subject": "research report"})
     assert result.pass_no == 2 and result.part_id == "04B"
     assert result.outputs["weakest_sentence"].format == "text"
     assert '<run prompt="04" part="B" label="04B" pass="2"/>' in only_request(client)["messages"][0]["content"]
@@ -563,35 +611,35 @@ def test_second_pass_must_deliver_its_declared_outputs(env):
     client = FakeClient(make_response(envelope(findings="- id: 04B-01"), model="claude-fable-5-1"))
     with pytest.raises(llm.LLMOutputInvalid) as info:
         call(env, client, role="red_team", prompt_id="04", part="B", pass_no=2,
-             inputs={"pass1": "第一遍的输出", "product_counter_section": "被删去的反方内容"},
-             variables={"被审对象": "研报"})
-    assert any(e.startswith("缺少输出 'weakest_sentence'") for e in info.value.errors)
+             inputs={"pass1": "The first pass's outputs.", "product_counter_section": "The removed counter case."},
+             variables={"subject": "research report"})
+    assert any(e.startswith("output 'weakest_sentence' is missing") for e in info.value.errors)
 
 
 def test_modes_are_required_and_bring_their_own_inputs_and_outputs(env):
     prompt = llm.load_prompt("02", env.prompts)
-    with pytest.raises(llm.PromptError, match="mode"):
+    with pytest.raises(llm.PromptError, match="mode must be one of"):
         llm.prompt_part(prompt)
-    with pytest.raises(llm.PromptError, match="mode"):
+    with pytest.raises(llm.PromptError, match="mode must be one of"):
         llm.prompt_part(prompt, mode="nonsense")
     report = llm.prompt_part(prompt, mode="report")
     refresh = llm.prompt_part(prompt, mode="valuation_refresh")
     assert [n for n, _ in report.outputs] == ["report", "questions"]
     assert refresh.inputs == (("run_date", True), ("dossier", True), ("valuation_input_notes", True))
     assert [n for n, _ in refresh.outputs] == ["valuation_md", "valuation_yml", "questions"]
-    with pytest.raises(llm.PromptError, match="mode"):
+    with pytest.raises(llm.PromptError, match="has no modes; do not pass mode"):
         llm.prompt_part(llm.load_prompt("03", env.prompts), "draft", mode="report")
 
 
 def test_valuation_refresh_mode_is_checked_against_its_own_lists(env):
     client = FakeClient(make_response())
-    with pytest.raises(llm.PromptError, match="缺少必需输入 valuation_input_notes"):
-        call(env, client, prompt_id="02", mode="valuation_refresh", inputs={"run_date": "2026-09-24", "dossier": "档案"},
-             variables=DRAFT_VARIABLES)
-    valuation_md = "---\ncompany: TEST\ndoc: valuation_md\nas_of: 2026-09-24\ndoc_status: proposed\n---\n算式。\n"
-    reply = envelope(valuation_md=valuation_md, valuation_yml="company: TEST\ndoc_status: proposed\n", questions="无")
+    with pytest.raises(llm.PromptError, match="required input valuation_input_notes is missing"):
+        call(env, client, prompt_id="02", mode="valuation_refresh",
+             inputs={"run_date": "2026-09-24", "dossier": "Dossier."}, variables=DRAFT_VARIABLES)
+    valuation_md = "---\ncompany: TEST\ndoc: valuation_md\nas_of: 2026-09-24\ndoc_status: proposed\n---\nFormula.\n"
+    reply = envelope(valuation_md=valuation_md, valuation_yml="company: TEST\ndoc_status: proposed\n", questions="none")
     result = call(env, FakeClient(make_response(reply)), prompt_id="02", mode="valuation_refresh",
-                  inputs={"run_date": "2026-09-24", "dossier": "档案", "valuation_input_notes": "无"},
+                  inputs={"run_date": "2026-09-24", "dossier": "Dossier.", "valuation_input_notes": "No notes."},
                   variables=DRAFT_VARIABLES)
     assert set(result.outputs) == {"valuation_md", "valuation_yml", "questions"}
     assert result.mode == "valuation_refresh"
@@ -613,71 +661,74 @@ def test_undeclared_or_inconsistent_formats_are_refused_before_the_call(env):
     original = rules_path.read_text(encoding="utf-8")
     rules_path.write_text(original.replace("escalation, ", ""), encoding="utf-8")
     client = FakeClient(make_response())
-    with pytest.raises(llm.PromptError, match="escalation 没有声明格式"):
+    with pytest.raises(llm.PromptError, match="outputs escalation of 03-draft have no declared format"):
         call(env, client)
     rules_path.write_text(original.replace("[thesis, ", "[").replace("text: [", "text: [thesis, "), encoding="utf-8")
-    with pytest.raises(llm.PromptError, match="thesis 有 thesis-ci schema"):
+    with pytest.raises(llm.PromptError,
+                       match=re.escape("thesis has a thesis-ci schema (thesis), so its format should be yaml, not text")):
         call(env, client)
     assert client.call_count == 0
 
 
 def test_only_parts_that_lay_out_pages_load_00d(env):
-    reply = envelope(fact_verdicts="无", findings="无", questions="无")
+    reply = envelope(fact_verdicts="none", findings="none", questions="none")
     client = FakeClient(make_response(reply, model="claude-fable-5-1"))
     result = call(env, client, role="auditor", prompt_id="12", part="A", inputs={"fact_table": "x", "sources": "y"})
-    assert len(only_request(client)["system"]) == 2  # 12A 不排版：00 + 12，没有 00D
+    assert len(only_request(client)["system"]) == 2  # 12A lays out no pages: 00 + 12, no 00D
     assert result.design_version is None
     assert llm.prompt_part(llm.load_prompt("12", env.prompts), "C").design
 
 
 def test_part_of_another_role_is_refused(env):
     client = FakeClient(make_response())
-    with pytest.raises(llm.PromptError, match="auditor"):
+    with pytest.raises(llm.PromptError, match="the role of 04A is auditor"):
         call(env, client, role="red_team", prompt_id="04", part="A", inputs={"fact_table": "x", "sources": "y"},
-             variables={"被审对象": "研报"})
-    with pytest.raises(llm.PromptError, match="red_team"):
+             variables={"subject": "research report"})
+    with pytest.raises(llm.PromptError, match="the role of 04B-lite is red_team"):
         call(env, client, role="auditor", prompt_id="04", part="B_lite", inputs={"update": "x", "filings": "y"},
-             variables={"被审对象": "研报"})
+             variables={"subject": "research report"})
     assert client.call_count == 0
 
 
 def test_part_not_registered_in_agents_yml_is_refused(env):
     write_agent(env.repo, "design_reviewer", model="claude-fable-5-1", prompts=["12C"],
                 can_see=["document", "rendered_pages"], cannot_see=[])
-    with pytest.raises(llm.PromptError, match="09C"):
+    with pytest.raises(llm.PromptError, match="registers neither 09C nor the whole of 09"):
         call(env, FakeClient(make_response()), role="design_reviewer", prompt_id="09", part="C",
-             inputs={"document": "正文"}, images={"rendered_pages": [env.page_png]}, variables={"文档": "07"})
+             inputs={"document": "Body text."}, images={"rendered_pages": [env.page_png]},
+             variables={"document": "07"})
 
 
 def test_pipeline_parts_and_file_outputs_are_not_model_calls(env):
-    with pytest.raises(llm.PromptError, match="pipeline"):
+    with pytest.raises(llm.PromptError, match="role: pipeline"):
         llm.prompt_part(llm.load_prompt("12", env.prompts), "V")
     client = FakeClient(make_response())
-    with pytest.raises(llm.PromptError, match="pdf"):
-        call(env, client, role="typesetter", prompt_id="19", inputs={"content": "正文"})
+    with pytest.raises(llm.PromptError, match="has to hand over files"):
+        call(env, client, role="typesetter", prompt_id="19", inputs={"content": "Body text."})
     assert client.call_count == 0
 
 
-# ---------------------------------------------------------------- 输入：封装与按角色裁剪（00 §G6）
+# ---------------------------------------------------------------- Inputs: envelope and per-role filtering (00 §G6)
 
 
 def test_inputs_are_input_blocks_in_front_matter_order(env):
     client = FakeClient(make_response())
-    call(env, client, inputs={"thesis": "论点摘要", "run_date": "2026-09-24", "filings": "营收同比增长。"})
+    call(env, client, inputs={"thesis": "Thesis summary.", "run_date": "2026-09-24",
+                              "filings": "Revenue grew year on year."})
     content = only_request(client)["messages"][0]["content"]
     assert content.startswith('<run prompt="03" part="draft" label="03-draft"/>')
     positions = [content.index(f'<input name="{name}">') for name in ("run_date", "filings", "thesis")]
-    assert positions == sorted(positions)  # front matter 的顺序，不是字母顺序
-    assert '<input name="filings">\n营收同比增长。\n</input>' in content
+    assert positions == sorted(positions)  # front matter order, not alphabetical order
+    assert '<input name="filings">\nRevenue grew year on year.\n</input>' in content
 
 
 def test_missing_required_or_undeclared_inputs_are_refused(env):
     client = FakeClient(make_response())
-    with pytest.raises(llm.PromptError, match="缺少必需输入 thesis"):
+    with pytest.raises(llm.PromptError, match="required input thesis is missing"):
         call(env, client, inputs={"run_date": "2026-09-24", "filings": "x"})
-    with pytest.raises(llm.PromptError, match="dossier 不是 03-draft 的输入"):
-        call(env, client, inputs={**DRAFT_INPUTS, "dossier": "档案"})
-    call(env, client, inputs={**DRAFT_INPUTS, "owner_notes": "线索"})  # 可选输入可以给
+    with pytest.raises(llm.PromptError, match="dossier is not an input of 03-draft"):
+        call(env, client, inputs={**DRAFT_INPUTS, "dossier": "Dossier."})
+    call(env, client, inputs={**DRAFT_INPUTS, "owner_notes": "A lead."})  # an optional input may be given
     assert client.call_count == 1
 
 
@@ -685,7 +736,7 @@ def test_input_outside_can_see_is_refused(env):
     write_agent(env.repo, "auditor", model="claude-fable-5-1", prompts=["04A"], can_see=["fact_table"],
                 cannot_see=["product", "dossier"])
     client = FakeClient(make_response())
-    with pytest.raises(llm.InputRefused, match="sources 不在 can_see 里"):
+    with pytest.raises(llm.InputRefused, match="sources is not in can_see"):
         audit(env, client)
     assert client.call_count == 0
 
@@ -694,39 +745,39 @@ def test_input_in_cannot_see_is_refused_even_if_declared(env):
     write_agent(env.repo, "auditor", model="claude-fable-5-1", prompts=["04A"], can_see=["fact_table", "sources"],
                 cannot_see=["sources"])
     client = FakeClient(make_response())
-    with pytest.raises(llm.InputRefused, match="sources 在 cannot_see 里"):
+    with pytest.raises(llm.InputRefused, match=re.escape("sources is in cannot_see (sources)")):
         audit(env, client)
     assert client.call_count == 0
 
 
 def test_cannot_see_matches_inputs_without_their_part_suffix(env):
-    # findings_04A 按 findings 比对，与 thesis-ci 的 C-PROMPT-ISOLATION 一致
+    # findings_04A is compared as findings, consistent with thesis-ci's C-PROMPT-ISOLATION
     write_agent(env.repo, "company_manager", model="claude-sonnet-5", prompts=["03"],
                 can_see=["draft_outputs", "findings_04A"], cannot_see=["findings"])
     client = FakeClient(make_response())
-    with pytest.raises(llm.InputRefused, match="findings_04A 在 cannot_see 里"):
-        call(env, client, part="revise", inputs={"draft_outputs": "草稿", "findings_04A": "审计结论"})
+    with pytest.raises(llm.InputRefused, match=re.escape("findings_04A is in cannot_see (findings)")):
+        call(env, client, part="revise", inputs={"draft_outputs": "The draft.", "findings_04A": "The audit findings."})
     assert client.call_count == 0
 
 
 def test_bad_inputs_are_rejected(env):
     common = dict(client=FakeClient(), log_path=env.log, repo_root=env.repo, prompts_dir=env.prompts, part="draft")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="inputs must be a non-empty"):
         llm.complete("company_manager", "03", {}, **common)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="input 'n' must be a string"):
         llm.complete("company_manager", "03", {"n": 1}, **common)
 
 
-# ---------------------------------------------------------------- 页面图像
+# ---------------------------------------------------------------- Page images
 
 
 def layout_review(env, client, pages, **kwargs):
-    return call(env, client, role="design_reviewer", prompt_id="09", part="C", inputs={"document": "正文"},
-                images={"rendered_pages": pages}, variables={"文档": "07"}, **kwargs)
+    return call(env, client, role="design_reviewer", prompt_id="09", part="C", inputs={"document": "Body text."},
+                images={"rendered_pages": pages}, variables={"document": "07"}, **kwargs)
 
 
 def test_page_images_go_in_as_base64_image_blocks(env):
-    reply = envelope(design_checks="无", layout_instructions="无", findings="无", questions="无")
+    reply = envelope(design_checks="none", layout_instructions="none", findings="none", questions="none")
     client = FakeClient(make_response(reply, model="claude-fable-5-1"))
     result = layout_review(env, client, [env.page_png, env.page_jpg])
     content = only_request(client)["messages"][0]["content"]
@@ -738,16 +789,16 @@ def test_page_images_go_in_as_base64_image_blocks(env):
         "data": base64.standard_b64encode(env.page_png.read_bytes()).decode("ascii"),
     }
     text = "".join(block["text"] for block in content if block["type"] == "text")
-    assert '<input name="document">\n正文\n</input>' in text
+    assert '<input name="document">\nBody text.\n</input>' in text
     assert '<input name="rendered_pages">' in text and '<page n="2" file="page-2.jpg"/>' in text
     assert text.index('<input name="document">') < text.index('<input name="rendered_pages">')
-    assert result.design_version == "9.1"  # 09 排版：加 00D
+    assert result.design_version == "9.1"  # 09 lays out pages: 00D is loaded
     (record,) = read_log(env.log)
     assert record["images"] == 2
 
 
 def test_image_content_is_part_of_the_input_hash(env):
-    reply = envelope(design_checks="无", layout_instructions="无", findings="无", questions="无")
+    reply = envelope(design_checks="none", layout_instructions="none", findings="none", questions="none")
     first = layout_review(env, FakeClient(make_response(reply)), [env.page_png])
     env.page_png.write_bytes(env.page_png.read_bytes() + b"\x00")
     second = layout_review(env, FakeClient(make_response(reply)), [env.page_png])
@@ -756,17 +807,17 @@ def test_image_content_is_part_of_the_input_hash(env):
 
 def test_bad_page_images_are_refused(env, tmp_path):
     client = FakeClient(make_response())
-    with pytest.raises(ValueError, match="只支持"):
+    with pytest.raises(ValueError, match="page.bmp: page images must be one of"):
         layout_review(env, client, [tmp_path / "page.bmp"])
-    with pytest.raises(ValueError, match="images"):
+    with pytest.raises(ValueError, match="rendered_pages holds page images; pass it as images="):
         call(env, client, role="design_reviewer", prompt_id="09", part="C",
-             inputs={"document": "正文", "rendered_pages": "不是图像"}, variables={"文档": "07"})
-    with pytest.raises(ValueError, match="rendered_pages"):
+             inputs={"document": "Body text.", "rendered_pages": "not an image"}, variables={"document": "07"})
+    with pytest.raises(ValueError, match="only rendered_pages is passed as images, got 'document'"):
         call(env, client, images={"document": [env.page_png]})
     assert client.call_count == 0
 
 
-# ---------------------------------------------------------------- 请求形状：模型、思考、流式
+# ---------------------------------------------------------------- Request shape: model, thinking, streaming
 
 
 def test_drafting_role_streams_with_adaptive_thinking(env):
@@ -785,8 +836,8 @@ def test_drafting_role_streams_with_adaptive_thinking(env):
 
 
 def test_long_output_prompts_stream_with_a_larger_limit(env):
-    client = FakeClient(make_response(envelope(report=REPORT_MD, questions="无")))
-    call(env, client, prompt_id="02", mode="report", inputs={"run_date": "2026-09-24", "dossier": "档案"},
+    client = FakeClient(make_response(envelope(report=REPORT_MD, questions="none")))
+    call(env, client, prompt_id="02", mode="report", inputs={"run_date": "2026-09-24", "dossier": "Dossier."},
          variables=DRAFT_VARIABLES)
     (kwargs,) = client.messages.stream_calls
     assert kwargs["max_tokens"] == llm.LONG_MAX_TOKENS == 128000
@@ -803,11 +854,12 @@ def test_non_streaming_call_uses_messages_create(env):
 
 
 def test_fable_uses_beta_with_default_server_side_fallbacks(env):
-    auditor = FakeClient(make_response(envelope(fact_verdicts="无", findings="无", questions="无"), model="claude-fable-5-1"))
+    auditor = FakeClient(make_response(envelope(fact_verdicts="none", findings="none", questions="none"),
+                                       model="claude-fable-5-1"))
     audit(env, auditor)
-    red_team = FakeClient(make_response(envelope(inversion_list="无", test_proposals="无"), model="claude-fable-5-1"))
-    call(env, red_team, role="red_team", prompt_id="04", part="B_lite", inputs={"update": "草稿", "filings": "文件"},
-         variables={"被审对象": "季度更新"})
+    red_team = FakeClient(make_response(envelope(inversion_list="none", test_proposals="none"), model="claude-fable-5-1"))
+    call(env, red_team, role="red_team", prompt_id="04", part="B_lite",
+         inputs={"update": "The draft.", "filings": "The filings."}, variables={"subject": "quarterly update"})
     for client in (auditor, red_team):
         assert client.messages.calls == [] and client.messages.stream_calls == []
         (kwargs,) = client.beta.messages.stream_calls
@@ -822,7 +874,7 @@ def test_fable_uses_beta_with_default_server_side_fallbacks(env):
 
 def test_fallback_served_response_is_priced_at_served_model(env):
     response = make_response(
-        envelope(fact_verdicts="无", findings="无", questions="无"),
+        envelope(fact_verdicts="none", findings="none", questions="none"),
         model="claude-opus-4-8",
         input_tokens=1000,
         output_tokens=1000,
@@ -849,7 +901,8 @@ def test_agent_yaml_overrides_defaults(env):
 def test_named_fallback_uses_array_form(env):
     write_agent(env.repo, "auditor", model="claude-fable-5-1", fallbacks="claude-opus-4-8", prompts=["04A"],
                 can_see=["fact_table", "sources"], cannot_see=[])
-    client = FakeClient(make_response(envelope(fact_verdicts="无", findings="无", questions="无"), model="claude-fable-5-1"))
+    client = FakeClient(make_response(envelope(fact_verdicts="none", findings="none", questions="none"),
+                                      model="claude-fable-5-1"))
     audit(env, client)
     (kwargs,) = client.beta.messages.stream_calls
     assert kwargs["betas"] == ["server-side-fallback-2026-06-01"]
@@ -861,10 +914,10 @@ def test_model_without_effort_support_gets_no_output_config(env):
     call(env, client, model="claude-haiku-4-5")
     (kwargs,) = client.messages.stream_calls
     assert "output_config" not in kwargs
-    assert "thinking" not in kwargs  # haiku 不支持自适应思考；也不发 budget_tokens
+    assert "thinking" not in kwargs  # haiku does not support adaptive thinking; budget_tokens is not sent either
 
 
-# ---------------------------------------------------------------- 提示缓存
+# ---------------------------------------------------------------- Prompt caching
 
 
 def test_rules_block_is_a_cache_breakpoint_and_the_prompt_comes_after_it(env):
@@ -876,8 +929,8 @@ def test_rules_block_is_a_cache_breakpoint_and_the_prompt_comes_after_it(env):
 
 
 def test_design_system_block_is_cached_too(env):
-    client = FakeClient(make_response(envelope(report=REPORT_MD, questions="无")))
-    call(env, client, prompt_id="02", mode="report", inputs={"run_date": "2026-09-24", "dossier": "档案"},
+    client = FakeClient(make_response(envelope(report=REPORT_MD, questions="none")))
+    call(env, client, prompt_id="02", mode="report", inputs={"run_date": "2026-09-24", "dossier": "Dossier."},
          variables=DRAFT_VARIABLES)
     rules, design, prompt = only_request(client)["system"]
     assert rules["cache_control"] == design["cache_control"] == {"type": "ephemeral"}
@@ -891,7 +944,7 @@ def test_cache_tokens_are_priced_at_their_own_rates_and_logged(env):
     (record,) = read_log(env.log)
     assert record["usage"]["cache_creation_input_tokens"] == 10_000
     assert record["usage"]["cache_read_input_tokens"] == 20_000
-    # claude-sonnet-5：输入 2、输出 10、写缓存 2.5、读缓存 0.2（美元 / 每百万 token）
+    # claude-sonnet-5: input 2, output 10, cache write 2.5, cache read 0.2 (USD per million tokens)
     assert record["cost_breakdown"] == {"input": 0.002, "output": 0.005, "cache_write": 0.025, "cache_read": 0.004}
     assert record["cost_usd"] == result.cost_usd == pytest.approx(0.036)
 
@@ -908,31 +961,43 @@ def test_cache_price_table_covers_every_model_and_follows_the_documented_multipl
     for model, (write, read) in llm.CACHE_PRICES_PER_MTOK.items():
         input_price = llm.PRICES_PER_MTOK[model][0]
         assert write == pytest.approx(input_price * llm.CACHE_WRITE_MULTIPLIER), model
-        if model != "claude-fable-5-1":  # 唯一单独列明的读取价：0.25，即输入价的 0.025 倍
+        if model != "claude-fable-5-1":  # the one separately listed read price: 0.25, i.e. 0.025 times the input price
             assert read == pytest.approx(input_price * llm.CACHE_READ_MULTIPLIER), model
 
 
 def test_model_without_cache_rates_is_refused(env, monkeypatch):
     monkeypatch.delitem(llm.CACHE_PRICES_PER_MTOK, "claude-sonnet-5")
     client = FakeClient(make_response())
-    with pytest.raises(ValueError, match="CACHE_PRICES_PER_MTOK"):
+    with pytest.raises(ValueError, match="model claude-sonnet-5 is not in the price table.*CACHE_PRICES_PER_MTOK"):
         call(env, client)
     assert client.call_count == 0
 
 
-# ---------------------------------------------------------------- 输出：解析、校验与重试
+# ---------------------------------------------------------------- Outputs: parsing, validation and retry
 
 
 def test_outputs_are_parsed_by_name(env):
     result = call(env, FakeClient(make_response()))
     assert set(result.outputs) == {"update", "thesis", "questions"}
-    assert result.outputs["questions"].empty is True  # “无”
+    assert result.outputs["questions"].empty is True  # "none"
     assert result.outputs["thesis"].data == {"company": "TEST", "trust_level": 1, "tests": []}
     assert result.attempts == 1
 
 
+@pytest.mark.parametrize("mark", ["none", "None", "NONE"])
+def test_empty_marker_is_accepted_in_any_letter_case(env, mark):
+    reply = envelope(update=UPDATE_MD, thesis=THESIS_YML, questions=mark)
+    client = FakeClient(make_response(reply))
+    result = call(env, client)
+    assert client.call_count == 1 and result.attempts == 1  # accepted at once, no retry
+    assert result.outputs["questions"].empty is True
+    assert result.outputs["questions"].text == ""
+    assert "questions" not in {p.output for p in result.placements()}
+
+
 def test_invalid_reply_is_retried_once_with_the_errors(env):
-    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML, surprise="多出来的"), input_tokens=100, output_tokens=10)
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML, surprise="extra"), input_tokens=100,
+                        output_tokens=10)
     good = make_response(input_tokens=100, output_tokens=10)
     client = FakeClient(bad, good)
     result = call(env, client)
@@ -941,8 +1006,8 @@ def test_invalid_reply_is_retried_once_with_the_errors(env):
     assert first["messages"][0]["content"] == second["messages"][0]["content"].split("\n\n<validation_errors>")[0]
     retry_note = second["messages"][0]["content"]
     assert "<validation_errors>" in retry_note
-    assert "'surprise' 不在 03-draft 的输出表里" in retry_note
-    assert "缺少输出 'questions'" in retry_note
+    assert "- output 'surprise' is not an output of 03-draft (its outputs: " in retry_note
+    assert "- output 'questions' is missing" in retry_note
     assert first["system"] == second["system"]
     records = read_log(env.log)
     assert [r["attempt"] for r in records] == [1, 2]
@@ -952,50 +1017,68 @@ def test_invalid_reply_is_retried_once_with_the_errors(env):
     assert result.usage["input_tokens"] == 200
 
 
+def test_retry_note_is_english_and_lists_the_errors(env):
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML))  # questions is missing
+    client = FakeClient(bad, make_response())
+    call(env, client)
+    first, second = client.messages.stream_calls
+    original = first["messages"][0]["content"]
+    retried = second["messages"][0]["content"]
+    assert retried.startswith(original)
+    assert retried[len(original):] == (
+        "\n\n<validation_errors>\n"
+        "The outputs of your previous answer failed the pipeline's validation (00 §F0, §F6). "
+        "Correct the errors below, then hand over all outputs of this part again, as originally asked:\n"
+        "- output 'questions' is missing; with no content, write \"none\" instead of leaving it out (00 §F0)\n"
+        "</validation_errors>"
+    )
+
+
 def test_second_invalid_reply_raises_with_the_errors(env):
-    bad = make_response(envelope(update=UPDATE_MD, thesis="```yaml\ncompany: TEST\n```", questions="无"))
+    bad = make_response(envelope(update=UPDATE_MD, thesis="```yaml\ncompany: TEST\n```", questions="none"))
     client = FakeClient(bad)
     with pytest.raises(llm.LLMOutputInvalid) as info:
         call(env, client)
     assert client.call_count == 2
-    assert any("代码围栏" in e for e in info.value.errors)
+    assert "thesis: YAML goes without code fences (00 §F0)" in info.value.errors
+    assert "the output of 03-draft is still invalid after the retry; no output was handed over" in str(info.value)
     assert info.value.result.attempts == 2
     assert len(read_log(env.log)) == 2
 
 
 def test_structured_outputs_are_validated_against_the_schema(env):
     thesis_without_level = "company: TEST\ntests: []\n"
-    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=thesis_without_level, questions="无")))
+    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=thesis_without_level, questions="none")))
     with pytest.raises(llm.LLMOutputInvalid) as info:
         call(env, client)
-    assert "thesis：thesis.schema.json /: 'trust_level' is a required property" in info.value.errors
+    assert "thesis: thesis.schema.json /: 'trust_level' is a required property" in info.value.errors
 
 
 def test_markdown_outputs_need_front_matter(env):
-    client = FakeClient(make_response(envelope(update="结论：维持。", thesis=THESIS_YML, questions="无")))
+    client = FakeClient(make_response(envelope(update="Conclusion: maintain.", thesis=THESIS_YML, questions="none")))
     with pytest.raises(llm.LLMOutputInvalid) as info:
         call(env, client)
-    assert any(e.startswith("update：Markdown 输出要以 front matter 开头") for e in info.value.errors)
+    assert any(e.startswith("update: a Markdown output starts with front matter") for e in info.value.errors)
 
 
 def test_pipeline_fields_are_written_before_validation(env):
-    thesis = "# 注释保留\ncompany: TEST\ntests: []\n"
-    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=thesis, questions="无")))
+    thesis = "# comment kept\ncompany: TEST\ntests: []\n"
+    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=thesis, questions="none")))
     result = call(env, client, pipeline_fields={"thesis": {"trust_level": 2, "company": "TEST"}})
     parsed = result.outputs["thesis"]
     assert parsed.data["trust_level"] == 2
-    assert parsed.text.startswith("# 注释保留\ntrust_level: 2\n")
+    assert parsed.text.startswith("# comment kept\ntrust_level: 2\n")
     assert parsed.pipeline_fields == ("trust_level", "company")
 
 
 def test_schema_is_resolved_before_any_money_is_spent(env, tmp_path):
     client = FakeClient(make_response())
-    with pytest.raises(llm.LLMError, match="thesis-ci schema"):
+    with pytest.raises(llm.LLMError, match="the outputs of 03-draft are validated against thesis-ci schemas"):
         call(env, client, schemas_dir=tmp_path / "no-schemas")
     assert client.call_count == 0
 
 
-# ---------------------------------------------------------------- generated_by 与放置
+# ---------------------------------------------------------------- generated_by and placement
 
 
 def test_generated_by_is_injected_into_markdown_front_matter(env):
@@ -1004,33 +1087,37 @@ def test_generated_by_is_injected_into_markdown_front_matter(env):
     assert update.generated_by_injected
     assert update.data["generated_by"] == {
         "model": "claude-sonnet-5",
+        "backend": "api",
         "rules_version": "9.0",
         "prompt": "03",
         "part": "03-draft",
         "prompt_version": "3.1",
         "input_sha256": result.input_sha256,
     }
-    assert "generated_by:" in update.text and update.text.endswith("结论：维持。\n")
+    assert list(result.generated_by)[:3] == ["model", "backend", "rules_version"]
+    assert "generated_by:\n  model: claude-sonnet-5\n  backend: api\n  rules_version: '9.0'\n" in update.text
+    assert update.text.endswith("Conclusion: maintain.\n")
 
 
 def test_generated_by_is_returned_alongside_when_the_schema_rejects_extra_keys(env):
-    story = "---\ncompany: TEST\nas_of: 2026-09-24\nstatus: holding\n---\n两分钟故事。\n"
-    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML, questions="无", story=story)))
+    story = "---\ncompany: TEST\nas_of: 2026-09-24\nstatus: holding\n---\nTwo-minute story.\n"
+    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML, questions="none", story=story)))
     result = call(env, client)
     for name, text in (("thesis", THESIS_YML), ("story", story)):
         parsed = result.outputs[name]
-        assert parsed.text == text  # 文档不动
+        assert parsed.text == text  # the document is left unchanged
         assert not parsed.generated_by_injected
         assert parsed.generated_by == result.generated_by
 
 
 def test_generated_by_goes_into_schemaless_yaml_mappings(env):
-    verdicts = "as_of: 2026-09-24\nverdicts:\n  - id: F1\n    verdict: 正确\n"
-    client = FakeClient(make_response(envelope(fact_verdicts=verdicts, findings="- id: 04A-01", questions="无")))
+    verdicts = "as_of: 2026-09-24\nverdicts:\n  - id: F1\n    verdict: correct\n"
+    client = FakeClient(make_response(envelope(fact_verdicts=verdicts, findings="- id: 04A-01", questions="none")))
     result = audit(env, client)
     assert result.outputs["fact_verdicts"].generated_by_injected
     assert result.outputs["fact_verdicts"].data["generated_by"]["part"] == "04A"
-    assert not result.outputs["findings"].generated_by_injected  # 列表：一并返回
+    assert result.outputs["fact_verdicts"].data["generated_by"]["backend"] == "api"
+    assert not result.outputs["findings"].generated_by_injected  # a list: returned alongside
 
 
 def test_placements_follow_section_f2(env):
@@ -1039,14 +1126,78 @@ def test_placements_follow_section_f2(env):
     assert placed["thesis"].repo == "owners-office"
     assert placed["thesis"].path == "companies/TEST/thesis.yml"
     assert placed["update"].path == "companies/TEST/updates/2026-09-24.md"
-    assert "§G9" in placed["thesis"].note  # 季度更新按信任等级分流
-    assert "questions" not in placed  # “无”不放
-    audited = audit(env, FakeClient(make_response(envelope(fact_verdicts="无", findings="- id: 04A-01", questions="无"))))
+    assert "§G9" in placed["thesis"].note  # quarterly updates are routed by trust level
+    assert "questions" not in placed  # "none" is not placed
+    audited = audit(env, FakeClient(make_response(envelope(fact_verdicts="none", findings="- id: 04A-01",
+                                                           questions="none"))))
     (findings,) = audited.placements(company="TEST")
     assert (findings.visibility, findings.action) == ("public", "pr_attachment")
 
 
-# ---------------------------------------------------------------- SDK 延迟导入
+# ---------------------------------------------------------------- Backends
+
+
+def test_resolve_backend_takes_the_argument_then_the_env_var_then_claude_code(monkeypatch):
+    monkeypatch.setenv(llm.BACKEND_ENV, "fake")
+    assert llm.resolve_backend("api") == "api"  # the argument wins
+    assert llm.resolve_backend() == "fake"
+    monkeypatch.setenv(llm.BACKEND_ENV, "")  # an empty variable counts as unset
+    assert llm.resolve_backend() == "claude-code"
+    monkeypatch.delenv(llm.BACKEND_ENV)
+    assert llm.resolve_backend() == llm.DEFAULT_BACKEND == "claude-code"
+
+
+def test_resolve_backend_rejects_unknown_values(monkeypatch):
+    with pytest.raises(ValueError, match="^backend must be one of claude-code, api, fake, got 'sdk'$"):
+        llm.resolve_backend("sdk")
+    monkeypatch.setenv(llm.BACKEND_ENV, "anthropic")
+    with pytest.raises(ValueError, match=f"^{llm.BACKEND_ENV} must be one of claude-code, api, fake, got 'anthropic'$"):
+        llm.resolve_backend()
+
+
+def test_default_backend_comes_from_the_env_var(env, monkeypatch):
+    monkeypatch.setenv(llm.BACKEND_ENV, "fake")
+    result = audit(env, None)  # no client and no backend argument: the fake client answers
+    assert result.backend == "fake"
+    (record,) = read_log(env.log)
+    assert record["backend"] == "fake"
+
+
+def test_fake_backend_without_a_client_answers_with_placeholders(env):
+    # 04A's outputs are all schemaless YAML, which the fake client's placeholders satisfy
+    result = audit(env, None, backend="fake")
+    assert result.backend == "fake"
+    assert result.attempts == 1
+    assert set(result.outputs) == {"fact_verdicts", "findings", "questions"}
+    assert fake_client.DRY_RUN_NOTE in result.text
+    assert result.outputs["fact_verdicts"].data["dry_run"] is True
+    assert result.generated_by["backend"] == "fake"
+    assert result.notional_cost_usd is None
+    (record,) = read_log(env.log)
+    assert record["backend"] == "fake"
+    assert record["request_id"] == fake_client.REQUEST_ID
+    assert record["model"] == "claude-fable-5-1"
+    assert record["cost_usd"] > 0  # the fake client's token estimate, priced like the API ...
+    assert llm.month_spend(env.log) == 0.0  # ... but it is not API spend
+
+
+def test_fake_backend_placeholders_do_not_satisfy_a_strict_schema(env):
+    # 03-draft's thesis has a schema that rejects extra keys; the generic placeholder fails it on both attempts
+    with pytest.raises(llm.LLMOutputInvalid) as info:
+        call(env, None, backend="fake")
+    assert any(e.startswith("thesis: thesis.schema.json") for e in info.value.errors)
+    assert [r["backend"] for r in read_log(env.log)] == ["fake", "fake"]
+
+
+def test_claude_code_backend_refuses_an_injected_client(env):
+    client = FakeClient(make_response())
+    with pytest.raises(ValueError, match="client is for the api and fake backends"):
+        call(env, client, backend="claude-code")
+    assert client.call_count == 0
+    assert not env.log.exists()  # refused before anything was logged
+
+
+# ---------------------------------------------------------------- Lazy SDK import
 
 
 def test_importing_module_does_not_import_sdk():
@@ -1062,9 +1213,9 @@ def test_importing_module_does_not_import_sdk():
 
 
 def test_missing_sdk_gives_clear_error(env, monkeypatch):
-    monkeypatch.setitem(sys.modules, llm.SDK_MODULE, None)  # 模拟没有安装
+    monkeypatch.setitem(sys.modules, llm.SDK_MODULE, None)  # simulate the SDK not being installed
     with pytest.raises(llm.LLMError, match="pip install"):
         call(env, None)
 
 
-REPORT_MD = "---\ncompany: TEST\ndoc: report_02\nas_of: 2026-09-24\ndoc_status: draft\n---\n## 1. 结论\n正文。\n"
+REPORT_MD = "---\ncompany: TEST\ndoc: report_02\nas_of: 2026-09-24\ndoc_status: draft\n---\n## 1. Conclusion\nBody text.\n"

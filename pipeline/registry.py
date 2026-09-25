@@ -48,16 +48,21 @@ OUTPUTS_DIR_NAME = "outputs"
 ATTEMPTS_DIR_NAME = "attempts"  # failed attempts kept by `execute --retry`: attempts/<n>/run.yml
 LLM_LOG_REL = "runs/llm-log.jsonl"  # persistent call log in the private repository (STATUS T7)
 
-# Prompt variables (prompts README). Their names are Chinese in the prompts; they are written as escapes here so
-# that this public module stays English-only.
-VAR_COMPANY = "\u516c\u53f8"  # company name
-VAR_TICKER = "\u4ee3\u7801"  # ticker
-VAR_STATUS = "\u72b6\u6001"  # holding | candidate
-VAR_PERIOD = "\u671f\u95f4"  # FY<year>Q<quarter>
-VAR_DATE = "\u65e5\u671f"  # run date
-# The label that marks a pre-registration candidate in thesis.yml's todo list (prompt 15A), plus its English form.
-PREREG_CANDIDATE_MARKS = ("\u9884\u6ce8\u518c\u5019\u9009", "pre-registration candidate", "prereg candidate")
-_LABEL_SEPARATORS = ("\uff1a", ":")  # full-width and ASCII colon
+# Prompt variables (prompts README): {{company}}, {{ticker}}, {{status}}, {{period}}, {{date}}.
+VAR_COMPANY = "company"  # the company's common English short name (00 section W7), from thesis.yml's name
+VAR_TICKER = llm.VAR_TICKER  # ticker
+VAR_STATUS = "status"  # holding | candidate
+VAR_PERIOD = llm.VAR_PERIOD  # FY<year>Q<quarter>
+VAR_DATE = "date"  # run date
+# The label that marks a pre-registration candidate in thesis.yml's todo list: "Pre-registration candidate: ..."
+# (prompts 01B and 15A). Matched case-insensitively in the text before the first colon.
+PREREG_CANDIDATE_MARKS = ("pre-registration candidate", "prereg candidate")
+_LABEL_SEPARATOR = ":"
+# Legal-form words dropped from thesis.yml's name to get the short name (AppLovin Corporation -> AppLovin).
+_LEGAL_SUFFIX_RE = re.compile(
+    r"(?:,?\s+(?:inc|incorporated|corp|corporation|company|co|ltd|limited|plc|llc|lp|l\.p|n\.v|s\.a|ag|se|sa|nv)\.?)+$",
+    re.IGNORECASE)
+_PARENTHETICAL_RE = re.compile(r"\s*[(\uff08][^()\uff08\uff09]*[)\uff09]")
 
 QUARTER_RE = re.compile(r"^FY\d{4}Q[1-4]$")
 MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
@@ -278,13 +283,22 @@ def step_spec(step: str) -> StepSpec:
     return STEPS[step]
 
 
+def short_name(name: str | None, ticker: str) -> str:
+    """The company's common English short name (00 section W7) from thesis.yml's name: a parenthetical and the legal
+    form are dropped (AppLovin Corporation -> AppLovin, S&P Global Inc. -> S&P Global); the ticker when nothing is
+    left."""
+    text = _PARENTHETICAL_RE.sub("", str(name or "")).strip()
+    text = _LEGAL_SUFFIX_RE.sub("", text).strip(" ,")
+    return text or ticker
+
+
 def variables_for(ctx: RunContext) -> dict[str, str]:
     """{{variable}} values of the prompts (prompts README). Unused ones are ignored by llm.fill_variables()."""
     out = {VAR_DATE: ctx.run_date.isoformat()}
     if ctx.company:
         thesis = ctx.thesis()
         out[VAR_TICKER] = ctx.company
-        out[VAR_COMPANY] = str(thesis.get("name") or ctx.company)
+        out[VAR_COMPANY] = short_name(thesis.get("name"), ctx.company)
         out[VAR_STATUS] = str(thesis.get("status") or "")
     if ctx.step.period_kind == "quarter":
         out[VAR_PERIOD] = ctx.period
@@ -811,10 +825,7 @@ def _is_prereg_candidate(entry: Any) -> bool:
     """A todo entry whose label (the text before the first colon) names a pre-registration candidate."""
     if not isinstance(entry, str):
         return False
-    label = entry
-    for separator in _LABEL_SEPARATORS:
-        label = label.split(separator, 1)[0]
-    low = label.lower()
+    low = entry.split(_LABEL_SEPARATOR, 1)[0].casefold()
     return any(mark in low for mark in PREREG_CANDIDATE_MARKS)
 
 
@@ -1030,7 +1041,7 @@ def _questions_open(ctx: RunContext, name: str) -> BuiltInput:
         if text is None:
             continue
         data = yaml.safe_load(text)
-        if data in (None, _outputs.EMPTY_MARK):
+        if data is None or _outputs.is_empty_mark(data):
             continue
         found.append({"run": run.rel, "questions": data})
     if not found:
@@ -1093,6 +1104,7 @@ def _budget(ctx: RunContext, name: str) -> BuiltInput:
     moment = dt.datetime.combine(last, dt.time(23, 59, 59), tzinfo=dt.timezone.utc)
     status = llm.budget_status(log_path=log, repo_root=ctx.public_root, now=moment)
     calls: dict[str, int] = {}
+    backends: dict[str, dict[str, Any]] = {}
     if log.is_file():
         for line in log.read_text(encoding="utf-8").splitlines():
             try:
@@ -1102,7 +1114,13 @@ def _budget(ctx: RunContext, name: str) -> BuiltInput:
             if isinstance(record, dict) and str(record.get("timestamp") or "")[:7] == ctx.period:
                 key = str(record.get("part_id") or record.get("prompt_id"))
                 calls[key] = calls.get(key, 0) + 1
+                row = backends.setdefault(str(record.get("backend") or llm.API), {"requests": 0, "tokens": 0})
+                row["requests"] += 1
+                row["tokens"] += sum(v for v in (record.get("usage") or {}).values() if isinstance(v, int))
     data = {"month": ctx.period, **status, "requests": sum(calls.values()), "requests_by_part": calls,
+            "by_backend": backends,
+            "budget_rule": "only API requests count against budget_usd; claude-code requests run on the owner's "
+                           "Claude subscription (decisions/0022)",
             "log": LLM_LOG_REL}
     note = None
     if not log.is_file():

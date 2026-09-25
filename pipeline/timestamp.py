@@ -114,7 +114,7 @@ OTS_BAD_PROOF_RE = re.compile(r"does not match|mismatch|bad timestamp|invalid|co
 UPGRADE_COMPLETE = "Success! Timestamp complete"
 UPGRADE_PENDING = "Failed! Timestamp not complete"
 CALENDAR_PENDING = "Pending confirmation"  # the calendar's answer: received, not yet written into Bitcoin
-_SSL_HINT = "本机 Python 没有 CA 证书：设 SSL_CERT_FILE=/etc/ssl/cert.pem（macOS）后重试"
+_SSL_HINT = "this machine's Python has no CA certificates: set SSL_CERT_FILE=/etc/ssl/cert.pem (macOS) and retry"
 
 
 class TimestampError(RuntimeError):
@@ -188,7 +188,7 @@ def ots_executable() -> str:
     beside = Path(sys.executable).with_name("ots")
     if beside.is_file() and os.access(beside, os.X_OK):
         return str(beside)
-    raise TimestampError("找不到 OpenTimestamps 客户端 ots：pip install -r requirements.txt")
+    raise TimestampError("OpenTimestamps client ots not found: pip install -r requirements.txt")
 
 
 def run_ots(args: Sequence[str], timeout: float = OTS_TIMEOUT) -> tuple[int | None, str]:
@@ -206,7 +206,7 @@ def run_ots(args: Sequence[str], timeout: float = OTS_TIMEOUT) -> tuple[int | No
         command = next((a for a in args if not a.startswith("-")), "")
         return None, f"ots {command} timed out after {timeout:g} s"
     except OSError as exc:
-        raise TimestampError(f"ots 无法运行：{exc}") from exc
+        raise TimestampError(f"ots cannot run: {exc}") from exc
     return proc.returncode, "\n".join(s for s in (proc.stdout, proc.stderr) if s).strip()
 
 
@@ -274,10 +274,10 @@ def prereg_deadline(path: str | os.PathLike[str]) -> dt.datetime:
     try:
         data = load_yaml_text(Path(path).read_text(encoding="utf-8"))  # duplicate keys are an error
     except Exception as exc:  # noqa: BLE001  (I/O, encoding, YAML syntax, duplicate keys: all treated as unreadable)
-        raise ValueError(f"{Path(path).name} 读不出：{exc}") from exc
+        raise ValueError(f"{Path(path).name} cannot be read: {exc}") from exc
     value = data.get("deadline") if isinstance(data, dict) else None
     if value is None:
-        raise ValueError("没有 deadline")
+        raise ValueError("no deadline")
     deadline = value if isinstance(value, dt.datetime) else None
     if isinstance(value, str):
         try:
@@ -285,7 +285,7 @@ def prereg_deadline(path: str | os.PathLike[str]) -> dt.datetime:
         except ValueError:
             deadline = None
     if deadline is None or deadline.tzinfo is None or deadline.utcoffset() is None:
-        raise ValueError(f"deadline {value!r} 不是带时区偏移的时间")
+        raise ValueError(f"deadline {value!r} is not a time with a time zone offset")
     return deadline
 
 
@@ -295,7 +295,8 @@ def _utcnow() -> dt.datetime:
 
 def _aware(now: dt.datetime) -> dt.datetime:
     if now.tzinfo is None or now.utcoffset() is None:
-        raise ValueError("now 必须带时区：截止时间带时区偏移，不带时区无法比较")
+        raise ValueError("now must have a time zone: deadlines carry a time zone offset and cannot be compared with "
+                         "a naive time")
     return now
 
 
@@ -321,11 +322,11 @@ def _host(url: str) -> str:
 
 def _last_line(output: str, returncode: int | None = None) -> str:
     lines = [ln.strip() for ln in output.splitlines() if ln.strip()]
-    return lines[-1] if lines else f"退出状态 {returncode}"
+    return lines[-1] if lines else f"exit status {returncode}"
 
 
 def _with_hint(text: str, output: str) -> str:
-    return f"{text}（{_SSL_HINT}）" if "CERTIFICATE_VERIFY_FAILED" in output else text
+    return f"{text} ({_SSL_HINT})" if "CERTIFICATE_VERIFY_FAILED" in output else text
 
 
 def _calendar_summary(output: str) -> str:
@@ -334,11 +335,11 @@ def _calendar_summary(output: str) -> str:
     by_message: dict[str, list[str]] = {}
     for url, message in _CALENDAR_LINE.findall(output):
         by_message.setdefault(message.strip(), []).append(_host(url))
-    return "；".join(f"{', '.join(hosts)}: {message}" for message, hosts in by_message.items())
+    return "; ".join(f"{', '.join(hosts)}: {message}" for message, hosts in by_message.items())
 
 
 def _pending_detail(calendars: Sequence[str]) -> str:
-    return f"待确认：{len(calendars)} 个日历（{', '.join(_host(u) for u in calendars)}）"
+    return f"pending: {len(calendars)} calendar(s) ({', '.join(_host(u) for u in calendars)})"
 
 
 def _stamp_failure(returncode: int | None, output: str) -> str:
@@ -349,7 +350,7 @@ def _stamp_failure(returncode: int | None, output: str) -> str:
         ln.strip() for ln in output.splitlines()
         if ln.strip() and not ln.startswith(("Submitting to remote calendar", "Doing "))
     ]
-    text = "; ".join(dict.fromkeys(lines)) or f"退出状态 {returncode}"
+    text = "; ".join(dict.fromkeys(lines)) or f"exit status {returncode}"
     return _with_hint(text, output)
 
 
@@ -366,15 +367,16 @@ def _info(path: Path, proof: Path, run: tuple[int | None, str] | None = None) ->
     returncode, output = run or _run_info(proof)
     info = parse_info(output)
     if info is None:
-        return ProofStatus(path, proof, "error", f"证明读不出：{_last_line(output, returncode)}")
+        return ProofStatus(path, proof, "error", f"proof cannot be read: {_last_line(output, returncode)}")
     if info.bitcoin:
         height, root = min(info.bitcoin, key=lambda item: item[0])
-        return ProofStatus(path, proof, "attested", f"比特币区块 {height}", info.file_digest, height, root,
+        return ProofStatus(path, proof, "attested", f"Bitcoin block {height}", info.file_digest, height, root,
                            calendars=info.calendars)
     if info.calendars:
         return ProofStatus(path, proof, "pending", _pending_detail(info.calendars), info.file_digest,
                            calendars=info.calendars)
-    return ProofStatus(path, proof, "error", "证明里既没有比特币确认，也没有待确认的日历", info.file_digest)
+    return ProofStatus(path, proof, "error", "the proof has neither a Bitcoin attestation nor a pending calendar",
+                       info.file_digest)
 
 
 def _run_verify(st: ProofStatus) -> ProofStatus:
@@ -387,25 +389,33 @@ def _run_verify(st: ProofStatus) -> ProofStatus:
         when = match.group(2) if match else None
         return dataclasses.replace(
             st, state="attested", verified=True, block_height=height, block_time=when,
-            detail=f"比特币区块 {height}（{when or '日期未知'}，UTC）证明文件那时已存在；本机比特币节点核验通过",
+            detail=f"Bitcoin block {height} ({when or 'date unknown'}, UTC) proves the file existed then; "
+                   "verified against the local Bitcoin node",
         )
     if verified is None:
         if _NO_NODE.search(output):
             if st.block_height is not None:
-                detail = (f"比特币区块 {st.block_height}；没有比特币节点，区块未核验（文件与证明相符）。手工核对：任一区块浏览器上"
-                          f"区块 {st.block_height} 的 merkle root 应为 {st.merkle_root}")
+                detail = (f"Bitcoin block {st.block_height}; no Bitcoin node, so the block was not verified (the "
+                          "file matches the proof). To check by hand: on any block explorer, the merkle root of "
+                          f"block {st.block_height} should be {st.merkle_root}")
             else:
-                detail = "日历已给出比特币确认，但证明文件还没升级：先运行 upgrade；没有比特币节点，区块未核验（文件与证明相符）"
+                detail = ("a calendar returned a Bitcoin attestation, but the proof file is not upgraded yet: "
+                          "run upgrade first; no Bitcoin node, so the block was not verified (the file matches "
+                          "the proof)")
         elif returncode is None:
-            detail = f"{output}；文件与证明相符"
+            detail = f"{output}; the file matches the proof"
         elif CALENDAR_PENDING in output:
-            detail = f"待确认（{_calendar_summary(output)}）；文件与证明相符"
+            detail = f"pending ({_calendar_summary(output)}); the file matches the proof"
         elif _CALENDAR_LINE.search(output):
-            detail = _with_hint(f"日历联系不上，比特币确认未核验（{_calendar_summary(output)}）；文件与证明相符", output)
+            detail = _with_hint(
+                f"calendars unreachable, Bitcoin attestation not verified ({_calendar_summary(output)}); the file "
+                "matches the proof", output)
         else:
-            detail = f"无法在本机核验（{_last_line(output, returncode)}）；文件与证明相符"
+            detail = (f"cannot be verified on this machine ({_last_line(output, returncode)}); the file matches "
+                      "the proof")
         return dataclasses.replace(st, verified=None, detail=detail)
-    return dataclasses.replace(st, state="error", verified=False, detail=f"证明本身有问题：{_last_line(output, returncode)}")
+    return dataclasses.replace(st, state="error", verified=False,
+                               detail=f"the proof itself is bad: {_last_line(output, returncode)}")
 
 
 def status(path: str | os.PathLike[str]) -> ProofStatus:
@@ -413,12 +423,12 @@ def status(path: str | os.PathLike[str]) -> ProofStatus:
     gets an ots verify run for the block time (needs a Bitcoin node)."""
     target, proof = _pair(path)
     if not proof.is_file():
-        return ProofStatus(target, proof, "missing", "没有证明")
+        return ProofStatus(target, proof, "missing", "no proof")
     st = _info(target, proof)
     if st.file_sha256 is None:
         return st  # the proof cannot be read
     if not target.is_file():
-        return dataclasses.replace(st, state="error", detail="被打时间戳的文件不存在")
+        return dataclasses.replace(st, state="error", detail="the timestamped file does not exist")
     mismatch = _digest_mismatch(st, target)
     if mismatch:
         return mismatch
@@ -433,7 +443,8 @@ def _digest_mismatch(st: ProofStatus, target: Path) -> ProofStatus | None:
         return None
     return dataclasses.replace(
         st, state="error", verified=False,
-        detail=f"文件与证明不符：文件在打时间戳之后改过（证明的 sha256 {st.file_sha256}，文件现在 {actual}）",
+        detail=f"the file does not match the proof: it changed after it was stamped (proof sha256 {st.file_sha256}, "
+               f"file now {actual})",
     )
 
 
@@ -448,9 +459,9 @@ def verify(path: str | os.PathLike[str]) -> ProofStatus:
     """
     target, proof = _pair(path)
     if not proof.is_file():
-        return ProofStatus(target, proof, "missing", "没有证明", verified=False)
+        return ProofStatus(target, proof, "missing", "no proof", verified=False)
     if not target.is_file():
-        return ProofStatus(target, proof, "error", "被打时间戳的文件不存在", verified=False)
+        return ProofStatus(target, proof, "error", "the timestamped file does not exist", verified=False)
     returncode, output = _run_info(proof)
     if returncode is None:
         return ProofStatus(target, proof, "error", output, verified=None)
@@ -476,39 +487,45 @@ def stamp(paths: Iterable[str | os.PathLike[str]], *, now: dt.datetime | None = 
 def _stamp_one(path: Path, now: dt.datetime) -> StepResult:
     proof = proof_path(path)
     if path.name.endswith(PROOF_SUFFIX):
-        return StepResult(path, proof, "refused", "这是证明文件：给被打时间戳的文件打，不给证明打")
+        return StepResult(path, proof, "refused", "this is a proof file: stamp the timestamped file, not its proof")
     if not path.is_file():
-        return StepResult(path, proof, "failed", "文件不存在")
+        return StepResult(path, proof, "failed", "the file does not exist")
     digest = file_sha256(path)
     too_late = None  # why an items file can no longer be stamped: the deadline has passed, or it cannot be read
     if is_prereg_items_file(path):
         try:
             deadline = prereg_deadline(path)
             if now >= deadline:
-                too_late = f"截止时间 {deadline.isoformat()} 已过"
+                too_late = f"deadline {deadline.isoformat()} has passed"
         except ValueError as exc:
-            too_late = f"读不出截止时间（{exc}），无法确认截止时间还没过"
+            too_late = f"cannot read the deadline ({exc}), so cannot confirm that it has not passed"
     if proof.exists():
         existing = _info(path, proof)
         if existing.state != "error" and existing.file_sha256 == digest:
-            return StepResult(path, proof, "already_stamped", f"同一内容已有证明（{existing.detail}）",
-                              existing.block_height)
-        why = (f"证明的是另一份内容（证明的 sha256 {existing.file_sha256}，文件现在 {digest}）"
-               if existing.file_sha256 and existing.file_sha256 != digest else f"读不出（{existing.detail}）")
-        advice = ("截止之前确需改动时，在同一个 PR 里删掉旧证明（git 历史保留它），合并后重新打" if too_late is None
-                  else f"{too_late}，不能重打：把文件改回打时间戳时的内容")
-        return StepResult(path, proof, "refused", f"{proof.name} 已存在，{why}；不覆盖证明。{advice}")
+            return StepResult(path, proof, "already_stamped",
+                              f"a proof of the same content already exists ({existing.detail})", existing.block_height)
+        why = (f"proves different content (proof sha256 {existing.file_sha256}, file now {digest})"
+               if existing.file_sha256 and existing.file_sha256 != digest else f"cannot be read ({existing.detail})")
+        advice = ("If a change before the deadline is really needed, delete the old proof in the same PR (git "
+                  "history keeps it) and stamp again after the merge." if too_late is None
+                  else f"Cannot stamp again ({too_late}): restore the file to the content it had when it was "
+                       "stamped.")
+        return StepResult(path, proof, "refused",
+                          f"{proof.name} already exists but {why}; the proof is not overwritten. {advice}")
     if too_late:
-        return StepResult(path, proof, "refused", f"{too_late}：截止之后打的时间戳证明不了截止之前的内容")
+        return StepResult(path, proof, "refused",
+                          f"{too_late}: a timestamp made after the deadline cannot prove the content before it")
     # An absolute path, so a file name starting with - is not taken for an option; the client writes the proof to
     # <argument>.ots
     returncode, output = run_ots(["--no-cache", "-v", "stamp", os.path.abspath(path)])
     if not proof.is_file():
-        return StepResult(path, proof, "failed", f"ots stamp 没有写出证明：{_stamp_failure(returncode, output)}")
+        return StepResult(path, proof, "failed",
+                          f"ots stamp did not write a proof: {_stamp_failure(returncode, output)}")
     made = _info(path, proof)
     if made.file_sha256 != digest:
         proof.unlink()  # a proof just written and not yet committed
-        return StepResult(path, proof, "failed", f"新证明与文件不符（{made.detail}；打时间戳时文件变了？），已删掉，请重打")
+        return StepResult(path, proof, "failed", f"the new proof does not match the file ({made.detail}; did the "
+                                                 "file change during stamping?); it was deleted, stamp again")
     return StepResult(path, proof, "stamped", made.detail)
 
 
@@ -520,7 +537,7 @@ def upgrade(paths: Iterable[str | os.PathLike[str]]) -> list[StepResult]:
 
 def _upgrade_one(path: Path, proof: Path) -> StepResult:
     if not proof.is_file():
-        return StepResult(path, proof, "failed", "没有证明")
+        return StepResult(path, proof, "failed", "no proof")
     before = _info(path, proof)
     if before.state == "error":
         return StepResult(path, proof, "failed", before.detail)
@@ -535,18 +552,20 @@ def _upgrade_one(path: Path, proof: Path) -> StepResult:
         upgraded = work.read_bytes() if work.is_file() else original
         after = _info(path, work) if upgraded != original else before
     if returncode is None or (UPGRADE_COMPLETE not in output and UPGRADE_PENDING not in output):
-        return StepResult(path, proof, "failed", _with_hint(f"ots upgrade 失败：{_last_line(output, returncode)}", output))
+        return StepResult(path, proof, "failed",
+                          _with_hint(f"ots upgrade failed: {_last_line(output, returncode)}", output))
     if upgraded != original:
         if after.state == "error" or after.file_sha256 != before.file_sha256:
-            return StepResult(path, proof, "failed", f"升级后的证明不对（{after.detail}），原证明未动")
+            return StepResult(path, proof, "failed",
+                              f"the upgraded proof is wrong ({after.detail}); the original proof is unchanged")
         _replace_bytes(proof, upgraded)
     if after.state == "attested":
         action = "upgraded" if upgraded != original else "complete"
         return StepResult(path, proof, action, after.detail, after.block_height)
     summary = _calendar_summary(output) or _last_line(output, returncode)
     if CALENDAR_PENDING not in output:  # no calendar answered "received, pending": the query failed this time
-        return StepResult(path, proof, "failed", _with_hint(f"没有日历答复，未能升级（{summary}）", output))
-    return StepResult(path, proof, "pending", f"仍待确认（{summary}）")
+        return StepResult(path, proof, "failed", _with_hint(f"no calendar answered, not upgraded ({summary})", output))
+    return StepResult(path, proof, "pending", f"still pending ({summary})")
 
 
 # ---------------------------------------------------------------- pre-registration files in the repository
@@ -586,16 +605,19 @@ def prereg_proofs(root: str | os.PathLike[str] = REPO_ROOT) -> list[Path]:
 # ---------------------------------------------------------------- command line
 
 COMMANDS = {
-    "stamp": "打时间戳，<文件>.ots 写在文件旁边；截止时间已过的预注册条目文件、已有证明却是另一份内容的，一律拒绝",
-    "upgrade": "把待确认的证明升级为比特币确认的证明（仍待确认不算失败）",
-    "status": "证明的状态：missing / pending / attested / error",
-    "verify": "ots verify，判法与 C-PREREG-IMMUTABLE 相同；退出状态 0 全部通过，1 有失败，3 有无法在本机核验的",
+    "stamp": "stamp files and write <file>.ots next to each; refuses pre-registration items files whose deadline "
+             "has passed, and files whose existing proof is for different content",
+    "upgrade": "upgrade pending proofs to proofs with a Bitcoin attestation (still pending is not a failure)",
+    "status": "proof status: missing / pending / attested / error",
+    "verify": "ots verify, judged as C-PREREG-IMMUTABLE judges; exit status 0: all passed, 1: some failed, "
+              "3: some cannot be verified on this machine",
 }
 _PREREG_HELP = {
-    "stamp": "加上仓库里截止时间未过的全部预注册条目文件（已有同一内容证明的跳过）",
-    "upgrade": "加上仓库里全部预注册证明（companies/*/prereg/*.yml.ots）",
-    "status": "加上仓库里全部预注册条目文件",
-    "verify": "加上仓库里全部预注册条目文件",
+    "stamp": "add every pre-registration items file in the repository whose deadline has not passed (skipping "
+             "those that already have a proof of the same content)",
+    "upgrade": "add every pre-registration proof in the repository (companies/*/prereg/*.yml.ots)",
+    "status": "add every pre-registration items file in the repository",
+    "verify": "add every pre-registration items file in the repository",
 }
 
 
@@ -620,17 +642,19 @@ def _format_status(st: ProofStatus, command: str) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m pipeline.timestamp",
-        description="预注册的 OpenTimestamps 时间戳：打、升级、查看、核验（docs/decisions/0018）。",
+        description="OpenTimestamps timestamps for pre-registrations: stamp, upgrade, status, verify "
+                    "(docs/decisions/0018).",
     )
     sub = parser.add_subparsers(dest="command", required=True, metavar="{stamp,upgrade,status,verify}")
     for name, help_text in COMMANDS.items():
         cmd = sub.add_parser(name, help=help_text, description=help_text)
-        cmd.add_argument("files", nargs="*", metavar="FILE", help="被打时间戳的文件，或它的 .ots")
+        cmd.add_argument("files", nargs="*", metavar="FILE", help="the timestamped file, or its .ots")
         cmd.add_argument("--prereg", action="store_true", help=_PREREG_HELP[name])
-        cmd.add_argument("--root", type=Path, default=REPO_ROOT, help="--prereg 找文件的仓库根目录（默认本仓库）")
+        cmd.add_argument("--root", type=Path, default=REPO_ROOT,
+                         help="repository root where --prereg looks for files (default: this repository)")
     args = parser.parse_args(argv)
     if not args.files and not args.prereg:
-        parser.error(f"{args.command}：给出文件，或者用 --prereg")
+        parser.error(f"{args.command}: give files, or use --prereg")
 
     now = _utcnow()
     files = [Path(f) for f in args.files]
@@ -641,7 +665,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         }.get(args.command, lambda: prereg_items_files(args.root))()
         files += [p for p in found if p not in files]
     if not files:
-        print("没有要处理的预注册文件。")
+        print("No pre-registration files to process.")
         return EXIT_OK
 
     try:
@@ -653,7 +677,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         check = status if args.command == "status" else verify
         statuses = [check(f) for f in files]
     except TimestampError as exc:
-        print(f"错误：{exc}", file=sys.stderr)
+        print(f"error: {exc}", file=sys.stderr)
         return EXIT_FAILED
     for st in statuses:
         print(_format_status(st, args.command))

@@ -29,7 +29,7 @@ levels:
       - test_warning_disposition # dispositions of test warnings and watch failures (03)
       - candidate_rotation       # candidate list rotation (17C)
       - model_selection          # the model each role uses (HQ)
-      - valuation_update         # a recalculated valuation takes effect: the pending version is approved by the model review 04C
+      - valuation_update         # a recalculated valuation takes effect: the proposed version is approved by the model review 04C
       - prompt_change            # process and format changes to 00 §F, §G and to the non-owner clauses of the prompts
       - publish                  # publishing, only with a clean audit; routed by trust.routing
     report: one line each in the monthly letter

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import ast
 import datetime as dt
-import inspect
 import io
 import json
 import re
@@ -201,7 +200,8 @@ def test_assemble_15a_builds_every_declared_input_with_hashes_and_sources(env):
     }
     assert manifest["pipeline_commit"] == fx.git(env.public, "rev-parse", "HEAD").strip()
     assert manifest["prompt"]["sha256"] == registry.sha256_bytes((env.private / "prompts/15-prereg.md").read_bytes())
-    assert manifest["variables"][registry.VAR_TICKER] == "APP" and manifest["variables"][registry.VAR_PERIOD] == "FY2026Q3"
+    assert manifest["variables"] == {"ticker": "APP", "company": "AppLovin", "status": "holding", "period": "FY2026Q3",
+                                     "date": fx.RUN_DATE}
     assert manifest["schemas"]["prereg"]["digest"] == registry.schema_digest(fx.PREREG_SCHEMA)
     assert manifest["context"]["period"] == "FY2026Q3" and manifest["context"]["run_date"] == fx.RUN_DATE
     assert re.fullmatch(r"[0-9a-f]{64}", manifest["request_sha256"])
@@ -390,26 +390,26 @@ def test_the_budget_guard_reads_the_call_log_and_a_retry_keeps_the_failed_attemp
         env.execute(bundle, retry=True)
 
 
-def test_claude_code_backend_waits_for_llm_py(env):
-    if "backend" in inspect.signature(llm.complete).parameters:
-        pytest.skip("llm.complete() accepts backend= now")
+def test_claude_code_backend_needs_the_cli_before_the_bundle_is_touched(env, monkeypatch, tmp_path):
+    monkeypatch.setenv(llm.CLAUDE_BIN_ENV, str(tmp_path / "no-such-claude"))
     bundle = env.assemble()
-    with pytest.raises(runner.BackendUnavailable, match="claude-code") as info:
+    with pytest.raises(runner.BackendUnavailable, match=llm.CLAUDE_BIN_ENV):
         env.execute(bundle, backend="claude-code")
-    assert isinstance(info.value, NotImplementedError)
     assert not (bundle / runner.RUN_RECORD).exists()
 
 
-def test_the_backend_is_passed_to_llm_complete_once_it_accepts_it(env, monkeypatch):
+def test_the_backend_is_passed_to_llm_complete(env, monkeypatch):
     real_complete = llm.complete
     seen = {}
 
-    def complete(*args, backend="api", **kwargs):
+    def complete(*args, backend=None, **kwargs):
         seen["backend"] = backend
-        return real_complete(*args, **kwargs)
+        return real_complete(*args, backend="api", **kwargs)  # the injected test double stands in for the model
 
     monkeypatch.setattr(llm, "complete", complete)
-    assert runner.backend_kwargs("fake") == {"backend": "api"} and runner.backend_kwargs("api") == {"backend": "api"}
+    monkeypatch.setattr(llm, "find_claude_binary", lambda env=None: Path("/usr/bin/true"))
+    assert [runner.backend_kwargs(b) for b in ("fake", "api", "claude-code")] == [
+        {"backend": "fake"}, {"backend": "api"}, {"backend": "claude-code"}]
     bundle = env.assemble()
     record = env.execute(bundle, backend="claude-code", client=valid_client(env, bundle))
     assert seen == {"backend": "claude-code"}
@@ -605,11 +605,12 @@ def test_the_runner_modules_import_no_model_sdk(module):
     assert not imported & {"anthropic", "openai", "claude_agent_sdk", "claude_code_sdk"}
 
 
-@pytest.mark.parametrize("path", ["pipeline/runner.py", "pipeline/registry.py", "pipeline/fake_client.py",
-                                  "tests/test_runner.py", "tests/runner_fixtures.py",
-                                  "docs/decisions/0019-pipeline-runner.md"])
-def test_the_runner_files_are_english_only(path):
-    """Owner policy 2026-09-25: the public repositories are English-first (Chinese literals are escaped)."""
+@pytest.mark.parametrize("path", [*sorted(p.relative_to(fx.REPO_ROOT).as_posix()
+                                          for p in (fx.REPO_ROOT / "pipeline").glob("*.py")),
+                                  "tests/test_runner.py", "tests/runner_fixtures.py", "tests/test_claude_code.py",
+                                  "docs/decisions/0019-pipeline-runner.md", "docs/decisions/0022-claude-code-backend.md"])
+def test_the_pipeline_files_are_english_only(path):
+    """Owner policy 2026-09-25: the public repositories are English-first (no CJK text in the pipeline code)."""
     target = fx.REPO_ROOT / path
     if not target.is_file():
         pytest.skip(f"{path} does not exist")

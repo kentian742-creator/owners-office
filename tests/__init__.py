@@ -1,1 +1,1 @@
-"""测试包：让 tests/llm_fixtures.py 能以 tests.llm_fixtures 导入。"""
+"""Test package: lets tests/llm_fixtures.py be imported as tests.llm_fixtures."""

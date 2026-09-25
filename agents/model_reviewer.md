@@ -2,7 +2,7 @@
 
 Machine-readable definition: [model_reviewer.yml](model_reviewer.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-One of the independent oversight roles; it reviews only valuations: the private valuation files (`valuation.yml` and `valuation.md`), the valuation section of research reports, and whether they are symmetric with the readings of the other companies in the series. It decides whether a pending valuation version can take effect.
+One of the independent oversight roles; it reviews only valuations: the private valuation files (`valuation.yml` and `valuation.md`), the valuation section of research reports, and whether they are symmetric with the readings of the other companies in the series. It decides whether a proposed valuation version can take effect.
 
 ## What it does (04C)
 
@@ -15,7 +15,7 @@ It checks fifteen items one by one, giving each "compliant / violation / cannot 
 - Whether the grade given to the price follows the mechanical scale; whether stock-based compensation is treated as a cost; whether financial companies are treated by the rules; whether the series ranking is carried in full, with a reason on every row; the readings for the management half of the Munger matrix; whether EBITDA is used only as a supporting measure.
 - Symmetry: whether the strictness applied to this company is the same as for the other companies in the series.
 
-When it reviews a pending valuation version, it gives a conclusion. If everything complies (or there are only should-fix items), it approves, the pending version takes effect, and the pipeline records one line, "valuation recalculation in effect", among the reports in the monthly letter. If there is a must fix, the version goes back, with the conclusion, to the step that produced it (01C, the valuation refresh in 02, or 05).
+When it reviews a proposed valuation version, it gives a conclusion. If everything complies (or there are only should-fix items), it approves, the proposed version takes effect, and the pipeline records one line, "valuation recalculation in effect", among the reports in the monthly letter. If there is a must fix, the version goes back, with the conclusion, to the step that produced it (01C, the valuation refresh in 02, or 05).
 
 ## What it can and cannot see
 
@@ -28,7 +28,7 @@ It is also independent oversight. Valuations affect the ranking and the memos, s
 ## Decision rights
 
 - Decision level L1: audit.
-- Decision level L2: a recalculated valuation takes effect (`valuation_update`). The recalculation itself is the company manager's drafting; the pending version takes effect only with this role's approval.
+- Decision level L2: a recalculated valuation takes effect (`valuation_update`). The recalculation itself is the company manager's drafting; the proposed version takes effect only with this role's approval.
 
 ## Prompts and model
 

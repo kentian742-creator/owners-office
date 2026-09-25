@@ -1,8 +1,10 @@
-"""pipeline/llm.py 测试用的合成材料：提示词、角色定义、schema、页面图像与假客户端。
+"""Synthetic material for the pipeline/llm.py tests: prompts, role definitions, schemas, page images and a test-double
+client.
 
-提示词只模仿 v3 的 front matter 结构（00 的 output_formats、parts、inputs_passN／outputs_passN、calls、
-modes 各自的 inputs／outputs、role: pipeline、部分上的 design），正文是几句占位文字，不含私有仓库提示词的
-任何内容。全部写进 pytest 的临时目录，不在仓库里留下数据文件。
+The prompts only imitate the structure of the v3 front matter (output_formats in 00, parts, inputs_passN /
+outputs_passN, calls, each mode's own inputs / outputs, role: pipeline, design on a part); their bodies are a few
+placeholder sentences with none of the private repository's prompt content. Everything is written into pytest's
+temporary directory; no data files are left in the repository.
 """
 
 from __future__ import annotations
@@ -25,7 +27,7 @@ output_formats:
 
 # Synthetic series rules
 
-A synthetic rule that mentions the placeholder {{日期}}; the rules file goes into the system prompt unfilled.
+A synthetic rule that mentions the placeholder {{date}}; the rules file goes into the system prompt unfilled.
 """
 
 DESIGN = """---
@@ -56,7 +58,7 @@ inputs: [run_date, dossier, "valuation_input_notes?"]
 outputs: [report, "valuation_md?", "valuation_yml?", questions]
 ---
 
-Synthetic research report prompt for {{公司}}（{{代码}}）.
+Synthetic research report prompt for {{company}} ({{ticker}}).
 """,
     "03-update.md": """---
 id: "03"
@@ -67,7 +69,7 @@ parts:
   revise: {name: 03R synthetic revision, inputs: [draft_outputs, findings_04A], outputs: [update, thesis, questions, "escalation?", "story?", revision_notes]}
 ---
 
-Synthetic quarterly update prompt for {{公司}}（{{代码}}）, {{期间}}.
+Synthetic quarterly update prompt for {{company}} ({{ticker}}), {{period}}.
 """,
     "04-audit.md": """---
 id: "04"
@@ -78,7 +80,7 @@ parts:
   B_lite: {name: synthetic inversion, role: red_team, inputs: [update, filings], outputs: [inversion_list, test_proposals]}
 ---
 
-Synthetic audit prompt; subject: {{被审对象}}.
+Synthetic audit prompt; subject: {{subject}}.
 """,
     "09-layout.md": """---
 id: "09"
@@ -87,7 +89,7 @@ parts:
   C: {name: synthetic layout review, role: design_reviewer, design: 00D §D2, inputs: [document, rendered_pages], outputs: [design_checks, layout_instructions, findings, questions]}
 ---
 
-Synthetic layout review of document {{文档}}.
+Synthetic layout review of document {{document}}.
 """,
     "12-audit.md": """---
 id: "12"
@@ -113,7 +115,7 @@ Synthetic typesetting prompt.
 """,
 }
 
-# 与公开仓库 agents/*.yml 同构，只登记测试用到的提示词和输入。
+# Same shape as the public repository's agents/*.yml; registers only the prompts and inputs the tests use.
 AGENTS: dict[str, dict[str, Any]] = {
     "company_manager": {
         "model": "claude-sonnet-5",
@@ -152,7 +154,8 @@ AGENTS: dict[str, dict[str, Any]] = {
     },
 }
 
-# 合成的 thesis-ci schema：只保留测试需要的约束（顶层 additionalProperties: false 与真实 schema 一致）。
+# Synthetic thesis-ci schemas: only the constraints the tests need (top-level additionalProperties: false, as in the
+# real schemas).
 SCHEMAS: dict[str, dict[str, Any]] = {
     "thesis": {
         "type": "object",
@@ -200,21 +203,21 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     },
 }
 
-UPDATE_MD = "---\ncompany: TEST\ndoc: update\nas_of: 2026-09-24\ndoc_status: draft\n---\n结论：维持。\n"
+UPDATE_MD = "---\ncompany: TEST\ndoc: update\nas_of: 2026-09-24\ndoc_status: draft\n---\nConclusion: maintain.\n"
 THESIS_YML = "company: TEST\ntrust_level: 1\ntests: []\n"
-DRAFT_VARIABLES = {"公司": "测试公司", "代码": "TEST", "期间": "FY2026Q3"}
+DRAFT_VARIABLES = {"company": "Test Co", "ticker": "TEST", "period": "FY2026Q3"}
 
 
 def envelope(**outputs: str) -> str:
-    """模型回答：每个输出一个 <output name="…"> 块。"""
+    """A model reply: one <output name="..."> block per output."""
     return "\n\n".join(f'<output name="{name}">\n{text}\n</output>' for name, text in outputs.items())
 
 
-DRAFT_REPLY = envelope(update=UPDATE_MD, thesis=THESIS_YML, questions="无")
+DRAFT_REPLY = envelope(update=UPDATE_MD, thesis=THESIS_YML, questions="none")
 
 
 def write_agent(repo: Path, role: str, *, model: str | None = None, **overrides: Any) -> Path:
-    """写 agents/<role>.yml；值为 None 的键不写（用来造不完整的角色定义）。"""
+    """Write agents/<role>.yml; keys whose value is None are left out (to build incomplete role definitions)."""
     spec = {**AGENTS[role], **overrides}
     if model is not None:
         spec["model"] = model
@@ -227,12 +230,13 @@ def write_agent(repo: Path, role: str, *, model: str | None = None, **overrides:
     data.update({k: v for k, v in spec.items() if v is not None})
     path = repo / "agents" / f"{role}.yml"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")  # JSON 是合法的 YAML
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")  # JSON is valid YAML
     return path
 
 
 def make_env(tmp_path: Path) -> SimpleNamespace:
-    """临时工作区：公开仓库（agents/）、并列的私有仓库提示词目录、schema 目录、两张页面图像、日志路径。"""
+    """A temporary workspace: the public repository (agents/), the private repository's prompts directory beside it,
+    a schema directory, two page images and the log path."""
     repo = tmp_path / "owners-office"
     for role in AGENTS:
         write_agent(repo, role)
@@ -258,7 +262,7 @@ def make_env(tmp_path: Path) -> SimpleNamespace:
     )
 
 
-# ---------------------------------------------------------------- 假客户端
+# ---------------------------------------------------------------- Test-double client
 
 
 class FakeStream:
@@ -276,7 +280,7 @@ class FakeStream:
 
 
 class FakeMessages:
-    """依次返回 responses（最后一个重复使用）；记录 create 与 stream 各自收到的参数。"""
+    """Returns responses in order (the last one is reused); records the arguments create and stream each receive."""
 
     def __init__(self, responses: tuple[Any, ...], error: Exception | None):
         self.responses = list(responses)
@@ -299,6 +303,9 @@ class FakeMessages:
 
 
 class FakeClient:
+    """A scripted stand-in for the SDK client (not pipeline/fake_client.py's dry-run client): it returns the given
+    responses, or raises error, and records every request."""
+
     def __init__(self, *responses: Any, error: Exception | None = None):
         self.messages = FakeMessages(responses, error)
         self.beta = SimpleNamespace(messages=FakeMessages(responses, error))

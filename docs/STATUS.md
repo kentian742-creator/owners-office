@@ -20,6 +20,19 @@ Owner decisions on 2026-09-25:
 - **Model backend** (decision 0022, to be written with the implementation): model calls run through the Claude Code CLI on the owner's Max plan by default (`claude -p` with a replaced system prompt, no tools, chosen model and effort), still through `pipeline/llm.py`; the API is the fallback. The API key (T4) is therefore optional for now.
 - **Series rule 00 §E10:** where there is no Form 4, use other official sources; use official data as far as possible (since 2026-03-18 foreign private issuers' insiders file Forms 3/4). Applied in the English prompt set.
 
+## Earnings calendar (conservative estimates, 2026-09-25)
+
+From `pipeline.edgar next-release`: three calendar days before the earliest past release of the same fiscal quarter, moved back to a business day (`placeholder: true` until the company announces the date; then rerun with `--announced`). Candidates don't pre-register; their quarterly update is due within 7 days of the filing's acceptance.
+
+| Company | Status | Period | Expected release | Pre-registration deadline | Merge by |
+| --- | --- | --- | --- | --- | --- |
+| AXP | candidate | FY2026Q3 | 2026-10-14 | — | — |
+| MSFT | candidate | FY2027Q1 | 2026-10-21 | — | — |
+| SPGI | candidate | FY2026Q3 | 2026-10-21 | — | — |
+| BRK | archive | FY2026Q3 | 2026-10-29 | — | — |
+| APP | holding | FY2026Q3 | 2026-11-02 | 2026-11-01T23:59:59-05:00 | 2026-10-30T00:59:59-04:00 |
+| PDD | holding | FY2026Q3 | 2026-11-13 | 2026-11-12T23:59:59-05:00 | 2026-11-09T23:59:59-05:00 |
+
 ## Phase overview
 
 Timing and acceptance criteria are copied from the roadmap in `DESIGN.md`. Once the acceptance script passes, the next phase starts automatically.
@@ -42,8 +55,8 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 - [x] T8 OpenTimestamps (`pipeline/timestamp.py`, `decisions/0018`): CI timestamps pre-registration files automatically once they are merged into main, and upgrades pending proofs every 6 hours; thesis-ci v0.2.1 compares hashes locally first, so an unreachable calendar server no longer causes a false error. Files in which the owner rewrites probabilities are merged at least one day early, so the Bitcoin confirmation lands before the deadline
 - [x] Phase 1 acceptance script (`scripts/accept.py --phase 1`): P1 pre-registrations, P2 updates within 7 days, P3 first monthly letter, P4 phase 0 criteria; items not yet due report PENDING (exit code 3)
 - [ ] English first (`decisions/0020`): thesis-ci docs and English-aware checks (release 0.3.0 with `C-LANGUAGE`); owners-office docs, constitution, agents, five archives and industries translated; still to do: the PDD archive (after its audit revision), the private repository's documents, the prompt set (Chinese v3 kept in the private `zh-CN/prompts/`), and the pipeline's Chinese string literals
-- [ ] Model backend `claude-code` in `pipeline/llm.py` (decision 0022) and local execution in the pipeline runner
-- [ ] Earnings calendar: the next expected release date of each of the six companies (from `release_history` and company announcements), with deadlines updated as the companies announce their dates
+- [x] Model backend `claude-code` in `pipeline/llm.py` (decision 0022) and local execution in the pipeline runner; prompts at v3.1 (English). A live call waits for the owner's login (T4); every prompt part validated with the fake backend
+- [x] Earnings calendar: the next expected release date of each of the six companies (from `release_history` and company announcements), with deadlines updated as the companies announce their dates
 - [ ] T11 APP FY2026Q3 pre-registration (results around early November): freeze the question list → write the pre-registration → merge and timestamp at least 72 hours before the deadline
 - [ ] T11 PDD FY2026Q3 pre-registration (results around late November, 6-K)
 - [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)
@@ -72,7 +85,7 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 
 | # | Item | Who | Notes |
 | --- | --- | --- | --- |
-| T4 | Model API key (optional) | Owner | Only needed for the API fallback or for unattended runs on GitHub (decision 0022). If used: put it into Settings → Secrets and variables → Actions of the **private repository owners-office-private**, named `ANTHROPIC_API_KEY`, never into a public repository, a chat or code. Unattended runs on the Max plan would instead use a token from `claude setup-token` stored as `CLAUDE_CODE_OAUTH_TOKEN` in the same private repository. |
+| T4 | Model access for pipeline runs | Owner | ★ Before the first real run (the APP pre-registration, merge by 2026-10-30): log the Claude Code CLI in to the Max plan by running, in a terminal, `"/Users/asuka/Library/Application Support/Claude/claude-code/2.1.280/claude.app/Contents/MacOS/claude" setup-token`, and put the printed token into the workspace `.env` (`/Users/asuka/OwnersOffice/.env`, next to the SEC User-Agent) as `CLAUDE_CODE_OAUTH_TOKEN=...` — never into a repository, a chat or code. With the token the pipeline runs the CLI with an empty configuration, so the account e-mail is not sent to the model (an interactive `claude auth login` would send it). The API key is optional (fallback only, decision 0022); if used, it goes into the private repository's Actions secrets as `ANTHROPIC_API_KEY`. |
 | T5 | Full public MSFT archive | System | Phase 1; the valuation section contains no price-derived numbers (`decisions/0004`). |
 | T7 | Persisting the model-call log | System | Phase 2; point the log at the private repository with `OWNERS_OFFICE_LLM_LOG`. |
 | T11 | The first pre-registrations | System | APP FY2026Q3: merge by 2026-10-30 at the latest (conservative estimate, to be updated once APP announces its release date); freeze the question list (14Q) first, then write the pre-registration (15A). PDD FY2026Q3: merge by 2026-11-09 at the latest. Timestamps, the EDGAR module, the source tag migration and the `llm.py` upgrade are all done; still missing are the runner that executes the pipeline in the private repository's Actions, and the API key the owner puts into the private repository (T4). |

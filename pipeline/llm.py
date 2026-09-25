@@ -18,7 +18,7 @@ docs/decisions/0009):
    Each output's format comes from output_formats in the 00 front matter (overridden by the prompt's or part's
    formats); without a declared format no request is sent.
 3. System prompt = 00 + 00D (if the front matter of the prompt or of this part has design) + the specific prompt;
-   {{variables}} are filled from variables.
+   {{variables}} ({{company}}, {{ticker}}, {{period}}, ...) are filled from variables.
 4. Input: one user message. Its first line, <run .../>, says which part, which pass and which mode is running; then
    comes one <input name="..."> block per input, named exactly as in the part's inputs, in front matter order. A
    missing required input, an undeclared input, or an input outside the role's can_see or inside its cannot_see
@@ -29,20 +29,31 @@ docs/decisions/0009):
    original request, which is retried once; if the output is still invalid, LLMOutputInvalid is raised and nothing
    is handed over. generated_by is injected into the front matter of every Markdown output; placement follows 00 §F2
    (LLMResult.placements()).
-6. Requests: streaming by default (client.messages.stream(...).get_final_message()); the output limit is 128000 for
-   01, 02 and 11 and 64000 for the rest. Drafting and oversight models both use adaptive thinking
-   (thinking={"type": "adaptive"}) and budget_tokens is never sent; depth is set with output_config.effort.
-   Oversight roles go through the beta API with server-side refusal fallback turned on (docs/decisions/0003).
-   The system prompt blocks of 00 (and 00D) carry a 5-minute cache breakpoint, with the specific prompt after the
-   breakpoint; cache-write and cache-read tokens are charged at their own prices from CACHE_PRICES_PER_MTOK
-   (docs/decisions/0015).
-7. Budget guard: before every request (retries included), sum cost_usd in the log for the current UTC calendar
-   month; once it reaches the monthly budget (budget.monthly_usd in constitution/decision-rights.yml), raise
-   BudgetExceeded and do not send the request.
+6. Backends (docs/decisions/0022). The same system prompt, user content, validation, retry and logging serve all
+   three; only the transport differs:
+   - claude-code (the default; OWNERS_OFFICE_BACKEND overrides it): the Claude Code CLI in print mode on the owner's
+     Claude subscription, run as a subprocess in an empty temporary directory with a minimal environment: the
+     system prompt from --system-prompt-file, the user content on stdin, --model and --effort from the role, no
+     tools, no settings files, no MCP servers, no skills, no CLAUDE.md, no auto memory, no session saved (see
+     claude_code_command() and claude_code_env()). The binary is OWNERS_OFFICE_CLAUDE_BIN, else claude on PATH,
+     else the newest copy the Claude desktop app installed. Its calls cost no API money: they are logged with
+     cost_usd 0 and the CLI's own estimate as notional_cost_usd.
+   - api: the Anthropic API through the SDK. Requests stream by default
+     (client.messages.stream(...).get_final_message()); the output limit is 128000 for 01, 02 and 11 and 64000 for
+     the rest. Drafting and oversight models both use adaptive thinking (thinking={"type": "adaptive"}) and
+     budget_tokens is never sent; depth is set with output_config.effort. Oversight roles go through the beta API
+     with server-side refusal fallback turned on (docs/decisions/0003). The system prompt blocks of 00 (and 00D)
+     carry a 5-minute cache breakpoint, with the specific prompt after the breakpoint; cache-write and cache-read
+     tokens are charged at their own prices from CACHE_PRICES_PER_MTOK (docs/decisions/0015).
+   - fake: the API path with pipeline/fake_client.py (or the client passed in), for dry runs and tests; no network.
+7. Budget guard: before every API or fake request (retries included), sum cost_usd of the API requests in the log for
+   the current UTC calendar month; once it reaches the monthly budget (budget.monthly_usd in
+   constitution/decision-rights.yml), raise BudgetExceeded and do not send the request. Claude Code requests are
+   not API spend: they neither count against the budget nor are stopped by it.
 8. Logging: every request sent (retries, refusals and errors included) appends one JSON line to
-   logs/llm-calls.jsonl: the model name; prompt_version / rules_version / design_version, the front matter
-   versions of the prompt, 00 and 00D; *_revision, the file revision (the last git commit that changed the file;
-   "sha256:<content hash>+dirty" when it is uncommitted or modified); the part id, part_id; input_sha256, the
+   logs/llm-calls.jsonl: the backend; the model name; prompt_version / rules_version / design_version, the front
+   matter versions of the prompt, 00 and 00D; *_revision, the file revision (the last git commit that changed the
+   file; "sha256:<content hash>+dirty" when it is uncommitted or modified); the part id, part_id; input_sha256, the
    sha256 of the canonical JSON of {prompt_id, prompt (the full system prompt), inputs, run}; usage, which includes
    the cache-write and cache-read token counts; and cost_breakdown, split into input, output, cache write and cache
    read.
@@ -60,7 +71,9 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
+import tempfile
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -82,14 +95,58 @@ LONG_OUTPUT_PROMPTS = frozenset({"01", "02", "11"})  # prompts README: their out
 LONG_MAX_TOKENS = 128000
 LOG_ENV = "OWNERS_OFFICE_LLM_LOG"  # can point the log at a persistent location (e.g. the private repository in CI)
 DEFAULT_LOG_PATH = REPO_ROOT / "logs" / "llm-calls.jsonl"
-DEFAULT_MONTHLY_BUDGET_USD = 20.0  # DESIGN.md's default; decision-rights.yml takes precedence
+# Fallback only: constitution/decision-rights.yml (budget.monthly_usd, $50 since docs/decisions/0021) takes
+# precedence; this is the design document's original default, used when that file has no budget.
+DEFAULT_MONTHLY_BUDGET_USD = 20.0
 
 DEFAULT_EFFORT = "high"
 EFFORT_LEVELS = ("low", "medium", "high", "xhigh", "max")
 
+# Backends (docs/decisions/0022).
+CLAUDE_CODE, API, FAKE = "claude-code", "api", "fake"
+BACKENDS = (CLAUDE_CODE, API, FAKE)
+BACKEND_ENV = "OWNERS_OFFICE_BACKEND"
+DEFAULT_BACKEND = CLAUDE_CODE  # owner decision 2026-09-25: the owner's Claude subscription first, the API as fallback
+# Only API spend counts against budget.monthly_usd. The rule is written as an exclusion, so that a log line with no
+# backend (written before backends existed) or an unexpected one counts rather than slipping past the guard.
+UNBUDGETED_BACKENDS = (CLAUDE_CODE, FAKE)
+
+# The Claude Code CLI (backend claude-code).
+CLAUDE_BIN_ENV = "OWNERS_OFFICE_CLAUDE_BIN"
+CLAUDE_TIMEOUT_ENV = "OWNERS_OFFICE_CLAUDE_TIMEOUT"  # seconds; the default allows a 128000-token output
+DEFAULT_CLAUDE_TIMEOUT = 3600.0
+# Where the Claude desktop app installs its copy: <dir>/<version>/claude.app/Contents/MacOS/claude.
+DESKTOP_CLAUDE_DIR = Path.home() / "Library" / "Application Support" / "Claude" / "claude-code"
+DESKTOP_CLAUDE_EXE = Path("claude.app") / "Contents" / "MacOS" / "claude"
+# The CLI's environment is built from scratch: only these variables are copied from the caller's environment. Not
+# copied on purpose: ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN (the CLI would bill them as API calls, outside the
+# budget guard), ANTHROPIC_BASE_URL and the other provider settings, and anything a host application set.
+CLAUDE_ENV_PASSTHROUGH = (
+    "HOME", "USER", "LOGNAME", "PATH", "SHELL", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "TZ",
+    "SSL_CERT_FILE", "SSL_CERT_DIR", "NODE_EXTRA_CA_CERTS",
+    "HTTPS_PROXY", "HTTP_PROXY", "NO_PROXY", "https_proxy", "http_proxy", "no_proxy",
+    "CLAUDE_CONFIG_DIR",  # the owner's login lives in the default config directory unless this names another one
+    "CLAUDE_CODE_OAUTH_TOKEN",  # a long-lived subscription token from `claude setup-token` (unattended runs)
+)
+OAUTH_TOKEN_ENV = "CLAUDE_CODE_OAUTH_TOKEN"
+# Fixed settings: no CLAUDE.md, no auto memory, no total-token reminders, no telemetry, auto-updates or other
+# non-essential traffic. CLAUDE_CODE_MAX_OUTPUT_TOKENS is added per call.
+CLAUDE_ENV_FIXED = {
+    "CLAUDE_CODE_DISABLE_CLAUDE_MDS": "1",
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+    "CLAUDE_CODE_DISABLE_ORG_MEMORY": "1",
+    "CLAUDE_CODE_TOTAL_TOKENS_REMINDER": "off",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+}
+# What a stream-json run's init event lists as loaded; every list must be empty.
+CLI_LOADED_KEYS = ("tools", "mcp_servers", "skills", "plugins", "slash_commands")
+_CLAUDE_VERSION_RE = re.compile(r"^\d+(?:\.\d+)*$")
+_PLAN_LIMIT_RE = re.compile(r"usage limit|rate limit|limit reached|out of usage|hit your limit", re.I)
+_LOGIN_RE = re.compile(r"not logged in|/login|invalid api key|authentication|oauth token", re.I)
+
 # USD per million tokens: (input, output). Checked on 2026-09-24 against Anthropic's official prices; see
-# docs/decisions/0003. A model not in the table cannot be called: its cost could not be recorded, so the budget
-# guard would not work.
+# docs/decisions/0003. A model not in the table cannot be called through the API: its cost could not be recorded, so
+# the budget guard would not work.
 PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-sonnet-5": (2.0, 10.0),
     "claude-fable-5-1": (10.0, 50.0),
@@ -104,7 +161,7 @@ PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
 # claude-fable-5-1 is listed separately as 0.25 (i.e. 0.025 times). Except for that entry, the numbers in the table
 # are computed from PRICES_PER_MTOK with these two multipliers and have not been checked model by model; when prices
 # change, edit this table (tests/test_llm.py checks that it agrees with the multipliers).
-# A model not in this table cannot be called either.
+# A model not in this table cannot be called through the API either.
 CACHE_WRITE_MULTIPLIER = 1.25
 CACHE_READ_MULTIPLIER = 0.1
 CACHE_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
@@ -153,9 +210,10 @@ DEGRADE_THRESHOLDS = (
 # 00 §F0: input names taken from a part carry the part id as a suffix (findings_04A, test_proposals_04B_lite);
 # the suffix is removed before comparing against cannot_see, consistent with thesis-ci's C-PROMPT-ISOLATION.
 PART_SUFFIX_RE = re.compile(r"_\d{2}[A-Za-z]?(?:_lite)?$")
-# The "variables" of 00 §F1 and the prompts README, written {{name}}. Their names are Chinese words for company,
-# ticker, status, period, date, document and subject under review.
+# The variables of 00 §F1 and the prompts README, written {{name}}: company, ticker, status, period, date, document,
+# subject.
 VARIABLE_RE = re.compile(r"\{\{\s*([^{}\s]+?)\s*\}\}")
+VAR_TICKER, VAR_PERIOD, VAR_DOCUMENT, VAR_SUBJECT = "ticker", "period", "document", "subject"
 _PROMPT_ID = re.compile(r"^\d{2}[A-Z]?$")
 _NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 _INPUT_KEY = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -178,14 +236,15 @@ class InputRefused(PromptError):
 
 
 class BudgetExceeded(LLMError):
-    """This month's spend has reached the budget; the call was not sent."""
+    """This month's API spend has reached the budget; the call was not sent."""
 
     def __init__(self, spent_usd: float, budget_usd: float):
         self.spent_usd = spent_usd
         self.budget_usd = budget_usd
         super().__init__(
-            f"本月模型花费 {spent_usd:.4f} USD 已达到预算 {budget_usd:.2f} USD，调用未发出。"
-            "按 docs/decisions/0003 的降级顺序处理；提高预算属于资金事项，由主人决定。"
+            f"this month's API spend of {spent_usd:.4f} USD has reached the budget of {budget_usd:.2f} USD; the call "
+            "was not sent. Follow the downgrade order of docs/decisions/0003; raising the budget is a money matter "
+            "for the owner to decide."
         )
 
 
@@ -197,8 +256,8 @@ class LLMRefusal(LLMError):
         self.category = category
         self.explanation = explanation
         super().__init__(
-            f"模型 {model} 拒绝了请求（stop_reason=refusal，类别={category or '未知'}）。"
-            f"{explanation or ''} 按流水线规则开 issue 说明原因，不要静默跳过。"
+            f"model {model} refused the request (stop_reason=refusal, category={category or 'unknown'}). "
+            f"{explanation or ''} Per the pipeline rules, open an issue that explains it; do not skip it silently."
         )
 
 
@@ -209,8 +268,8 @@ class LLMTruncated(LLMError):
     def __init__(self, result: LLMResult):
         self.result = result
         super().__init__(
-            f"输出达到 max_tokens 被截断（{result.role} / {result.part_id or result.prompt_id}）；"
-            "截断的草稿不能直接进入档案。需要时传 allow_truncated=True。"
+            f"the output hit max_tokens and was truncated ({result.role} / {result.part_id or result.prompt_id}); "
+            "a truncated draft cannot go into the archive. Pass allow_truncated=True if needed."
         )
 
 
@@ -222,7 +281,28 @@ class LLMOutputInvalid(LLMError):
         self.errors = list(errors)
         self.result = result
         listed = "\n".join(f"- {e}" for e in self.errors)
-        super().__init__(f"{result.part_id or result.prompt_id} 的输出重试后仍不合格，没有交出任何输出：\n{listed}")
+        super().__init__(
+            f"the output of {result.part_id or result.prompt_id} is still invalid after the retry; no output was "
+            f"handed over:\n{listed}"
+        )
+
+
+class ClaudeCodeError(LLMError):
+    """The Claude Code CLI failed: it could not start, timed out, printed no result, or reported an error. details
+    goes into the log line (CLI facts such as the session id and exit status; never prompt or reply text)."""
+
+    def __init__(self, message: str, details: Mapping[str, Any] | None = None):
+        self.details = dict(details or {})
+        super().__init__(message)
+
+
+class ClaudeCodeUnavailable(ClaudeCodeError):
+    """The CLI cannot be used here: no binary was found, or it is not logged in to a Claude subscription."""
+
+
+class PlanLimitReached(ClaudeCodeError):
+    """The subscription's usage limit was reached. Wait for it to reset, or run the step again with the API backend
+    (the fallback; its spend counts against the monthly budget)."""
 
 
 # ---------------------------------------------------------------- Data
@@ -278,7 +358,7 @@ class LLMResult:
     input_sha256: str
     output_sha256: str
     usage: dict[str, int]  # summed over all requests
-    cost_usd: float  # summed over all requests
+    cost_usd: float  # API cost, summed over all requests (0 for the claude-code backend)
     stop_reason: str | None
     effort: str | None
     fallbacks: str | None
@@ -296,6 +376,8 @@ class LLMResult:
     outputs: Mapping[str, ParsedOutput] = dataclasses.field(default_factory=dict)
     generated_by: Mapping[str, Any] = dataclasses.field(default_factory=dict)
     context: Mapping[str, Any] = dataclasses.field(default_factory=dict)  # default fields for the placement templates
+    backend: str = API
+    notional_cost_usd: float | None = None  # claude-code: the CLI's own cost estimate, summed; not API spend
 
     def to_dict(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
@@ -383,7 +465,7 @@ def _load_yaml(path: Path) -> Any:
 
 def _string_list(value: Any, what: str, path: Path) -> tuple[str, ...]:
     if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
-        raise PromptError(f"{path.name} 的 {what} 应当是字符串列表")
+        raise PromptError(f"{what} in {path.name} should be a list of strings")
     return tuple(v.strip() for v in value)
 
 
@@ -396,13 +478,13 @@ def load_roles(repo_root: str | os.PathLike[str] | None = None) -> dict[str, Rol
     for path in paths:
         data = _load_yaml(path)
         if not isinstance(data, dict):
-            raise PromptError(f"{path} 应当是一个映射")
+            raise PromptError(f"{path} should be a mapping")
         name = data.get("role") or path.stem
         if name in roles:
-            raise PromptError(f"角色 {name} 定义了两次：{roles[name].path.name}、{path.name}")
+            raise PromptError(f"role {name} is defined twice: {roles[name].path.name}, {path.name}")
         model = data.get("model")
         if not isinstance(model, dict) or not isinstance(model.get("id"), str) or not model["id"].strip():
-            raise PromptError(f"{path.name} 没有 model.id（角色的模型只由 agents/*.yml 决定）")
+            raise PromptError(f"{path.name} has no model.id (a role's model is set only by agents/*.yml)")
         visible = {k: _string_list(data[k], k, path) if k in data else None for k in ("prompts", "can_see", "cannot_see")}
         roles[name] = Role(
             role=name,
@@ -418,8 +500,8 @@ def load_roles(repo_root: str | os.PathLike[str] | None = None) -> dict[str, Rol
 def role_definition(role: str, repo_root: str | os.PathLike[str] | None = None) -> Role:
     roles = load_roles(repo_root)
     if role not in roles:
-        known = "、".join(sorted(roles)) or "（agents/ 下没有角色定义）"
-        raise PromptError(f"未知角色 {role!r}；agents/*.yml 定义的角色：{known}")
+        known = ", ".join(sorted(roles)) or "(no role definitions under agents/)"
+        raise PromptError(f"unknown role {role!r}; the roles defined in agents/*.yml: {known}")
     return roles[role]
 
 
@@ -446,7 +528,7 @@ def _model_choice(config: Mapping[str, Any], model: str | None, effort: str | No
     model_id = model or configured_id
     chosen_effort = effort or config.get("effort") or DEFAULT_EFFORT
     if chosen_effort not in EFFORT_LEVELS:
-        raise ValueError(f"effort 必须是 {EFFORT_LEVELS} 之一，收到 {chosen_effort!r}")
+        raise ValueError(f"effort must be one of {EFFORT_LEVELS}, got {chosen_effort!r}")
     if model_id in NO_EFFORT_MODELS:
         chosen_effort = None
     # When the caller switches models, the fallbacks configured in the agents file for the original model no
@@ -480,8 +562,8 @@ def resolve_prompts_dir(
         path = Path(repo_root or REPO_ROOT).resolve().parent / PRIVATE_REPO_NAME / "prompts"
     if not path.is_dir():
         raise PromptError(
-            f"找不到提示词目录 {path}；用参数 prompts_dir 或环境变量 {PROMPTS_ENV} 指定，"
-            f"默认是与公开仓库并列的 {PRIVATE_REPO_NAME}/prompts"
+            f"prompts directory {path} not found; name it with the prompts_dir argument or the environment variable "
+            f"{PROMPTS_ENV} (the default is {PRIVATE_REPO_NAME}/prompts next to the public repository)"
         )
     return path
 
@@ -489,28 +571,28 @@ def resolve_prompts_dir(
 def load_prompt(prompt_id: str, prompts_dir: str | os.PathLike[str] | None = None) -> PromptFile:
     """Read <id>-*.md by prompt id and check the front matter's id and version."""
     if not isinstance(prompt_id, str) or not _PROMPT_ID.match(prompt_id):
-        raise PromptError(f"提示词编号写成两位数字加可选字母（00、00D、03、17），收到 {prompt_id!r}")
+        raise PromptError(f"a prompt id is two digits and an optional letter (00, 00D, 03, 17), got {prompt_id!r}")
     directory = resolve_prompts_dir(prompts_dir)
     matches = sorted(directory.glob(f"{prompt_id}-*.md"))
     if len(matches) != 1:
-        found = "、".join(p.name for p in matches) or "没有"
-        raise PromptError(f"提示词 {prompt_id} 应当在 {directory} 里恰好有一个 {prompt_id}-*.md，找到：{found}")
+        found = ", ".join(p.name for p in matches) or "none"
+        raise PromptError(f"prompt {prompt_id} should have exactly one {prompt_id}-*.md in {directory}; found: {found}")
     path = matches[0]
     text = path.read_text(encoding="utf-8")
     parts = _outputs.split_front_matter(text)
     if parts is None:
-        raise PromptError(f"{path.name} 没有 YAML front matter")
+        raise PromptError(f"{path.name} has no YAML front matter")
     try:
         front = _outputs.load_yaml_text(parts[0])
     except Exception as exc:  # yaml.YAMLError
-        raise PromptError(f"{path.name} 的 front matter 解析失败：{exc}") from exc
+        raise PromptError(f"the front matter of {path.name} does not parse: {exc}") from exc
     if not isinstance(front, dict):
-        raise PromptError(f"{path.name} 的 front matter 应当是一个映射")
+        raise PromptError(f"the front matter of {path.name} should be a mapping")
     if front.get("id") != prompt_id:
-        raise PromptError(f"{path.name} 的 front matter id 是 {front.get('id')!r}，不是 {prompt_id!r}")
+        raise PromptError(f"the front matter id of {path.name} is {front.get('id')!r}, not {prompt_id!r}")
     version = front.get("version")
     if not isinstance(version, (str, int, float)) or isinstance(version, bool) or not str(version).strip():
-        raise PromptError(f"{path.name} 的 front matter 没有 version")
+        raise PromptError(f"the front matter of {path.name} has no version")
     return PromptFile(prompt_id, str(version), path, text, front, file_revision(path))
 
 
@@ -529,14 +611,14 @@ def _part_label(prompt_id: str, key: str | None, block: Mapping[str, Any]) -> st
 
 def _names(value: Any, what: str) -> list[tuple[str, bool]]:
     if not isinstance(value, list):
-        raise PromptError(f"{what} 应当是列表")
+        raise PromptError(f"{what} should be a list")
     out = []
     for item in value:
         name = str(item).strip()
         required = not name.endswith("?")
         name = name.rstrip("?").strip()
         if not _NAME.match(name):
-            raise PromptError(f"{what} 里有看不懂的名字 {item!r}")
+            raise PromptError(f"{what} has a name that cannot be read: {item!r}")
         out.append((name, required))
     return out
 
@@ -553,7 +635,7 @@ def _format_overrides(value: Any, what: str) -> dict[str, str]:
     if value is None:
         return {}
     if not isinstance(value, Mapping) or not all(isinstance(k, str) and isinstance(v, str) for k, v in value.items()):
-        raise PromptError(f"{what} 的 formats 应当是 {{输出名: 格式}} 映射")
+        raise PromptError(f"formats in {what} should be a mapping {{output name: format}}")
     return dict(value)
 
 
@@ -563,23 +645,26 @@ def output_formats(rules: PromptFile, call: PromptPart) -> dict[str, str]:
     with a schema in the wrong format is an error."""
     declared = rules.front.get("output_formats")
     if not isinstance(declared, Mapping):
-        raise PromptError(f"{rules.path.name} 的 front matter 没有 output_formats（§F0 的输出格式声明）")
+        raise PromptError(f"the front matter of {rules.path.name} has no output_formats (the §F0 format declaration)")
     by_name: dict[str, str] = {}
     for fmt, names in declared.items():
         if not isinstance(names, list):
-            raise PromptError(f"{rules.path.name} 的 output_formats.{fmt} 应当是输出名列表")
+            raise PromptError(f"output_formats.{fmt} in {rules.path.name} should be a list of output names")
         for name in names:
             if name in by_name and by_name[name] != fmt:
-                raise PromptError(f"{rules.path.name} 把输出 {name} 同时声明成 {by_name[name]} 和 {fmt}")
+                raise PromptError(f"{rules.path.name} declares output {name} as both {by_name[name]} and {fmt}")
             by_name[str(name)] = str(fmt)
     by_name.update(call.formats)
     missing = [name for name, _ in call.outputs if name not in by_name]
     if missing:
-        raise PromptError(f"{call.label} 的输出 {'、'.join(missing)} 没有声明格式（00 的 output_formats 或部分的 formats）")
+        raise PromptError(
+            f"outputs {', '.join(missing)} of {call.label} have no declared format (output_formats in 00, or the "
+            "part's formats)"
+        )
     formats = {name: by_name[name] for name, _ in call.outputs}
     problems = _outputs.format_problems(formats)
     if problems:
-        raise PromptError(f"{call.label} 的输出格式声明不对：" + "；".join(problems))
+        raise PromptError(f"the output formats declared for {call.label} are wrong: " + "; ".join(problems))
     return formats
 
 
@@ -591,57 +676,62 @@ def prompt_part(
     front = prompt.front
     parts = front.get("parts")
     if parts is not None and not isinstance(parts, Mapping):
-        raise PromptError(f"{prompt.path.name} 的 parts 应当是映射")
+        raise PromptError(f"parts in {prompt.path.name} should be a mapping")
     if parts:
         labels = {k: _part_label(prompt.id, k, v if isinstance(v, Mapping) else {}) for k, v in parts.items()}
         key = part if part in parts else next((k for k, lbl in labels.items() if lbl == part), None)
         if key is None:
-            choices = "、".join(f"{k}（{labels[k]}）" for k in parts)
-            raise PromptError(f"提示词 {prompt.id} 分部分运行，part 要写其中之一：{choices}；收到 {part!r}")
+            choices = ", ".join(f"{k} ({labels[k]})" for k in parts)
+            raise PromptError(f"prompt {prompt.id} runs in parts; part must be one of {choices}; got {part!r}")
         block = parts[key]
         if not isinstance(block, Mapping):
-            raise PromptError(f"{prompt.path.name} 的部分 {key} 应当是映射")
+            raise PromptError(f"part {key} in {prompt.path.name} should be a mapping")
         role = block.get("role", front.get("role"))
     else:
         if part not in (None, prompt.id):
-            raise PromptError(f"提示词 {prompt.id} 没有分部分，不要给 part（收到 {part!r}）")
+            raise PromptError(f"prompt {prompt.id} has no parts; do not pass part (got {part!r})")
         key, block, role = None, front, front.get("role")
     label = _part_label(prompt.id, key, block)
     if role == "pipeline":
-        raise PromptError(f"{label} 是流水线的确定性步骤（role: pipeline），不调用模型")
+        raise PromptError(f"{label} is a deterministic pipeline step (role: pipeline) and calls no model")
     if not isinstance(role, str) or not role:
-        raise PromptError(f"{label} 的 front matter 没有写角色")
+        raise PromptError(f"the front matter of {label} names no role")
 
     # Multi-pass parts (04B, 09B) give inputs and outputs per pass: inputs_passN, outputs_passN; calls gives the
     # number of passes.
     pass_keys = sorted(k for k in block if isinstance(k, str) and re.fullmatch(r"inputs_pass\d+", k))
     calls = block.get("calls")
     if calls is not None and (isinstance(calls, bool) or calls != max(1, len(pass_keys))):
-        raise PromptError(f"{label} 的 calls 应当是整数 {max(1, len(pass_keys))}（与 inputs_passN 的遍数一致），收到 {calls!r}")
+        raise PromptError(
+            f"calls of {label} should be the integer {max(1, len(pass_keys))} (the number of inputs_passN), got "
+            f"{calls!r}"
+        )
     if pass_keys:
         passes = [int(k[len("inputs_pass"):]) for k in pass_keys]
         if pass_no not in passes:
-            raise PromptError(f"{label} 分遍调用，pass_no 要写 {'、'.join(map(str, passes))} 之一；收到 {pass_no!r}")
+            raise PromptError(
+                f"{label} runs in passes; pass_no must be one of {', '.join(map(str, passes))}; got {pass_no!r}"
+            )
         if f"outputs_pass{pass_no}" not in block:
-            raise PromptError(f"{label} 分遍调用，front matter 要写 outputs_pass{pass_no}")
+            raise PromptError(f"{label} runs in passes; its front matter must have outputs_pass{pass_no}")
         raw_inputs, raw_outputs = block[f"inputs_pass{pass_no}"], block[f"outputs_pass{pass_no}"]
     else:
         if pass_no is not None:
-            raise PromptError(f"{label} 只调用一遍，不要给 pass_no")
+            raise PromptError(f"{label} runs in one pass; do not pass pass_no")
         raw_inputs, raw_outputs = block.get("inputs"), block.get("outputs")
 
     # Prompts with modes (02): if the mode lists its own inputs or outputs, use them; otherwise use the prompt's.
     modes = front.get("modes")
     if modes:
         if not isinstance(modes, Mapping) or mode not in modes:
-            choices = "、".join(map(str, modes)) if isinstance(modes, Mapping) else str(modes)
-            raise PromptError(f"提示词 {prompt.id} 有多个模式，mode 要写其中之一：{choices}；收到 {mode!r}")
+            choices = ", ".join(map(str, modes)) if isinstance(modes, Mapping) else str(modes)
+            raise PromptError(f"prompt {prompt.id} has modes; mode must be one of {choices}; got {mode!r}")
         spec = modes[mode] if isinstance(modes[mode], Mapping) else {}
         raw_inputs = spec.get("inputs", raw_inputs)
         raw_outputs = spec.get("outputs", raw_outputs)
     elif mode is not None:
-        raise PromptError(f"提示词 {prompt.id} 没有模式，不要给 mode（收到 {mode!r}）")
-    where = f"{label}" + (f" 模式 {mode}" if mode else "") + (f" 第 {pass_no} 遍" if pass_no else "")
+        raise PromptError(f"prompt {prompt.id} has no modes; do not pass mode (got {mode!r})")
+    where = f"{label}" + (f" mode {mode}" if mode else "") + (f" pass {pass_no}" if pass_no else "")
     formats = _format_overrides(front.get("formats"), prompt.path.name)
     if block is not front:
         formats.update(_format_overrides(block.get("formats"), label))
@@ -650,8 +740,8 @@ def prompt_part(
         key=key,
         label=label,
         role=role,
-        inputs=_dedupe(_names(raw_inputs, f"{where} 的 inputs")),
-        outputs=_dedupe(_names(raw_outputs, f"{where} 的 outputs")),
+        inputs=_dedupe(_names(raw_inputs, f"inputs of {where}")),
+        outputs=_dedupe(_names(raw_outputs, f"outputs of {where}")),
         pass_no=pass_no,
         mode=mode,
         design="design" in front or "design" in block,
@@ -666,10 +756,10 @@ def fill_variables(prompt: PromptFile, variables: Mapping[str, str] | None) -> s
     wanted = sorted({m.group(1) for m in VARIABLE_RE.finditer(prompt.text)})
     missing = [name for name in wanted if name not in variables]
     if missing:
-        raise PromptError(f"提示词 {prompt.id} 需要变量 {'、'.join(missing)}（variables）")
+        raise PromptError(f"prompt {prompt.id} needs the variables {', '.join(missing)} (variables)")
     for name in wanted:
         if not isinstance(variables[name], str):
-            raise TypeError(f"变量 {name!r} 必须是字符串")
+            raise TypeError(f"variable {name!r} must be a string")
     return VARIABLE_RE.sub(lambda m: variables[m.group(1)], prompt.text)
 
 
@@ -691,40 +781,42 @@ def check_inputs(call: PromptPart, role: Role, provided: Sequence[str]) -> None:
     InputRefused."""
     declared = [name for name, _ in call.inputs]
     problems = [
-        f"{name} 不是 {call.label} 的输入（{call.label} 的输入：{'、'.join(declared)}）"
+        f"{name} is not an input of {call.label} (the inputs of {call.label}: {', '.join(declared)})"
         for name in sorted(set(provided) - set(declared))
     ]
-    problems += [f"缺少必需输入 {name}" for name, required in call.inputs if required and name not in provided]
+    problems += [f"required input {name} is missing" for name, required in call.inputs if required and name not in provided]
     if problems:
-        raise PromptError(f"{call.label} 的输入不对：" + "；".join(problems))
+        raise PromptError(f"the inputs of {call.label} are wrong: " + "; ".join(problems))
     refused = []
     for name in sorted(provided):
         if name not in (role.can_see or frozenset()):
-            refused.append(f"{name} 不在 can_see 里")
+            refused.append(f"{name} is not in can_see")
         hidden = _hidden_by(name, role.cannot_see or frozenset())
         if hidden is not None:
-            refused.append(f"{name} 在 cannot_see 里（{hidden}）")
+            refused.append(f"{name} is in cannot_see ({hidden})")
     if refused:
-        raise InputRefused(f"{call.label} 不能把这些输入交给 {role.role}（{role.path.name}，00 §G6）：" + "；".join(refused))
+        raise InputRefused(
+            f"{call.label} cannot give these inputs to {role.role} ({role.path.name}, 00 §G6): " + "; ".join(refused)
+        )
 
 
 def _validate_inputs(inputs: Mapping[str, str], images: Mapping[str, Sequence[Any]]) -> None:
     if not isinstance(inputs, Mapping) or not isinstance(images, Mapping) or not (inputs or images):
-        raise ValueError("inputs 必须是非空的 {名称: 文本} 字典（页面图像另用 images 传）")
+        raise ValueError("inputs must be a non-empty {name: text} mapping (page images go in images)")
     for key, value in inputs.items():
         if not isinstance(key, str) or not _INPUT_KEY.match(key):
-            raise ValueError(f"输入名只能含字母、数字、下划线、点和连字符：{key!r}")
+            raise ValueError(f"input names may contain only letters, digits, underscores, dots and hyphens: {key!r}")
         if not isinstance(value, str):
-            raise TypeError(f"输入 {key!r} 必须是字符串")
+            raise TypeError(f"input {key!r} must be a string")
         if key in IMAGE_INPUTS:
-            raise ValueError(f"{key} 是页面图像，用 images={{{key!r}: [图像文件, …]}} 传")
+            raise ValueError(f"{key} holds page images; pass it as images={{{key!r}: [image file, ...]}}")
     for key, files in images.items():
         if key not in IMAGE_INPUTS:
-            raise ValueError(f"只有 {'、'.join(sorted(IMAGE_INPUTS))} 以图像传，收到 {key!r}")
+            raise ValueError(f"only {', '.join(sorted(IMAGE_INPUTS))} is passed as images, got {key!r}")
         if key in inputs:
-            raise ValueError(f"{key} 同时出现在 inputs 和 images 里")
+            raise ValueError(f"{key} appears in both inputs and images")
         if isinstance(files, (str, os.PathLike)) or not isinstance(files, Sequence) or not files:
-            raise ValueError(f"images[{key!r}] 必须是非空的图像文件列表")
+            raise ValueError(f"images[{key!r}] must be a non-empty list of image files")
 
 
 def _load_images(images: Mapping[str, Sequence[Any]]) -> dict[str, list[tuple[str, str, str, str]]]:
@@ -736,9 +828,9 @@ def _load_images(images: Mapping[str, Sequence[Any]]) -> dict[str, list[tuple[st
             path = Path(item)
             media_type = IMAGE_MEDIA_TYPES.get(path.suffix.lower())
             if media_type is None:
-                raise ValueError(f"{path.name}：页面图像只支持 {'、'.join(sorted(IMAGE_MEDIA_TYPES))}")
+                raise ValueError(f"{path.name}: page images must be one of {', '.join(sorted(IMAGE_MEDIA_TYPES))}")
             if not path.is_file():
-                raise FileNotFoundError(f"找不到页面图像：{path}")
+                raise FileNotFoundError(f"page image not found: {path}")
             data = path.read_bytes()
             encoded = base64.standard_b64encode(data).decode("ascii")
             rows.append((path.name, media_type, encoded, hashlib.sha256(data).hexdigest()))
@@ -793,8 +885,8 @@ def _content_bytes(content: str | list[dict[str, Any]]) -> int:
 def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str]) -> str | list[dict[str, Any]]:
     """Retry: append the validation errors to the original request."""
     note = (
-        "<validation_errors>\n上一次回答的输出没有通过流水线的校验（00 §F0、§F6）。"
-        "按下面的错误改正后，按原来的要求重新交出这一部分的全部输出：\n"
+        "<validation_errors>\nThe outputs of your previous answer failed the pipeline's validation (00 §F0, §F6). "
+        "Correct the errors below, then hand over all outputs of this part again, as originally asked:\n"
         + "\n".join(f"- {e}" for e in errors)
         + "\n</validation_errors>"
     )
@@ -840,8 +932,14 @@ def _same_month(timestamp: str, now: dt.datetime) -> bool:
     return (stamp.year, stamp.month) == (now.year, now.month)
 
 
+def _budgeted(record: Mapping[str, Any]) -> bool:
+    """Whether a log line counts as API spend: every line except those of the claude-code and fake backends."""
+    return record.get("backend") not in UNBUDGETED_BACKENDS
+
+
 def month_spend(log_path: str | os.PathLike[str] | None = None, now: dt.datetime | None = None) -> float:
-    """Total spend (USD) in the log for the current UTC calendar month. Bad lines are skipped."""
+    """Total API spend (USD) in the log for the current UTC calendar month. Claude Code and fake requests are not
+    API spend and are left out; bad lines are skipped."""
     path = _log_path(log_path)
     now = (now or _utcnow()).astimezone(dt.timezone.utc)
     if not path.is_file():
@@ -853,7 +951,9 @@ def month_spend(log_path: str | os.PathLike[str] | None = None, now: dt.datetime
                 record = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if not isinstance(record, dict) or not _same_month(record.get("timestamp", ""), now):
+            if not isinstance(record, dict) or not _budgeted(record):
+                continue
+            if not _same_month(record.get("timestamp", ""), now):
                 continue
             cost = record.get("cost_usd")
             if isinstance(cost, (int, float)):
@@ -879,7 +979,7 @@ def budget_status(
     repo_root: str | os.PathLike[str] | None = None,
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
-    """This month's budget status and downgrade stage: normal → pause_candidates → downgrade_drafting_model →
+    """This month's API budget status and downgrade stage: normal → pause_candidates → downgrade_drafting_model →
     stopped."""
     now = (now or _utcnow()).astimezone(dt.timezone.utc)
     budget = monthly_budget(budget_usd, repo_root)
@@ -934,6 +1034,9 @@ def cost_usd(model: str, usage: Mapping[str, int]) -> float:
     return round(sum(cost_breakdown(model, usage).values()), 6)
 
 
+_NO_COST = {"input": 0.0, "output": 0.0, "cache_write": 0.0, "cache_read": 0.0}
+
+
 def _served_by_fallback(response: Any) -> bool:
     """A fallback_message in usage.iterations means a fallback model took over (a sticky-routed turn has no fallback
     block)."""
@@ -941,15 +1044,35 @@ def _served_by_fallback(response: Any) -> bool:
     return any(getattr(entry, "type", None) == "fallback_message" for entry in iterations)
 
 
-# ---------------------------------------------------------------- Calls
+# ---------------------------------------------------------------- Backends: choice and the API path
+
+
+def resolve_backend(backend: str | None = None) -> str:
+    """The backend argument → the environment variable OWNERS_OFFICE_BACKEND → claude-code."""
+    chosen = backend if backend is not None else (os.environ.get(BACKEND_ENV) or "").strip() or DEFAULT_BACKEND
+    if chosen not in BACKENDS:
+        source = "backend" if backend is not None else BACKEND_ENV
+        raise ValueError(f"{source} must be one of {', '.join(BACKENDS)}, got {chosen!r}")
+    return chosen
 
 
 def _default_client() -> Any:
     try:
         import anthropic  # lazy import: this module still imports without the SDK installed
     except ImportError as exc:
-        raise LLMError("需要 Anthropic Python SDK：pip install -r requirements.txt") from exc
+        raise LLMError("the Anthropic Python SDK is needed: pip install -r requirements.txt") from exc
     return anthropic.Anthropic()  # credentials are read from the environment, not kept in the code
+
+
+def _fake_client(call: PromptPart, formats: Mapping[str, str], context: Mapping[str, Any],
+                 pipeline_fields: Mapping[str, Any] | None) -> Any:
+    """The dry-run client (pipeline/fake_client.py): schema-valid placeholders for the part's outputs."""
+    from . import fake_client
+
+    fake_context = {"company": context.get("company"), "period": context.get("period"),
+                    "run_date": context.get("run_date"), "label": call.label, "domain": "other",
+                    "pipeline_fields": dict(pipeline_fields or {})}
+    return fake_client.FakeClient(fake_client.placeholder_reply(call.outputs, formats, fake_context))
 
 
 def _send(client: Any, params: Mapping[str, Any], fallback_kwargs: Mapping[str, Any] | None, stream: bool) -> Any:
@@ -961,6 +1084,260 @@ def _send(client: Any, params: Mapping[str, Any], fallback_kwargs: Mapping[str, 
         with api.stream(**kwargs) as response_stream:
             return response_stream.get_final_message()
     return api.create(**kwargs)
+
+
+@dataclasses.dataclass
+class _Reply:
+    """One answer, whatever the backend: what complete() validates and logs."""
+
+    model: str
+    usage: dict[str, int]
+    stop_reason: str | None
+    text: str
+    served_by_fallback: bool = False
+    refusal_category: str | None = None
+    refusal_explanation: str | None = None
+    log: dict[str, Any] = dataclasses.field(default_factory=dict)  # backend-specific log fields
+
+
+def _api_reply(response: Any, requested_model: str) -> _Reply:
+    served = getattr(response, "model", None) or requested_model
+    stop_reason = getattr(response, "stop_reason", None)
+    details = getattr(response, "stop_details", None) if stop_reason == "refusal" else None
+    # On a refusal, content is empty or only a fragment; the text is not used.
+    text = "" if stop_reason == "refusal" else "".join(
+        block.text for block in response.content if getattr(block, "type", None) == "text")
+    return _Reply(
+        model=served,
+        usage=_usage_dict(getattr(response, "usage", None)),  # includes the cache write and cache read token counts
+        stop_reason=stop_reason,
+        text=text,
+        served_by_fallback=_served_by_fallback(response),
+        refusal_category=getattr(details, "category", None),
+        refusal_explanation=getattr(details, "explanation", None),
+        log={"request_id": getattr(response, "_request_id", None)},
+    )
+
+
+# ---------------------------------------------------------------- Backend claude-code: the Claude Code CLI
+
+
+def _version_key(name: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in name.split("."))
+
+
+def find_claude_binary(env: Mapping[str, str] | None = None) -> Path:
+    """The Claude Code CLI: OWNERS_OFFICE_CLAUDE_BIN → claude on PATH → the newest version the Claude desktop app
+    installed under ~/Library/Application Support/Claude/claude-code/<version>/. Raises ClaudeCodeUnavailable."""
+    env = os.environ if env is None else env
+    configured = (env.get(CLAUDE_BIN_ENV) or "").strip()
+    if configured:
+        path = Path(configured).expanduser()
+        if not (path.is_file() and os.access(path, os.X_OK)):
+            raise ClaudeCodeUnavailable(f"{CLAUDE_BIN_ENV}={path} is not an executable file")
+        return path
+    on_path = shutil.which("claude", path=env.get("PATH"))
+    if on_path:
+        return Path(on_path)
+    if DESKTOP_CLAUDE_DIR.is_dir():
+        versions = sorted((p for p in DESKTOP_CLAUDE_DIR.iterdir() if _CLAUDE_VERSION_RE.match(p.name)),
+                          key=lambda p: _version_key(p.name), reverse=True)
+        for version in versions:
+            exe = version / DESKTOP_CLAUDE_EXE
+            if exe.is_file() and os.access(exe, os.X_OK):
+                return exe
+    raise ClaudeCodeUnavailable(
+        f"the Claude Code CLI was not found: set {CLAUDE_BIN_ENV}, put claude on PATH, or install the Claude desktop "
+        f"app (it keeps a copy under {DESKTOP_CLAUDE_DIR}); or run with the API backend"
+    )
+
+
+_CLI_VERSIONS: dict[str, str | None] = {}
+
+
+def claude_code_version(binary: Path, env: Mapping[str, str]) -> str | None:
+    """`claude --version` (first word), cached per binary; None when it cannot be read."""
+    key = str(binary)
+    if key not in _CLI_VERSIONS:
+        try:
+            proc = subprocess.run([key, "--version"], capture_output=True, text=True, timeout=60, env=dict(env),
+                                  check=False)
+            words = proc.stdout.split()
+            _CLI_VERSIONS[key] = words[0] if proc.returncode == 0 and words else None
+        except (OSError, subprocess.SubprocessError):
+            _CLI_VERSIONS[key] = None
+    return _CLI_VERSIONS[key]
+
+
+def claude_code_command(binary: Path, model: str, effort: str | None, system_prompt_file: Path, *,
+                        images: bool = False) -> list[str]:
+    """The CLI arguments. Text requests go in on stdin and come back as one JSON result; a request with page images
+    goes in as one stream-json user message, which the CLI accepts only with stream-json output (and --verbose)."""
+    args = [str(binary), "--print"]
+    if images:
+        args += ["--input-format", "stream-json", "--output-format", "stream-json", "--verbose"]
+    else:
+        args += ["--output-format", "json"]
+    args += ["--model", model]
+    if effort is not None:
+        args += ["--effort", effort]
+    args += [
+        "--system-prompt-file", str(system_prompt_file),  # replaces Claude Code's own system prompt
+        "--tools", "",  # no built-in tools
+        "--setting-sources", "",  # no user, project or local settings files (hooks, permissions, env, plugins)
+        "--strict-mcp-config",  # no MCP servers: none is given with --mcp-config
+        "--disable-slash-commands",  # no skills or custom commands
+        "--no-session-persistence",  # the conversation is not saved and cannot be resumed
+    ]
+    return args
+
+
+def _workspace_env_value(name: str, env: Mapping[str, str]) -> str | None:
+    """A value from the workspace .env (the file pipeline.edgar reads the SEC User-Agent from); never logged."""
+    from . import edgar  # no model call there; only its .env reader is used
+
+    path = Path(env.get(edgar.ENV_FILE_ENV) or edgar.DEFAULT_ENV_FILE)
+    value = edgar._read_env_value(path, name) if path.is_file() else None
+    return value.strip() if value and value.strip() else None
+
+
+def claude_code_env(base: Mapping[str, str], *, max_tokens: int, config_dir: Path | None) -> dict[str, str]:
+    """The CLI's environment, built from scratch (CLAUDE_ENV_PASSTHROUGH, CLAUDE_ENV_FIXED). When a long-lived token
+    (CLAUDE_CODE_OAUTH_TOKEN) is set, config_dir replaces the owner's configuration directory with an empty one, so
+    nothing cached there (such as the account's email address) reaches the model."""
+    env = {name: base[name] for name in CLAUDE_ENV_PASSTHROUGH if base.get(name)}
+    env.update(CLAUDE_ENV_FIXED)
+    env["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] = str(max_tokens)
+    if config_dir is not None and env.get(OAUTH_TOKEN_ENV):
+        env["CLAUDE_CONFIG_DIR"] = str(config_dir)
+    return env
+
+
+def _stream_json_input(content: list[dict[str, Any]]) -> str:
+    return json.dumps({"type": "user", "message": {"role": "user", "content": content}}, ensure_ascii=False) + "\n"
+
+
+def _parse_cli_output(stdout: str, images: bool) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """(the result object, the init event of a stream-json run)."""
+    if not images:
+        try:
+            data = json.loads(stdout)
+        except json.JSONDecodeError:
+            return None, None
+        return (data if isinstance(data, dict) else None), None
+    result = init = None
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and event.get("type") == "result":
+            result = event
+        elif isinstance(event, dict) and event.get("type") == "system" and event.get("subtype") == "init":
+            init = event
+    return result, init
+
+
+def _served_model(result: Mapping[str, Any], requested: str) -> str:
+    usage = result.get("modelUsage")
+    if not isinstance(usage, Mapping) or not usage:
+        return requested
+    if requested in usage:
+        return requested
+
+    def output_tokens(name: str) -> int:
+        entry = usage.get(name)
+        value = entry.get("outputTokens") if isinstance(entry, Mapping) else None
+        return int(value) if isinstance(value, (int, float)) else 0
+
+    return max(usage, key=output_tokens)
+
+
+def _claude_code_reply(
+    model: str,
+    effort: str | None,
+    system_prompt: str,
+    content: str | list[dict[str, Any]],
+    max_tokens: int,
+    *,
+    env: Mapping[str, str] | None = None,
+    timeout: float | None = None,
+) -> _Reply:
+    """One request through the Claude Code CLI, run in an empty temporary directory."""
+    base = os.environ if env is None else env
+    if not (base.get(OAUTH_TOKEN_ENV) or "").strip():
+        token = _workspace_env_value(OAUTH_TOKEN_ENV, base)
+        if token:  # the owner keeps the subscription token in the workspace .env, like the SEC User-Agent
+            base = {**base, OAUTH_TOKEN_ENV: token}
+    binary = find_claude_binary(base)
+    images = not isinstance(content, str)
+    timeout = timeout if timeout is not None else float(base.get(CLAUDE_TIMEOUT_ENV) or DEFAULT_CLAUDE_TIMEOUT)
+    with tempfile.TemporaryDirectory(prefix="owners-office-claude-") as tmp:
+        root = Path(tmp)
+        workdir, config = root / "cwd", root / "config"
+        workdir.mkdir()
+        config.mkdir()
+        system_file = root / "system-prompt.txt"  # outside the working directory, which stays empty
+        system_file.write_text(system_prompt, encoding="utf-8")
+        cli_env = claude_code_env(base, max_tokens=max_tokens, config_dir=config)
+        details: dict[str, Any] = {"cli": binary.name, "cli_version": claude_code_version(binary, cli_env),
+                                   "cli_isolated_config": cli_env.get("CLAUDE_CONFIG_DIR") == str(config)}
+        stdin = _stream_json_input(content) if images else content
+        try:
+            proc = subprocess.run(
+                claude_code_command(binary, model, effort, system_file, images=images),
+                input=stdin, capture_output=True, text=True, encoding="utf-8", cwd=workdir, env=cli_env,
+                timeout=timeout, check=False,
+            )
+        except subprocess.TimeoutExpired:
+            raise ClaudeCodeError(f"the Claude Code CLI did not finish within {timeout:g} seconds "
+                                  f"({CLAUDE_TIMEOUT_ENV})", details) from None
+        except OSError as exc:
+            raise ClaudeCodeUnavailable(f"the Claude Code CLI could not start: {exc}", details) from None
+    result, init = _parse_cli_output(proc.stdout, images)
+    details["cli_exit"] = proc.returncode
+    if result is None:
+        tail = (proc.stderr or proc.stdout or "").strip().splitlines()[-1:] or ["(no output)"]
+        raise ClaudeCodeError(f"the Claude Code CLI printed no result (exit status {proc.returncode}): {tail[0][:300]}",
+                              details)
+    details.update(session_id=result.get("session_id"), num_turns=result.get("num_turns"),
+                   notional_cost_usd=result.get("total_cost_usd"), cli_duration_ms=result.get("duration_ms"),
+                   terminal_reason=result.get("terminal_reason"))
+    if init is not None:
+        details["cli_loaded"] = {k: init.get(k) for k in CLI_LOADED_KEYS}
+    if result.get("is_error"):
+        message = str(result.get("result") or result.get("subtype") or "unknown error")[:500]
+        details["api_error_status"] = result.get("api_error_status")
+        if result.get("api_error_status") == 429 or _PLAN_LIMIT_RE.search(message):
+            raise PlanLimitReached(f"Claude Code: {message}; wait for the plan's limit to reset, or run the step again "
+                                   "with the API backend (its spend counts against the monthly budget)", details)
+        if _LOGIN_RE.search(message):
+            raise ClaudeCodeUnavailable(f"Claude Code: {message}; the owner logs in once with `claude auth login`, or "
+                                        f"sets {OAUTH_TOKEN_ENV} from `claude setup-token`", details)
+        raise ClaudeCodeError(f"Claude Code reported an error: {message}", details)
+    loaded = details.get("cli_loaded") or {}
+    if (isinstance(result.get("num_turns"), int) and result["num_turns"] > 1) or result.get("permission_denials") \
+            or any(loaded.get(k) for k in loaded):
+        raise ClaudeCodeError("the Claude Code CLI loaded or used tools although none were allowed; the reply is "
+                              "not used (check the flags against this CLI version)", details)
+    usage = _usage_dict(result.get("usage") or {})
+    served = _served_model(result, model)
+    details["model_usage"] = {name: {k: v for k, v in entry.items() if k in ("inputTokens", "outputTokens",
+                                                                            "cacheReadInputTokens",
+                                                                            "cacheCreationInputTokens", "costUSD")}
+                              for name, entry in (result.get("modelUsage") or {}).items() if isinstance(entry, Mapping)}
+    stop_reason = result.get("stop_reason")
+    return _Reply(
+        model=served,
+        usage=usage,
+        stop_reason=stop_reason,
+        text="" if stop_reason == "refusal" else str(result.get("result") or ""),
+        served_by_fallback=served != model,
+        log=details,
+    )
+
+
+# ---------------------------------------------------------------- Calls
 
 
 def _relative(path: Path, root: Path) -> str:
@@ -975,11 +1352,11 @@ def _run_context(call: PromptPart, inputs: Mapping[str, str], variables: Mapping
     directory, subject under review."""
     run_date = inputs.get("run_date", "").strip()
     return {
-        "company": variables.get("代码"),
-        "period": variables.get("期间"),
+        "company": variables.get(VAR_TICKER),
+        "period": variables.get(VAR_PERIOD),
         "run_date": run_date if _DATE.match(run_date) else _utcnow().date().isoformat(),
-        "doc": _DOC_OF_PROMPT.get(call.prompt_id) or variables.get("文档"),
-        "subject": variables.get("被审对象"),
+        "doc": _DOC_OF_PROMPT.get(call.prompt_id) or variables.get(VAR_DOCUMENT),
+        "subject": variables.get(VAR_SUBJECT),
     }
 
 
@@ -996,6 +1373,7 @@ def complete(
     pipeline_fields: Mapping[str, Mapping[str, Any]] | None = None,
     model: str | None = None,
     effort: str | None = None,
+    backend: str | None = None,
     stream: bool = True,
     max_tokens: int | None = None,
     client: Any = None,
@@ -1012,20 +1390,27 @@ def complete(
       parts.
     - pass_no: which pass of a multi-pass part (04B, 09B); mode: the mode of a prompt with modes (02).
     - inputs: {input name: text}; images: {"rendered_pages": [image file, ...]}.
-    - variables: the values of the prompt's {{variables}}, e.g. company "Microsoft", ticker "MSFT" and period
-      "FY2027Q1" (keyed by the prompt's variable names, which are Chinese).
+    - variables: the values of the prompt's {{variables}}, e.g. {"company": "Microsoft", "ticker": "MSFT",
+      "period": "FY2027Q1"} (company is the common English short name, 00 §W7).
     - pipeline_fields: {output name: {key: value}}, fields the pipeline maintains (00 §G8, e.g. thesis's
       trust_level), written into that output before validation.
-    - stream, max_tokens: streaming by default; the limit is 128000 for 01, 02 and 11 and 64000 for the rest (16000
-      when not streaming).
+    - backend: claude-code, api or fake (default: the environment variable OWNERS_OFFICE_BACKEND, else claude-code;
+      docs/decisions/0022). client injects an SDK client (or test double) for api and fake; with fake and no client,
+      pipeline/fake_client.py answers with placeholders.
+    - stream, max_tokens: the API streams by default; the limit is 128000 for 01, 02 and 11 and 64000 for the rest
+      (16000 when not streaming). The claude-code backend always streams and gets the same limits.
     - prompts_dir, schemas_dir: the prompts directory and the thesis-ci schema directory; for the defaults see
       resolve_prompts_dir() and outputs.schema_validator().
 
-    Before any request is sent, it checks the role, part, inputs and variables (PromptError, InputRefused) and the
-    budget (BudgetExceeded). A refusal raises LLMRefusal; a truncation raises LLMTruncated (with allow_truncated=True
-    the result is returned as usual, without validating outputs). An invalid output is retried once; if it is still
-    invalid, LLMOutputInvalid is raised. Every request sent writes one log line.
+    Before any request is sent, it checks the role, part, inputs and variables (PromptError, InputRefused) and, for
+    the api and fake backends, the budget (BudgetExceeded). A refusal raises LLMRefusal; a truncation raises
+    LLMTruncated (with allow_truncated=True the result is returned as usual, without validating outputs). An invalid
+    output is retried once; if it is still invalid, LLMOutputInvalid is raised. A failing Claude Code CLI raises
+    ClaudeCodeError (ClaudeCodeUnavailable, PlanLimitReached). Every request sent writes one log line.
     """
+    backend = resolve_backend(backend)
+    if backend == CLAUDE_CODE and client is not None:
+        raise ValueError("client is for the api and fake backends; the claude-code backend runs the Claude Code CLI")
     root = Path(repo_root) if repo_root else REPO_ROOT
     log = _log_path(log_path)
     images = images or {}
@@ -1035,19 +1420,21 @@ def complete(
     spec = role_definition(role, root)
     for field in ("prompts", "can_see", "cannot_see"):
         if getattr(spec, field) is None:
-            raise PromptError(f"{spec.path.name} 没有 {field}；角色要写全才能调用（thesis-ci agent.schema.json）")
+            raise PromptError(f"{spec.path.name} has no {field}; a role must be complete to be called "
+                              "(thesis-ci agent.schema.json)")
     pdir = resolve_prompts_dir(prompts_dir, root)
     prompt = load_prompt(prompt_id, pdir)
     call = prompt_part(prompt, part, pass_no=pass_no, mode=mode)
     if call.role != role:
-        raise PromptError(f"{call.label} 的角色是 {call.role}（{prompt.path.name} 的 front matter），不是 {role}")
+        raise PromptError(f"the role of {call.label} is {call.role} (front matter of {prompt.path.name}), not {role}")
     if prompt.id not in spec.prompts and call.label not in spec.prompts:
-        raise PromptError(f"{spec.path.name} 的 prompts 没有登记 {call.label}（也没有整份登记 {prompt.id}）")
+        raise PromptError(f"prompts in {spec.path.name} registers neither {call.label} nor the whole of {prompt.id}")
     rules = load_prompt(RULES_ID, pdir)
     formats = output_formats(rules, call)
     files = [name for name, required in call.outputs if required and formats[name] == _outputs.FILE]
     if files:
-        raise PromptError(f"{call.label} 要交出文件（{'、'.join(files)}），需要能执行代码的环境；llm.py 只交换文本")
+        raise PromptError(f"{call.label} has to hand over files ({', '.join(files)}), which needs an environment that "
+                          "can run code; llm.py exchanges only text")
     check_inputs(call, spec, [*inputs, *images])
 
     design = load_prompt(DESIGN_ID, pdir) if call.design else None
@@ -1055,22 +1442,28 @@ def complete(
     try:
         validators = _outputs.validators_for([name for name, _ in call.outputs], schemas_dir)
     except _outputs.SchemaUnavailable as exc:
-        raise LLMError(f"{call.label} 的输出要按 thesis-ci schema 校验：{exc}") from exc
+        raise LLMError(f"the outputs of {call.label} are validated against thesis-ci schemas: {exc}") from exc
 
     model_id, chosen_effort, fallbacks = _model_choice(spec.model, model, effort)
-    if not _priced(model_id):
-        raise ValueError(f"模型 {model_id} 不在价格表里，花费无法记账；先在 PRICES_PER_MTOK 与 CACHE_PRICES_PER_MTOK 登记")
+    if backend == CLAUDE_CODE:
+        fallbacks = None  # the server-side refusal fallback is an API beta; the CLI does not send it
+    elif not _priced(model_id):
+        raise ValueError(f"model {model_id} is not in the price table, so its cost cannot be recorded; add it to "
+                         "PRICES_PER_MTOK and CACHE_PRICES_PER_MTOK first")
 
     loaded = _load_images(images)
     content = render_user_content(call, inputs, loaded)
     if _content_bytes(content) + sum(len(t.encode("utf-8")) for t in system_texts) > MAX_REQUEST_BYTES:
-        raise ValueError(f"请求超过 {MAX_REQUEST_BYTES // (1024 * 1024)} MB 的上限（多半是页面图像太大），先压缩图像")
+        raise ValueError(f"the request is over the {MAX_REQUEST_BYTES // (1024 * 1024)} MB limit (most likely the page "
+                         "images are too large); compress the images first")
     hashed_inputs: dict[str, Any] = {**inputs, **{k: [f"{f}:sha256:{d}" for f, _, _, d in v] for k, v in loaded.items()}}
     run = {k: v for k, v in (("part", call.key), ("pass", call.pass_no), ("mode", call.mode)) if v is not None}
     in_hash = input_sha256(prompt.id, "\n\n".join(system_texts), hashed_inputs, run=run)
 
     if max_tokens is None:
-        max_tokens = (LONG_MAX_TOKENS if prompt.id in LONG_OUTPUT_PROMPTS else STREAM_MAX_TOKENS) if stream else MAX_TOKENS
+        streaming = stream or backend == CLAUDE_CODE
+        max_tokens = (LONG_MAX_TOKENS if prompt.id in LONG_OUTPUT_PROMPTS else STREAM_MAX_TOKENS) if streaming \
+            else MAX_TOKENS
     system = [{"type": "text", "text": text, "cache_control": dict(CACHE_CONTROL)} for text in system_texts[:-1]]
     system.append({"type": "text", "text": system_texts[-1]})  # the specific prompt comes after the cache breakpoint
     params: dict[str, Any] = {
@@ -1097,15 +1490,18 @@ def complete(
     budget = monthly_budget(budget_usd, root)
     total_usage = _usage_dict(None)
     total_cost = 0.0
+    total_notional = 0.0
     errors: list[str] = []
     for attempt in (1, 2):
-        spent = month_spend(log)
-        if spent >= budget:
-            raise BudgetExceeded(spent, budget)
-        if client is None:
-            client = _default_client()
+        if backend != CLAUDE_CODE:
+            spent = month_spend(log)
+            if spent >= budget:
+                raise BudgetExceeded(spent, budget)
+            if client is None:
+                client = _default_client() if backend == API else _fake_client(call, formats, context, pipeline_fields)
         record: dict[str, Any] = {
             "timestamp": _utcnow().isoformat(timespec="seconds"),
+            "backend": backend,
             "role": role,
             "prompt_id": prompt.id,
             "part": call.key,
@@ -1120,7 +1516,7 @@ def complete(
             "effort": chosen_effort,
             "fallbacks": fallbacks,
             "served_by_fallback": False,
-            "stream": stream,
+            "stream": None if backend == CLAUDE_CODE else stream,
             "max_tokens": max_tokens,
             "images": sum(len(v) for v in loaded.values()),
             "input_sha256": in_hash,
@@ -1129,45 +1525,51 @@ def complete(
             "cost_usd": 0.0,
             "stop_reason": None,
         }
-        request = params
-        if attempt == 2:  # retry: the same request, with the first attempt's validation errors appended
-            request = {**params, "messages": [{"role": "user", "content": _with_errors(content, errors)}]}
+        attempt_content = content if attempt == 1 else _with_errors(content, errors)  # retry: errors appended
         try:
-            response = _send(client, request, fallback_kwargs, stream)
+            if backend == CLAUDE_CODE:
+                reply = _claude_code_reply(model_id, chosen_effort, "\n\n".join(system_texts), attempt_content,
+                                           max_tokens)
+            else:
+                request = params if attempt == 1 else {**params, "messages": [{"role": "user",
+                                                                               "content": attempt_content}]}
+                reply = _api_reply(_send(client, request, fallback_kwargs, stream), model_id)
         except Exception as exc:
             record["error"] = f"{type(exc).__name__}: {exc}"[:500]
+            if isinstance(exc, ClaudeCodeError):
+                record.update({k: v for k, v in exc.details.items() if k not in record})
+                if isinstance(exc.details.get("notional_cost_usd"), (int, float)):
+                    record["notional_cost_usd"] = exc.details["notional_cost_usd"]
             _append_log(log, record)
             raise
 
-        served_model = getattr(response, "model", None) or model_id
-        usage = _usage_dict(getattr(response, "usage", None))
-        price_model = served_model if _priced(served_model) else model_id
-        record.update(
-            model=served_model,
-            served_by_fallback=_served_by_fallback(response),
-            usage=usage,  # includes cache_creation_input_tokens and cache_read_input_tokens
-            cost_usd=cost_usd(price_model, usage),
-            cost_breakdown=cost_breakdown(price_model, usage),
-            stop_reason=getattr(response, "stop_reason", None),
-            request_id=getattr(response, "_request_id", None),
-        )
-        if price_model != served_model:
-            record["price_basis"] = price_model
-        total_usage = {k: total_usage[k] + usage[k] for k in total_usage}
+        record.update(model=reply.model, served_by_fallback=reply.served_by_fallback, usage=reply.usage,
+                      stop_reason=reply.stop_reason)
+        if backend == CLAUDE_CODE:
+            notional = reply.log.pop("notional_cost_usd", None)
+            record.update(cost_usd=0.0, cost_breakdown=dict(_NO_COST),
+                          notional_cost_usd=round(float(notional), 6) if isinstance(notional, (int, float)) else None)
+            total_notional = round(total_notional + (record["notional_cost_usd"] or 0.0), 6)
+        else:
+            price_model = reply.model if _priced(reply.model) else model_id
+            record.update(cost_usd=cost_usd(price_model, reply.usage),
+                          cost_breakdown=cost_breakdown(price_model, reply.usage))
+            if price_model != reply.model:
+                record["price_basis"] = price_model
+        record.update({k: v for k, v in reply.log.items() if k not in record})
+        total_usage = {k: total_usage[k] + reply.usage[k] for k in total_usage}
         total_cost = round(total_cost + record["cost_usd"], 6)
 
-        # Check stop_reason before reading content: on a refusal, content is empty or only a fragment.
-        if record["stop_reason"] == "refusal":
-            details = getattr(response, "stop_details", None)
-            category = getattr(details, "category", None)
-            record["refusal_category"] = category
+        if reply.stop_reason == "refusal":
+            record["refusal_category"] = reply.refusal_category
             _append_log(log, record)
-            raise LLMRefusal(served_model, category, getattr(details, "explanation", None))
+            raise LLMRefusal(reply.model, reply.refusal_category, reply.refusal_explanation)
 
-        text = "".join(block.text for block in response.content if getattr(block, "type", None) == "text")
+        text = reply.text
         record["output_sha256"] = sha256_text(text)
         generated_by = {
-            "model": served_model,
+            "model": reply.model,
+            "backend": backend,
             "rules_version": rules.version,
             **({"design_version": design.version} if design else {}),
             "prompt": prompt.id,
@@ -1178,7 +1580,7 @@ def complete(
         }
         result = LLMResult(
             text=text,
-            model=served_model,
+            model=reply.model,
             requested_model=model_id,
             role=role,
             prompt_id=prompt.id,
@@ -1203,6 +1605,8 @@ def complete(
             attempts=attempt,
             generated_by=generated_by,
             context=context,
+            backend=backend,
+            notional_cost_usd=total_notional if backend == CLAUDE_CODE else None,
         )
         if result.stop_reason == "max_tokens":
             _append_log(log, record)
@@ -1217,7 +1621,7 @@ def complete(
             generated_by=generated_by,
             validators=validators,
             pipeline_fields=pipeline_fields,
-            where=f" {call.label} ",
+            where=call.label,
         )
         if errors:
             record["validation_errors"] = errors[:50]

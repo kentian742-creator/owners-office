@@ -17,7 +17,7 @@ When the owner says "keep going":
 - Stop and ask the owner about only two kinds of things: operations involving money, and amendments to the investment constitution. Don't ask about anything else.
   - Money operations include buying, adding, trimming and selling, and also raising the model budget (see `docs/decisions/0003`).
   - Amending the constitution means changing the rules themselves in `constitution/`; changing only the format or adding check mappings does not count.
-- Things only the owner can do go into the STATUS to-do list, and you don't do them on the owner's behalf: putting the model API key into GitHub Secrets (never paste it into a chat or into code), and creating and pushing the GitHub repositories for the first time after review.
+- Things only the owner can do go into the STATUS to-do list, and you don't do them on the owner's behalf: putting the model API key into GitHub Secrets (never paste it into a chat or into code), logging the Claude Code CLI in to the owner's subscription (`claude auth login`) or creating its long-lived token (`claude setup-token`, stored only as the private repository's Actions secret `CLAUDE_CODE_OAUTH_TOKEN`), and creating and pushing the GitHub repositories for the first time after review.
 - The User-Agent for SEC access lives only in `.env` at the workspace root (`SEC_USER_AGENT`), never in any repository, log or commit (`docs/decisions/0013`).
 - The system will not and cannot trade for the owner; the default option for money matters is always the status quo.
 
@@ -59,7 +59,8 @@ The detailed price rules are in 00 §H2: only four kinds of prices may appear, a
 | `trust/levels.yml` | Each role's trust level (maintained by the pipeline, checked by `C-TRUST-WRITE`) |
 | `industries/<id>/` | Industry modules and signposts (no holdings, no recommendations) |
 | `forecasts/`, `letters/`, `mistakes.md` | Forecasts and overrides, letters to the owner, mistakes list |
-| `pipeline/llm.py` | The only model-call entry point (logs in `logs/`, not committed) |
+| `pipeline/llm.py` | The only model-call entry point; backends `claude-code` (default, the owner's subscription) and `api` (fallback, budgeted) (`docs/decisions/0022`) |
+| `pipeline/runner.py`, `pipeline/registry.py` | Pipeline runner and its input registry: assemble a bundle, execute it, place the outputs (`docs/decisions/0019`) |
 | `scripts/accept.py` | Phase acceptance script |
 | `zh-CN/` | Chinese versions of the key documents, at the same relative paths |
 | `../owners-office-private/` | Valuations, L3 memos, escalation requests, series ranking (`hq/`), decision log, PDF reports, prompts v3 (`prompts/`) |
@@ -79,7 +80,17 @@ The detailed price rules are in 00 §H2: only four kinds of prices may appear, a
 ../.venv/bin/python -m pipeline.edgar next-release APP FY2026Q3 --announced 2026-11-05   # after the company announces the date
 ../.venv/bin/python -m pipeline.edgar check-sources companies/APP/sources.yml
 ../.venv/bin/python -m pipeline.timestamp status companies/APP/prereg/FY2026Q3.yml
+# Pipeline runner (docs/decisions/0019, 0022), one prompt part per bundle:
+../.venv/bin/python -m pipeline.runner steps
+../.venv/bin/python -m pipeline.runner dry-run 15A APP FY2026Q3 --run-date 2026-10-20    # fake backend, into ../work/pipeline-dry-run/
+../.venv/bin/python -m pipeline.runner assemble 15A APP FY2026Q3 --run-date 2026-10-20   # bundle in ../owners-office-private/runs/
+../.venv/bin/python -m pipeline.runner execute runs/APP/2026-10-20-15A                   # backend claude-code (default)
+../.venv/bin/python -m pipeline.runner execute runs/APP/2026-10-20-15A --backend api     # fallback: Anthropic API, counts against the budget
+../.venv/bin/python -m pipeline.runner show runs/APP/2026-10-20-15A
+../.venv/bin/python -m pipeline.runner place runs/APP/2026-10-20-15A --check
 ```
+
+Model backends (`docs/decisions/0022`): `claude-code` runs the Claude Code CLI in print mode on the owner's Claude subscription (no tools, settings, MCP, skills, CLAUDE.md or memory; an empty temporary directory); the CLI is `OWNERS_OFFICE_CLAUDE_BIN`, else `claude` on the PATH, else the copy the Claude desktop app installed, and it must be logged in (`claude auth login`, the owner's action). `api` is the fallback (plan limits reached, unattended runs in the private repository's Actions) and is the only spend that counts against `budget.monthly_usd`. `OWNERS_OFFICE_BACKEND` sets the default; `fake` is for dry runs and tests.
 
 The python.org Python on this machine has no CA certificates: when access to EDGAR or the OpenTimestamps calendars fails, put `SSL_CERT_FILE=/etc/ssl/cert.pem` in front of the command. When running lint locally, `ots` must be on the PATH (use `.venv/bin`); otherwise timestamp proofs after the deadline are only reported as "cannot verify".
 

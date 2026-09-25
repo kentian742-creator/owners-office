@@ -1,4 +1,4 @@
-"""让测试不依赖运行目录就能导入 pipeline 与 scripts。"""
+"""Lets the tests import pipeline and scripts regardless of the working directory."""
 
 import sys
 from pathlib import Path

@@ -23,11 +23,18 @@ from .outputs import dump_yaml, load_yaml_text
 
 _HEADING = re.compile(r"^(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$")
 _FENCE = re.compile(r"^[ \t]*(```|~~~)")
-_NUMBER = re.compile(r"^(?:第\s*)?(\d+)\s*(?:[.、．:：)）]|部分|节|\s)")
+# "9. Bear case", "9) ...", "9: ...", "Part 9. ...", "Section 7 - ..."; the number is what counts.
+_NUMBER = re.compile(r"^(?:(?:part|section)\s+)?(\d+)\s*(?:[.:)]|\s|$)", re.IGNORECASE)
 
-# The bear-case content of each of 06–08 (removed for the first pass of 09B); 06 has no dedicated bear-case
+# The fixed headings the prompts define (01A for the dossier, 02 for the research report, 07 and 08 for the
+# deep-cognition documents, which tell the model to use them verbatim). A section is found by its number or by its
+# title; titles match case-insensitively as whole words anywhere in the heading, so a numbered heading
+# ("## 9. Bear case") and a suffix such as "(Munger-style)" still match.
+DOSSIER_COUNTER_SECTIONS = ((9, "Bear case"), (12, "Thesis breakers"))  # the dossier's parts 9 and 12
+REPORT_COUNTER_SECTIONS = ((7, "Strongest bear case"),)  # the research report's section 7
+# The bear-case content of each of 06-08 (removed for the first pass of 09B); 06 has no dedicated bear-case
 # section, so 09B runs only one pass when it reviews 06.
-COUNTER_TITLES = {"06": (), "07": ("竞争生态全景",), "08": ("反过来想",)}
+COUNTER_TITLES = {"06": (), "07": ("Competitive landscape",), "08": ("Invert",)}
 
 
 def split_sections(markdown: str, level: int = 2) -> list[tuple[str | None, str]]:
@@ -57,59 +64,75 @@ def split_sections(markdown: str, level: int = 2) -> list[tuple[str | None, str]
 
 
 def section_number(title: str) -> int | None:
-    """The number at the start of a heading: "9. ..." -> 9, and the Chinese "part 12" form (see _NUMBER) -> 12."""
+    """The number at the start of a heading: "9. Bear case" -> 9, "Part 12: Thesis breakers" -> 12."""
     match = _NUMBER.match(title.strip())
     return int(match.group(1)) if match else None
 
 
-def strip_sections(
-    markdown: str, *, numbers: Iterable[int] = (), titles: Iterable[str] = (), level: int = 2
-) -> tuple[str, str]:
-    """Remove the sections of the given level whose number is in numbers or whose heading contains any of titles.
+def title_matches(heading: str, title: str) -> bool:
+    """Whether a heading carries the title: case-insensitive, as whole words, anywhere in the heading."""
+    words = r"\s+".join(re.escape(word) for word in title.split())
+    return re.search(rf"(?<![\w-]){words}(?![\w-])", heading, re.IGNORECASE) is not None
 
-    Returns (remaining text, removed part). Raises ValueError if any of the numbers or titles is not found.
+
+def strip_sections(
+    markdown: str,
+    *,
+    numbers: Iterable[int] = (),
+    titles: Iterable[str] = (),
+    sections: Iterable[tuple[int | None, str | None]] = (),
+    level: int = 2,
+) -> tuple[str, str]:
+    """Remove the sections of the given level that match: by number (numbers), by title (titles), or by either the
+    number or the title of a (number, title) pair (sections).
+
+    Returns (remaining text, removed part). Raises ValueError if any number, title or pair matches no section.
     """
-    numbers, titles = set(numbers), tuple(titles)
+    targets = [(n, None) for n in numbers] + [(None, t) for t in titles] + list(sections)
     kept: list[str] = []
     removed: list[str] = []
-    found_numbers: set[int] = set()
-    found_titles: set[str] = set()
-    for title, text in split_sections(markdown, level):
-        number = section_number(title) if title is not None else None
-        hits = [t for t in titles if title is not None and t in title]
-        if number in numbers or hits:
+    found: set[int] = set()
+    for heading, text in split_sections(markdown, level):
+        number = section_number(heading) if heading is not None else None
+        hits = [i for i, (n, t) in enumerate(targets) if heading is not None and (
+            (n is not None and number == n) or (t is not None and title_matches(heading, t)))]
+        if hits:
             removed.append(text)
-            if number in numbers:
-                found_numbers.add(number)
-            found_titles.update(hits)
+            found.update(hits)
         else:
             kept.append(text)
-    missing = [f"第 {n} 部分" for n in sorted(numbers - found_numbers)] + [f"“{t}”" for t in titles if t not in found_titles]
+    missing = [_describe(n, t) for i, (n, t) in enumerate(targets) if i not in found]
     if missing:
-        raise ValueError(f"找不到要删去的章节：{'、'.join(missing)}（按 {'#' * level} 级标题查找）")
+        raise ValueError(f"sections to remove not found: {', '.join(missing)} (looked for {'#' * level} headings)")
     return "".join(kept), "".join(removed)
 
 
+def _describe(number: int | None, title: str | None) -> str:
+    if number is not None and title is not None:
+        return f'section {number} ("{title}")'
+    return f"section {number}" if number is not None else f'"{title}"'
+
+
 def dossier_without_9_12(dossier: str) -> tuple[str, str]:
-    """Remove part 9 (the bear case) and part 12 (thesis breakers) from the dossier. Returns (remaining, removed)."""
-    return strip_sections(dossier, numbers=(9, 12))
+    """Remove part 9 ("Bear case") and part 12 ("Thesis breakers") from the dossier. Returns (remaining, removed)."""
+    return strip_sections(dossier, sections=DOSSIER_COUNTER_SECTIONS)
 
 
 def report_without_counter(report: str) -> tuple[str, str]:
-    """Remove section 7 (the strongest bear-case argument) from the research report.
+    """Remove section 7 ("Strongest bear case") from the research report.
 
     Returns (product_without_counter, product_counter_section).
     """
-    return strip_sections(report, numbers=(7,))
+    return strip_sections(report, sections=REPORT_COUNTER_SECTIONS)
 
 
 def document_without_counter(document: str, doc: str) -> tuple[str, str]:
-    """Remove the bear-case content of 06–08 (COUNTER_TITLES).
+    """Remove the bear-case content of 06-08 (COUNTER_TITLES: 07 "Competitive landscape", 08 "Invert").
 
     Returns (document_without_counter, document_counter_section).
     """
     if doc not in COUNTER_TITLES:
-        raise ValueError(f"doc 必须是 {'、'.join(COUNTER_TITLES)} 之一，收到 {doc!r}")
+        raise ValueError(f"doc must be one of {', '.join(COUNTER_TITLES)}, got {doc!r}")
     titles = COUNTER_TITLES[doc]
     return strip_sections(document, titles=titles) if titles else (document, "")
 
@@ -118,7 +141,7 @@ def thesis_without_loss_paths(thesis_yaml: str) -> str:
     """Remove thesis.permanent_loss_paths from thesis.yml (the YAML is dumped again, so comments are dropped too)."""
     data = load_yaml_text(thesis_yaml)
     if not isinstance(data, dict):
-        raise ValueError("thesis.yml 应当是一个映射")
+        raise ValueError("thesis.yml should be a mapping")
     thesis = data.get("thesis")
     if isinstance(thesis, dict) and "permanent_loss_paths" in thesis:
         data = {**data, "thesis": {k: v for k, v in thesis.items() if k != "permanent_loss_paths"}}
@@ -136,7 +159,7 @@ def question_list_stripped(question_list_yaml: str, *, seed: str) -> str:
     if isinstance(data, dict) and isinstance(data.get("questions"), list):
         data = data["questions"]
     if not isinstance(data, list) or not all(isinstance(q, dict) for q in data):
-        raise ValueError("question_list 应当是问题的列表（每题 id、question、kind、maps_to）")
+        raise ValueError("question_list should be a list of questions (each with id, question, kind, maps_to)")
     movable = [i for i, q in enumerate(data) if q.get("kind") != "open"]
     order = [data[i] for i in movable]
     random.Random(seed).shuffle(order)
