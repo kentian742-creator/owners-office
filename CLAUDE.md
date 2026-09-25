@@ -67,7 +67,14 @@
 .venv/bin/thesis-ci selftest
 .venv/bin/python -m pytest -q owners-office/tests
 .venv/bin/python owners-office/scripts/accept.py --phase 0 --write-report docs/acceptance/phase-0.md
+# 在 owners-office 目录下：
+../.venv/bin/python -m pipeline.edgar next-release APP FY2026Q3            # 预计发布日、截止时间、最晚合并
+../.venv/bin/python -m pipeline.edgar next-release APP FY2026Q3 --announced 2026-11-05   # 公司宣布日期后
+../.venv/bin/python -m pipeline.edgar check-sources companies/APP/sources.yml
+../.venv/bin/python -m pipeline.timestamp status companies/APP/prereg/FY2026Q3.yml
 ```
+
+本机的 python.org Python 没有 CA 证书：访问 EDGAR 或 OpenTimestamps 日历失败时，命令前加 `SSL_CERT_FILE=/etc/ssl/cert.pem`。本地跑 lint 时 `ots` 要在 PATH 上（用 `.venv/bin`），否则截止后的时间证明只报“无法核验”。
 
 仓库还没有提交时，验收加 `--allow-uncommitted`（结果只算临时通过）。验收通过即进入下一阶段，不需要主人签字；未通过写进股东信。
 
