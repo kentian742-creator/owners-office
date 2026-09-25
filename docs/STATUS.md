@@ -1,15 +1,19 @@
 # 进度 STATUS
 
 - 更新：2026-09-25
-- 当前阶段：**第 0 阶段 · 验收已通过（2026-09-25），收尾中**
+- 当前阶段：**第 1 阶段 · 半自动跑一季（准备中；三季度财报季 10 月中开始）**
 - 组合：持仓 APP、PDD；候选 AXP、MSFT、SPGI；BRK 归档（`decisions/0008`，所有者确认）。六家公司的 `thesis.yml` 与 `story.md` 已按此标注。
 - 下一个硬期限：APP 的 FY2026Q3 预注册——业绩预计 11 月初发布，至少在截止时间前 72 小时合并（待办 T11）。
 
-## 当前：等所有者审阅（2026-09-25）
+## 当前
 
-第 0 阶段的交付都已完成并在本地提交：规范 0.2、内容迁移、`llm.py` 升级、验收（A1–A7 PASS）、APP 首次事实审计与修订、错误清单第一条、第 0 阶段股东信（公开正文 `letters/2026-09.md`，私有附录在私有仓库 `letters/2026-09-private-appendix.md`）。三个仓库都还没有推送。
+第 0 阶段完成：验收 A1–A7 PASS，第 0 阶段股东信已写（`letters/2026-09.md`）。三个仓库已在 GitHub 建好并推送（2026-09-25），推送后的 CI 全部通过：
 
-下一步：所有者审阅三个仓库；确认后在 GitHub 建库并按 thesis-ci → owners-office → owners-office-private 的顺序推送（T3），所有者把 API key 放进 Secrets（T4）。之后进入第 1 阶段：T22（PDD 档案的事实审计最先）、T18、T8、T11。
+- thesis-ci（公开）：https://github.com/kentian742-creator/thesis-ci ，发版标签 `v0.2.0`
+- owners-office（公开）：https://github.com/kentian742-creator/owners-office ，CI 固定使用 thesis-ci `v0.2.0`
+- owners-office-private（私有）：https://github.com/kentian742-creator/owners-office-private
+
+所有者要做的：把模型 API key 放进 GitHub Secrets（T4）。
 
 ## 阶段总览
 
@@ -17,14 +21,30 @@
 
 | 阶段 | 时间 | 交付 | 状态 |
 | --- | --- | --- | --- |
-| 0 骨架、宪法与迁移 | 9 月底–10 月中旬 | 三个仓库；CLAUDE.md；schema 与 lint；constitution/；持仓（及候选）的 thesis.yml 和两分钟故事 | 验收通过（2026-09-25），等所有者审阅后推送 |
-| 1 半自动跑一季 | 2026 年 10 月中–11 月底 | 流水线逐步触发；预注册；第一封月度股东信 | 未开始 |
+| 0 骨架、宪法与迁移 | 9 月底–10 月中旬 | 三个仓库；CLAUDE.md；schema 与 lint；constitution/；持仓（及候选）的 thesis.yml 和两分钟故事 | 完成（2026-09-25） |
+| 1 半自动跑一季 | 2026 年 10 月中–11 月底 | 流水线逐步触发；预注册；第一封月度股东信 | 准备中 |
 | 2 自动化 | 2026 年 11 月–2027 年 1 月 | EDGAR 监听、自动开 PR、自动合并、信任等级 | 未开始 |
 | 3 隔离、账本与总部 | 2027 年 1–2 月 | 审计与盲推、分歧图、言行账本、资本配置官、L3 备忘录 | 未开始 |
 | 4 校准与开源 | 2027 年春起 | thesis-ci v1.0、校准看板、行业依赖图 | 未开始 |
 | 5 估值配置器 | 2027 年下半年起 | MSFT 单页配置器 | 未开始 |
 
-## 第 0 阶段清单
+## 第 1 阶段清单
+
+验收（`DESIGN.md` 路线图）：预注册全部在业绩发布前合并并带时间戳；每份财报入库后 7 天内合并更新。按期限排序：
+
+- [ ] T22 PDD 档案的首次事实审计（照 APP 的流程），赶在 11 月下旬的预注册之前
+- [ ] T18 EDGAR 抓取进 `pipeline/`（带测试）：登记号、`acceptanceDateTime`、`release_history`、下一次发布日的估计
+- [ ] T8 OpenTimestamps：预注册文件打时间戳、升级、核验，接进 C-PREREG-IMMUTABLE
+- [ ] 第 1 阶段验收脚本（`scripts/accept.py --phase 1`）
+- [ ] 业绩日历：六家公司下一期的预计发布日（按 `release_history` 与公司公告），截止时间随公司宣布的日期更新
+- [ ] T11 APP FY2026Q3 预注册（业绩约 11 月初）：冻结问题清单 → 写预注册 → 截止前至少 72 小时合并并打时间戳
+- [ ] T11 PDD FY2026Q3 预注册（业绩约 11 月下旬，6-K）
+- [ ] 季度更新：每份财报入库后 7 天内合并；公司经理从 1 级起步，更新先留私有仓库、由总部复核后公开（00 §G9）
+- [ ] T12 第一封月度股东信（写 10 月），最迟 11 月 2 日
+- [ ] T22 其余四家档案的事实审计（AXP、MSFT、SPGI、BRK）
+- [ ] T21 价格参照的来源；T17 电话会纪要的来源
+
+## 第 0 阶段清单（已完成）
 
 - [x] 三个仓库的骨架、CLAUDE.md、`pipeline/llm.py`、`scripts/accept.py`、公开 CI、私有仓库骨架；`docs/DESIGN.md`
 - [x] 提示词 v3（00、00D、01–19）定稿，放在私有仓库 `prompts/`（`decisions/0009`）
@@ -45,7 +65,6 @@
 
 | # | 事项 | 谁 | 说明 |
 | --- | --- | --- | --- |
-| T3 | GitHub 仓库创建与推送 | 所有者审阅 | 推送顺序 thesis-ci → owners-office → owners-office-private（`decisions/0007`）。 |
 | T4 | 模型 API key | 所有者 | 放进 GitHub Secrets 的 `ANTHROPIC_API_KEY`，绝不贴进聊天或代码。 |
 | T5 | MSFT 完整公开档案 | 系统 | 第 1 阶段；估值一节不写由价格推出的数字（`decisions/0004`）。 |
 | T7 | 模型调用日志的持久化 | 系统 | 第 2 阶段；用 `OWNERS_OFFICE_LLM_LOG` 把日志指到私有仓库。 |
@@ -64,9 +83,4 @@
 
 ## 怎样接着做
 
-新会话里所有者说“继续推进”，就先读本文件，然后在工作区根目录运行
-`.venv/bin/python owners-office/scripts/accept.py --phase 0 --allow-uncommitted`，
-看哪几条还是 FAIL；按上面的清单从第一项未完成的事做起，★ 项和 T11 的期限优先。每完成一项就在这里打勾，
-新的自主决定写进 `docs/decisions/`，只有资金事项和修宪才停下来问所有者，所有者才能做的事记进待办表。
-第 0 阶段验收（不带 `--allow-uncommitted`）全部通过后，写第 0 阶段股东信，把“当前阶段”改成第 1 阶段，
-并把第 1 阶段的交付拆成新的清单。
+新会话里所有者说“继续”，就先读本文件，按“第 1 阶段清单”从第一项未完成的事做起，期限近的优先（APP 的预注册截止时间约在 11 月初）。每完成一项就在这里打勾，新的自主决定写进 `docs/decisions/`；只有资金事项和修宪才停下来问所有者，所有者才能做的事记进待办表。第 1 阶段验收脚本写好后，用它判定能否进入第 2 阶段。
