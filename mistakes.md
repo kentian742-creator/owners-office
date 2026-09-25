@@ -29,6 +29,14 @@ One subsection per entry, newest first. Factual numbers carry `[src:...]` tags a
 
 ## The list
 
+### 2026-09-25 · PDD · Fact errors
+
+- What was written: the phase 0 PDD archive (`companies/PDD/`) repeated several statements from the owner's report without checking them against the filings: when PDD stopped disclosing GMV and user numbers, the count of loss years in the last decade, the sources of share issuance, the 2022 merchandise-sales precedent, and FY2025 figures taken from the pre-penalty results announcement without saying so.
+- What happened: the first fact audit checked 372 facts against the filings: 304 accurate, 12 errors, 4 basis issues, 20 resting only on secondary sources. Fixed against the 20-F and 6-Ks; the audited FY2025 figures now come first, with the announcement basis alongside.
+- Where it went wrong: as with APP, the archive was built from the report before SEC data could be fetched, and it was merged before a fact audit.
+- Whose error: the system's phase 0 build (not scored for any role, decision 0016); the source is the owner's report, whose differences are logged in the private errata table.
+- What changed: every archive now goes through the fact audit before a pre-registration relies on it (AXP, MSFT, SPGI and BRK are next).
+
 ### 2026-09-25 · Process · private information in a public file
 
 - What was written: the public progress file `docs/STATUS.md` recorded, company by company, how the grades given to two companies' prices changed under the owner's chosen scale. Those grades belong only in the private repository (hard rule H4).
