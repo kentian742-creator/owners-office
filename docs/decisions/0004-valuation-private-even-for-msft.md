@@ -1,45 +1,45 @@
-# 0004 估值数字一律留在私有仓库，MSFT 也不例外
+# 0004 Valuation numbers always stay in the private repository, MSFT included
 
-> **部分修正（[0012](0012-discount-rate-no-cross-company.md)，2026-09-24）：** 文中“质量评级怎样影响折现率的溢价”一句不再成立——溢价按本公司自己的现金流记录判断，不按评级套档（00 §V1、§V10）。其余不变。
+> **Partly amended ([0012](0012-discount-rate-no-cross-company.md), 2026-09-24):** the phrase in this record "how the quality rating affects the discount-rate premium" no longer holds: the premium is judged from the company's own cash-flow record, not slotted by rating (00 §V1, §V10). The rest is unchanged.
 
-## 背景
+## Background
 
-DESIGN.md 有两处说法需要调和：
+Two statements in DESIGN.md need to be reconciled:
 
-- “公开什么”的默认值是“完整档案只公开 MSFT”，owners-office 的内容里写着“MSFT 完整示范档案”。
-- 开工指令的硬规则写着“价值区间和 L3 备忘录只存私有仓库，公开的 thesis.yml 不含 value_ranges”；设计原则还要求“价格静默”，公开内容不出现买卖建议。
+- The default for "what is public" is "of the full archives, only MSFT's is public", and the contents of owners-office include "a complete MSFT sample archive".
+- The hard rules of the kickoff instructions say "Value ranges and L3 memos are stored only in the private repository; the public thesis.yml contains no value_ranges"; the design principles also require "price silence" and no buy or sell advice in public content.
 
-主人的 02 报告是 12 个维度的完整报告，其中的估值部分包含价格基准、价值区间及其中点、折现率、按现价算出的年化回报，以及对价格的字母评级。把 MSFT 报告原样公开，就会把这些数字带进公开仓库；thesis-ci 的 `C-PUBLIC-NO-VALUATION` 会把它们当作错误拦下。
+The owner's 02 reports are complete reports on 12 dimensions, and their valuation part contains a reference price, a value range and its midpoint, the discount rate, the annualized return implied by the current price, and a letter grade for the price. Publishing the MSFT report as it is would bring these numbers into the public repository; thesis-ci's `C-PUBLIC-NO-VALUATION` would stop them as errors.
 
-## 选项
+## Options
 
-1. 原样公开 MSFT 的完整档案，包括估值数字。
-2. 公开完整档案，但让 lint 对 MSFT 网开一面。
-3. 公开 MSFT 的完整档案，估值那一维只写方法和判断，不写任何由价格推出的数字；数字留在私有仓库。
-4. 干脆不公开 MSFT 的完整档案。
+1. Publish MSFT's full archive as it is, valuation numbers included.
+2. Publish the full archive, but have the lint make an exception for MSFT.
+3. Publish MSFT's full archive, with the valuation dimension covering only method and judgment and no number derived from price; the numbers stay in the private repository.
+4. Don't publish MSFT's full archive at all.
 
-## 决定
+## Decision
 
-采用选项 3。
+Option 3.
 
-- MSFT 的公开档案（第 1 阶段，12 个维度，Markdown，放在 `companies/MSFT/` 下）完整保留生意、经济学、护城河、管理层、反方观点、同业、监控、失败模式等内容。
-- 估值那一维在公开版里只写：用什么方法、哪些假设最要紧、质量评级怎样影响折现率的溢价（宪法第 5 条）、估值对远期现金流有多敏感。不写价格基准、价值区间或其中点、按现价算出的回报、对价格的评级，也不写“现价在假设什么”的反向测算结果。
-- 这些数字全部放在 `owners-office-private/companies/MSFT/valuation.yml`，和其他公司一样；价格只作为私有的参考数据，用于跨越区间时提醒一次。
-- 公开的 `thesis.yml` 里 `ratings` 只含生意、管理层、资本配置和文化四项（thesis-ci 规范第 4 节）。
+- MSFT's public archive (Phase 1, 12 dimensions, Markdown, under `companies/MSFT/`) keeps the business, economics, moat, management, bear case, peers, monitoring, failure modes and the rest in full.
+- In the public version the valuation dimension states only which method is used, which assumptions matter most, how the quality rating affects the discount-rate premium (rule 5 of the constitution), and how sensitive the valuation is to distant cash flows. It does not state the reference price, the value range or its midpoint, the return implied by the current price or the grade for the price, nor the result of the reverse calculation of "what the current price assumes".
+- All of these numbers go into `owners-office-private/companies/MSFT/valuation.yml`, as for every other company; prices exist only as private reference data, used for one alert when a range is crossed.
+- `ratings` in the public `thesis.yml` contains only the four items business, management, capital allocation and culture (section 4 of the thesis-ci spec).
 
-## 理由
+## Rationale
 
-- 硬规则是开工指令里明确的约束，而且由 CI 执行；“完整档案只公开 MSFT”是可以调整的默认值。两者冲突时，以硬规则为准。
-- DESIGN.md 公开 MSFT 的目的是“一份完整样本足以证明质量”。证明质量靠的是生意分析、出处和可检验的论点，不靠价格数字；去掉估值数字不损害这个目的。
-- 第 5 阶段的估值配置器本来就计划闭源、作为订阅产品，估值数字留在私有仓库与此一致，也避免公开内容被当作投资建议。
-- 所有公司适用同一条规则，lint 不需要例外，规则更难被钻空子。
+- The hard rules are explicit constraints in the kickoff instructions, and CI enforces them; "only MSFT's full archive is public" is an adjustable default. Where the two conflict, the hard rules win.
+- DESIGN.md publishes MSFT because "one complete sample is enough to prove quality". Quality is proved by the business analysis, the sources and the testable thesis, not by price numbers; removing the valuation numbers does not hurt that purpose.
+- The Phase 5 valuation configurator was always planned to be closed source, as a subscription product; keeping valuation numbers in the private repository is consistent with that, and it also keeps public content from being taken as investment advice.
+- The same rule applies to every company, so the lint needs no exceptions and the rule is harder to game.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **原样公开**：直接违反硬规则，CI 也过不了。
-- **给 MSFT 开 lint 例外**：例外一开，“公开仓库不含价值区间”就不再是一条可以机器保证的规则。
-- **不公开 MSFT 档案**：放弃了 DESIGN.md 用一份完整样本展示质量的目的，而冲突只在估值数字上。
+- **Publish as it is**: directly breaks a hard rule, and CI would not pass either.
+- **A lint exception for MSFT**: once there is an exception, "the public repository contains no value ranges" is no longer a rule a machine can guarantee.
+- **Don't publish the MSFT archive**: gives up the DESIGN.md purpose of showing quality through one complete sample, when the conflict is only about the valuation numbers.
 
-## 日期
+## Date
 
 2026-09-24

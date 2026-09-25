@@ -1,38 +1,38 @@
-# 0016 信任等级从流水线的第一份产出开始计分
+# 0016 Trust levels are scored from the pipeline's first output
 
-## 背景
+## Background
 
-信任等级的规则（`constitution/decision-rights.yml` 的 `trust.scoring`，00 §G9）是：一次事实错误降一级，连续四次零事实错误升一级，新角色从 1 级起步；计分的产出是季度更新、档案建立与重建、研报。
+The trust level rules (`trust.scoring` in `constitution/decision-rights.yml`, 00 §G9) are: one factual error drops the level by one, four consecutive outputs with zero factual errors raise it by one, and new roles start at level 1; the scored outputs are quarterly updates, archive builds and rebuilds, and research reports.
 
-2026-09-25，APP 档案第一次按提示词跑了事实抽取与事实审计（16A → 04A）：237 条事实里有 7 条判为“错误”，实际是两处问题——债务本金与净债务照抄了所有者报告里的约数，股本的期初取错了年份。两处都源自报告本身；建档时 EDGAR 还不可达，数字取自报告，没有逐条回到一手文件核对。
+On 2026-09-25 the APP archive went through fact extraction and fact audit by the prompts for the first time (16A → 04A): of 237 facts, 7 were judged "error", which were really two problems: debt principal and net debt copied the rounded figures in the owner's report, and the opening share count was taken from the wrong year. Both came from the report itself; when the archive was built, EDGAR was not yet reachable, and the numbers were taken from the report without being checked one by one against the primary filings.
 
-如果照字面计分，APP 的公司经理在任何流水线运行之前就会从 1 级降到 0 级：暂停自治，所有产出都要所有者本人过目。
+Scored literally, APP's company manager would drop from level 1 to level 0 before any pipeline run: autonomy suspended, and every output would need the owner's own review.
 
-## 选项
+## Options
 
-1. 照字面计分：APP 的公司经理降到 0 级。
-2. 第 0 阶段手工建立的六份档案不计分，计分从流水线运行的第一份产出开始；错误照常记进公开的错误清单。
-3. 计分，但把降级推迟到第 1 阶段开始时生效。
+1. Score literally: APP's company manager drops to level 0.
+2. The six archives built by hand in Phase 0 are not scored, and scoring starts with the first output of a pipeline run; the errors still go into the public mistakes list as usual.
+3. Score, but defer the downgrade until Phase 1 starts.
 
-## 决定
+## Decision
 
-采用选项 2。
+Option 2.
 
-- 第 0 阶段由工程搭建时整理出的档案（六家公司的 `thesis.yml`、`story.md`、`ledger.yml`、`sources.yml` 与私有 `valuation.yml`）不计入任何角色的信任等级。
-- 计分从经 `pipeline/llm.py` 运行、以某个角色的名义产出的第一份计分产出开始。
-- 这次审计查出的错误照常改正，并记进 `mistakes.md`：它们是系统的错误，只是不记在一个还没开始工作的角色头上。
+- The archives put together during the Phase 0 engineering setup (the six companies' `thesis.yml`, `story.md`, `ledger.yml`, `sources.yml` and the private `valuation.yml`) do not count toward any role's trust level.
+- Scoring starts with the first scored output produced in a role's name by a run of `pipeline/llm.py`.
+- The errors found by this audit are corrected as usual and recorded in `mistakes.md`: they are the system's errors, just not charged to a role that had not started working yet.
 
-## 理由
+## Rationale
 
-- 信任等级衡量的是一个角色自己的工作。六份档案建立时，角色体系还没有运行，SEC 数据也还取不到；把这段时间的错误记在公司经理头上，衡量的是工程过程，不是这个角色。
-- 选项 1 会让持仓公司在第一个财报季一开始就暂停自治，所有者要逐份过目，而错误的来源并不是这个角色的判断。
-- 公开记录不打折扣：错误进错误清单，股东信里照写。
+- A trust level measures a role's own work. When the six archives were built, the system of roles was not running yet and SEC data could not be fetched; charging errors from that period to the company manager would measure the engineering process, not this role.
+- Option 1 would suspend the autonomy of a holding right at the start of the first earnings season, and the owner would have to review every output, although the errors did not come from this role's judgment.
+- The public record is not watered down: the errors go into the mistakes list and are reported in the letter as they are.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **照字面计分：** 惩罚的是一个没有犯错机会的角色，还会把所有者拉进本该由系统处理的例行工作。
-- **推迟降级：** 只是把同样的问题往后挪。
+- **Score literally:** punishes a role that has had no chance to make a mistake, and pulls the owner into routine work the system should handle.
+- **Defer the downgrade:** only pushes the same problem further down the road.
 
-## 日期
+## Date
 
 2026-09-25

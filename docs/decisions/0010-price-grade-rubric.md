@@ -1,54 +1,54 @@
-# 0010 对价格的评级尺、封面标题、入选门槛的一句话
+# 0010 The price grading scale, the cover title, and the one sentence on the entry bar
 
-> 本记录是公开文件，按 H4 不写任何公司在这把尺上的结果，也不用公开文件禁用的用语；尺子本身只用于私有文件。
+> This record is a public file: under H4 it states no company's result on this scale and uses none of the terms forbidden in public files; the scale itself is used only in private files.
 
-## 背景
+## Background
 
-所有者的报告给五个维度打字母评级：生意、管理层、资本配置、企业文化和价格。前四个是判断；价格那一维，所有者的估值规则 11 要求按一把写明的机械尺给出，不凭判断。但过去几份报告各用各的尺子，有的还加正负号——同一条规则分写在几份提示词里，逐渐漂移（见 [0009](0009-prompt-set-v3.md)）。
+The owner's reports give letter grades on five dimensions: business, management, capital allocation, culture and price. The first four are judgments; for the price dimension, the owner's valuation rule 11 requires the grade to come from a written, mechanical scale, not from judgment. But earlier reports each used their own scale, some with plus and minus signs: the same rule was written separately into several prompts and gradually drifted (see [0009](0009-prompt-set-v3.md)).
 
-提示词 v3 把这把尺子写进 00 §V11，只写一次。同时有三件相关的事要定：研报封面的主标题在 09-16、09-20、09-23 三个时期各有一种写法；早先的材料里有一条“合理区间内不投新钱”；公司层面的交付物不写仓位，私有研报能不能对入选门槛说一句话也没有定。
+Prompt set v3 writes this scale into 00 §V11, once. At the same time three related things had to be decided: the main title on the research report cover had a different form in each of three periods, 09-16, 09-20 and 09-23; earlier material contained a rule "no new money inside the fair range"; and company-level deliverables don't state positions, but whether a private research report may say one sentence about the entry bar had not been settled.
 
-2026-09-24，所有者确认了下面四条。
+On 2026-09-24 the owner confirmed the four points below.
 
-## 选项
+## Options
 
-1. 对价格的评级凭判断给出，报告之间允许不同。
-2. 用一把机械尺，允许加正负号细分。
-3. 用一把机械尺，五档、不加正负号（所有者认可的 MSFT 报告的版本）。
+1. The price grade is given by judgment, and reports may differ.
+2. One mechanical scale, with plus and minus signs allowed as finer steps.
+3. One mechanical scale, five grades, no plus or minus signs (the version in the MSFT report the owner endorsed).
 
-封面、“合理区间内不投新钱”和入选门槛的一句话，各自是“沿用旧写法”与“按所有者确认的写法统一”两个选项。
+For the cover, for "no new money inside the fair range" and for the one sentence on the entry bar, the two options in each case are "keep the old wording" and "standardize on the wording the owner confirmed".
 
-## 决定
+## Decision
 
-采用选项 3，另外三件按所有者确认的写法统一。
+Option 3; the other three are standardized on the wording the owner confirmed.
 
-1. **对价格的评级按机械尺给出，只看“价格 ÷ 中枢”：**
-   - A：不高于本公司按安全边际折算出的区间上沿——上沿 = 中枢 ×（1 − 安全边际下限），默认 0.75；低于区间下沿同样是 A；
-   - B：≤ 1.00；C：≤ 1.08；D：≤ 1.15；E：> 1.15。
-   - 不加正负号，不凭判断调整。生意、管理层、资本配置、企业文化四个维度仍可以用 A−、B+ 这样的细分档。
-   - 这把尺子只用于私有文件；按它重新给出的各公司结果写在私有文件里，下次更新时给出。尺子用到的价格参照带日期和来源，只由流水线作为输入提供（H2）。
-2. **封面：** 主标题是公司名。官方字标本身就是公司名的，把字标放大作为标题；不是的（如拼多多的心形标），用中文公司名作标题，字标放在右上。论点作副题。字标只用于私有报告，公开仓库不存放任何 logo。
-3. **删去“合理区间内不投新钱”。** 是否投入新钱，由总部起草一页备忘录、所有者决定（决策 L3）。R1 里“合理价格不等于任何价格，仍要有安全边际”的一面照旧保留。
-4. **私有研报（02）和完整企业报告（11）可以写一句入选门槛的判断：** 是否够格进入 10–20% 的入选门槛、差在哪里（生意、管理层还是价格）。不写具体仓位，不写仓位阶梯。
+1. **The price grade comes from the mechanical scale and looks only at "price ÷ central value":**
+   - A: no higher than the top of the company's range derived from its margin of safety, where top = central value × (1 − minimum margin of safety), 0.75 by default; a price below the bottom of the range is also A;
+   - B: ≤ 1.00; C: ≤ 1.08; D: ≤ 1.15; E: > 1.15.
+   - No plus or minus signs, and no adjustment by judgment. The four dimensions business, management, capital allocation and culture may still use finer grades such as A− and B+.
+   - This scale is used only in private files; each company's result re-graded on it is written in the private files and given at the next update. The price reference the scale uses carries a date and a source and is supplied only by the pipeline, as an input (H2).
+2. **Cover:** the main title is the company name. Where the official wordmark is itself the company name, the enlarged wordmark serves as the title; where it isn't (such as Pinduoduo's heart-shaped logo), the company's Chinese name is the title and the wordmark goes at the top right. The thesis is the subtitle. Wordmarks are used only in private reports; the public repository stores no logos.
+3. **Drop "no new money inside the fair range".** Whether to put in new money is decided by the owner on a one-page memo drafted by HQ (decision level L3). The side of R1 that says "a fair price is not any price; a margin of safety is still required" stays as it is.
+4. **The private research report (02) and the complete company report (11) may contain one sentence on the entry bar:** whether the company qualifies for the 10–20% entry bar, and where it falls short (business, management or price). No specific position size and no position ladder.
 
-## 理由
+## Rationale
 
-- **机械尺可复现、可审计。** 同一组输入，谁来算都得到同一个字母；模型审查（04C）可以逐项核对，报告之间也不会再漂移。
-- **不加正负号。** 价格 ÷ 中枢本身就带着估值的误差带，再细分只是假精确。
-- **采用 MSFT 版。** 这是所有者认可的那份报告的写法；A 档的上沿跟着本公司的安全边际走，而不是全系列一个数，和“安全边际按可预测性移档”（00 §V2）一致。
-- **封面：** 三个时期的写法各不相同；以公司名为标题，读者一眼知道是哪家公司，论点留给副题。
-- **删去“合理区间内不投新钱”。** 它是一条机械的买入禁令，和 R1“不机械地等待极端低价”冲突；而且是否投入新钱本来就是决策 L3，不该由一条报告规则预先替所有者决定。
-- **入选门槛的一句话。** 所有者需要知道一家公司够不够格、差在哪里；只说这一句，不会把报告变成仓位建议（00 §C 关于仓位）。
+- **A mechanical scale is reproducible and auditable.** The same inputs give the same letter whoever computes it; model review (04C) can check each item, and reports no longer drift apart.
+- **No plus or minus signs.** Price ÷ central value already carries the error band of the valuation; finer steps would only be false precision.
+- **The MSFT version.** It is the wording of the report the owner endorsed; the top of grade A follows the company's own margin of safety instead of one number for the whole series, consistent with "the margin of safety moves up or down a step with predictability" (00 §V2).
+- **Cover:** each of the three periods had a different form; with the company name as the title, readers know at a glance which company it is, and the thesis goes into the subtitle.
+- **Drop "no new money inside the fair range".** It is a mechanical ban on buying, which conflicts with R1's "don't wait mechanically for an extreme low price"; and whether to put in new money is a decision at level L3 anyway, which a report rule should not make for the owner in advance.
+- **The one sentence on the entry bar.** The owner needs to know whether a company qualifies and where it falls short; saying only this one sentence doesn't turn the report into position advice (00 §C on position size).
 
-## 被否决的方案
+## Rejected alternatives
 
-- **凭判断给出：** 违背所有者的估值规则 11，结果不可复现，正是漂移的来源。
-- **机械尺加正负号：** 假精确；而且正负号的边界又要另写一套规则。
-- **沿用各时期的封面写法：** 正是三种写法并存的原因。
-- **保留“合理区间内不投新钱”：** 见上。
-- **研报对仓位只字不提：** 所有者最想知道的“够不够格”就没有地方写了。
-- **公开各公司的结果：** 违反 H4。
+- **Given by judgment:** violates the owner's valuation rule 11; the results can't be reproduced, and this is exactly where the drift came from.
+- **Mechanical scale with plus and minus signs:** false precision; and the boundaries for the signs would need yet another set of rules.
+- **Keep each period's cover wording:** that is exactly why three forms coexist.
+- **Keep "no new money inside the fair range":** see above.
+- **Research reports say nothing at all about positions:** the answer the owner most wants, "does it qualify", would have nowhere to go.
+- **Publish each company's result:** violates H4.
 
-## 日期
+## Date
 
 2026-09-24

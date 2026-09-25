@@ -1,23 +1,31 @@
-"""SEC EDGAR 访问 / SEC EDGAR access（STATUS T18；docs/decisions/0013、0017）。
+"""SEC EDGAR access (STATUS T18; docs/decisions/0013, 0017).
 
-只读 EDGAR 的公开数据：submissions（含 filings.files 的续页）、文件索引 index.json、主文档与附件 EX-99.x。
-由此给出业绩事件、release_history、下一次发布日的估计与预注册的截止时间，以及来源表登记号的核对。
+Reads only public EDGAR data: submissions (including the continuation pages in filings.files), the file index
+index.json, and primary documents and EX-99.x exhibits. From these it derives earnings events, release_history, the
+estimated next release date and the pre-registration deadline, and it checks the accession numbers in sources tables.
 
-- **User-Agent：** 环境变量 SEC_USER_AGENT；没有就读 .env（默认工作区根目录，即本仓库的上一级；
-  OWNERS_OFFICE_ENV_FILE 或 --env-file 可改）。两处都没有就拒绝联网。这个值不打印、不记日志、不进缓存、
-  不写进任何文件，报错信息里也没有：本模块的异常与日志一律先把它换成 [SEC_USER_AGENT]（decisions/0013）。
-- **频率：** 同一进程里的请求共用一个限速器，每秒不超过 5 次（SEC 的上限是 10 次）；429 与 5xx 按指数退避重试，
-  尊重 Retry-After；每次请求有超时。只访问 SEC 的两个主机（data.sec.gov、www.sec.gov）。
-- **TLS：** SSL_CERT_FILE > certifi > 系统默认 > 常见的系统证书文件（python.org 的 macOS 版 Python 不带 CA 证书）。
-- **缓存：** 默认 ~/.cache/owners-office/edgar（三个仓库之外；OWNERS_OFFICE_EDGAR_CACHE 或 --cache-dir 可改）。
-  Archives 下的文件入库后不再变，永久缓存；submissions 默认一小时后重新取。缓存里只有 SEC 的响应正文与取数时间。
-- **业绩事件：** 国内发行人是带第 2.02 项的 8-K，10-Q／10-K 入库或满 5 个工作日收口（以先到者为准）；
-  外国发行人（PDD）是业绩 6-K，按附件 EX-99.1 的新闻稿标题认出。期间按公司自己的财年写 FY<年>Q<季>。
-- **下一次发布日：** 按提示词 15A 的规则估计（公布的日期 > 公布的窗口 > release_history > 最近一期的间隔），
-  截止时间是发布日前一天 23:59:59 美东，合并时限是截止前 72 个实际经过的小时。
-- 本模块不接任何行情源（C-NO-PRICE-FEED），也不调用模型（C-LLM-ENTRY）。
+- **User-Agent:** the SEC_USER_AGENT environment variable; if it is not set, .env is read (by default in the
+  workspace root, i.e. the parent directory of this repo; override with OWNERS_OFFICE_ENV_FILE or --env-file). If
+  neither has it, network access is refused. The value is never printed, logged, cached or written to any file, and
+  it never appears in error messages: this module's exceptions and logs always replace it with [SEC_USER_AGENT]
+  first (decisions/0013).
+- **Request rate:** all requests in one process share one rate limiter, at most 5 per second (the SEC limit is 10);
+  429 and 5xx are retried with exponential backoff, honoring Retry-After; every request has a timeout. Only the two
+  SEC hosts are accessed (data.sec.gov, www.sec.gov).
+- **TLS:** SSL_CERT_FILE > certifi > system default > common system certificate files (the python.org macOS build of
+  Python ships without CA certificates).
+- **Cache:** default ~/.cache/owners-office/edgar (outside all three repos; override with OWNERS_OFFICE_EDGAR_CACHE
+  or --cache-dir). Files under Archives never change once accepted, so they are cached permanently; submissions are
+  re-fetched after one hour by default. The cache holds only SEC response bodies and fetch times.
+- **Earnings events:** for a domestic issuer, an 8-K with Item 2.02, closed when the 10-Q/10-K is filed or after 5
+  business days, whichever comes first; for a foreign issuer (PDD), an earnings 6-K, recognized by the title of the
+  press release in exhibit EX-99.1. Periods are written FY<year>Q<quarter> in the company's own fiscal year.
+- **Next release date:** estimated by the rules of prompt 15A (announced date > announced window >
+  release_history > lag of the latest period); the deadline is 23:59:59 US Eastern on the day before the release
+  date, and the merge-by time is 72 actual elapsed hours before the deadline.
+- This module connects to no price feed (C-NO-PRICE-FEED) and calls no model (C-LLM-ENTRY).
 
-命令行（在仓库根目录）：
+Command line (from the repo root):
 
     python -m pipeline.edgar release-history APP
     python -m pipeline.edgar next-release APP FY2026Q3 [--announced 2026-11-05]
@@ -64,52 +72,52 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = REPO_ROOT.parent
 
 UA_ENV = "SEC_USER_AGENT"
-ENV_FILE_ENV = "OWNERS_OFFICE_ENV_FILE"  # .env 的位置；默认工作区根目录
-CACHE_ENV = "OWNERS_OFFICE_EDGAR_CACHE"  # 缓存目录；默认 ~/.cache/owners-office/edgar
+ENV_FILE_ENV = "OWNERS_OFFICE_ENV_FILE"  # location of .env; default: the workspace root
+CACHE_ENV = "OWNERS_OFFICE_EDGAR_CACHE"  # cache directory; default: ~/.cache/owners-office/edgar
 DEFAULT_ENV_FILE = WORKSPACE_ROOT / ".env"
 
 DATA_BASE = "https://data.sec.gov"
 ARCHIVES_BASE = "https://www.sec.gov/Archives/edgar/data"
 ALLOWED_HOSTS = frozenset({"data.sec.gov", "www.sec.gov"})
 
-MAX_REQUESTS_PER_SECOND = 5.0  # 本项目的上限；SEC 的公平访问上限是 10
+MAX_REQUESTS_PER_SECOND = 5.0  # this project's limit; the SEC fair-access limit is 10
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_ATTEMPTS = 5
 DEFAULT_BACKOFF = 1.0
 MAX_BACKOFF = 60.0
-SUBMISSIONS_TTL = 3600.0  # submissions 缓存一小时；Archives 下的文件永久缓存
+SUBMISSIONS_TTL = 3600.0  # submissions are cached for one hour; files under Archives are cached permanently
 
 NY = ZoneInfo("America/New_York")
 UTC = dt.timezone.utc
 
-MERGE_HOURS = 72  # 预注册至少在截止时间前 72 小时合并（15A）
-ESTIMATE_LEAD_DAYS = 3  # 没有公布日期时，历年最早的月日往前数 3 个日历日（15A）
-HISTORY_YEARS = 3  # release_history：过去三年同一财季
+MERGE_HOURS = 72  # pre-registrations are merged at least 72 hours before the deadline (15A)
+ESTIMATE_LEAD_DAYS = 3  # without an announced date: the earliest month-day of past years minus 3 calendar days (15A)
+HISTORY_YEARS = 3  # release_history: the same fiscal quarter in the past three years
 
 DOMESTIC = "domestic"
 FOREIGN = "foreign_private_issuer"
 ANNUAL_FORMS = frozenset({"10-K", "10-K/A", "10-KT", "10-KT/A", "20-F", "20-F/A", "40-F", "40-F/A"})
 QUARTERLY_FORMS = frozenset({"10-Q", "10-Q/A", "10-QT", "10-QT/A"})
 PERIODIC_FORMS = ANNUAL_FORMS | QUARTERLY_FORMS
-CLOSING_FORMS = frozenset({"10-Q", "10-K"})  # 国内业绩事件的收口文件（不含修正版）
+CLOSING_FORMS = frozenset({"10-Q", "10-K"})  # filings that close a domestic earnings event (amendments excluded)
 SYSTEM_CA_BUNDLES = (
-    "/etc/ssl/cert.pem",  # macOS、Alpine
-    "/etc/ssl/certs/ca-certificates.crt",  # Debian、Ubuntu
-    "/etc/pki/tls/certs/ca-bundle.crt",  # RHEL、Fedora
+    "/etc/ssl/cert.pem",  # macOS, Alpine
+    "/etc/ssl/certs/ca-certificates.crt",  # Debian, Ubuntu
+    "/etc/pki/tls/certs/ca-bundle.crt",  # RHEL, Fedora
 )
 
 ACCESSION_RE = re.compile(r"^\d{10}-\d{2}-\d{6}$")
 PERIOD_RE = re.compile(r"^FY(\d{4})(?:Q([1-4]))?$")
 _OVERFLOW_PAGE_RE = re.compile(r"^CIK\d{10}-submissions-\d{3}\.json$")
 _DOC_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
-_R_PAGE_RE = re.compile(r"^R\d+\.htm$", re.I)  # XBRL 查看器生成的页面，不下载
-_EX99_RE = re.compile(r"(?i)(?:ex|exhibit)[-_ ]?99(?:[-_.d](\d{1,2})|(\d))?(?!\d)")  # ex99-1、ex991、ex99d1 ……
+_R_PAGE_RE = re.compile(r"^R\d+\.htm$", re.I)  # pages generated by the XBRL viewer; not downloaded
+_EX99_RE = re.compile(r"(?i)(?:ex|exhibit)[-_ ]?99(?:[-_.d](\d{1,2})|(\d))?(?!\d)")  # ex99-1, ex991, ex99d1, ...
 
 LOG = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# User-Agent：只在内存里；日志与异常里一律换成占位符
+# User-Agent: kept in memory only; always replaced with a placeholder in logs and exceptions
 # ---------------------------------------------------------------------------------------------------------------
 
 REDACTED = "[SEC_USER_AGENT]"
@@ -119,7 +127,7 @@ _EMAIL_RE = re.compile(r"[^\s<>()\"',;]+@[^\s<>()\"',;]+")
 
 
 def _remember_sensitive(value: str) -> None:
-    """记住要从输出里去掉的值：整个 User-Agent，以及其中的邮箱。"""
+    """Remember values to remove from output: the whole User-Agent and the email addresses in it."""
     value = value.strip()
     if not value:
         return
@@ -129,7 +137,7 @@ def _remember_sensitive(value: str) -> None:
 
 
 def redact(text: str) -> str:
-    """把本进程见过的 User-Agent（及其中的邮箱）换成占位符。"""
+    """Replace any User-Agent this process has seen (and the email addresses in it) with the placeholder."""
     with _SENSITIVE_LOCK:
         secrets = sorted(_SENSITIVE, key=len, reverse=True)
     for secret in secrets:
@@ -151,14 +159,14 @@ LOG.addFilter(_RedactFilter())
 
 
 class EdgarError(RuntimeError):
-    """EDGAR 访问或数据出错。信息先去掉 User-Agent 再保存。"""
+    """EDGAR access or data error. The User-Agent is removed from the message before it is stored."""
 
     def __init__(self, message: str):
         super().__init__(redact(str(message)))
 
 
 class MissingUserAgent(EdgarError):
-    """没有可用的 SEC_USER_AGENT：拒绝联网。"""
+    """No usable SEC_USER_AGENT: network access is refused."""
 
 
 class EdgarHTTPError(EdgarError):
@@ -169,28 +177,31 @@ class EdgarHTTPError(EdgarError):
 
 
 class EdgarNotFound(EdgarHTTPError):
-    """404：EDGAR 上没有这个地址。"""
+    """404: this URL does not exist on EDGAR."""
 
 
 class EdgarAccessDenied(EdgarHTTPError):
-    """403 或 SEC 的拦截页：User-Agent 不合格或请求太快。"""
+    """403 or the SEC block page: the User-Agent is not acceptable, or requests are too fast."""
 
 
 class EdgarOffline(EdgarError):
-    """离线模式下缓存里没有需要的文件。"""
+    """Offline mode, and the needed file is not in the cache."""
 
 
 class EdgarDataError(EdgarError):
-    """EDGAR 返回的内容与预期不符，或数据不够做判断。"""
+    """EDGAR returned something other than expected, or the data are not enough to decide."""
 
 
 def _valid_user_agent(value: str) -> bool:
-    """SEC 要求写明联系方式：一行可打印的 ASCII，含邮箱。"""
+    """The SEC requires contact details: one line of printable ASCII that includes an email address."""
     return bool(value) and value.isascii() and value.isprintable() and "@" in value and len(value) <= 300
 
 
 def _read_env_value(path: Path, key: str) -> str | None:
-    """从 .env 里读一个键（KEY=VALUE，可带 export、引号与行尾注释）。不回显文件内容。"""
+    """Read one key from .env (KEY=VALUE, optionally with export, quotes and a trailing comment).
+
+    Never echoes the file contents.
+    """
     try:
         text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
@@ -212,12 +223,12 @@ def _read_env_value(path: Path, key: str) -> str | None:
             rest = rest[1:-1]
         else:
             rest = re.split(r"\s+#", rest, maxsplit=1)[0].strip()
-        value = rest  # 同一个键写了几次，以最后一次为准（与 shell 一致）
+        value = rest  # if a key is set more than once, the last one wins (as in the shell)
     return value or None
 
 
 def load_user_agent(env: Mapping[str, str] | None = None, env_file: str | os.PathLike | None = None) -> str:
-    """SEC_USER_AGENT：先看环境变量，再看 .env。都没有就抛 MissingUserAgent。"""
+    """SEC_USER_AGENT: the environment variable first, then .env. Raises MissingUserAgent if neither has it."""
     env = os.environ if env is None else env
     value = (env.get(UA_ENV) or "").strip()
     where = f"环境变量 {UA_ENV}"
@@ -237,17 +248,20 @@ def load_user_agent(env: Mapping[str, str] | None = None, env_file: str | os.Pat
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# HTTP：TLS、限速、重试、缓存
+# HTTP: TLS, rate limiting, retries, cache
 # ---------------------------------------------------------------------------------------------------------------
 
 
 def tls_context() -> ssl.SSLContext:
-    """证书校验始终打开。CA 证书依次取 SSL_CERT_FILE、certifi、系统默认、常见的系统证书文件。"""
+    """Certificate verification is always on.
+
+    CA certificates come from, in order: SSL_CERT_FILE, certifi, the system default, common system certificate files.
+    """
     cafile = os.environ.get("SSL_CERT_FILE")
     if cafile:
         return ssl.create_default_context(cafile=cafile)
     try:
-        import certifi  # requirements.txt；没装时退回系统证书
+        import certifi  # in requirements.txt; falls back to the system certificates when not installed
     except ImportError:
         certifi = None
     if certifi is not None:
@@ -264,7 +278,10 @@ def tls_context() -> ssl.SSLContext:
 
 
 class RateLimiter:
-    """相邻两次请求至少隔 1/max_per_second 秒；任何一秒之内不超过 max_per_second 次。"""
+    """Two consecutive requests are at least 1/max_per_second seconds apart.
+
+    No one-second span has more than max_per_second requests.
+    """
 
     def __init__(self, max_per_second: float = MAX_REQUESTS_PER_SECOND, *, clock: Callable[[], float] = time.monotonic,
                  sleep: Callable[[float], None] = time.sleep):
@@ -288,12 +305,16 @@ class RateLimiter:
 
 _SHARED_LIMITER = RateLimiter()
 
-# (url, 请求头, 超时) -> (状态码, 响应头, 正文)。网络错误抛 OSError 或 http.client.HTTPException。
+# (url, request headers, timeout) -> (status code, response headers, body). Network errors raise OSError or
+# http.client.HTTPException.
 Transport = Callable[[str, Mapping[str, str], float], "tuple[int, Mapping[str, str], bytes]"]
 
 
 class UrllibTransport:
-    """标准库 urllib 的传输层。HTTP 错误也作为 (状态码, 响应头, 正文) 返回，由客户端统一处理。"""
+    """Transport layer on the standard library's urllib.
+
+    HTTP errors are also returned as (status code, response headers, body), and the client handles them uniformly.
+    """
 
     def __init__(self, context: ssl.SSLContext | None = None):
         self._opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context or tls_context()))
@@ -368,7 +389,10 @@ def _is_cert_error(exc: BaseException) -> bool:
 
 
 def _atomic_write(path: Path, data: bytes) -> None:
-    """先写临时文件再改名；已有文件保留原来的权限，新文件 0644（mkstemp 默认是 0600）。"""
+    """Write a temporary file, then rename it.
+
+    An existing file keeps its permissions; a new file gets 0644 (mkstemp defaults to 0600).
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
         mode = path.stat().st_mode & 0o777
@@ -389,10 +413,11 @@ def _atomic_write(path: Path, data: bytes) -> None:
 
 
 class EdgarClient:
-    """带限速、重试、超时与磁盘缓存的 EDGAR 客户端。
+    """EDGAR client with rate limiting, retries, timeouts and a disk cache.
 
-    联网模式下构造时就要求 User-Agent（参数 user_agent，否则环境变量或 .env），拿不到就抛 MissingUserAgent。
-    离线模式（offline=True）只读缓存，不需要 User-Agent，缓存里没有就抛 EdgarOffline。
+    In online mode the constructor already requires a User-Agent (the user_agent argument, else the environment variable
+    or .env) and raises MissingUserAgent if there is none. Offline mode (offline=True) reads only the cache and needs no
+    User-Agent; it raises EdgarOffline when the cache does not have what is needed.
     """
 
     def __init__(self, *, user_agent: str | None = None, env_file: str | os.PathLike | None = None,
@@ -426,11 +451,14 @@ class EdgarClient:
         return (f"EdgarClient(cache_dir={str(self.cache_dir)!r}, offline={self.offline}, "
                 f"user_agent={'<set>' if self._ua else '<none>'})")
 
-    # -- 读取 ------------------------------------------------------------------------------------------------------
+    # -- Reading -------------------------------------------------------------------------------------------------
 
     def get_bytes(self, url: str, *, max_age: float | None = None,
                   validate: Callable[[bytes], None] | None = None) -> bytes:
-        """取一个地址的正文。max_age=None 表示内容不会变（Archives），缓存永久有效。"""
+        """Fetch the body at a URL.
+
+        max_age=None means the content never changes (Archives), so the cached copy is valid forever.
+        """
         path = self._cache_path(url)
         cached = self._cache_read(path, max_age)
         if cached is not None:
@@ -457,7 +485,7 @@ class EdgarClient:
     def get_json(self, url: str, *, max_age: float | None = None) -> Any:
         return json.loads(self.get_bytes(url, max_age=max_age, validate=_validate_json))
 
-    # -- 缓存 ------------------------------------------------------------------------------------------------------
+    # -- Cache ---------------------------------------------------------------------------------------------------
 
     def _cache_path(self, url: str) -> Path:
         parts = urllib.parse.urlsplit(url)
@@ -497,12 +525,12 @@ class EdgarClient:
                 return None
 
     def _cache_write(self, path: Path, url: str, body: bytes) -> None:
-        # 只存正文、地址与取数时间；请求头（含 User-Agent）从不写盘
+        # store only the body, URL and fetch time; request headers (including the User-Agent) never go to disk
         _atomic_write(path, body)
         meta = {"url": url, "fetched_at": dt.datetime.fromtimestamp(self._now(), UTC).isoformat(timespec="seconds")}
         _atomic_write(self._meta_path(path), json.dumps(meta).encode())
 
-    # -- 网络 ------------------------------------------------------------------------------------------------------
+    # -- Network -------------------------------------------------------------------------------------------------
 
     def _backoff_delay(self, attempt: int, retry_after: float | None) -> float:
         delay = retry_after if retry_after is not None else self.backoff * (2 ** (attempt - 1))
@@ -560,12 +588,15 @@ class EdgarClient:
 
 @functools.lru_cache(maxsize=1)
 def default_client() -> EdgarClient:
-    """库函数不传 client 时用它：User-Agent 取自环境变量或工作区根目录的 .env。"""
+    """Used by library functions that are not given a client.
+
+    The User-Agent comes from the environment variable or from .env in the workspace root.
+    """
     return EdgarClient()
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# submissions 与 filing
+# submissions and filings
 # ---------------------------------------------------------------------------------------------------------------
 
 
@@ -598,10 +629,10 @@ def to_date(value: Any) -> dt.date | None:
 
 
 def parse_acceptance(value: str | None) -> dt.datetime | None:
-    """EDGAR 的接收时间 → 带时区的 UTC 时间。
+    """EDGAR acceptance time → timezone-aware UTC datetime.
 
-    submissions 的 acceptanceDateTime 是真正的 UTC（结尾的 Z 没错，见 inputs/edgar/acceptance_timezone.md）；
-    SGML 头的 YYYYMMDDHHMMSS 与索引页的 Accepted 是美东时间。
+    acceptanceDateTime in submissions is true UTC (the trailing Z is correct; see inputs/edgar/acceptance_timezone.md);
+    the YYYYMMDDHHMMSS in the SGML header and Accepted on the index page are US Eastern time.
     """
     if not value:
         return None
@@ -622,14 +653,14 @@ def iso(moment: dt.datetime) -> str:
 
 @dataclasses.dataclass(frozen=True)
 class Filing:
-    """submissions 里的一行。"""
+    """One row of submissions."""
 
-    cik: str  # 列出它的发行人（submissions 的主人），不一定是登记号前缀里的申报代理
+    cik: str  # issuer whose submissions list it; not necessarily the filing agent in the accession-number prefix
     accession: str
     form: str
     filing_date: dt.date
     report_date: dt.date | None = None
-    acceptance_datetime: str | None = None  # EDGAR 原文（UTC）
+    acceptance_datetime: str | None = None  # as given by EDGAR (UTC)
     items: tuple[str, ...] = ()
     primary_document: str = ""
     primary_doc_description: str = ""
@@ -665,7 +696,7 @@ class Filing:
 
 
 def _rows(block: Mapping[str, Any]) -> Iterator[dict[str, Any]]:
-    """submissions 的列式数据 → 逐行字典。"""
+    """Columnar submissions data → one dict per row."""
     accessions = block.get("accessionNumber") or []
     count = len(accessions)
     columns = {k: v for k, v in block.items() if isinstance(v, list) and len(v) == count}
@@ -705,11 +736,11 @@ class Submissions:
     cik: str
     name: str
     tickers: tuple[str, ...]
-    fiscal_year_end: str | None  # EDGAR 的 MMDD，如 "1231"、"0630"
+    fiscal_year_end: str | None  # EDGAR's MMDD, e.g. "1231", "0630"
     entity_type: str | None
     category: str | None
-    filings: list[Filing]  # 按 filing date、接收时间排序
-    pages: list[dict[str, Any]]  # filings.files 的续页说明
+    filings: list[Filing]  # sorted by filing date, then acceptance time
+    pages: list[dict[str, Any]]  # descriptions of the continuation pages in filings.files
     pages_loaded: list[str]
 
     @functools.cached_property
@@ -725,7 +756,10 @@ class Submissions:
 
 
 def submissions(cik: Any, *, client: EdgarClient | None = None, since: dt.date | None = None) -> Submissions:
-    """发行人的全部申报：recent 块加 filings.files 的续页。给了 since 时，只取结束日期不早于它的续页。"""
+    """All filings of an issuer: the recent block plus the continuation pages in filings.files.
+
+    With since, only continuation pages whose end date is not before since are fetched.
+    """
     client = client or default_client()
     cik10 = normalize_cik(cik)
     data = client.get_json(f"{DATA_BASE}/submissions/CIK{cik10}.json", max_age=client.ttl)
@@ -764,7 +798,7 @@ def submissions(cik: Any, *, client: EdgarClient | None = None, since: dt.date |
 
 
 def infer_filer_type(subs: Submissions) -> str:
-    """最近几年报 10-K/10-Q 的是国内发行人；只报 20-F/40-F/6-K 的是外国私人发行人。"""
+    """Domestic issuer if it filed 10-K/10-Q in recent years; foreign private issuer if it files only 20-F/40-F/6-K."""
     recent = subs.filings[-600:]
     if any(f.form in ("10-K", "10-Q") for f in recent):
         return DOMESTIC
@@ -774,7 +808,7 @@ def infer_filer_type(subs: Submissions) -> str:
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 文件索引与文档
+# Filing index and documents
 # ---------------------------------------------------------------------------------------------------------------
 
 
@@ -783,7 +817,7 @@ class Document:
     name: str
     url: str
     kind: str  # primary | exhibit | xbrl_viewer | other
-    exhibit: str | None = None  # EX-99、EX-99.1 ……（只认 EX-99 系列）
+    exhibit: str | None = None  # EX-99, EX-99.1, ... (only the EX-99 series is recognized)
     size: int | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -809,7 +843,7 @@ def _exhibit_order(doc: Document) -> tuple[int, str]:
 
 def filing_documents(cik: Any, accession: str, *, client: EdgarClient | None = None,
                      primary_document: str | None = None) -> list[Document]:
-    """一份申报的文件清单（index.json）。主文档取自 submissions 的 primaryDocument。"""
+    """File list of one filing (index.json). The primary document comes from primaryDocument in submissions."""
     client = client or default_client()
     cik10 = normalize_cik(cik)
     accession = normalize_accession(accession)
@@ -830,7 +864,10 @@ def filing_documents(cik: Any, accession: str, *, client: EdgarClient | None = N
 
 def download_filing(cik: Any, accession: str, dest: str | os.PathLike, *, client: EdgarClient | None = None,
                     primary_document: str | None = None, exhibit_prefixes: Sequence[str] = ("EX-99",)) -> list[Path]:
-    """下载主文档与附件（默认只要 EX-99.x）到 dest/<登记号>/。XBRL 查看器页面 R<n>.htm 永远不下载。"""
+    """Download the primary document and exhibits (by default only EX-99.x) to dest/<accession>/.
+
+    XBRL viewer pages R<n>.htm are never downloaded.
+    """
     client = client or default_client()
     accession = normalize_accession(accession)
     if primary_document is None:
@@ -853,10 +890,10 @@ _INLINE_TAG_RE = re.compile(r"(?i)</?(?:a|abbr|b|big|em|font|i|ins|del|s|small|s
 
 
 def html_to_text(raw: bytes | str, limit: int = 200_000) -> str:
-    """HTML → 按段落分行的纯文本（只看开头 limit 个字节就够找标题和落款）。
+    """HTML → plain text, one line per paragraph (the first limit bytes are enough to find the title and dateline).
 
-    源码里的换行只是空白（标题常被折成两行）；段落类标签才分行；行内标签（span、font、b……）直接去掉，
-    不补空格（“202<span>5</span>”是 2025）。
+    Line breaks in the source are only whitespace (titles are often wrapped onto two lines); only paragraph-type tags
+    start a new line; inline tags (span, font, b, ...) are removed without adding a space ("202<span>5</span>" is 2025).
     """
     text = raw[:limit].decode("utf-8", "replace") if isinstance(raw, bytes) else raw[:limit]
     text = re.sub(r"(?is)<(script|style|head)\b.*?</\1\s*>", " ", text)
@@ -888,7 +925,7 @@ def _first_date(text: str) -> dt.date | None:
 
 @dataclasses.dataclass(frozen=True)
 class ResultsRelease:
-    """6-K 附件里的季度业绩新闻稿。"""
+    """A quarterly results press release in a 6-K exhibit."""
 
     document: str
     title: str
@@ -898,9 +935,11 @@ class ResultsRelease:
 
 
 def find_results_title(text: str) -> ResultsRelease | None:
-    """在新闻稿开头找“<公司> Announces <某季度> …… Results”一类标题和紧随其后的落款日期。
+    """Find a title like "<Company> Announces <quarter> ... Results" at the top of a press release, and the dateline
+    right after it.
 
-    “to/will report …”（预告发布日期的公告）不算；股东大会结果之类没有“quarter”的也不算。
+    "to/will report ..." (advance notice of a release date) does not count; nor does anything without "quarter", such as
+    shareholder meeting results.
     """
     lines = text.split("\n")[:80]
     for i, line in enumerate(lines):
@@ -925,7 +964,10 @@ def find_results_title(text: str) -> ResultsRelease | None:
 
 
 def classify_6k(filing: Filing, *, client: EdgarClient | None = None) -> ResultsRelease | None:
-    """这份 6-K 是不是季度业绩：看第一个 EX-99 附件（没有附件时看 6-K 正文）的新闻稿标题。"""
+    """Whether this 6-K reports quarterly results.
+
+    Judged by the press-release title in the first EX-99 exhibit (or in the 6-K body when there is no exhibit).
+    """
     client = client or default_client()
     docs = filing_documents(filing.cik, filing.accession, client=client, primary_document=filing.primary_document)
     exhibits = sorted((d for d in docs if d.kind == "exhibit"), key=_exhibit_order)
@@ -938,7 +980,7 @@ def classify_6k(filing: Filing, *, client: EdgarClient | None = None) -> Results
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 财年与工作日
+# Fiscal years and business days
 # ---------------------------------------------------------------------------------------------------------------
 
 
@@ -947,7 +989,10 @@ def _month_end(year: int, month: int) -> dt.date:
 
 
 def _snap_to_month_end(day: dt.date) -> dt.date:
-    """52/53 周财年的季末落在月末前后几天：15 日以前算上个月末，其余算本月末。"""
+    """Quarter ends in a 52/53-week fiscal year fall a few days around a month end.
+
+    Day 15 or earlier counts as the previous month end; later days count as the end of the same month.
+    """
     if day.day <= 15:
         first = day.replace(day=1)
         previous = first - dt.timedelta(days=1)
@@ -964,7 +1009,11 @@ def parse_period(value: str) -> tuple[int, int | None]:
 
 @dataclasses.dataclass(frozen=True)
 class FiscalCalendar:
-    """公司自己的财年：财年以结束那一年命名（MSFT 截至 2026-06-30 的财年是 FY2026），季末取月末。"""
+    """The company's own fiscal year.
+
+    A fiscal year is named for the year in which it ends (MSFT's fiscal year ending 2026-06-30 is FY2026); quarter ends
+    are month ends.
+    """
 
     month: int
     day: int = 31
@@ -991,7 +1040,7 @@ class FiscalCalendar:
         return _month_end(year, month)
 
     def period_of(self, day: dt.date) -> tuple[int, int]:
-        """一个季末（容许 52/53 周财年的几天偏差）属于哪个财年的第几季。"""
+        """Which fiscal year and quarter a quarter end belongs to (allowing a few days' offset for 52/53-week years)."""
         snapped = _snap_to_month_end(day)
         offset = (snapped.month - self.month) % 12
         if offset % 3:
@@ -1040,23 +1089,24 @@ def _observed(day: dt.date) -> dt.date:
 
 def _fixed_and_floating_holidays(year: int) -> list[dt.date]:
     days = [
-        _observed(dt.date(year, 1, 1)),  # 元旦
-        _nth_weekday(year, 1, 0, 3),  # 马丁·路德·金纪念日
-        _nth_weekday(year, 2, 0, 3),  # 总统日
-        _last_weekday(year, 5, 0),  # 阵亡将士纪念日
-        _observed(dt.date(year, 7, 4)),  # 独立日
-        _nth_weekday(year, 9, 0, 1),  # 劳工节
-        _nth_weekday(year, 10, 0, 2),  # 哥伦布日
-        _observed(dt.date(year, 11, 11)),  # 退伍军人节
-        _nth_weekday(year, 11, 3, 4),  # 感恩节
-        _observed(dt.date(year, 12, 25)),  # 圣诞节
+        _observed(dt.date(year, 1, 1)),  # New Year's Day
+        _nth_weekday(year, 1, 0, 3),  # Martin Luther King Jr. Day
+        _nth_weekday(year, 2, 0, 3),  # Presidents' Day
+        _last_weekday(year, 5, 0),  # Memorial Day
+        _observed(dt.date(year, 7, 4)),  # Independence Day
+        _nth_weekday(year, 9, 0, 1),  # Labor Day
+        _nth_weekday(year, 10, 0, 2),  # Columbus Day
+        _observed(dt.date(year, 11, 11)),  # Veterans Day
+        _nth_weekday(year, 11, 3, 4),  # Thanksgiving Day
+        _observed(dt.date(year, 12, 25)),  # Christmas Day
     ]
     if year >= 2021:
-        days.append(_observed(dt.date(year, 6, 19)))  # 六月节
+        days.append(_observed(dt.date(year, 6, 19)))  # Juneteenth
     return days
 
 
-# 行政令临时关闭联邦政府的日子（EDGAR 同样不收件）；只影响历史上的工作日计算。
+# Days the federal government was temporarily closed by executive order (EDGAR accepts no filings on them
+# either); these only affect business-day calculations for past dates.
 EXTRA_CLOSURES = frozenset({
     dt.date(2018, 12, 5), dt.date(2018, 12, 24), dt.date(2019, 12, 24), dt.date(2020, 12, 24),
     dt.date(2024, 12, 24), dt.date(2025, 1, 9), dt.date(2025, 12, 24), dt.date(2025, 12, 26),
@@ -1065,7 +1115,11 @@ EXTRA_CLOSURES = frozenset({
 
 @functools.lru_cache(maxsize=64)
 def us_federal_holidays(year: int) -> frozenset[dt.date]:
-    """美国联邦法定假日（遇周六提前到周五、遇周日顺延到周一；次年元旦可能落在本年 12 月 31 日）。"""
+    """US federal holidays.
+
+    A holiday on a Saturday moves to Friday and one on a Sunday to Monday; next year's New Year's Day may fall on
+    December 31 of this year.
+    """
     days = [d for y in (year, year + 1) for d in _fixed_and_floating_holidays(y) if d.year == year]
     return frozenset(days)
 
@@ -1097,13 +1151,19 @@ def add_business_days(day: dt.date, count: int) -> dt.date:
 
 
 def prereg_deadline(release_date: dt.date) -> dt.datetime:
-    """发布日前一天 23:59:59 美东；偏移取那一刻实际适用的（夏令时 -04:00，标准时 -05:00）。"""
+    """23:59:59 US Eastern on the day before the release date.
+
+    The UTC offset is the one actually in effect at that moment (daylight time -04:00, standard time -05:00).
+    """
     day = release_date - dt.timedelta(days=1)
     return dt.datetime.combine(day, dt.time(23, 59, 59), tzinfo=NY)
 
 
 def merge_by(deadline: dt.datetime, hours: int = MERGE_HOURS) -> dt.datetime:
-    """截止前 hours 个实际经过的小时（先换成 UTC 再减，跨夏令时切换也对），以美东时间表示。"""
+    """The deadline minus the given number of actual elapsed hours, expressed in US Eastern time.
+
+    Converts to UTC before subtracting, so it is also correct across a daylight-saving change.
+    """
     if deadline.tzinfo is None:
         raise ValueError("截止时间必须带时区")
     return (deadline.astimezone(UTC) - dt.timedelta(hours=hours)).astimezone(NY)
@@ -1112,7 +1172,7 @@ def merge_by(deadline: dt.datetime, hours: int = MERGE_HOURS) -> dt.datetime:
 def _shift_years(day: dt.date, years: int) -> dt.date:
     try:
         return day.replace(year=day.year + years)
-    except ValueError:  # 2 月 29 日
+    except ValueError:  # February 29
         return day.replace(year=day.year + years, day=28)
 
 
@@ -1121,26 +1181,26 @@ def today_et() -> dt.date:
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 业绩事件与 release_history
+# Earnings events and release_history
 # ---------------------------------------------------------------------------------------------------------------
 
 
 @dataclasses.dataclass
 class EarningsEvent:
-    """一次业绩事件：国内发行人的业绩 8-K（第 2.02 项），外国发行人的业绩 6-K。"""
+    """One earnings event: a domestic issuer's earnings 8-K (Item 2.02) or a foreign issuer's earnings 6-K."""
 
     cik: str
-    period: str  # 公司财年的 FY<年>Q<季>
+    period: str  # FY<year>Q<quarter> in the company's fiscal year
     period_end: dt.date
     filing: Filing
-    release_date: dt.date  # 首次公开的美东日期（发布日）
+    release_date: dt.date  # US Eastern date the results were first made public (release date)
     release_basis: str  # acceptance | report_date | closing | dateline | filing_date
-    closing: Filing | None = None  # 国内：同一期间的 10-Q/10-K
+    closing: Filing | None = None  # domestic: the 10-Q/10-K for the same period
     closes_on: dt.date | None = None
     closed_by: str | None = None  # 10-Q | 10-K | T+5 | 6-K
-    exhibit: str | None = None  # 6-K：新闻稿所在的文件
-    title: str | None = None  # 6-K：新闻稿标题
-    dateline: dt.date | None = None  # 6-K：新闻稿落款日期
+    exhibit: str | None = None  # 6-K: the document that holds the press release
+    title: str | None = None  # 6-K: press-release title
+    dateline: dt.date | None = None  # 6-K: press-release dateline date
     amendments: list[Filing] = dataclasses.field(default_factory=list)
     related: list[Filing] = dataclasses.field(default_factory=list)
     notes: list[str] = dataclasses.field(default_factory=list)
@@ -1197,10 +1257,12 @@ class EarningsEvent:
 
 
 def _release_date_8k(filing: Filing) -> tuple[dt.date, str]:
-    """业绩 8-K 的发布日：接收时间的美东日期；只有 2.02／9.01 两项时，报告日（公告日）早 1–4 天的取报告日。
+    """Release date of an earnings 8-K: the US Eastern date of the acceptance time; if the only items are 2.02/9.01 and
+    the report date (announcement date) is 1–4 days earlier, the report date.
 
-    伯克希尔周六发布、下周才交 8-K，报告日就是那个周六；带别的项目（5.02、7.01……）的 8-K，报告日是最早那件事的日期，
-    不是发布日（APP 2023-11-08、MSFT 2025-10-29 都是这样）。
+    Berkshire releases on a Saturday and files the 8-K the following week, so the report date is that Saturday. For an
+    8-K with other items (5.02, 7.01, ...), the report date is the date of the earliest event, not the release date (as
+    with APP 2023-11-08 and MSFT 2025-10-29).
     """
     accepted = filing.accepted_et
     base, basis = (accepted.date(), "acceptance") if accepted else (filing.filing_date, "filing_date")
@@ -1218,7 +1280,7 @@ def _domestic_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | No
                 label = cal.quarter_label(f.report_date)
             except ValueError:
                 continue
-            periodic.setdefault(label, f)  # 同一期间取最早入库的一份
+            periodic.setdefault(label, f)  # for each period, keep the first one filed
     events: dict[str, EarningsEvent] = {}
     amendments: list[Filing] = []
     for f in subs.filings:
@@ -1241,7 +1303,8 @@ def _domestic_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | No
         closing = periodic.get(label)
         closing_et = closing.accepted_et if closing else None
         if closing_et and closing_et.date() < event.release_date:
-            # 10-Q/10-K 比 8-K 先入库（伯克希尔）：业绩最早在 EDGAR 上公开的是定期报告
+            # the 10-Q/10-K was accepted before the 8-K (Berkshire): the results first became public on EDGAR in the
+            # periodic report
             event.release_date, event.release_basis = closing_et.date(), "closing"
             event.notes.append(f"{closing.form} 比 8-K 先入库，发布日取它的接收日期")
         t_plus_5 = add_business_days(f.filing_date, 5)
@@ -1324,7 +1387,7 @@ def _calendar_for(subs: Submissions, fiscal_year_end: Any = None) -> FiscalCalen
 def earnings_events(cik: Any, fiscal_year_end: Any = None, *, filer_type: str | None = None,
                     since: dt.date | None = None, until: dt.date | None = None, client: EdgarClient | None = None,
                     subs: Submissions | None = None) -> list[EarningsEvent]:
-    """since..until（按 EDGAR filing date，含两端）之间的业绩事件，按入库先后排列。"""
+    """Earnings events in since..until (by EDGAR filing date, both ends inclusive), in filing order."""
     client = client or default_client()
     subs = subs or submissions(cik, client=client, since=since)
     cal = _calendar_for(subs, fiscal_year_end)
@@ -1337,7 +1400,10 @@ def earnings_events(cik: Any, fiscal_year_end: Any = None, *, filer_type: str | 
 def release_history(cik: Any, fiscal_year_end: Any = None, *, filer_type: str | None = None,
                     years: int = HISTORY_YEARS, as_of: dt.date | None = None, quarter: int | None = None,
                     client: EdgarClient | None = None) -> list[EarningsEvent]:
-    """过去 years 年（EDGAR filing date 落在 as_of 之前 years 年之内）的业绩事件；quarter 只留那个财季。"""
+    """Earnings events with an EDGAR filing date within the given number of years before as_of.
+
+    If quarter is given, only that fiscal quarter is kept.
+    """
     as_of = as_of or today_et()
     since = _shift_years(as_of, -years)
     events = earnings_events(cik, fiscal_year_end, filer_type=filer_type, since=since, until=as_of, client=client)
@@ -1347,7 +1413,7 @@ def release_history(cik: Any, fiscal_year_end: Any = None, *, filer_type: str | 
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 下一次发布日与预注册截止时间（提示词 15A）
+# Next release date and pre-registration deadline (prompt 15A)
 # ---------------------------------------------------------------------------------------------------------------
 
 
@@ -1363,13 +1429,13 @@ class ReleaseEstimate:
     basis: str
     deadline: dt.datetime
     merge_by: dt.datetime
-    history_window: tuple[dt.date, dt.date] | None = None  # 历年同一财季的发布日换到本期所在年份
+    history_window: tuple[dt.date, dt.date] | None = None  # past same-quarter release dates moved to this period's year
     history: list[EarningsEvent] = dataclasses.field(default_factory=list)
-    event: EarningsEvent | None = None  # 已经发布时
+    event: EarningsEvent | None = None  # when already released
     notes: list[str] = dataclasses.field(default_factory=list)
 
     def prereg_header(self) -> dict[str, Any]:
-        """预注册文件头里流水线负责的部分：event 与 deadline（schema: prereg.schema.json）。"""
+        """The pipeline's part of the pre-registration header: event and deadline (schema: prereg.schema.json)."""
         return {
             "event": {
                 "period": self.period,
@@ -1417,7 +1483,9 @@ def _history_row(event: EarningsEvent) -> dict[str, Any]:
 
 
 def parse_release_date(value: Any) -> dt.date:
-    """公布的发布日：日期按美东日期理解；带时区的时刻换成美东日期（例如北京时间的早晨是美东的前一天晚上）。"""
+    """Announced release date: a date is read as a US Eastern date; a time with a time zone is converted to its US
+    Eastern date (for example, morning in Beijing time is the previous evening in US Eastern time).
+    """
     if isinstance(value, dt.datetime):
         moment = value
     elif isinstance(value, dt.date):
@@ -1434,10 +1502,12 @@ def parse_release_date(value: Any) -> dt.date:
 
 def estimate_release(fiscal_year: int, period_end: dt.date, same_quarter: Sequence[EarningsEvent],
                      latest: EarningsEvent | None) -> tuple[dt.date, str, tuple[dt.date, dt.date] | None]:
-    """没有公布日期时的占位发布日（15A）。返回 (日期, 依据, 历年窗口)。
+    """Placeholder release date when no date has been announced (15A). Returns (date, basis, history window).
 
-    有 release_history：取历年同一财季里月日最早的一次，换到本期所在年份，往前数 3 个日历日，
-    遇周末或联邦假日继续往前取工作日。没有：最近一期发布日距季末的天数套到本季，再减 3 天。
+    With release_history: take the earliest month-day in the same fiscal quarter across past years, move it to this
+    period's year, count back 3 calendar days, and if that falls on a weekend or federal holiday keep going back to a
+    business day. Without it: apply the latest period's gap from quarter end to release date to this quarter, then
+    subtract 3 days.
     """
     lead = dt.timedelta(days=ESTIMATE_LEAD_DAYS)
     if same_quarter:
@@ -1461,17 +1531,19 @@ def next_release(cik: Any, period: str, *, fiscal_year_end: Any = None, filer_ty
                  form: str | None = None, announced: Any = None,
                  window: tuple[Any, Any] | None = None, as_of: dt.date | None = None,
                  client: EdgarClient | None = None) -> ReleaseEstimate:
-    """一个财季的（预计）发布日、预注册截止时间与合并时限。
+    """(Expected) release date, pre-registration deadline and merge-by time for one fiscal quarter.
 
-    优先级：已在 EDGAR 上发布 > 公司公布的日期（announced，placeholder: false）> 公司公布的窗口里最早的工作日
-    > release_history（过去三个财年的同一财季）> 最近一期的间隔。后三者 placeholder: true。
+    Priority: already released on EDGAR > date announced by the company (announced, placeholder: false) > earliest
+    business day in a window announced by the company > release_history (the same fiscal quarter in the past three
+    fiscal years) > the latest period's lag. The last three give placeholder: true.
     """
     client = client or default_client()
     as_of = as_of or today_et()
     fiscal_year, quarter = parse_period(period)
     if quarter is None:
         raise ValueError(f"预注册按季度登记，期间要写到季度（FY2026Q3），收到 {period!r}")
-    # 续页只要覆盖过去三个财年；再往前一年留余量，免得财年与日历年错开
+    # the continuation pages need only cover the past three fiscal years; one more year back is a margin in case
+    # the fiscal year and the calendar year do not line up
     subs = submissions(cik, client=client, since=dt.date(fiscal_year - HISTORY_YEARS - 2, 1, 1))
     cal = _calendar_for(subs, fiscal_year_end)
     kind = filer_type or infer_filer_type(subs)
@@ -1529,7 +1601,7 @@ def next_release(cik: Any, period: str, *, fiscal_year_end: Any = None, filer_ty
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 公司 → CIK（读 thesis.yml 的 filer）
+# Company → CIK (reads filer in thesis.yml)
 # ---------------------------------------------------------------------------------------------------------------
 
 
@@ -1545,7 +1617,7 @@ class Filer:
 
 
 def load_filer(company: str, repo_root: str | os.PathLike | None = None) -> Filer:
-    """公司代码 → companies/<代码>/thesis.yml 的 filer 块；也可以直接给 10 位以内的 CIK。"""
+    """Ticker → filer block in companies/<ticker>/thesis.yml; a CIK of up to 10 digits may also be given directly."""
     text = str(company).strip()
     if re.fullmatch(r"(?i)(?:CIK)?\d{1,10}", text):
         return Filer(ticker=None, cik=normalize_cik(text))
@@ -1569,10 +1641,10 @@ def load_filer(company: str, repo_root: str | os.PathLike | None = None) -> File
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 来源表的登记号核对（thesis-ci SPEC §3.3、§3.5）
+# Accession-number check for sources tables (thesis-ci SPEC §3.3, §3.5)
 # ---------------------------------------------------------------------------------------------------------------
 
-FILL_FIELDS = ("accession", "filed", "form", "period")  # --write 只补这几个字段，而且只补缺的
+FILL_FIELDS = ("accession", "filed", "form", "period")  # --write fills only these fields, and only when missing
 _FIELD_ORDER = ("tag", "kind", "title", "issuer_cik", "form", "period", "accession", "date", "filed", "url",
                 "location", "primary", "note")
 _TAG_RE = re.compile(r"^(?P<ticker>[A-Z0-9][A-Z0-9.]*)-(?P<form>[A-Z0-9]+)-(?P<rest>.+)$")
@@ -1580,7 +1652,10 @@ _TAG_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})(?:-(\d+))?$")
 
 
 def form_key(form: str) -> str:
-    """表格的比较键：去掉连字符、斜杠和空格（10-Q → 10Q，DEF 14A → DEF14A，8-K/A → 8KA）；FORM3 与 3 相同。"""
+    """Comparison key for a form: hyphens, slashes and spaces removed (10-Q → 10Q, DEF 14A → DEF14A, 8-K/A → 8KA).
+
+    FORM3 is the same as 3.
+    """
     key = re.sub(r"[^A-Z0-9]", "", str(form).upper())
     key = re.sub(r"^SCHEDULE", "SC", key)
     if key.startswith("FORM") and key[4:].isdigit():
@@ -1591,14 +1666,16 @@ def form_key(form: str) -> str:
 @dataclasses.dataclass(frozen=True)
 class SourceTag:
     ticker: str
-    form: str  # 标签里的表格写法（10Q、8K、FORM3 ……）
+    form: str  # the form as written in the tag (10Q, 8K, FORM3, ...)
     period: str | None = None
     date: dt.date | None = None
     ordinal: int = 1
 
 
 def parse_source_tag(tag: str) -> SourceTag | None:
-    """定期报告 <代码>-<表格>-<期间>，临时报告 <代码>-<表格>-<EDGAR filing date>[-N]（SPEC §3.3）。"""
+    """Periodic reports <ticker>-<form>-<period>, current reports <ticker>-<form>-<EDGAR filing date>[-N]
+    (SPEC §3.3).
+    """
     m = _TAG_RE.match(str(tag or ""))
     if not m:
         return None
@@ -1621,9 +1698,9 @@ class SourceFinding:
     line: int | None = None
     issuer_cik: str | None = None
     edgar: dict[str, Any] | None = None
-    problems: list[str] = dataclasses.field(default_factory=list)  # 与 EDGAR 不一致
-    fills: dict[str, Any] = dataclasses.field(default_factory=dict)  # 缺、可以补的字段
-    unresolved: str | None = None  # 无法核对的原因
+    problems: list[str] = dataclasses.field(default_factory=list)  # mismatches with EDGAR
+    fills: dict[str, Any] = dataclasses.field(default_factory=dict)  # missing fields that can be filled
+    unresolved: str | None = None  # why the entry cannot be checked
     notes: list[str] = dataclasses.field(default_factory=list)
 
     @property
@@ -1680,7 +1757,10 @@ class _Issuer:
 
 
 def _company_for_sources(path: Path, repo_root: Path) -> Filer | None:
-    """companies/<代码>/sources.yml 所属的公司：同目录的 thesis.yml，否则本仓库 companies/<代码>/thesis.yml。"""
+    """The company that companies/<ticker>/sources.yml belongs to.
+
+    From thesis.yml in the same directory, otherwise from companies/<ticker>/thesis.yml in this repo.
+    """
     if path.parent.parent.name != "companies":
         return None
     ticker = path.parent.name
@@ -1703,7 +1783,9 @@ def _issuer(cik: str, company: Filer | None, client: EdgarClient, cache: dict[st
 
 
 def expected_period(filing: Filing, issuer: _Issuer, client: EdgarClient) -> str | None:
-    """EDGAR 能确定的期间：定期报告看报告日；业绩 8-K／6-K 看业绩事件；其余返回 None（不核对）。"""
+    """The period EDGAR can determine: periodic reports by report date; earnings 8-K/6-K by the earnings event; anything
+    else returns None (not checked).
+    """
     cal = issuer.calendar
     try:
         if filing.form in ANNUAL_FORMS and filing.report_date:
@@ -1750,10 +1832,12 @@ def _resolve_from_tag(entry: Mapping[str, Any], tag: SourceTag | None, issuer: _
 
 def _tag_problems(tag: SourceTag | None, filing: Filing, period: str | None, issuer: _Issuer,
                   registered: set[str]) -> list[str]:
-    """标签与 EDGAR 是否一致（SPEC §3.3）。registered 是同一张来源表里已登记的登记号。
+    """Whether the tag agrees with EDGAR (SPEC §3.3). registered holds the accession numbers already registered in the
+    same sources table.
 
-    同一天同一表格有几份时，“-2、-3”只在几份都登记时才需要（按登记号先后）；只登记了其中一份时不加后缀也对，
-    按 EDGAR 上的先后写后缀也认。
+    When several filings of the same form share a date, the suffixes "-2", "-3" are required only when all of them are
+    registered (in accession-number order); when only one of them is registered, no suffix is also correct, and a suffix
+    that follows the order on EDGAR is accepted too.
     """
     if tag is None:
         return []
@@ -1865,7 +1949,10 @@ def _yaml_scalar(value: Any) -> str:
 
 
 def _entry_blocks(lines: list[str]) -> dict[str, tuple[int, int, int]]:
-    """标签 → (条目首行, 条目末行之后, 键的缩进)。只认“- tag: X”开头的条目。"""
+    """Tag → (first line of the entry, the line after its last line, key indent).
+
+    Only entries that start with "- tag: X" are recognized.
+    """
     blocks: dict[str, tuple[int, int, int]] = {}
     starts = []
     pattern = re.compile(r"^(?P<dash>[ \t]*-[ \t]+)tag:[ \t]*(?P<q>[\"']?)(?P<tag>[^\"'#\s]+)(?P=q)[ \t]*(?:#.*)?$")
@@ -1889,7 +1976,10 @@ def _entry_blocks(lines: list[str]) -> dict[str, tuple[int, int, int]]:
 
 
 def fill_missing_fields(text: str, fills: Mapping[str, Mapping[str, Any]]) -> str:
-    """只补缺的字段（缺键或值为 null）；不改任何已有的值。改完重新解析，确认除了补上的字段外一模一样。"""
+    """Fill only missing fields (key absent or value null); never change an existing value.
+
+    After the edit, re-parse and confirm that everything except the filled fields is identical.
+    """
     lines = text.splitlines(keepends=True)
     blocks = _entry_blocks(lines)
     inserts: list[tuple[int, list[str]]] = []
@@ -1924,13 +2014,13 @@ def fill_missing_fields(text: str, fills: Mapping[str, Mapping[str, Any]]) -> st
             for name in _FIELD_ORDER[:_FIELD_ORDER.index(field)]:
                 if name in keys:
                     anchor = max(anchor, keys[name])
-            k = anchor + 1  # 跳过锚点键的续行
+            k = anchor + 1  # skip the anchor key's continuation lines
             while k < end and (not lines[k].strip() or len(lines[k]) - len(lines[k].lstrip()) > key_indent):
                 k += 1
             while k > anchor + 1 and not lines[k - 1].strip():
                 k -= 1
             pending.setdefault(k, []).append((field, rendered))
-        for position, new_lines in pending.items():  # 同一处插入几个字段时按常见的字段顺序排
+        for position, new_lines in pending.items():  # fields inserted at the same spot go in the usual field order
             new_lines.sort(key=lambda pair: _FIELD_ORDER.index(pair[0]))
             inserts.append((position, [rendered for _, rendered in new_lines]))
     out = []
@@ -1973,10 +2063,11 @@ def _verify_fill(old_text: str, new_text: str, fills: Mapping[str, Mapping[str, 
 
 def check_sources(path: str | os.PathLike, *, client: EdgarClient | None = None,
                   repo_root: str | os.PathLike | None = None, write: bool = False) -> SourcesReport:
-    """核对来源表里每条 kind: filing 的 accession／filed／period（及 form、标签、url）与 EDGAR 是否一致。
+    """Check accession/filed/period (and form, tag, url) of each kind: filing entry in a sources table against EDGAR.
 
-    默认只读、只报告。write=True 时只给没有不一致的条目补缺的 accession、filed、form、period，不改已有的值；
-    改动以 unified diff 返回（SourcesReport.diff）。
+    Read-only and report-only by default. With write=True, fill the missing accession, filed, form and period only for
+    entries without mismatches, never changing existing values; the changes are returned as a unified diff
+    (SourcesReport.diff).
     """
     client = client or default_client()
     path = Path(path)
@@ -2012,7 +2103,7 @@ def check_sources(path: str | os.PathLike, *, client: EdgarClient | None = None,
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 命令行
+# Command line
 # ---------------------------------------------------------------------------------------------------------------
 
 

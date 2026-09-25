@@ -1,36 +1,38 @@
-# 错误清单
+# Mistakes list
 
-公开记录系统和主人犯过的错。越公开越不愿认错，所以单独立一份清单：改主意算成绩，不算污点。年度“致自己的股东信”连同本清单一起发布。
+A Chinese version is in [zh-CN/mistakes.md](zh-CN/mistakes.md).
 
-## 收录什么
+A public record of the mistakes made by the system and by the owner. The more public a mistake, the harder it is to admit, so mistakes get a list of their own: changing your mind counts as an achievement, not a stain. The annual "letter to the owner" is published together with this list.
 
-- **事实错误**：合并进档案的数字或引文错了（出处不对、读错、算错）。
-- **判断错误**：事后按事先写下的标准结算，结论是错的，而且错在推理，不只是运气。
-- **过程错误**：该做的检查没做、预注册晚了、测试门槛事后改了、上报漏了。
-- **遗漏**：档案里没写、后来被证明要紧的风险或事实。
+## What goes in
 
-预测没有应验本身不算错误，它记在 `forecasts/` 里按 Brier 分数计分；只有过程或推理出了问题才进本清单。
+- **Factual errors**: a number or quotation merged into an archive is wrong (wrong source, misread, miscalculated).
+- **Errors of judgment**: settled afterwards against the criteria written down in advance, the conclusion was wrong, and the error lies in the reasoning, not just in luck.
+- **Process errors**: a check that should have been done was not done, a pre-registration was late, a test threshold was changed after the fact, an escalation was missed.
+- **Omissions**: a risk or fact that the archive did not cover and that later proved to matter.
 
-## 格式
+A forecast that did not come true is not in itself a mistake; it is recorded in `forecasts/` and scored with the Brier score. Only problems in the process or the reasoning go into this list.
 
-每条一个小节，最新的在最前。事实数字照常带 `[src:...]` 标签；不写金额、价格和仓位。
+## Format
+
+One subsection per entry, newest first. Factual numbers carry `[src:...]` tags as usual; no amounts, prices or positions.
 
 ```markdown
-### YYYY-MM-DD · 公司代码 · 类别
+### YYYY-MM-DD · Ticker · Category
 
-- 当时的判断：……（链接到 PR、预注册或更新记录）
-- 实际情况：……
-- 错在哪里：……
-- 谁的错：公司经理 / 行业研究员 / 总部 / 审计 / 盲推 / 主人
-- 改了什么：规则、测试、提示词或流程（链接到对应的提交或决策记录）
+- Judgment at the time: … (link to the PR, pre-registration or update record)
+- What actually happened: …
+- What went wrong: …
+- Whose mistake: company manager / industry researcher / HQ / audit / blind reader / owner
+- What changed: rules, tests, prompts or process (link to the commit or decision record)
 ```
 
-## 清单
+## The list
 
-### 2026-09-25 · APP · 事实错误
+### 2026-09-25 · APP · Factual error
 
-- 当时的判断：第 0 阶段建立的 APP 档案（`companies/APP/thesis.yml`）写债务本金与净债务时照抄了企业报告里的约数；写股本变化时把期初取成了下一年的年末；管理层标准 (a) 的五年读数混用了重述前后两套数字。
-- 实际情况：第一次事实审计按 10-K、10-Q 逐条核对了 237 条事实，七条判为错误，实为两处问题（债务本金与净债务；股本期初），另有一处口径问题。报告里的债务约数来自电话会上的口头说法，与申报文件不符。
-- 错在哪里：建档时 SEC 的 EDGAR 还不可达，数字取自报告，没有逐条回到一手文件；档案在合并之前也没有先过事实审计。
-- 谁的错：系统的建档过程（第 0 阶段的工程搭建，不属于任何角色，按 `docs/decisions/0016` 不计入信任等级）；源头是所有者报告里的约数。
-- 改了什么：档案按一手文件改正（提交 d471ebb）；报告原文不改，差异登记进私有仓库的勘误表；其余五家公司的档案在第一次预注册之前补跑同样的事实审计，以后每份档案在合并之前都先过事实审计。
+- Judgment at the time: the APP archive built in Phase 0 (`companies/APP/thesis.yml`) copied the rounded figures in the company report for debt principal and net debt; for the change in share count, it took the opening figure from the following year's year-end; the five-year reading for management criterion (a) mixed two sets of numbers, from before and after a restatement.
+- What actually happened: the first fact audit checked 237 facts one by one against the 10-K and 10-Q filings; seven were judged errors, which were really two problems (debt principal and net debt; the opening share count), plus one basis issue. The rounded debt figure in the report came from remarks made on an earnings call and does not match the filings.
+- What went wrong: when the archive was built, SEC's EDGAR was not yet reachable, so the numbers were taken from the report without going back to the primary filings one by one; and the archive did not go through a fact audit before it was merged.
+- Whose mistake: the system's archive-building process (the Phase 0 engineering setup, which belongs to no role and, per `docs/decisions/0016`, does not count toward any trust level); the root cause is the rounded figures in the owner's report.
+- What changed: the archive was corrected against the primary filings (commit d471ebb); the report text is left unchanged and the differences are logged in the errata table in the private repository; the archives of the other five companies get the same fact audit before their first pre-registration, and from now on every archive goes through a fact audit before it is merged.

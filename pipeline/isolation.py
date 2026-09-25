@@ -1,13 +1,15 @@
-"""按角色裁剪输入的内容一半（00 §G6）：从成品里删去审计类输入不该看到的章节。本模块不调用模型。
+"""The content half of trimming inputs by role (00 §G6): removes from finished products the sections that
+audit-type inputs must not see. This module calls no model.
 
-pipeline/llm.py 按 agents/<role>.yml 的 can_see／cannot_see 拒绝不该给的输入名；这里负责把成品本身
-裁成那些输入名所指的内容：
+pipeline/llm.py refuses input names that must not be given, per can_see/cannot_see in agents/<role>.yml; this module
+trims the finished product itself down to what those input names refer to:
 
-- 反方第一遍（04B、09B）拿到 *_without_counter、dossier_without_9_12、thesis_without_loss_paths；
-  第二遍才补给被删去的部分（product_counter_section、document_counter_section）。
-- 盲推（14A）拿到 question_list_stripped：删去 kind 与 maps_to，打乱顺序（开放问题不动）。
+- The red team's first pass (04B, 09B) gets *_without_counter, dossier_without_9_12 and thesis_without_loss_paths;
+  only the second pass adds back the removed parts (product_counter_section, document_counter_section).
+- The blind read (14A) gets question_list_stripped: kind and maps_to removed, order shuffled (open questions stay put).
 
-要删的章节找不到时抛出 ValueError，而不是原样交出：原样交出等于把反方内容泄露给第一遍。
+When a section to be removed can't be found, ValueError is raised instead of handing the text over unchanged: handing
+it over unchanged would leak the bear-case content to the first pass.
 """
 
 from __future__ import annotations
@@ -23,14 +25,17 @@ _HEADING = re.compile(r"^(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$")
 _FENCE = re.compile(r"^[ \t]*(```|~~~)")
 _NUMBER = re.compile(r"^(?:第\s*)?(\d+)\s*(?:[.、．:：)）]|部分|节|\s)")
 
-# 06–08 各自的反方内容（09B 第一遍删去）；06 没有专门的反方一节，09B 审 06 只跑一遍。
+# The bear-case content of each of 06–08 (removed for the first pass of 09B); 06 has no dedicated bear-case
+# section, so 09B runs only one pass when it reviews 06.
 COUNTER_TITLES = {"06": (), "07": ("竞争生态全景",), "08": ("反过来想",)}
 
 
 def split_sections(markdown: str, level: int = 2) -> list[tuple[str | None, str]]:
-    """按 level 级标题切块：[(标题文字；第一个标题之前的部分为 None, 块文本), …]。
+    """Split at the headings of the given level: [(heading text, or None for the part before the first heading,
+    chunk text), ...].
 
-    各块拼起来等于原文；代码围栏里的 # 不算标题；更深一级的标题留在所属的块里。
+    The chunks joined together equal the original text; a # inside a code fence is not a heading; deeper headings stay
+    in the chunk they belong to.
     """
     sections: list[tuple[str | None, str]] = []
     title: str | None = None
@@ -52,7 +57,7 @@ def split_sections(markdown: str, level: int = 2) -> list[tuple[str | None, str]
 
 
 def section_number(title: str) -> int | None:
-    """标题开头的编号：“9. 不买它的理由”“第 12 部分 …”→ 9、12。"""
+    """The number at the start of a heading: "9. ..." -> 9, and the Chinese "part 12" form (see _NUMBER) -> 12."""
     match = _NUMBER.match(title.strip())
     return int(match.group(1)) if match else None
 
@@ -60,9 +65,9 @@ def section_number(title: str) -> int | None:
 def strip_sections(
     markdown: str, *, numbers: Iterable[int] = (), titles: Iterable[str] = (), level: int = 2
 ) -> tuple[str, str]:
-    """删去编号在 numbers 里、或标题含 titles 任一词的 level 级章节。
+    """Remove the sections of the given level whose number is in numbers or whose heading contains any of titles.
 
-    返回 (删后的正文, 删去的部分)。任何一个编号或标题找不到都抛出 ValueError。
+    Returns (remaining text, removed part). Raises ValueError if any of the numbers or titles is not found.
     """
     numbers, titles = set(numbers), tuple(titles)
     kept: list[str] = []
@@ -86,17 +91,23 @@ def strip_sections(
 
 
 def dossier_without_9_12(dossier: str) -> tuple[str, str]:
-    """档案删去第 9 部分（不买它的理由）和第 12 部分（论点破坏者）。返回 (删后, 删去的部分)。"""
+    """Remove part 9 (the bear case) and part 12 (thesis breakers) from the dossier. Returns (remaining, removed)."""
     return strip_sections(dossier, numbers=(9, 12))
 
 
 def report_without_counter(report: str) -> tuple[str, str]:
-    """研报删去第 7 节（反方最强论点）。返回 (product_without_counter, product_counter_section)。"""
+    """Remove section 7 (the strongest bear-case argument) from the research report.
+
+    Returns (product_without_counter, product_counter_section).
+    """
     return strip_sections(report, numbers=(7,))
 
 
 def document_without_counter(document: str, doc: str) -> tuple[str, str]:
-    """06–08 删去各自的反方内容（COUNTER_TITLES）。返回 (document_without_counter, document_counter_section)。"""
+    """Remove the bear-case content of 06–08 (COUNTER_TITLES).
+
+    Returns (document_without_counter, document_counter_section).
+    """
     if doc not in COUNTER_TITLES:
         raise ValueError(f"doc 必须是 {'、'.join(COUNTER_TITLES)} 之一，收到 {doc!r}")
     titles = COUNTER_TITLES[doc]
@@ -104,7 +115,7 @@ def document_without_counter(document: str, doc: str) -> tuple[str, str]:
 
 
 def thesis_without_loss_paths(thesis_yaml: str) -> str:
-    """thesis.yml 删去 thesis.permanent_loss_paths（重新输出，注释一并去掉）。"""
+    """Remove thesis.permanent_loss_paths from thesis.yml (the YAML is dumped again, so comments are dropped too)."""
     data = load_yaml_text(thesis_yaml)
     if not isinstance(data, dict):
         raise ValueError("thesis.yml 应当是一个映射")
@@ -115,9 +126,11 @@ def thesis_without_loss_paths(thesis_yaml: str) -> str:
 
 
 def question_list_stripped(question_list_yaml: str, *, seed: str) -> str:
-    """14Q 的问题清单交给盲推之前：每题删去 kind 与 maps_to，非开放问题按 seed 确定地打乱，开放问题留在原位。
+    """Prepare the 14Q question list for the blind read: drop kind and maps_to from every question, shuffle the
+    non-open questions deterministically by seed, and leave the open questions in place.
 
-    题目 id 保留：14B 按 id 把盲推的回答与公司经理的回答对上。同一 seed 得到同一顺序，输入哈希可复现。
+    Question ids are kept: 14B matches the blind read's answers to the company manager's by id. The same seed gives
+    the same order, so the input hash is reproducible.
     """
     data: Any = load_yaml_text(question_list_yaml)
     if isinstance(data, dict) and isinstance(data.get("questions"), list):

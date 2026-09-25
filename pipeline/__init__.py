@@ -1,13 +1,17 @@
-"""Owner's Office 流水线。
+"""Owner's Office pipeline.
 
-硬规则：模型调用只能放在 pipeline/llm.py（CI 检查 C-LLM-ENTRY）。
-本包的其他模块需要模型时，调用 pipeline.llm.complete()，不要自己导入模型 SDK。
+Hard rule: model calls may live only in pipeline/llm.py (CI check C-LLM-ENTRY).
+When another module in this package needs a model, it calls pipeline.llm.complete() instead of importing the model
+SDK itself.
 
-- llm.py：唯一的模型调用入口。按 agents/*.yml 与提示词 v3 的 front matter 组装请求、裁剪输入、
-  预算守卫、记录日志，校验输出并在不合格时重试一次。
-- outputs.py：<output> 封装的解析与校验、generated_by、按 00 §F2 放置（不调用模型）。
-- isolation.py：从成品里删去审计类输入不该看到的章节（00 §G6，不调用模型）。
-- edgar.py：SEC EDGAR 访问（User-Agent 只从环境变量或工作区 .env 读）、业绩事件与 release_history、
-  下一期发布日的估计与预注册截止时间、sources.yml 登记号核对（decisions/0017，不调用模型）。
-- timestamp.py：预注册文件的 OpenTimestamps 时间戳：打戳、升级、核验（decisions/0018，不调用模型）。
+- llm.py: the only model-call entry point. Assembles requests from agents/*.yml and the front matter of prompt set v3,
+  trims inputs, guards the budget, writes the log, validates outputs and retries once when they fail.
+- outputs.py: parsing and validation of <output> envelopes, generated_by, placement per 00 §F2 (calls no model).
+- isolation.py: removes from finished products the sections that audit-type inputs must not see (00 §G6; calls no
+  model).
+- edgar.py: SEC EDGAR access (the User-Agent is read only from the environment or the workspace .env), earnings events
+  and release_history, estimates of the next release date and the pre-registration deadline, checking accession
+  numbers in sources.yml (decisions/0017; calls no model).
+- timestamp.py: OpenTimestamps timestamps for pre-registration files: stamp, upgrade, verify (decisions/0018; calls
+  no model).
 """

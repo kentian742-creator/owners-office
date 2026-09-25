@@ -1,48 +1,48 @@
-# 0009 采用提示词 v3（00、00D、01–19），放在私有仓库
+# 0009 Adopt prompt set v3 (00, 00D, 01–19), kept in the private repository
 
-## 背景
+## Background
 
-设计文档要求 13 个提示词“全部进日程”，`agents/` 放“各角色的提示词、权限、所用模型”。开工时这些提示词不在工作区（STATUS 待办 T1）：所有者原有的 01–13（v2）散在 claude.ai 的对话里，写作和估值规则散在记忆文件里，逐条累加，新旧冲突的条目并存，流水线也读不到。结果之一是同一条规则在不同报告里各写一套——对价格的评级尺在几份报告里各不相同，就是这样漂移出来的。
+The design document requires all 13 prompts to "go on the schedule", and `agents/` to hold "each role's prompts, permissions and model". At kickoff these prompts were not in the workspace (STATUS to-do T1): the owner's original 01–13 (v2) were scattered across claude.ai conversations, and the writing and valuation rules were scattered across memory files, added one at a time, with conflicting old and new entries side by side, and the pipeline could not read them. One result was that the same rule was written differently in different reports: the grading scale for price differed from report to report, and that is how it drifted.
 
-2026-09-24 提示词 v3 定稿：00 系列规则、00D 设计系统，01–13 是原有提示词的升级版，14–19 是新增的（盲推与独立判定、预注册与结算、抽取、总部、月度股东信、排版）。初稿经过四路互相独立的复核（方法忠实度、提示词工程、系统集成、用 APP 的真实材料试跑），按约 150 条发现修订。同一天所有者决定：提示词先放私有仓库，公开仓库的角色定义只引用编号；以后是否公开另行决定。
+On 2026-09-24 prompt set v3 was finalized: 00 series rules, 00D design system, 01–13 as upgraded versions of the original prompts, and 14–19 as new ones (blind read and independent judging, pre-registration and settlement, extraction, HQ, the monthly letter, typesetting). The first draft went through four mutually independent reviews (fidelity to the method, prompt engineering, system integration, and a trial run on APP's real material) and was revised on roughly 150 findings. On the same day the owner decided that the prompts stay in the private repository for now and that the role definitions in the public repository cite them only by number; whether to publish them later will be decided separately.
 
-## 选项
+## Options
 
-1. 继续用 v2：各提示词各自带规则，靠记忆文件补齐。
-2. 采用 v3，放进公开仓库的 `agents/prompts/`。
-3. 采用 v3，放在私有仓库 `owners-office-private/prompts/`；公开的 `agents/` 只按编号引用。
-4. 等第一个财报季跑完再定。
+1. Keep using v2: each prompt carries its own rules, with the memory files filling the gaps.
+2. Adopt v3 and put it into the public repository's `agents/prompts/`.
+3. Adopt v3 and keep it in the private repository's `owners-office-private/prompts/`; the public `agents/` cites it only by number.
+4. Decide after the first earnings season.
 
-## 决定
+## Decision
 
-采用选项 3。
+Option 3.
 
-- **提示词集：** 00（系列规则 v3.0）、00D（设计系统）、01–19，放在私有仓库的 `prompts/`；所有者的规则原文放在 `prompts/context/`。公开仓库只写编号（如 `03`、`04A`、`15B`），不复制正文。
-- **规则只写一次：** 00 是全部提示词共用的规则书，优先级为硬规则 > 投资宪法 > 00 其余条款 > 单个提示词。00 §C 与 `constitution/owner.md` 的 R1–R13 编号、条文一致；§H、§C、§E、§P、§V、§M、§W 和 00D 是所有者条款，改动是决策 L3；§F、§G 与提示词里的其余部分是流程和格式，改动是决策 L2（`prompt_change`），在月度股东信里报备。
-- **角色随提示词落地：** 角色从六个扩到十三个；`agents/*.yml` 的 `prompts` 按提示词 README 的表登记，`can_see`／`cannot_see` 用提示词 front matter 的输入名，由 C-PROMPT-ISOLATION 核对。落地时定下的几处取舍：
-  1. 估值重算生效（`valuation_update`）记在模型审查名下：待审版本经 04C 批准才生效，重算本身是公司经理的起草。
-  2. 决策权的动作表没有“结算”“抽取”“排版”：结算记在 `test` 名下（按事先写好的标准判定），抽取记在 `parse` 名下，排版记在 `draft` 名下。
-  3. 抽取员 `reports_to: null`：它的产出原样交给事实审计，不受成品作者指挥；排版员是各公司共用的制作环节，向总部汇报。
-  4. 隔离表说总部“能看到全部”；它的 `can_see` 列出各部分的实际输入，好让 C-PROMPT-ISOLATION 能逐部分核对。
-  5. 反方第一遍看不到成品自己的反方内容、第二遍才给，这层先后由提示词的分遍输入保证；两个“反方内容”输入只列在 `can_see`，`cannot_see` 列任何一遍都不给的完整成品、档案与 `thesis.yml`。这样任何一部分的输入都不与 `cannot_see` 相交，C-PROMPT-ISOLATION 零报警。
-  6. 行业研究员还没有提示词，`can_see`／`cannot_see` 先借用最接近的输入名，提示词写成后改正。
-- **可复现：** 每次调用记录模型、00 的版本、提示词版本和输入哈希（H5）；手动运行的产出只作线索，由流水线重跑后才能合并。
-- **受影响的旧记录：** [0006](0006-cite-report-pages.md) 的自有报告标签 `<代码>-RPT-<年-月>` 改为 00 §E1 的 `<代码>-RPT<编号>-<日期>`（同月两份自有报告会撞名）；页码位置 `#pN` 的写法不变。迁移必须在第一份预注册打时间戳之前完成，否则旧标签会被冻结在时间戳里。[0003](0003-model-assignment-and-budget.md) 的分工原则不变，新角色照它归类；它的月度花费估算按旧流程算，新流程多出盲推、独立判定、结算、抽取和反向清单的调用，第一个财报季之后用实际日志重估。
-- **需要仓库与代码配合的改动**（thesis-ci 规范 0.2、`pipeline/llm.py`、数据与内容迁移）按私有仓库的 `prompts/INTEGRATION-TODO.md` 落地，进度记在 [STATUS](../STATUS.md)。STATUS 待办 T1 关闭。
+- **The prompt set:** 00 (series rules v3.0), 00D (design system) and 01–19, kept in the private repository's `prompts/`; the original texts of the owner's rules are in `prompts/context/`. The public repository writes only the numbers (such as `03`, `04A`, `15B`) and copies no text.
+- **Rules are written only once:** 00 is the rulebook shared by all prompts, with the precedence hard rules > investment constitution > the rest of 00 > the individual prompt. 00 §C matches R1–R13 of `constitution/owner.md` in numbering and wording; §H, §C, §E, §P, §V, §M, §W and 00D are the owner's clauses, and changing them is a decision at level L3; §F, §G and the rest of the prompts are process and format, and changing them is a decision at level L2 (`prompt_change`), reported in the monthly letter.
+- **Roles follow the prompts:** the roles grow from six to thirteen; `prompts` in `agents/*.yml` is registered from the table in the prompts README, and `can_see`/`cannot_see` use the input names from the prompts' front matter, checked by C-PROMPT-ISOLATION. Trade-offs settled while putting this in place:
+  1. Making a valuation recomputation effective (`valuation_update`) is filed under model review: the pending version takes effect only once 04C approves it, while the recomputation itself is drafting by the company manager.
+  2. The action table of the decision rights has no "settle", "extract" or "typeset": settlement is filed under `test` (judging against criteria written in advance), extraction under `parse`, and typesetting under `draft`.
+  3. The extractor has `reports_to: null`: its output goes unchanged to the fact audit, and it takes no direction from the authors of the finished products; the typesetter is a production step shared by all companies and reports to HQ.
+  4. The isolation table says that HQ "can see everything"; its `can_see` lists the actual inputs of each part, so that C-PROMPT-ISOLATION can check them part by part.
+  5. The red team does not see the product's own bear-case content on the first pass and gets it only on the second; this ordering is guaranteed by the prompt's per-pass inputs. The two "bear-case content" inputs are listed only under `can_see`, and `cannot_see` lists the complete product, the archive and `thesis.yml`, which no pass receives. That way no part's inputs intersect `cannot_see`, and C-PROMPT-ISOLATION raises zero alerts.
+  6. The industry researcher has no prompt yet; its `can_see`/`cannot_see` borrow the closest input names for now and will be corrected once its prompt is written.
+- **Reproducibility:** every call records the model, the version of 00, the prompt version and the input hash (H5); output from manual runs serves only as leads, and can be merged only after the pipeline has rerun it.
+- **Earlier records affected:** in [0006](0006-cite-report-pages.md), the own-report tag `<ticker>-RPT-<year-month>` changes to the 00 §E1 form `<ticker>-RPT<number>-<date>` (two own reports in the same month would collide); the `#pN` page locator stays as it is. The migration must be finished before the first pre-registration is timestamped, or the old tags will be frozen into the timestamp. The assignment principle of [0003](0003-model-assignment-and-budget.md) is unchanged, and the new roles are classified by it; its monthly cost estimate was made for the old process, and the new process adds calls for blind read, independent judging, settlement, extraction and the inversion list, so the estimate will be redone from the actual logs after the first earnings season.
+- **Changes that need work in the repositories and the code** (thesis-ci spec 0.2, `pipeline/llm.py`, data and content migration) are carried out per the private repository's `prompts/INTEGRATION-TODO.md`, with progress recorded in [STATUS](../STATUS.md). STATUS to-do T1 is closed.
 
-## 理由
+## Rationale
 
-- **一份规则书。** 规则只写一次、有编号、有版本，每次调用都知道用的是哪一版；同一条规则不再在多处各写一遍，漂移就没有了来源。
-- **隔离。** 同一段上下文里的自我审查基本无效。v3 把审计拆成互相看不到结果的部分：事实审计只看原子事实和原文，反方第一遍看不到成品自己的反方内容，定性测试由独立的判定员完成，结算员看不到概率和作者，盲推只看新文件和中性问题。只有写在提示词和角色定义里，流水线才能按角色裁剪输入。
-- **机器可读的输出。** 输入与输出都用固定的封装；结构化数据符合 thesis-ci 的 schema；各环节之间的交接通道都有明确的产出者和消费者（00 §F7）。这是自动化（第 2 阶段）的前提。
-- **为什么放私有仓库。** 这是所有者的决定。提示词里写着所有者完整的估值方法和设计偏好，也按名字引用私有文件；而且它们为了说明规则，会大量出现公开文件禁用的用语（H4），放进公开仓库本身就会触犯公开内容的检查。公开仓库仍然能看到每个角色是谁、看得到什么、看不到什么、跑哪一份提示词，治理结构照样可以被核对。
+- **One rulebook.** Each rule is written once, numbered and versioned, and every call knows which version it used; the same rule is no longer written out separately in several places, so drift has no source.
+- **Isolation.** Self-review within the same context is essentially ineffective. v3 splits the audit into parts that cannot see each other's results: the fact audit sees only atomic facts and the source text, the red team does not see the product's own bear-case content on the first pass, qualitative tests are judged by an independent judge, the settler sees neither the probabilities nor the author, and the blind read sees only the new filings and neutral questions. Only when this is written into the prompts and the role definitions can the pipeline trim inputs by role.
+- **Machine-readable output.** Inputs and outputs use fixed envelopes; structured data conforms to thesis-ci's schemas; every hand-off channel between steps has a clear producer and consumer (00 §F7). This is the precondition for automation (Phase 2).
+- **Why the private repository.** It is the owner's decision. The prompts contain the owner's complete valuation method and design preferences, and they refer to private files by name; and to explain the rules, they use many of the terms that public files forbid (H4), so putting them into the public repository would itself trip the public content checks. The public repository still shows who each role is, what it can and cannot see, and which prompt it runs, so the governance structure can still be checked.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **继续用 v2：** 规则冲突并存，流水线读不到记忆文件；同一段上下文里的自我审查也保留了下来。
-- **公开放进 `agents/prompts/`：** 所有者决定先不公开；另外会把禁用用语带进公开仓库。
-- **等第一个财报季跑完：** 11 月的第一批预注册（15A）和问题清单（14Q）就要用到 v3，等下去第 1 阶段就跑不起来。
+- **Keep using v2:** conflicting rules would remain side by side, and the pipeline can't read memory files; self-review within the same context would also remain.
+- **Publish in `agents/prompts/`:** the owner decided not to publish them for now; it would also bring forbidden terms into the public repository.
+- **Wait until the first earnings season is over:** the first pre-registrations (15A) and question lists (14Q) in November already need v3; waiting would keep Phase 1 from running.
 
-## 日期
+## Date
 
 2026-09-24

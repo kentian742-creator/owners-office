@@ -1,50 +1,50 @@
-# 0015 模型调用入口按提示词 v3 升级：角色表、流式、版本与修订、放置、待审估值、提示缓存
+# 0015 The model-call entry point upgraded for prompt set v3: role table, streaming, versions and revisions, placement, pending valuations, prompt caching
 
-## 背景
+## Background
 
-提示词 v3（[0009](0009-prompt-set-v3.md)）要求 `pipeline/llm.py` 配合改动（私有仓库 `prompts/INTEGRATION-TODO.md` 的 D 节，STATUS 待办 T10）：系统提示由 00、00D 与具体提示词拼成；输入与输出用固定的 `<input>`／`<output>` 封装；按角色裁剪输入；结构化输出先校验再交出；版面审查要看页面图像；产出注明由什么生成。旧的 `llm.py` 只认原来的六个角色，角色和模型的对应写在代码里；每次调用都不流式、输出上限 16000；日志只记一个“提示词版本”（git 哈希）。
+Prompt set v3 ([0009](0009-prompt-set-v3.md)) needs matching changes in `pipeline/llm.py` (section D of the private repository's `prompts/INTEGRATION-TODO.md`, STATUS to-do T10): the system prompt is assembled from 00, 00D and the specific prompt; inputs and outputs use fixed `<input>`/`<output>` envelopes; inputs are trimmed by role; structured outputs are validated before they are handed over; design review needs to see page images; outputs state what generated them. The old `llm.py` knew only the original six roles, with the mapping from roles to models written in the code; no call streamed, and the output limit was 16000; the log recorded only one "prompt version" (a git hash).
 
-落地时有几件事设计文档和 00 都没写到，要自己拍板：角色表以哪里为准；哪些调用流式；版本怎么记；§F2 只分公开和私有、没给路径的输出放在哪里；估值待审版本在 04C 批准之前放在哪里；00 每次调用都要重送一遍（约 1.5 万 token），这部分成本怎么处理。
+Putting this in place raised several questions that neither the design document nor 00 answers, which had to be decided here: where the role table comes from; which calls stream; how versions are recorded; where to put outputs for which §F2 distinguishes only public and private without giving a path; where the pending version of a valuation lives before 04C approves it; and how to handle the cost of resending 00 (about 15,000 tokens) with every call.
 
-## 选项
+## Options
 
-1. **角色表：** (a) 代码里写一张表（旧做法）；(b) 以 `agents/*.yml` 为唯一来源。
-2. **请求：** (a) 只有 01、02、11 流式，其余不流式、上限 16000；(b) 全部流式，默认上限 64000，01、02、11 为 128000。
-3. **版本：** (a) 只记 git 哈希；(b) 只记提示词 front matter 的 `version`；(c) 两者都记。
-4. **私有输出的路径：** (a) 由各个调用方自己决定；(b) 写成一张放置表。
-5. **估值待审版本：** (a) 在主分支上另存一份 `proposed` 文件；(b) 以拉取请求的形式存在。
-6. **00 的重复成本：** (a) 不处理；(b) 在 00（与 00D）上放提示缓存断点，5 分钟缓存；(c) 1 小时缓存。
+1. **Role table:** (a) a table in the code (the old way); (b) `agents/*.yml` as the only source.
+2. **Requests:** (a) only 01, 02 and 11 stream, the rest don't, with a limit of 16000; (b) everything streams, with a default limit of 64000, and 128000 for 01, 02 and 11.
+3. **Versions:** (a) record only the git hash; (b) record only the `version` in the prompt's front matter; (c) record both.
+4. **Paths of private outputs:** (a) each caller decides; (b) a placement table.
+5. **Pending valuation version:** (a) a separate `proposed` file on the main branch; (b) a pull request.
+6. **The repeated cost of 00:** (a) do nothing; (b) put a prompt-caching breakpoint on 00 (and 00D), with a 5-minute cache; (c) a 1-hour cache.
 
-## 决定
+## Decision
 
-采用 1(b)、2(b)、3(c)、4(b)、5(b)、6(b)。
+1(b), 2(b), 3(c), 4(b), 5(b), 6(b).
 
-- **角色表只有一个来源。** `llm.py` 从 `agents/*.yml` 读模型、effort、fallbacks、`prompts`、`can_see`、`cannot_see`。未知角色、缺 `model.id`、同一角色定义两次、角色没有登记的提示词或部分、提示词 front matter 写的角色与调用的角色不一致，都在发请求之前报错。输入名不在 `can_see` 里，或落在 `cannot_see` 里（去掉 `_04A` 一类的部分编号后缀再比，与 thesis-ci 的 C-PROMPT-ISOLATION 一致），同样在发请求之前拒绝（00 §G6）；从成品里删去对应章节由 `pipeline/isolation.py` 完成。十三个角色都能调用，两处例外：行业研究员还没有提示词；排版员的 19 要交出 PDF 与页面图像，需要能执行代码的环境，暂不经 `llm.py`。
-- **全部流式。** 每次调用都用 `client.messages.stream(...)` 取 `get_final_message()`；默认输出上限 64000，01、02、11 为 128000。起草与监督的模型都开自适应思考，不发送 `budget_tokens`；深浅用 `output_config.effort`。监督角色照 [0003](0003-model-assignment-and-budget.md) 开启服务端拒答回退。
-- **版本与修订都记。** 每次请求（含重试）写一行日志：`prompt_version`、`rules_version`、`design_version` 是提示词、00、00D 的 front matter `version`；`prompt_revision`、`rules_revision`、`design_revision` 是最后一次改动该文件的 git 提交，文件未提交或有改动时为内容哈希加 `+dirty`；另记部分编号 `part_id` 与输入哈希 `input_sha256`（覆盖完整的系统提示、全部输入和部分、遍次、模式）。每份 Markdown 输出的 front matter 注入 `generated_by`（模型、00 与提示词的 `version`、部分、输入哈希）；schema 不允许多余键的文件（`thesis.yml`、`story.md` 等）不改动，`generated_by` 随结果一并返回。
-- **输出格式由提示词声明，严格校验。** 每个输出的格式（yaml、markdown、text、file）在 00 的 front matter 里逐个声明；分遍、分模式的部分各自写出这一遍、这个模式的输入与输出。`llm.py` 按声明检查名字、必需输出、YAML、thesis-ci schema 与 front matter，不合格就带着错误信息重试一次，仍不合格就不交出任何输出。流水线维护的字段（00 §G8，如 `trust_level`）由调用方以 `pipeline_fields` 传入，校验之前写进输出。
-- **放置写成数据**（同步写进 00 §F2）。公开仓库照 thesis-ci SPEC §2；更新记录为 `companies/<代码>/updates/<run_date>.md`，03 与 03P 各写一份。私有仓库：档案 `companies/<代码>/dossier.md`（MSFT 的在公开仓库）；估值 `companies/<代码>/valuation.yml`、`valuation.md`；报告 `reports/<代码>/<02|06|07|08|11>/`，修订稿覆盖同名文件，旧版留在提交历史里；升级请求 `escalations/<日期>-<代码>-<slug>.yml`；备忘录 `memos/<日期>-<代码>-<slug>.yml`；系列排名 `hq/ranking.yml`；股东信的私有附录 `letters/<年-月>-private-appendix.md`；其余输出 `runs/<代码，总部为 hq>/<run_date>-<部分编号>/<输出名>.<yml|md>`。`llm.py` 只回答每份输出该放到哪里（`LLMResult.placements()`），写文件、开拉取请求由调用方负责。
-- **估值待审版本是一个拉取请求。** 分支上的 `valuation.yml` 与 `valuation.md` 写 `doc_status: proposed`；04C 批准后、合并之前改为 `effective`；04C 退回的不合并。主分支上只有生效版本（00 §V20）。
-- **提示缓存。** 00（与 00D）的系统提示块各带一个 5 分钟缓存断点，具体提示词放在断点之后。写入缓存和读取缓存的 token 按各自的价格记账：写入为输入价的 1.25 倍，读取一般为 0.1 倍，`claude-fable-5-1` 的读取价单独列明；这张表在 `pipeline/llm.py` 的 `CACHE_PRICES_PER_MTOK`，除单独列明的一项外都是按倍率算出的，价格变动时改表。每行日志另记 `cost_breakdown`（输入、输出、写缓存、读缓存）。
+- **The role table has one source.** `llm.py` reads the model, effort, fallbacks, `prompts`, `can_see` and `cannot_see` from `agents/*.yml`. An unknown role, a missing `model.id`, a role defined twice, a prompt or part the role has not registered, or a prompt whose front matter names a different role from the one calling it all raise errors before any request is sent. An input name that is not in `can_see`, or that falls in `cannot_see` (compared after stripping part-number suffixes such as `_04A`, the same way as thesis-ci's C-PROMPT-ISOLATION), is likewise refused before the request is sent (00 §G6); removing the corresponding sections from a finished product is done by `pipeline/isolation.py`. All thirteen roles can be called, with two exceptions: the industry researcher has no prompt yet; and the typesetter's 19 has to deliver a PDF and page images, which needs an environment that can execute code, so it does not go through `llm.py` for now.
+- **Everything streams.** Every call uses `client.messages.stream(...)` and takes `get_final_message()`; the default output limit is 64000, and 128000 for 01, 02 and 11. Both the drafting and the oversight models run with adaptive thinking, without sending `budget_tokens`; depth is set with `output_config.effort`. The oversight roles enable the server-side refusal fallback as in [0003](0003-model-assignment-and-budget.md).
+- **Both versions and revisions are recorded.** Every request (retries included) writes one log line: `prompt_version`, `rules_version` and `design_version` are the front matter `version` of the prompt, 00 and 00D; `prompt_revision`, `rules_revision` and `design_revision` are the git commits that last changed each file, or, when a file is uncommitted or modified, its content hash plus `+dirty`; the line also records the part id `part_id` and the input hash `input_sha256` (covering the complete system prompt, all inputs and parts, the pass and the mode). `generated_by` (the model, the `version` of 00 and of the prompt, the part, the input hash) is injected into the front matter of every Markdown output; files whose schema allows no extra keys (`thesis.yml`, `story.md` and others) are not changed, and `generated_by` is returned together with the result.
+- **Output formats are declared by the prompts and strictly validated.** The format of each output (yaml, markdown, text, file) is declared one by one in the front matter of 00; parts with several passes or modes each spell out the inputs and outputs of that pass or mode. `llm.py` checks names, required outputs, YAML, thesis-ci schemas and front matter against the declarations; if anything fails, it retries once with the error messages, and if it still fails, it hands over no output at all. Fields maintained by the pipeline (00 §G8, such as `trust_level`) are passed in by the caller as `pipeline_fields` and written into the output before validation.
+- **Placement is written down as data** (and written into 00 §F2 at the same time). The public repository follows thesis-ci SPEC §2; update records are `companies/<ticker>/updates/<run_date>.md`, one each for 03 and 03P. Private repository: dossier `companies/<ticker>/dossier.md` (MSFT's is in the public repository); valuation `companies/<ticker>/valuation.yml` and `valuation.md`; reports `reports/<ticker>/<02|06|07|08|11>/`, where a revision overwrites the file of the same name and the old version stays in the commit history; escalation requests `escalations/<date>-<ticker>-<slug>.yml`; memos `memos/<date>-<ticker>-<slug>.yml`; series ranking `hq/ranking.yml`; the private appendix of the letter `letters/<year-month>-private-appendix.md`; all other outputs `runs/<ticker, or hq for HQ>/<run_date>-<part id>/<output name>.<yml|md>`. `llm.py` only answers where each output should go (`LLMResult.placements()`); writing the files and opening pull requests is the caller's job.
+- **The pending valuation version is a pull request.** On the branch, `valuation.yml` and `valuation.md` carry `doc_status: proposed`; after 04C approves and before the merge, this becomes `effective`; what 04C sends back is not merged. The main branch holds only the effective version (00 §V20).
+- **Prompt caching.** The system prompt blocks of 00 (and 00D) each carry a 5-minute cache breakpoint, and the specific prompt comes after the breakpoint. Tokens written to and read from the cache are costed at their own prices: writes at 1.25 times the input price, reads generally at 0.1 times, with the read price of `claude-fable-5-1` listed separately; this table is `CACHE_PRICES_PER_MTOK` in `pipeline/llm.py`, and apart from the one entry listed separately, its prices are all computed from these multipliers; when prices change, change the table. Each log line also records `cost_breakdown` (input, output, cache write, cache read).
 
-## 理由
+## Rationale
 
-- **角色表只写一次。** 角色定义本来就是公开的治理结构（[0009](0009-prompt-set-v3.md)）；代码里再写一张表就会漂移，旧 `llm.py` 只认六个角色，就是这样落后于 `agents/` 的。调用之前按 `can_see`／`cannot_see` 拒绝，隔离才不只停留在约定上。
-- **全部流式。** v3 的一次输出常常包含几份完整文件（03 要重写整份 `thesis.yml` 与 `ledger.yml`），16000 的上限注定截断，而截断的回答整份作废、重跑要再花一次钱。上限只封顶、不按上限计费；流式调用也没有长请求超时的问题。
-- **版本与修订各有用处。** §H5 说的提示词版本是 git 哈希，它精确到文件内容，用来复现；front matter 的 `version` 是人读的版本号，定稿后的小修订不改它，用来在股东信和 `generated_by` 里说明用的是哪一版。工作区还没入 git 时，修订退回内容哈希，照样能复现。
-- **放置写成数据。** §F2 只分公开和私有；路径若由各个调用方自定，同一类产出就会落在不同地方，检查和复核都找不到。
-- **拉取请求。** 主分支上任何时刻只有一个生效版本，待审的内容和 04C 的意见都留在拉取请求里；批准即合并生效，退回即关闭，历史完整，不会有人误把待审版本当成生效版本引用。
-- **5 分钟缓存。** 00 对每次调用都一样，是每次请求里最大的固定部分。一个业绩事件里同一模型的调用接连发生（04A、04B-lite、14A、14T、15B 都用 `claude-fable-5-1`），第二次起这部分只付读取价；缓存按模型分开，所以起草与监督各自受益。
+- **Write the role table once.** The role definitions are already the public governance structure ([0009](0009-prompt-set-v3.md)); another table in the code would drift, and that is how the old `llm.py`, which knew only six roles, fell behind `agents/`. Refusing inputs by `can_see`/`cannot_see` before the call means isolation is more than a convention.
+- **Everything streams.** A single v3 output often contains several complete files (03 rewrites the whole `thesis.yml` and `ledger.yml`), so a limit of 16000 is bound to truncate, and a truncated answer is thrown away entirely, and rerunning it costs money again. The limit is only a ceiling and is not what gets billed; streaming calls also avoid the timeout problem of long requests.
+- **Versions and revisions each have their use.** The prompt version in §H5 is a git hash; it is exact to the file content and serves reproduction. The front matter `version` is a version number for people, which small revisions after finalization don't change; it serves to say in letters and in `generated_by` which version was used. When the workspace is not yet in git, the revision falls back to a content hash and still allows reproduction.
+- **Placement written down as data.** §F2 only distinguishes public and private; if each caller chose its own paths, outputs of the same kind would land in different places, and neither the checks nor the reviews could find them.
+- **Pull requests.** At any moment the main branch holds exactly one effective version, while the pending content and 04C's comments stay in the pull request; approval means merging and taking effect, rejection means closing; the history is complete, and nobody can mistakenly cite the pending version as the effective one.
+- **5-minute cache.** 00 is the same for every call and is the largest fixed part of every request. Within one earnings event, calls to the same model come one after another (04A, 04B-lite, 14A, 14T and 15B all use `claude-fable-5-1`), so from the second call on this part is paid at the read price; caches are separate per model, so drafting and oversight each benefit.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **角色表写在代码里：** 见上，会与 `agents/` 漂移。
-- **只让 01、02、11 流式：** 03 等部分的输出同样长，不流式的上限不够。
-- **只记 git 哈希：** 股东信和文档里不便引用；**只记 front matter 版本：** 不能复现。
-- **待审估值另存为主分支上的第二个文件：** 主分支上同时出现两个版本，容易被当成生效版本引用，与“只有一个生效版本”冲突。
-- **1 小时缓存：** 写入价是输入价的 2 倍（5 分钟缓存是 1.25 倍），而同一事件里的调用多在 5 分钟之内接连发生。
-- **不做缓存：** 00 每次都按全价计入输入，是可以省下的固定成本。
+- **Role table in the code:** see above; it would drift from `agents/`.
+- **Stream only 01, 02 and 11:** the outputs of parts such as 03 are just as long, and the non-streaming limit is not enough.
+- **Record only the git hash:** hard to cite in letters and documents; **record only the front matter version:** can't reproduce.
+- **Store the pending valuation as a second file on the main branch:** two versions would coexist on the main branch and one could easily be cited as the effective version, which conflicts with "only one effective version".
+- **1-hour cache:** its write price is 2 times the input price (the 5-minute cache's is 1.25 times), while the calls within one event mostly come one after another within 5 minutes.
+- **No caching:** 00 would be charged at the full input price every time, a fixed cost that can be saved.
 
-## 日期
+## Date
 
 2026-09-25

@@ -1,43 +1,43 @@
-# 0013 EDGAR 访问：User-Agent 写所有者提供的联系邮箱，只存本地 .env
+# 0013 EDGAR access: the User-Agent carries the contact email the owner provided, stored only in the local .env
 
-> 取代 [0005](0005-edgar-accession-deferred.md)。本记录不写邮箱地址。
+> Supersedes [0005](0005-edgar-accession-deferred.md). This record does not state the email address.
 
-## 背景
+## Background
 
-SEC 的公平访问规则要求自动化请求在 User-Agent 里写明联系方式，并控制请求频率。第 0 阶段早些时候，没有声明身份的请求被 EDGAR 拦截，0005 因此决定暂缓：来源表里定期报告的登记号先留空，接受 C-SRC-ACCESSION 的警告，等所有者提供一个联系邮箱——没有所有者的同意，不拿所有者的邮箱去向第三方声明身份。
+The SEC's fair access rules require automated requests to state contact details in the User-Agent and to limit the request rate. Earlier in Phase 0, requests that did not declare an identity were blocked by EDGAR, so 0005 decided to defer: the accession numbers of periodic reports in the sources tables were left empty for now, the C-SRC-ACCESSION warning was accepted, and we waited for the owner to provide a contact email, because without the owner's consent the owner's email is not used to declare an identity to third parties.
 
-2026-09-24，所有者提供了用于 SEC User-Agent 的联系邮箱。之后从 EDGAR 取 submissions 数据已经成功。
+On 2026-09-24 the owner provided a contact email for the SEC User-Agent. Fetching submissions data from EDGAR has worked since.
 
-第 1 阶段需要 EDGAR 的地方：预注册的时间核验要用业绩 8-K（第 2.02 项）或 6-K 的 `acceptanceDateTime`；15A 需要过去三年同一财季业绩公告的入库日（`release_history`）；来源表要回填登记号。
+Where Phase 1 needs EDGAR: the timing check of pre-registrations uses the `acceptanceDateTime` of the earnings 8-K (Item 2.02) or 6-K; 15A needs the dates on which the earnings releases for the same fiscal quarter of the past three years were filed (`release_history`); the sources tables need their accession numbers backfilled.
 
-## 选项
+## Options
 
-1. 把邮箱写进代码或配置文件，随仓库提交。
-2. 邮箱只放在工作区本地的 `.env`，由调用方运行时读取；CI 里放 GitHub Actions 的 Secrets 或变量。
-3. 继续暂缓，改用第三方数据源。
+1. Write the email into code or a configuration file committed with the repository.
+2. Keep the email only in the workspace's local `.env`, read by the caller at run time; in CI, put it into GitHub Actions Secrets or variables.
+3. Keep deferring and use a third-party data source instead.
 
-## 决定
+## Decision
 
-采用选项 2。
+Option 2.
 
-- EDGAR 请求的 User-Agent 写明项目名和所有者提供的联系邮箱。
-- 邮箱只存在工作区根目录的 `.env` 里：它在三个仓库之外，三个仓库的 `.gitignore` 也都忽略 `.env`。邮箱不写进代码、文档、日志、提交信息、PR 或 issue。第 2 阶段在 GitHub Actions 里自动运行时，放进 Secrets 或变量，同样不进代码。
-- 请求频率远低于 SEC 的上限，逐个公司顺序请求。
-- 首次正式使用前，核对 `acceptanceDateTime` 的时区：取回的数据里这个字段带 `Z` 后缀，而 EDGAR 的入库日按美国东部时间计；两者对不上时以核对结果为准，再接入预注册的时间检查。
-- 回填脚本只填来源表的 `accession`、`filed`、`form`，改动逐条进 diff；回填完成后，C-SRC-ACCESSION 的警告随之消失。
-- 0005 保留作历史，顶部注明已被本记录取代。
+- The User-Agent of EDGAR requests states the project name and the contact email the owner provided.
+- The email lives only in `.env` at the workspace root: that file is outside the three repositories, and the `.gitignore` of each of the three repositories also ignores `.env`. The email is never written into code, documents, logs, commit messages, PRs or issues. When this runs automatically in GitHub Actions in Phase 2, it goes into Secrets or variables, again not into code.
+- The request rate stays far below the SEC's limit, with requests made one company at a time.
+- Before the first real use, check the time zone of `acceptanceDateTime`: in the data fetched, this field has a `Z` suffix, while EDGAR's filing date is counted in US Eastern time; if the two don't agree, go by what the check finds, and only then wire it into the timing check of pre-registrations.
+- The backfill script fills only `accession`, `filed` and `form` in the sources tables, with every change in the diff; once the backfill is done, the C-SRC-ACCESSION warnings go away.
+- 0005 is kept for history, with a note at the top that this record supersedes it.
 
-## 理由
+## Rationale
 
-- 所有者同意并提供了邮箱，SEC 的规则得到满足，第 1 阶段需要的时间核验和入库日才拿得到。
-- 公开仓库是公开的，邮箱是个人信息：只放在不入库的 `.env` 里，一次误提交也不会把它带进公开历史。
-- `.env` 在三个仓库之外，任何一个仓库的脚本都能读到同一份配置，不用各存一份。
+- The owner agreed to it and provided the email, so the SEC's rules are met, and the timing checks and filing dates Phase 1 needs become available.
+- The public repository is public and the email is personal information: kept only in a `.env` that is never committed, even an accidental commit can't bring it into the public history.
+- `.env` is outside the three repositories, so scripts in any of them can read the same configuration without each keeping its own copy.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **写进代码或配置：** 个人信息会进入公开仓库的历史，无法撤回。
-- **继续暂缓、改用第三方数据：** 第三方的登记号和时间无法核验；预注册的时间核验必须以 EDGAR 的记录为准。
+- **Write it into code or configuration:** personal information would enter the public repository's history, with no way to take it back.
+- **Keep deferring and use third-party data:** third-party accession numbers and times can't be verified; the timing check of pre-registrations has to rest on EDGAR's records.
 
-## 日期
+## Date
 
 2026-09-24

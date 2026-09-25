@@ -1,59 +1,59 @@
-# 0017 EDGAR 访问模块：取数、业绩事件、发布日估计与来源表登记号核对
+# 0017 EDGAR access module: fetching, earnings events, release date estimates, and checking accession numbers in the sources tables
 
-## 背景
+## Background
 
-第 0 阶段取登记号、`acceptanceDateTime` 与 `release_history` 用的是会话里写的一次性脚本，结果放在工作区的 `inputs/edgar/`（STATUS 待办 T18）。第一份预注册（APP FY2026Q3，业绩约 11 月初）之前，这些功能要进 `pipeline/`，带测试，User-Agent 只从工作区根目录的 `.env` 读（[0013](0013-sec-edgar-access.md)）。
+In Phase 0, accession numbers, `acceptanceDateTime` and `release_history` were obtained with one-off scripts written during the session, with the results stored in the workspace's `inputs/edgar/` (STATUS to-do T18). Before the first pre-registration (APP FY2026Q3, results around early November), these functions have to move into `pipeline/`, with tests, and the User-Agent must be read only from `.env` at the workspace root ([0013](0013-sec-edgar-access.md)).
 
-用到它的地方：15A 要 `event`（期间、预计发布日、表格、是否占位）、`deadline` 和过去三年同一财季的 `release_history`；03、14、15B 要知道业绩事件何时开始、何时收口；来源表里 `kind: filing` 的条目要与 EDGAR 核对（thesis-ci SPEC §3.3、§3.5）。
+Where it is used: 15A needs `event` (period, expected release date, form, whether it is a placeholder), `deadline` and the `release_history` of the same fiscal quarter over the past three years; 03, 14 and 15B need to know when an earnings event starts and when it closes; `kind: filing` entries in the sources tables have to be checked against EDGAR (thesis-ci SPEC §3.3, §3.5).
 
-设计文档、00 和 15A 没写到、要自己定的有：用什么发请求、缓存放在哪里；外国发行人的业绩 6-K 怎样认出来；“发布日”取哪一天（新闻稿可能早于备案，伯克希尔在周六发布）；财年期间怎样推；截止前 72 小时在夏令时切换前后怎么算；来源表可以自动改到什么程度。
+Things the design document, 00 and 15A don't cover and that had to be decided here: what to send requests with and where to keep the cache; how to recognize a foreign issuer's earnings 6-K; which day counts as the "release date" (the press release may come before the filing, and Berkshire releases on Saturdays); how to derive fiscal periods; how to compute 72 hours before the deadline around a daylight saving time change; and how far the sources tables may be changed automatically.
 
-## 选项
+## Options
 
-1. **发请求：** (a) 标准库 urllib，限速、重试、缓存自己写；(b) requests；(c) 现成的 EDGAR 库。
-2. **一份申报的文件清单：** (a) `index.json`；(b) 解析 `-index.htm` 网页；(c) 完整提交的 `.txt`（SGML）。
-3. **外国发行人的业绩 6-K：** (a) 看第一个 EX-99 附件（没有附件时看 6-K 正文）的新闻稿标题；(b) 按 6-K 的大小或 `primaryDocDescription` 猜；(c) 每份 6-K 都算业绩事件。
-4. **发布日：** (a) EDGAR filing date；(b) 首次公开的美东日期。
-5. **截止前 72 小时：** (a) 按墙上时钟，截止日往前数 3 天；(b) 换成 UTC 减去 72 个实际小时，再以美东时间表示。
-6. **缓存：** (a) 放在仓库里；(b) 放在工作区根目录；(c) 放在用户缓存目录，可改。
-7. **来源表：** (a) 只报告；(b) 自动改正；(c) 默认只报告，`--write` 只补缺的字段。
+1. **Requests:** (a) the standard library's urllib, with our own rate limiting, retries and cache; (b) requests; (c) an existing EDGAR library.
+2. **The file list of a filing:** (a) `index.json`; (b) parse the `-index.htm` web page; (c) the complete submission `.txt` (SGML).
+3. **A foreign issuer's earnings 6-K:** (a) look at the press release title in the first EX-99 exhibit (in the 6-K body when there is no exhibit); (b) guess from the 6-K's size or its `primaryDocDescription`; (c) treat every 6-K as an earnings event.
+4. **Release date:** (a) the EDGAR filing date; (b) the US Eastern date of first publication.
+5. **72 hours before the deadline:** (a) by the wall clock, counting back 3 days from the deadline; (b) convert to UTC, subtract 72 actual hours, and express the result in US Eastern time.
+6. **Cache:** (a) in the repository; (b) at the workspace root; (c) in the user cache directory, configurable.
+7. **Sources tables:** (a) report only; (b) correct automatically; (c) report only by default, with `--write` filling in only missing fields.
 
-## 决定
+## Decision
 
-采用 1(a)、2(a)、3(a)、4(b)、5(b)、6(c)、7(c)，实现为 `pipeline/edgar.py`（命令行 `python -m pipeline.edgar`）。
+1(a), 2(a), 3(a), 4(b), 5(b), 6(c), 7(c), implemented as `pipeline/edgar.py` (command line `python -m pipeline.edgar`).
 
-- **访问。** User-Agent 取环境变量 `SEC_USER_AGENT`，没有就读工作区根目录的 `.env`（`OWNERS_OFFICE_ENV_FILE` 或 `--env-file` 可改）；两处都没有就不联网。这个值只在内存里：不打印、不记日志、不进缓存、不写文件；模块的异常和日志先把它和其中的邮箱换成占位符。只访问 `data.sec.gov` 与 `www.sec.gov`。同一进程的请求共用一个限速器，每秒至多 5 次（SEC 的上限是 10 次）；429 与 5xx 指数退避重试（有 `Retry-After` 就照它），403、404 不重试；每次请求 30 秒超时。TLS 始终校验证书，CA 证书依次取 `SSL_CERT_FILE`、certifi（加进 `requirements.txt`）、系统默认、常见的系统证书文件。
-- **缓存。** 默认 `~/.cache/owners-office/edgar`（`OWNERS_OFFICE_EDGAR_CACHE` 或 `--cache-dir` 可改）。Archives 下的文件入库后不再变，永久缓存；submissions 缓存一小时。缓存里只有响应正文、地址和取数时间。`--offline` 只读缓存（不需要 User-Agent），`--refresh` 重取 submissions。
-- **取数。** submissions 连同 `filings.files` 的续页一起读；文件清单用 `index.json`；下载只取主文档与 EX-99.x，XBRL 查看器生成的 `R<n>.htm` 永远不下载。
-- **业绩事件。** 国内发行人：带第 2.02 项的 8-K 开始，同一期间的 10-Q/10-K 入库或满 5 个工作日时收口，以先到者为准；工作日不含周末、联邦法定假日和行政令关门的日子。8-K/A 记作修正，不另算事件。外国发行人：第一个 EX-99 附件标题是“……Announces……Quarter……Results”的 6-K；预告发布日期的“to/will report”、股东大会结果、董事变动都不算。期间按公司自己的财年写 `FY<年>Q<季>`：取发布日之前最近的季末（6-K 标题写了季度时以标题为准）；财年以结束的那一年命名；52/53 周财年的季末就近归到月末。
-- **发布日。** 取首次公开的美东日期，与 EDGAR filing date 分开记：一般是接收时间的美东日期；6-K 新闻稿的落款日期更早时取落款；只有 2.02、9.01 两项的 8-K，报告日（公告日）早 1–4 天时取报告日；10-Q/10-K 比 8-K 先入库时取它的接收日期。
-- **下一次发布日（15A）。** 依次取：EDGAR 上已经发布的；公司公布的日期（`--announced`，带时区的时刻换成美东日期，`placeholder: false`）；公司公布的窗口里最早的工作日（`--window`）；过去三个财年同一财季里月日最早的一次，换到本期所在的年份，往前数 3 个日历日，遇周末或联邦法定假日继续往前取工作日；没有这些记录时，用最近一期发布日距季末的天数套到本季再减 3 天。后三种都是 `placeholder: true`。历年的窗口同时给出，供核对。截止时间是发布日前一天 23:59:59 美东，偏移取那一刻实际适用的；合并时限是截止前 72 个实际经过的小时。输出里直接给出预注册文件头的 `event` 与 `deadline`。
-- **来源表。** `check-sources` 默认只读，报告 accession、filed、period（以及 form、标签、url）与 EDGAR 不一致或缺失的条目。期间只核对 EDGAR 能确定的：定期报告按报告日，业绩 8-K、6-K 按业绩事件，其余不核对。同一天同一表格的后缀 `-2`、`-3` 只在几份都登记时才要求（SPEC §3.3 的原文）。`--write` 只给没有不一致的条目补缺失的 accession、filed、form、period，不改任何已有的值；写之前重新解析比对，确认别的内容一个字没动；改动以 diff 输出。
-- **公司到 CIK。** 取 `companies/<代码>/thesis.yml` 的 `filer` 块，代码里不写死。
-- **硬规则。** 模块不接行情源（C-NO-PRICE-FEED），不调用模型（C-LLM-ENTRY）。
-- **测试。** 不联网、不读 `.env`。`tests/fixtures/edgar/` 放从真实响应裁下的片段：APP 与 PDD 在 2023-09-24 至 2026-09-24 之间的 submissions（只留用得到的列），PDD 每份 6-K 的 `index.json` 和新闻稿开头，APP 一份 8-K 的 `index.json`。两家的 release_history 与第 0 阶段的结果逐条一致。`inputs/edgar/` 的产出不复制进仓库。
+- **Access.** The User-Agent comes from the environment variable `SEC_USER_AGENT`, or else from `.env` at the workspace root (overridable with `OWNERS_OFFICE_ENV_FILE` or `--env-file`); if neither has it, nothing goes over the network. The value lives only in memory: it is never printed, logged, cached or written to a file; the module's exceptions and logs first replace it, and the email in it, with a placeholder. Only `data.sec.gov` and `www.sec.gov` are accessed. All requests in one process share one rate limiter, at most 5 per second (the SEC's limit is 10); 429 and 5xx are retried with exponential backoff (following `Retry-After` when present), 403 and 404 are not retried; each request has a 30-second timeout. TLS always verifies certificates, with the CA certificates taken, in this order, from `SSL_CERT_FILE`, certifi (added to `requirements.txt`), the system default, and the common system certificate files.
+- **Cache.** By default `~/.cache/owners-office/edgar` (overridable with `OWNERS_OFFICE_EDGAR_CACHE` or `--cache-dir`). Files under Archives never change once filed and are cached permanently; submissions are cached for one hour. The cache holds only response bodies, URLs and fetch times. `--offline` reads only the cache (no User-Agent needed), and `--refresh` refetches submissions.
+- **Fetching.** submissions are read together with their continuation pages in `filings.files`; the file list comes from `index.json`; downloads take only the primary document and EX-99.x, and the `R<n>.htm` pages generated by the XBRL viewer are never downloaded.
+- **Earnings events.** Domestic issuers: an event starts with an 8-K carrying Item 2.02 and closes when the 10-Q/10-K for the same period is filed or after 5 business days, whichever comes first; business days exclude weekends, federal holidays and days on which the government was closed by executive order. An 8-K/A counts as an amendment, not as a separate event. Foreign issuers: a 6-K whose first EX-99 exhibit has a title of the form "…Announces…Quarter…Results"; notices of an upcoming release date ("to/will report"), shareholder meeting results and director changes don't count. The period is written `FY<year>Q<quarter>` in the company's own fiscal year: the most recent quarter end before the release date (when a 6-K title names the quarter, the title wins); a fiscal year is named for the year in which it ends; quarter ends of 52/53-week fiscal years are rounded to the nearest month end.
+- **Release date.** The US Eastern date of first publication, recorded separately from the EDGAR filing date: normally the US Eastern date of the acceptance time; when the press release in a 6-K is dated earlier, the date on the press release; for an 8-K with only Items 2.02 and 9.01, the report date (the announcement date) when it is 1–4 days earlier; when the 10-Q/10-K was filed before the 8-K, its acceptance date.
+- **Next release date (15A).** Taken in this order: a release already on EDGAR; the date the company has announced (`--announced`; a time with a time zone is converted to its US Eastern date; `placeholder: false`); the earliest business day in a window the company has announced (`--window`); the earliest month and day of the same fiscal quarter over the past three fiscal years, moved to the year of the current period and counted back 3 calendar days, stepping further back to a business day when that falls on a weekend or a federal holiday; and without such records, the number of days from quarter end to release in the most recent period, applied to this quarter, minus 3 days. The last three are `placeholder: true`. The windows of past years are given as well, for checking. The deadline is 23:59:59 US Eastern on the day before the release date, with the UTC offset that actually applies at that moment; the merge-by time is 72 actually elapsed hours before the deadline. The output gives the `event` and `deadline` for the header of the pre-registration file directly.
+- **Sources tables.** `check-sources` is read-only by default and reports entries whose accession, filed or period (and form, tag, url) disagree with EDGAR or are missing. Only periods that EDGAR can determine are checked: periodic reports by their report date, earnings 8-Ks and 6-Ks by their earnings event, and nothing else. The suffixes `-2` and `-3` for several filings of the same form on the same day are required only when several of them are registered (the original wording of SPEC §3.3). `--write` fills in missing accession, filed, form and period only for entries without disagreements, and changes no existing value; before writing, it parses again and compares, to confirm that nothing else has changed by a single character; the changes are printed as a diff.
+- **Company to CIK.** Taken from the `filer` block of `companies/<ticker>/thesis.yml`, not hard-coded.
+- **Hard rules.** The module connects to no market data feed (C-NO-PRICE-FEED) and calls no model (C-LLM-ENTRY).
+- **Tests.** No network and no `.env`. `tests/fixtures/edgar/` holds excerpts cut from real responses: APP's and PDD's submissions from 2023-09-24 to 2026-09-24 (keeping only the columns used), the `index.json` and the start of the press release of every PDD 6-K, and the `index.json` of one APP 8-K. The release_history of both companies matches the Phase 0 results item by item. The output in `inputs/edgar/` is not copied into the repository.
 
-## 理由
+## Rationale
 
-- **urllib。** 不多加依赖；限速、重试、缓存和 User-Agent 的处理全在自己手里，才能保证后者不出现在任何输出里。
-- **index.json。** 它是结构化数据，文件名和大小都有；网页结构随时可能变。
-- **看标题认 6-K。** 第 0 阶段就是这样认的；按这个办法，窗口内 20 份 6-K 分出的 12 份业绩与第 0 阶段逐条一致，另外 8 份（董事变动、股东大会、更换审计师等）都不算。PDD 的 `primaryDocDescription` 一律是“FORM 6-K”；文件大小只能大致区分，换一家公司就不一定成立。
-- **发布日取首次公开。** C-PREREG-TIMING 要求截止时间在首次公开之前，而新闻稿可能早于备案：2026 年 PDD 的三份业绩 6-K 都是落款次日早上才入库；2024-03-20 21:30（美东）入库的一份，filing date 顺延到 21 日；伯克希尔周六发布，8-K 几天后才交。带别的项目的 8-K，报告日是最早那件事的日期而不是发布日（APP 2023-11-08 的 8-K 带 5.02，报告日是 11-03），所以只对纯业绩 8-K 用报告日。
-- **72 个实际小时。** 15A 的原话是“按实际经过的小时计算”。2026-11-01 夏令时结束，APP 的占位截止是 2026-11-01T23:59:59-05:00，往前 72 小时是 2026-10-30T00:59:59-04:00；按墙上时钟算会差一个小时。
-- **用户缓存目录。** 缓存的是公开数据，可以再取，不该进任何仓库；放在用户目录下，从哪个检出运行都能共用。Archives 的文件不会改，永久缓存省掉重复请求；submissions 随新申报变化，一小时够一次运行用。
-- **只补缺的。** 0013 定下回填只填 accession、filed、form 并逐条进 diff，这里加上能由 EDGAR 确定的 period。已有的值与 EDGAR 不一致时，可能是登记号错了，也可能是标签或日期错了，要人判断；自动改正会把问题盖住。
+- **urllib.** No extra dependency; rate limiting, retries, caching and the handling of the User-Agent are all in our own hands, which is the only way to guarantee that the User-Agent appears in no output.
+- **index.json.** It is structured data, with file names and sizes; the structure of the web page can change at any time.
+- **Recognizing 6-Ks by title.** That is how they were recognized in Phase 0; with this method, the 20 6-Ks in the window split into 12 earnings releases that match Phase 0 item by item, and 8 others (director changes, shareholder meetings, a change of auditor and so on) that don't count. PDD's `primaryDocDescription` is always "FORM 6-K"; file size separates them only roughly and may not hold for another company.
+- **Release date as first publication.** C-PREREG-TIMING requires the deadline to fall before first publication, and the press release may come before the filing: PDD's three earnings 6-Ks in 2026 were all filed the morning after the date on the press release; one filed on 2024-03-20 at 21:30 (US Eastern) had its filing date moved to the 21st; Berkshire releases on Saturdays and files the 8-K several days later. For an 8-K carrying other items, the report date is the date of the earliest event, not the release date (APP's 8-K of 2023-11-08 carries 5.02, and its report date is 11-03), so the report date is used only for pure earnings 8-Ks.
+- **72 actual hours.** 15A's own wording is "counted in actually elapsed hours". Daylight saving time ends on 2026-11-01, and APP's placeholder deadline is 2026-11-01T23:59:59-05:00; 72 hours before that is 2026-10-30T00:59:59-04:00; counting by the wall clock would be off by one hour.
+- **User cache directory.** The cache holds public data that can be fetched again, and it belongs in no repository; under the user's directory it is shared by runs from any checkout. Files under Archives never change, so caching them permanently saves repeated requests; submissions change with new filings, and one hour is enough for one run.
+- **Only fill in what is missing.** 0013 set the backfill to fill only accession, filed and form, with every change in the diff; this adds period, which EDGAR can determine. When an existing value disagrees with EDGAR, the accession number may be wrong, or the tag or the date may be; that needs a person's judgment, and an automatic correction would cover the problem up.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **requests 或现成的 EDGAR 库：** 多一层依赖，限速和请求头不透明，下载范围也不由自己控制（上一次批量下载了 XBRL 查看器页面 `R<n>.htm`，是个错误）。
-- **解析 `-index.htm` 或 SGML：** 能拿到附件类型，但 HTML 结构不稳定，SGML 要取整份提交；`index.json` 加文件名规则已经够用。
-- **按大小或描述猜 6-K、每份 6-K 都算业绩：** 会把董事变动、股东大会通知当成业绩事件，事件和截止时间都跟着错。
-- **发布日取 EDGAR filing date：** 比首次公开晚，最多晚几天，截止时间可能落在发布之后。
-- **按墙上时钟往前数 3 天：** 跨夏令时切换时差一个小时，与 15A 的原话不符。
-- **缓存放进仓库或工作区根目录：** 前者会把几兆的 SEC 原文带进提交；后者依赖检出的位置。
-- **自动改正来源表：** 见理由。
-- **CIK 写死在代码里（第 0 阶段脚本的做法）：** 与 `thesis.yml` 的 `filer` 块重复，迟早漂移。
+- **requests or an existing EDGAR library:** one more layer of dependency, with the rate limiting and request headers out of sight, and the scope of downloads not under our control (the previous time, a bulk download fetched the XBRL viewer pages `R<n>.htm`, which was a mistake).
+- **Parsing `-index.htm` or SGML:** gives the exhibit types, but the HTML structure is unstable and SGML means fetching the whole submission; `index.json` plus the file-name rules is enough.
+- **Guessing 6-Ks from size or description, or treating every 6-K as earnings:** director changes and notices of shareholder meetings would be taken for earnings events, and the events and deadlines would be wrong with them.
+- **The EDGAR filing date as the release date:** it is later than first publication, by up to several days, so the deadline could fall after the release.
+- **Counting back 3 days by the wall clock:** off by one hour across a daylight saving time change, and not what 15A says.
+- **Cache in the repository or at the workspace root:** the first would bring several megabytes of SEC text into commits; the second depends on where the checkout is.
+- **Correcting the sources tables automatically:** see the rationale.
+- **CIKs hard-coded in the code (as the Phase 0 scripts did):** duplicates the `filer` block of `thesis.yml` and will drift sooner or later.
 
-## 日期
+## Date
 
 2026-09-25

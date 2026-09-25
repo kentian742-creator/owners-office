@@ -1,40 +1,40 @@
-# 0014 集中度与比较线的检查按所有者原文执行
+# 0014 The concentration and hurdle checks follow the owner's original text
 
-> 了结 STATUS 待办 T13 的前两项。本记录不写任何公司的数字。
+> Closes the first two items of STATUS to-do T13. This record states no company's numbers.
 
-## 背景
+## Background
 
-宪法重建（`owner.md` v2）时发现，两项检查比所有者的原文更严。
+When the constitution was rebuilt (`owner.md` v2), two checks turned out to be stricter than the owner's original text.
 
-- **R4 集中与仓位。** 原文是"集中持有约 4–5 家核心企业""10–20% 是入选门槛，不是目标"，释义又说理解更深、基本面更强、风险收益更有吸引力的企业可以获得更大的仓位。thesis-ci 0.2 的 C-CONCENTRATION 却要求买入、加仓备忘录的目标仓位落在 10–20% 之内，持仓家数多于 5 也按错误处理；总部提示词 17B 也写着"落在 10–20% 的入选门槛内"。
-- **R7 机会成本。** 原文是"过得了伯克希尔或 VOO 这条比较线"。00 §V6 的工程默认是：伯克希尔在当前价格下的长期回报测算是第一道门槛，指数的前瞻回报是第二道参照。C-HURDLE 却取两者中较高的一个作门槛。
+- **R4 Concentration and position size.** The original text says "typically around 4–5 core holdings" and "10–20% is a qualification threshold for buying at all, not a mandatory allocation target", and the interpretation adds that businesses understood more deeply, with stronger fundamentals and more attractive risk/reward, can get larger positions. Yet C-CONCENTRATION in thesis-ci 0.2 required the target position of buy and add memos to fall within 10–20%, and treated more than 5 holdings as an error; HQ's prompt 17B also said "within the 10–20% entry bar".
+- **R7 Opportunity cost.** The original text is "clears Berkshire or VOO as the comparison bar". The engineering default in 00 §V6 is that Berkshire's long-term return estimate at the current price is the first hurdle, and the index's forward return is the second reference. Yet C-HURDLE took the higher of the two as the hurdle.
 
-## 选项
+## Options
 
-1. 维持现状，等下次修订 00 时再请所有者确认。
-2. 按原文改检查与 17B：低于入选门槛下沿为错误，高于上沿允许、须写明理由；家数只报警；比较线按 §V6 的次序执行。
-3. 把两项检查都降为警告。
+1. Keep things as they are, and ask the owner to confirm at the next revision of 00.
+2. Change the checks and 17B to follow the original text: below the bottom of the entry bar is an error, above the top is allowed with the reasons stated; the number of holdings only warns; the hurdles are applied in the §V6 order.
+3. Downgrade both checks to warnings.
 
-## 决定
+## Decision
 
-采用选项 2。这是把实现改回原文，不是新的投资判断，所以不需要所有者另行拍板；所有者仍可随时推翻 §V6 的门槛次序。
+Option 2. This brings the implementation back to the original text; it is not a new investment judgment, so it needs no separate decision by the owner; the owner can still overturn the §V6 order of the hurdles at any time.
 
-- **C-CONCENTRATION：** 买入、加仓备忘录的目标仓位低于 10% 为错误（不值得占一个有意义仓位的企业，也不值得拥有）；高于 20% 允许，但备忘录的 `weight_note` 要写明为什么这家公司值得更大的仓位，没写时报警。持仓家数多于 `max_holdings` 报警，不报错；`max_holdings` 本身大于 5 也只报警。`entry_band` 仍须等于 [0.10, 0.20]：它是门槛，不是目标。
-- **C-HURDLE：** 伯克希尔一道为第一道门槛，买入、加仓备忘录的长期预期回报必须高于它，也不能自设低于它的门槛，否则为错误；只过第一道、没过 VOO 参照时报警，备忘录写明理由。没有伯克希尔的数字时，以 VOO 为门槛。持仓低于任一条线时报警，由总部在季度排名（17C）里判断，报警本身不是升级理由（00 §G3）。
-- **17B：** 目标仓位"不低于 10% 的入选门槛；高于 20% 时写明理由"。
-- thesis-ci 的 `memo.schema.json` 增加可选字段 `weight_note`；`checks.yml`、`rules.yml` 的说明与 `owner.md` 的"系统怎么执行"同步改写。
+- **C-CONCENTRATION:** a target position below 10% in a buy or add memo is an error (if a business isn't worth a meaningful position, it isn't worth owning at all); above 20% is allowed, but the memo's `weight_note` must state why this company deserves a larger position, and a missing note triggers a warning. More holdings than `max_holdings` is a warning, not an error; a `max_holdings` above 5 also only warns. `entry_band` must still equal [0.10, 0.20]: it is a bar, not a target.
+- **C-HURDLE:** the Berkshire hurdle is the first hurdle; the long-term expected return in a buy or add memo must be above it, and a memo may not set its own hurdle below it, or it is an error; passing only the first hurdle and not the VOO reference is a warning, and the memo states the reasons. When there is no Berkshire number, VOO is the hurdle. A holding that falls below either line is a warning, judged by HQ in the quarterly ranking (17C); the warning itself is no reason to escalate (00 §G3).
+- **17B:** the target position is "no lower than the 10% entry bar; state the reasons when above 20%".
+- thesis-ci's `memo.schema.json` gains the optional field `weight_note`; the descriptions in `checks.yml` and `rules.yml` and "How the system enforces it" in `owner.md` are rewritten to match.
 
-## 理由
+## Rationale
 
-- 检查要执行的是所有者的规则，不能比规则更严，也不能更松。原文明说 10–20% 是门槛而不是目标，确信度更高的企业可以更大；硬性上限会把原文允许的决定挡在 CI 之外。
-- "约 4–5 家"是描述，不是硬上限；把第六家的出现当作错误，会让一个本该由所有者判断的问题变成格式错误。
-- "伯克希尔或 VOO"没有说取较高者。取较高者会在指数的前瞻回报高于伯克希尔时，悄悄抬高门槛。
+- A check has to enforce the owner's rules, neither stricter nor looser. The original text says plainly that 10–20% is a bar, not a target, and that higher-conviction businesses can be larger; a hard cap would keep decisions the text allows out of CI.
+- "Around 4–5" is a description, not a hard cap; treating the appearance of a sixth company as an error would turn a question for the owner's judgment into a format error.
+- "Berkshire or VOO" does not say to take the higher one. Taking the higher one would quietly raise the hurdle whenever the index's forward return is above Berkshire's.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **维持现状：** 检查与原文不符的每一天，都可能挡下所有者本来允许的决定。
-- **全部降为警告：** 低于入选门槛和没过第一道门槛，是原文明确排除的情形，应当是错误。
+- **Keep things as they are:** every day the checks disagree with the original text, they may block a decision the owner would allow.
+- **Downgrade all to warnings:** falling below the entry bar and failing the first hurdle are cases the original text explicitly rules out, and they should be errors.
 
-## 日期
+## Date
 
 2026-09-24

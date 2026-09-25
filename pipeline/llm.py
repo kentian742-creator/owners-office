@@ -1,40 +1,54 @@
-"""唯一的模型调用入口 / The only module allowed to call models.
+"""The single model-call entry point: the only module allowed to call models.
 
-硬规则：模型调用只能放在 pipeline/llm.py，并记录模型名、提示词版本和输入哈希。
-其他 .py 文件导入模型 SDK 会被 CI 检查 C-LLM-ENTRY 拦下。
+Hard rule: model calls live only in pipeline/llm.py and record the model name, the prompt version and the input hash.
+Any other .py file that imports a model SDK is stopped by the CI check C-LLM-ENTRY.
 
-一次 complete() 按提示词 v3（私有仓库 prompts/，docs/decisions/0009）运行一个提示词的一个部分：
+One complete() call runs one part of one prompt under prompt set v3 (prompts/ in the private repository,
+docs/decisions/0009):
 
-1. 角色表只有一个来源：agents/*.yml（模型、effort、fallbacks、prompts、can_see、cannot_see）。未知角色、
-   角色没有登记的提示词或部分、front matter 写的角色与调用的角色不一致，都在发请求之前报错。
-2. 提示词按编号在提示词目录里找 <编号>-*.md。目录依次取参数 prompts_dir、环境变量 OWNERS_OFFICE_PROMPTS，
-   默认是兄弟检出 ../owners-office-private/prompts。front matter 的 parts 给出每一部分的角色、输入与输出；
-   分遍的部分（inputs_passN／outputs_passN，calls 写遍数）按 pass_no 取这一遍的输入与输出，有 modes 的提示词
-   按 mode 取这个模式的输入与输出；声明的清单一律严格执行。role: pipeline 的部分（12V）是确定性代码，不调用模型。
-   每个输出的格式取 00 front matter 的 output_formats（提示词或部分的 formats 覆盖），没声明就不发请求。
-3. 系统提示 = 00 + 00D（提示词或这一部分的 front matter 写了 design）+ 具体提示词；{{变量}} 用 variables 填。
-4. 输入：一条用户消息，开头一行 <run …/> 说明跑的是哪一部分、第几遍、什么模式，然后每个输入一个
-   <input name="…"> 块，名字与该部分的 inputs 一字不差，按 front matter 的顺序。必需输入缺失、未声明的输入、
-   角色 can_see 之外或 cannot_see 之内的输入（00 §G6），发请求之前就拒绝。页面图像（rendered_pages）
-   以 base64 图像块放进对应的 <input> 块。
-5. 输出：按 <output name="…"> 拆开，按声明的格式校验（pipeline/outputs.py：名字、必需输出、YAML、thesis-ci
-   schema、front matter）。不合格就把错误附在原请求后面重试一次，仍不合格抛出 LLMOutputInvalid，什么都不交出。
-   每份 Markdown 输出的 front matter 注入 generated_by；放置按 00 §F2（LLMResult.placements()）。
-6. 请求：默认流式（client.messages.stream(...).get_final_message()）；01、02、11 的输出上限 128000，
-   其余 64000。起草与监督的模型都开自适应思考（thinking={"type": "adaptive"}），从不发送 budget_tokens；
-   深浅用 output_config.effort。监督角色走 beta 接口并开启服务端拒答回退（docs/decisions/0003）。
-   00（与 00D）的系统提示块带 5 分钟缓存断点，具体提示词在断点之后；写入与读取缓存的 token 按
-   CACHE_PRICES_PER_MTOK 各自的价格记账（docs/decisions/0015）。
-7. 预算守卫：每次请求前（含重试）汇总本 UTC 日历月日志里的 cost_usd，达到月度预算
-   （constitution/decision-rights.yml 的 budget.monthly_usd）即抛出 BudgetExceeded，请求不发出。
-8. 记录：每次发出的请求（含重试、拒答和出错）向 logs/llm-calls.jsonl 追加一行 JSON：模型名；
-   prompt_version／rules_version／design_version 是提示词、00、00D 的 front matter 版本，
-   *_revision 是文件修订（最后一次改动它的 git 提交；未提交或有改动时为 "sha256:<内容哈希>+dirty"）；
-   部分编号 part_id；input_sha256 是 {prompt_id, prompt（完整系统提示）, inputs, run} 的规范 JSON 的 sha256；
-   usage 含写入与读取缓存的 token 数，cost_breakdown 按输入、输出、写缓存、读缓存分项。
+1. The role table has one source only: agents/*.yml (model, effort, fallbacks, prompts, can_see, cannot_see). An
+   unknown role, a prompt or part the role has not registered, or a front matter role that differs from the calling
+   role is an error raised before any request is sent.
+2. A prompt is found by its id as <id>-*.md in the prompts directory. The directory comes from the prompts_dir
+   argument, else the environment variable OWNERS_OFFICE_PROMPTS; the default is the sibling checkout
+   ../owners-office-private/prompts. The front matter's parts give each part's role, inputs and outputs. A
+   multi-pass part (inputs_passN / outputs_passN; calls gives the number of passes) takes this pass's inputs and
+   outputs by pass_no, and a prompt with modes takes this mode's inputs and outputs by mode; the declared lists are
+   always enforced strictly. A part with role: pipeline (12V) is deterministic code and does not call a model.
+   Each output's format comes from output_formats in the 00 front matter (overridden by the prompt's or part's
+   formats); without a declared format no request is sent.
+3. System prompt = 00 + 00D (if the front matter of the prompt or of this part has design) + the specific prompt;
+   {{variables}} are filled from variables.
+4. Input: one user message. Its first line, <run .../>, says which part, which pass and which mode is running; then
+   comes one <input name="..."> block per input, named exactly as in the part's inputs, in front matter order. A
+   missing required input, an undeclared input, or an input outside the role's can_see or inside its cannot_see
+   (00 §G6) is refused before any request is sent. Page images (rendered_pages) go into their <input> block as
+   base64 image blocks.
+5. Output: split at <output name="...">, validated against the declared formats (pipeline/outputs.py: names,
+   required outputs, YAML, thesis-ci schema, front matter). If it is invalid, the errors are appended to the
+   original request, which is retried once; if the output is still invalid, LLMOutputInvalid is raised and nothing
+   is handed over. generated_by is injected into the front matter of every Markdown output; placement follows 00 §F2
+   (LLMResult.placements()).
+6. Requests: streaming by default (client.messages.stream(...).get_final_message()); the output limit is 128000 for
+   01, 02 and 11 and 64000 for the rest. Drafting and oversight models both use adaptive thinking
+   (thinking={"type": "adaptive"}) and budget_tokens is never sent; depth is set with output_config.effort.
+   Oversight roles go through the beta API with server-side refusal fallback turned on (docs/decisions/0003).
+   The system prompt blocks of 00 (and 00D) carry a 5-minute cache breakpoint, with the specific prompt after the
+   breakpoint; cache-write and cache-read tokens are charged at their own prices from CACHE_PRICES_PER_MTOK
+   (docs/decisions/0015).
+7. Budget guard: before every request (retries included), sum cost_usd in the log for the current UTC calendar
+   month; once it reaches the monthly budget (budget.monthly_usd in constitution/decision-rights.yml), raise
+   BudgetExceeded and do not send the request.
+8. Logging: every request sent (retries, refusals and errors included) appends one JSON line to
+   logs/llm-calls.jsonl: the model name; prompt_version / rules_version / design_version, the front matter
+   versions of the prompt, 00 and 00D; *_revision, the file revision (the last git commit that changed the file;
+   "sha256:<content hash>+dirty" when it is uncommitted or modified); the part id, part_id; input_sha256, the
+   sha256 of the canonical JSON of {prompt_id, prompt (the full system prompt), inputs, run}; usage, which includes
+   the cache-write and cache-read token counts; and cost_breakdown, split into input, output, cache write and cache
+   read.
 
-SDK 在函数内部延迟导入：没有安装 SDK 时本模块照样可以导入和测试。
-凭据由 SDK 从环境读取（CI 中来自 GitHub Secrets），代码里永远不出现密钥。
+The SDK is imported lazily inside a function: without the SDK installed, this module can still be imported and
+tested. The SDK reads credentials from the environment (from GitHub Secrets in CI); keys never appear in the code.
 """
 
 from __future__ import annotations
@@ -55,26 +69,27 @@ from . import outputs as _outputs
 from .outputs import ParsedOutput, Placement
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SDK_MODULE = "anthropic"  # 只在 _default_client() 中导入
+SDK_MODULE = "anthropic"  # imported only in _default_client()
 
-PROMPTS_ENV = "OWNERS_OFFICE_PROMPTS"  # 提示词目录；默认是兄弟检出 ../owners-office-private/prompts
+PROMPTS_ENV = "OWNERS_OFFICE_PROMPTS"  # prompts directory; default: sibling checkout ../owners-office-private/prompts
 PRIVATE_REPO_NAME = "owners-office-private"
-RULES_ID = "00"  # 系列规则，放在每个系统提示最前面
-DESIGN_ID = "00D"  # 设计系统，只给 front matter 有 design 的提示词
+RULES_ID = "00"  # series rules, placed first in every system prompt
+DESIGN_ID = "00D"  # design system, only for prompts whose front matter has design
 
-MAX_TOKENS = 16000  # 不流式时的上限
-STREAM_MAX_TOKENS = 64000  # 流式调用的默认上限：v3 的一次输出常含几份完整文件
-LONG_OUTPUT_PROMPTS = frozenset({"01", "02", "11"})  # 提示词 README：产出很长
+MAX_TOKENS = 16000  # limit when not streaming
+STREAM_MAX_TOKENS = 64000  # default limit for streaming calls: one v3 output often holds several complete files
+LONG_OUTPUT_PROMPTS = frozenset({"01", "02", "11"})  # prompts README: their output is very long
 LONG_MAX_TOKENS = 128000
-LOG_ENV = "OWNERS_OFFICE_LLM_LOG"  # 可用环境变量把日志指到持久位置（例如 CI 中的私有仓库）
+LOG_ENV = "OWNERS_OFFICE_LLM_LOG"  # can point the log at a persistent location (e.g. the private repository in CI)
 DEFAULT_LOG_PATH = REPO_ROOT / "logs" / "llm-calls.jsonl"
-DEFAULT_MONTHLY_BUDGET_USD = 20.0  # DESIGN.md 的默认值；以 decision-rights.yml 为准
+DEFAULT_MONTHLY_BUDGET_USD = 20.0  # DESIGN.md's default; decision-rights.yml takes precedence
 
 DEFAULT_EFFORT = "high"
 EFFORT_LEVELS = ("low", "medium", "high", "xhigh", "max")
 
-# 美元 / 每百万 token：（输入，输出）。2026-09-24 按 Anthropic 官方价格核对，见 docs/decisions/0003。
-# 不在表里的模型不能调用：花费无法记账，预算守卫就失效了。
+# USD per million tokens: (input, output). Checked on 2026-09-24 against Anthropic's official prices; see
+# docs/decisions/0003. A model not in the table cannot be called: its cost could not be recorded, so the budget
+# guard would not work.
 PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-sonnet-5": (2.0, 10.0),
     "claude-fable-5-1": (10.0, 50.0),
@@ -82,11 +97,14 @@ PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-opus-4-8": (5.0, 25.0),
     "claude-haiku-4-5": (1.0, 5.0),
 }
-# 提示缓存，美元 / 每百万 token：（写入 5 分钟缓存，读取缓存）。流水线只用默认的 5 分钟缓存（CACHE_CONTROL）。
-# 出处：Anthropic 提示缓存的计价（Claude API 文档 prompt caching 一节，2026-09-25 核对）：写入 5 分钟缓存按输入价的
-# 1.25 倍，读取按 0.1 倍；claude-fable-5-1 的读取价单独列明为 0.25（即 0.025 倍）。除这一项外，表里的数字是用这两个
-# 倍率从 PRICES_PER_MTOK 算出的，没有逐个模型核对过；价格变动时改这张表（tests/test_llm.py 核对它与倍率一致）。
-# 不在表里的模型同样不能调用。
+# Prompt caching, USD per million tokens: (5-minute cache write, cache read). The pipeline uses only the default
+# 5-minute cache (CACHE_CONTROL).
+# Source: Anthropic's prompt caching prices (the prompt caching section of the Claude API docs, checked 2026-09-25):
+# a 5-minute cache write costs 1.25 times the input price and a cache read 0.1 times; the cache read price of
+# claude-fable-5-1 is listed separately as 0.25 (i.e. 0.025 times). Except for that entry, the numbers in the table
+# are computed from PRICES_PER_MTOK with these two multipliers and have not been checked model by model; when prices
+# change, edit this table (tests/test_llm.py checks that it agrees with the multipliers).
+# A model not in this table cannot be called either.
 CACHE_WRITE_MULTIPLIER = 1.25
 CACHE_READ_MULTIPLIER = 0.1
 CACHE_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
@@ -96,22 +114,25 @@ CACHE_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-opus-4-8": (6.25, 0.5),
     "claude-haiku-4-5": (1.25, 0.1),
 }
-# 00（与 00D）的系统提示块各放一个缓存断点：它们对每次调用都一样；具体提示词放在断点之后。
+# The system prompt blocks of 00 (and 00D) each get a cache breakpoint: they are the same for every call. The
+# specific prompt goes after the breakpoints.
 CACHE_CONTROL = {"type": "ephemeral"}
 
-# 服务端拒答回退（beta）。标量 "default" 用 -2026-07-01；指定模型的数组形式用 -2026-06-01。
+# Server-side refusal fallback (beta). The scalar "default" uses -2026-07-01; the array form that names models
+# uses -2026-06-01.
 FALLBACK_BETA_DEFAULT = "server-side-fallback-2026-07-01"
 FALLBACK_BETA_ARRAY = "server-side-fallback-2026-06-01"
 SERVER_FALLBACK_MODELS = frozenset({"claude-fable-5-1", "claude-opus-5"})
 FALLBACKS_OFF = frozenset({"", "none", "off", "false", "no"})
 
-# 思考：这些模型显式发送自适应思考；从不发送 budget_tokens（这些模型会以 400 拒绝）。
-# 表外的模型（claude-haiku-4-5，预算降级用）不支持自适应思考，不发 thinking。
+# Thinking: these models are sent adaptive thinking explicitly; budget_tokens is never sent (these models reject it
+# with a 400). Models outside this set (claude-haiku-4-5, used for the budget downgrade) do not support adaptive
+# thinking; thinking is not sent for them.
 ADAPTIVE_THINKING_MODELS = frozenset({"claude-sonnet-5", "claude-fable-5-1", "claude-opus-5", "claude-opus-4-8"})
-# 不接受 effort 参数的模型。
+# Models that do not accept the effort parameter.
 NO_EFFORT_MODELS = frozenset({"claude-haiku-4-5"})
 
-# 页面图像：只有这些输入以图像传（版面审查 05、09C、10、12C、13 的 rendered_pages）。
+# Page images: only these inputs are sent as images (rendered_pages, for design review in 05, 09C, 10, 12C, 13).
 IMAGE_INPUTS = frozenset({"rendered_pages"})
 IMAGE_MEDIA_TYPES = {
     ".png": "image/png",
@@ -120,42 +141,44 @@ IMAGE_MEDIA_TYPES = {
     ".gif": "image/gif",
     ".webp": "image/webp",
 }
-MAX_REQUEST_BYTES = 32 * 1024 * 1024  # API 单次请求的上限
+MAX_REQUEST_BYTES = 32 * 1024 * 1024  # the API's limit for a single request
 
-# 预算降级阶段（本月花费 / 月度预算），见 docs/decisions/0003。
+# Budget downgrade stages (this month's spend / monthly budget); see docs/decisions/0003.
 DEGRADE_THRESHOLDS = (
     (1.0, "stopped"),
     (0.85, "downgrade_drafting_model"),
     (0.70, "pause_candidates"),
 )
 
-# 00 §F0：取自某一部分的输入名带部分编号后缀（findings_04A、test_proposals_04B_lite）；
-# 比对 cannot_see 时去掉后缀，与 thesis-ci 的 C-PROMPT-ISOLATION 一致。
+# 00 §F0: input names taken from a part carry the part id as a suffix (findings_04A, test_proposals_04B_lite);
+# the suffix is removed before comparing against cannot_see, consistent with thesis-ci's C-PROMPT-ISOLATION.
 PART_SUFFIX_RE = re.compile(r"_\d{2}[A-Za-z]?(?:_lite)?$")
-# 00 §F1 与提示词 README 的“变量”：{{公司}}、{{代码}}、{{状态}}、{{期间}}、{{日期}}、{{文档}}、{{被审对象}}。
+# The "variables" of 00 §F1 and the prompts README, written {{name}}. Their names are Chinese words for company,
+# ticker, status, period, date, document and subject under review.
 VARIABLE_RE = re.compile(r"\{\{\s*([^{}\s]+?)\s*\}\}")
 _PROMPT_ID = re.compile(r"^\d{2}[A-Z]?$")
 _NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 _INPUT_KEY = re.compile(r"^[A-Za-z0-9_.-]+$")
 _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# 报告类输出的目录（outputs.PLACEMENT 的 {doc}）；09、10、19 取变量 {{文档}}。
+# Directory of report outputs ({doc} in outputs.PLACEMENT); 09, 10 and 19 take it from the document variable.
 _DOC_OF_PROMPT = {"02": "02", "05": "02", "06": "06", "07": "07", "08": "08", "11": "11", "12": "11", "13": "11"}
 
 
 class LLMError(RuntimeError):
-    """模型调用失败的基类。"""
+    """Base class for model call failures."""
 
 
 class PromptError(LLMError, ValueError):
-    """调用与提示词或角色表对不上：未知角色或部分、没有登记的提示词、缺少或多出的输入、缺少变量等。请求没有发出。"""
+    """The call does not match the prompt or the role table: an unknown role or part, an unregistered prompt, missing
+    or extra inputs, a missing variable, and so on. No request was sent."""
 
 
 class InputRefused(PromptError):
-    """00 §G6：输入不在角色的 can_see 里，或在它的 cannot_see 里。请求没有发出。"""
+    """00 §G6: an input is not in the role's can_see, or is in its cannot_see. No request was sent."""
 
 
 class BudgetExceeded(LLMError):
-    """本月花费已达到预算；调用没有发出。"""
+    """This month's spend has reached the budget; the call was not sent."""
 
     def __init__(self, spent_usd: float, budget_usd: float):
         self.spent_usd = spent_usd
@@ -167,7 +190,7 @@ class BudgetExceeded(LLMError):
 
 
 class LLMRefusal(LLMError):
-    """stop_reason == "refusal"：模型（含服务端回退链）拒绝了请求。"""
+    """stop_reason == "refusal": the model (including the server-side fallback chain) refused the request."""
 
     def __init__(self, model: str, category: str | None, explanation: str | None):
         self.model = model
@@ -180,7 +203,8 @@ class LLMRefusal(LLMError):
 
 
 class LLMTruncated(LLMError):
-    """stop_reason == "max_tokens"：输出被截断。result 仍然可用，调用方决定是否重试。"""
+    """stop_reason == "max_tokens": the output was truncated. result is still usable; the caller decides whether
+    to retry."""
 
     def __init__(self, result: LLMResult):
         self.result = result
@@ -191,7 +215,8 @@ class LLMTruncated(LLMError):
 
 
 class LLMOutputInvalid(LLMError):
-    """重试一次之后输出仍不合格（00 §F0、§F6）。errors 是最后一次的错误，result 是最后一次的回答。"""
+    """The output is still invalid after one retry (00 §F0, §F6). errors holds the last attempt's errors; result is
+    the last reply."""
 
     def __init__(self, errors: Sequence[str], result: LLMResult):
         self.errors = list(errors)
@@ -200,12 +225,13 @@ class LLMOutputInvalid(LLMError):
         super().__init__(f"{result.part_id or result.prompt_id} 的输出重试后仍不合格，没有交出任何输出：\n{listed}")
 
 
-# ---------------------------------------------------------------- 数据
+# ---------------------------------------------------------------- Data
 
 
 @dataclasses.dataclass(frozen=True)
 class Role:
-    """agents/<role>.yml 的一个角色。can_see、cannot_see、prompts 缺省为 None（调用时才要求齐全）。"""
+    """One role from agents/<role>.yml. can_see, cannot_see and prompts default to None (they only have to be
+    complete at call time)."""
 
     role: str
     path: Path
@@ -218,41 +244,41 @@ class Role:
 @dataclasses.dataclass(frozen=True)
 class PromptFile:
     id: str
-    version: str  # front matter 的 version
+    version: str  # the front matter's version
     path: Path
-    text: str  # 整个文件（含 front matter）
+    text: str  # the whole file (front matter included)
     front: Mapping[str, Any]
     revision: str  # file_revision()
 
 
 @dataclasses.dataclass(frozen=True)
 class PromptPart:
-    """一次调用要跑的部分：角色、这一遍（这个模式）的输入与输出（(名字, 是否必需)）。"""
+    """The part a call runs: the role and this pass's (this mode's) inputs and outputs, as (name, required) pairs."""
 
     prompt_id: str
-    key: str | None  # front matter 的部分键（A、B_lite、draft）；没有 parts 时为 None
-    label: str  # 部分编号：04A、04B-lite、03R、03-draft；没有 parts 时等于提示词编号
+    key: str | None  # the part key in the front matter (A, B_lite, draft); None when there are no parts
+    label: str  # the part id: 04A, 04B-lite, 03R, 03-draft; equals the prompt id when there are no parts
     role: str
     inputs: tuple[tuple[str, bool], ...]
     outputs: tuple[tuple[str, bool], ...]
     pass_no: int | None = None
     mode: str | None = None
-    design: bool = False  # 是否加载 00D（提示词或这一部分的 front matter 写了 design）
-    formats: Mapping[str, str] = dataclasses.field(default_factory=dict)  # 提示词或部分的 formats 覆盖
+    design: bool = False  # whether to load 00D (the front matter of the prompt or of this part has design)
+    formats: Mapping[str, str] = dataclasses.field(default_factory=dict)  # formats overrides from the prompt or part
 
 
 @dataclasses.dataclass(frozen=True)
 class LLMResult:
-    text: str  # 最后一次回答的全文
-    model: str  # 实际生成回答的模型（response.model）
+    text: str  # full text of the last reply
+    model: str  # the model that actually produced the reply (response.model)
     requested_model: str
     role: str
     prompt_id: str
-    prompt_version: str  # 提示词 front matter 的 version
+    prompt_version: str  # version from the prompt's front matter
     input_sha256: str
     output_sha256: str
-    usage: dict[str, int]  # 各次请求合计
-    cost_usd: float  # 各次请求合计
+    usage: dict[str, int]  # summed over all requests
+    cost_usd: float  # summed over all requests
     stop_reason: str | None
     effort: str | None
     fallbacks: str | None
@@ -269,19 +295,20 @@ class LLMResult:
     attempts: int = 1
     outputs: Mapping[str, ParsedOutput] = dataclasses.field(default_factory=dict)
     generated_by: Mapping[str, Any] = dataclasses.field(default_factory=dict)
-    context: Mapping[str, Any] = dataclasses.field(default_factory=dict)  # 放置模板的默认字段
+    context: Mapping[str, Any] = dataclasses.field(default_factory=dict)  # default fields for the placement templates
 
     def to_dict(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
 
     def placements(self, **context: Any) -> list[Placement]:
-        """全部非空输出按 00 §F2 各该放到哪里；context 覆盖默认字段（company、period、run_date、month、doc……）。"""
+        """Where each non-empty output goes under 00 §F2. context overrides the default fields (company, period,
+        run_date, month, doc, ...)."""
         return _outputs.place_outputs(
             self.outputs, prompt_id=self.prompt_id, part_id=self.part_id or self.prompt_id, **{**self.context, **context}
         )
 
 
-# ---------------------------------------------------------------- 哈希与版本
+# ---------------------------------------------------------------- Hashes and versions
 
 
 def canonical_json(obj: Any) -> str:
@@ -295,8 +322,8 @@ def sha256_text(text: str) -> str:
 def input_sha256(
     prompt_id: str, prompt_text: str, inputs: Mapping[str, Any], *, run: Mapping[str, Any] | None = None
 ) -> str:
-    """{prompt_id, prompt, inputs[, run]} 的规范 JSON 的 sha256。complete() 传入完整系统提示、全部输入
-    （图像以文件名与内容哈希代替）和 run（部分、遍次、模式）。"""
+    """The sha256 of the canonical JSON of {prompt_id, prompt, inputs[, run]}. complete() passes the full system
+    prompt, all inputs (images replaced by file name and content hash) and run (part, pass, mode)."""
     payload: dict[str, Any] = {
         "prompt_id": prompt_id,
         "prompt": prompt_text,
@@ -308,7 +335,8 @@ def input_sha256(
 
 
 def render_inputs(inputs: Mapping[str, str], order: Sequence[str] | None = None) -> str:
-    """把输入渲染成 <input name="…"> 块。给 order 就按它的顺序，否则按键名排序；同样的输入永远得到同样的文本。"""
+    """Render inputs as <input name="..."> blocks, in the order given by order, else sorted by key. The same inputs
+    always give the same text."""
     names = [n for n in order if n in inputs] if order is not None else sorted(inputs)
     return "\n\n".join(f'<input name="{key}">\n{inputs[key]}\n</input>' for key in names)
 
@@ -330,7 +358,8 @@ def _git(cwd: Path, *args: str) -> str | None:
 
 
 def file_revision(path: str | os.PathLike[str]) -> str:
-    """最后一次改动该文件的提交哈希；未提交或有改动时为 "sha256:<内容哈希>+dirty"（00 §H5）。"""
+    """Hash of the last commit that changed the file; "sha256:<content hash>+dirty" when the file is uncommitted or
+    modified (00 §H5)."""
     path = Path(path).resolve()
     fallback = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}+dirty"
     commit = _git(path.parent, "log", "-1", "--format=%H", "--", path.name)
@@ -342,11 +371,11 @@ def file_revision(path: str | os.PathLike[str]) -> str:
     return commit
 
 
-# ---------------------------------------------------------------- 角色表（agents/*.yml）
+# ---------------------------------------------------------------- Role table (agents/*.yml)
 
 
 def _load_yaml(path: Path) -> Any:
-    import yaml  # PyYAML；延迟导入，保持模块轻量
+    import yaml  # PyYAML; imported lazily to keep the module light
 
     with path.open(encoding="utf-8") as handle:
         return yaml.safe_load(handle)
@@ -359,7 +388,8 @@ def _string_list(value: Any, what: str, path: Path) -> tuple[str, ...]:
 
 
 def load_roles(repo_root: str | os.PathLike[str] | None = None) -> dict[str, Role]:
-    """读取 agents/*.yml：角色名（role 字段，缺省取文件名）→ Role。同一角色定义两次、没有 model.id 都报错。"""
+    """Read agents/*.yml: role name (the role field, else the file name) → Role. A role defined twice or a missing
+    model.id is an error."""
     agents = Path(repo_root or REPO_ROOT) / "agents"
     roles: dict[str, Role] = {}
     paths = sorted([*agents.glob("*.yml"), *agents.glob("*.yaml")]) if agents.is_dir() else []
@@ -407,7 +437,7 @@ def resolve_model(
     effort: str | None = None,
     repo_root: str | os.PathLike[str] | None = None,
 ) -> tuple[str, str | None, str | None]:
-    """返回（模型 id，effort，fallbacks）。参数优先，其次 agents/<role>.yml；未知角色报错。"""
+    """Return (model id, effort, fallbacks): arguments first, then agents/<role>.yml; an unknown role is an error."""
     return _model_choice(role_definition(role, repo_root).model, model, effort)
 
 
@@ -419,7 +449,8 @@ def _model_choice(config: Mapping[str, Any], model: str | None, effort: str | No
         raise ValueError(f"effort 必须是 {EFFORT_LEVELS} 之一，收到 {chosen_effort!r}")
     if model_id in NO_EFFORT_MODELS:
         chosen_effort = None
-    # 调用方换了模型时，agents 文件里为原模型配置的回退不再适用。
+    # When the caller switches models, the fallbacks configured in the agents file for the original model no
+    # longer apply.
     configured_fallbacks = config.get("fallbacks") if model_id == configured_id else None
     return model_id, chosen_effort, _resolve_fallbacks(model_id, configured_fallbacks)
 
@@ -433,13 +464,14 @@ def _fallback_kwargs(fallbacks: str | None) -> dict[str, Any] | None:
     return {"betas": [FALLBACK_BETA_ARRAY], "fallbacks": [{"model": m} for m in models]}
 
 
-# ---------------------------------------------------------------- 提示词（私有仓库 prompts/）
+# ---------------------------------------------------------------- Prompts (prompts/ in the private repository)
 
 
 def resolve_prompts_dir(
     prompts_dir: str | os.PathLike[str] | None = None, repo_root: str | os.PathLike[str] | None = None
 ) -> Path:
-    """提示词目录：参数 → 环境变量 OWNERS_OFFICE_PROMPTS → 与公开仓库并列的 owners-office-private/prompts。"""
+    """The prompts directory: the argument → the environment variable OWNERS_OFFICE_PROMPTS →
+    owners-office-private/prompts next to the public repository."""
     if prompts_dir is not None:
         path = Path(prompts_dir)
     elif os.environ.get(PROMPTS_ENV):
@@ -455,7 +487,7 @@ def resolve_prompts_dir(
 
 
 def load_prompt(prompt_id: str, prompts_dir: str | os.PathLike[str] | None = None) -> PromptFile:
-    """按编号读取 <编号>-*.md，并核对 front matter 的 id 与 version。"""
+    """Read <id>-*.md by prompt id and check the front matter's id and version."""
     if not isinstance(prompt_id, str) or not _PROMPT_ID.match(prompt_id):
         raise PromptError(f"提示词编号写成两位数字加可选字母（00、00D、03、17），收到 {prompt_id!r}")
     directory = resolve_prompts_dir(prompts_dir)
@@ -483,7 +515,7 @@ def load_prompt(prompt_id: str, prompts_dir: str | os.PathLike[str] | None = Non
 
 
 def _part_label(prompt_id: str, key: str | None, block: Mapping[str, Any]) -> str:
-    """04A、04B-lite、14Q；名字以编号开头的用那个编号（03R、03P）；其余写成 03-draft。"""
+    """04A, 04B-lite, 14Q; a name that starts with an id uses that id (03R, 03P); the rest are written like 03-draft."""
     if key is None:
         return prompt_id
     name = block.get("name")
@@ -517,7 +549,7 @@ def _dedupe(items: Sequence[tuple[str, bool]]) -> tuple[tuple[str, bool], ...]:
 
 
 def _format_overrides(value: Any, what: str) -> dict[str, str]:
-    """front matter 的 formats：{输出名: yaml|markdown|text|file}。"""
+    """The front matter's formats: {output name: yaml|markdown|text|file}."""
     if value is None:
         return {}
     if not isinstance(value, Mapping) or not all(isinstance(k, str) and isinstance(v, str) for k, v in value.items()):
@@ -526,8 +558,9 @@ def _format_overrides(value: Any, what: str) -> dict[str, str]:
 
 
 def output_formats(rules: PromptFile, call: PromptPart) -> dict[str, str]:
-    """这一部分每个输出的格式（00 §F0）：00 front matter 的 output_formats，提示词或部分的 formats 覆盖。
-    有输出没声明格式、一个名字声明了两种格式、有 schema 的输出格式不对，都报错。"""
+    """The format of each output of this part (00 §F0): output_formats from the 00 front matter, overridden by the
+    prompt's or part's formats. An output without a declared format, a name declared with two formats, or an output
+    with a schema in the wrong format is an error."""
     declared = rules.front.get("output_formats")
     if not isinstance(declared, Mapping):
         raise PromptError(f"{rules.path.name} 的 front matter 没有 output_formats（§F0 的输出格式声明）")
@@ -553,7 +586,8 @@ def output_formats(rules: PromptFile, call: PromptPart) -> dict[str, str]:
 def prompt_part(
     prompt: PromptFile, part: str | None = None, *, pass_no: int | None = None, mode: str | None = None
 ) -> PromptPart:
-    """按 front matter 解析一次调用要跑的部分。part 可以写部分键（A、B_lite、draft）或部分编号（04A、04B-lite、03R）。"""
+    """Resolve from the front matter the part a call runs. part may be a part key (A, B_lite, draft) or a part id
+    (04A, 04B-lite, 03R)."""
     front = prompt.front
     parts = front.get("parts")
     if parts is not None and not isinstance(parts, Mapping):
@@ -578,7 +612,8 @@ def prompt_part(
     if not isinstance(role, str) or not role:
         raise PromptError(f"{label} 的 front matter 没有写角色")
 
-    # 分遍的部分（04B、09B）按遍给输入与输出：inputs_passN、outputs_passN；calls 写遍数。
+    # Multi-pass parts (04B, 09B) give inputs and outputs per pass: inputs_passN, outputs_passN; calls gives the
+    # number of passes.
     pass_keys = sorted(k for k in block if isinstance(k, str) and re.fullmatch(r"inputs_pass\d+", k))
     calls = block.get("calls")
     if calls is not None and (isinstance(calls, bool) or calls != max(1, len(pass_keys))):
@@ -595,7 +630,7 @@ def prompt_part(
             raise PromptError(f"{label} 只调用一遍，不要给 pass_no")
         raw_inputs, raw_outputs = block.get("inputs"), block.get("outputs")
 
-    # 有 modes 的提示词（02）：模式写了自己的 inputs、outputs 就用它们，否则用提示词的。
+    # Prompts with modes (02): if the mode lists its own inputs or outputs, use them; otherwise use the prompt's.
     modes = front.get("modes")
     if modes:
         if not isinstance(modes, Mapping) or mode not in modes:
@@ -625,7 +660,8 @@ def prompt_part(
 
 
 def fill_variables(prompt: PromptFile, variables: Mapping[str, str] | None) -> str:
-    """把提示词里的 {{变量}} 换成 variables 的值；缺哪个就报错，不把占位符交给模型。"""
+    """Replace each {{variable}} in the prompt with its value from variables. A missing one is an error: no
+    placeholder is handed to the model."""
     variables = dict(variables or {})
     wanted = sorted({m.group(1) for m in VARIABLE_RE.finditer(prompt.text)})
     missing = [name for name in wanted if name not in variables]
@@ -637,11 +673,11 @@ def fill_variables(prompt: PromptFile, variables: Mapping[str, str] | None) -> s
     return VARIABLE_RE.sub(lambda m: variables[m.group(1)], prompt.text)
 
 
-# ---------------------------------------------------------------- 输入的检查与渲染
+# ---------------------------------------------------------------- Checking and rendering inputs
 
 
 def _hidden_by(name: str, cannot_see: frozenset[str]) -> str | None:
-    """name 或去掉部分编号后缀的 name 在 cannot_see 里时，返回命中的那一项（不分大小写）。"""
+    """If name, or name without its part-id suffix, is in cannot_see, return the matching entry (case-insensitive)."""
     lowered = {item.strip().rstrip("?").strip().lower(): item for item in cannot_see}
     low = name.lower()
     for candidate in (low, PART_SUFFIX_RE.sub("", low)):
@@ -651,7 +687,8 @@ def _hidden_by(name: str, cannot_see: frozenset[str]) -> str | None:
 
 
 def check_inputs(call: PromptPart, role: Role, provided: Sequence[str]) -> None:
-    """00 §G6：只把该部分声明过、角色看得到的输入交给模型。不合格抛出 PromptError／InputRefused。"""
+    """00 §G6: give the model only inputs that the part declares and the role can see. Otherwise raise PromptError or
+    InputRefused."""
     declared = [name for name, _ in call.inputs]
     problems = [
         f"{name} 不是 {call.label} 的输入（{call.label} 的输入：{'、'.join(declared)}）"
@@ -691,7 +728,7 @@ def _validate_inputs(inputs: Mapping[str, str], images: Mapping[str, Sequence[An
 
 
 def _load_images(images: Mapping[str, Sequence[Any]]) -> dict[str, list[tuple[str, str, str, str]]]:
-    """{输入名: [(文件名, media_type, base64, sha256)]}。"""
+    """{input name: [(file name, media_type, base64, sha256)]}."""
     loaded: dict[str, list[tuple[str, str, str, str]]] = {}
     for key, files in images.items():
         rows = []
@@ -718,8 +755,9 @@ def _run_header(call: PromptPart) -> str:
 def render_user_content(
     call: PromptPart, inputs: Mapping[str, str], images: Mapping[str, list[tuple[str, str, str, str]]] | None = None
 ) -> str | list[dict[str, Any]]:
-    """用户消息：<run …/> 一行，然后按 front matter 的顺序每个输入一个 <input name="…"> 块。
-    没有图像时是一段文本；有图像时是内容块列表，图像以 base64 图像块放在对应的 <input> 块里。"""
+    """The user message: one <run .../> line, then one <input name="..."> block per input in front matter order.
+    Without images it is one piece of text; with images it is a list of content blocks, with each image as a base64
+    image block inside its <input> block."""
     images = images or {}
     order = [name for name, _ in call.inputs if name in inputs or name in images]
     if not images:
@@ -753,7 +791,7 @@ def _content_bytes(content: str | list[dict[str, Any]]) -> int:
 
 
 def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str]) -> str | list[dict[str, Any]]:
-    """重试：原请求后面附上校验错误。"""
+    """Retry: append the validation errors to the original request."""
     note = (
         "<validation_errors>\n上一次回答的输出没有通过流水线的校验（00 §F0、§F6）。"
         "按下面的错误改正后，按原来的要求重新交出这一部分的全部输出：\n"
@@ -765,7 +803,7 @@ def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str]) -> 
     return [*content, {"type": "text", "text": note}]
 
 
-# ---------------------------------------------------------------- 预算与日志
+# ---------------------------------------------------------------- Budget and log
 
 
 def _log_path(log_path: str | os.PathLike[str] | None) -> Path:
@@ -803,7 +841,7 @@ def _same_month(timestamp: str, now: dt.datetime) -> bool:
 
 
 def month_spend(log_path: str | os.PathLike[str] | None = None, now: dt.datetime | None = None) -> float:
-    """本 UTC 日历月日志里的花费合计（美元）。坏行跳过。"""
+    """Total spend (USD) in the log for the current UTC calendar month. Bad lines are skipped."""
     path = _log_path(log_path)
     now = (now or _utcnow()).astimezone(dt.timezone.utc)
     if not path.is_file():
@@ -841,7 +879,8 @@ def budget_status(
     repo_root: str | os.PathLike[str] | None = None,
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
-    """本月预算状况与降级阶段：normal → pause_candidates → downgrade_drafting_model → stopped。"""
+    """This month's budget status and downgrade stage: normal → pause_candidates → downgrade_drafting_model →
+    stopped."""
     now = (now or _utcnow()).astimezone(dt.timezone.utc)
     budget = monthly_budget(budget_usd, repo_root)
     spent = month_spend(log_path, now)
@@ -879,7 +918,7 @@ def _priced(model: str) -> bool:
 
 
 def cost_breakdown(model: str, usage: Mapping[str, int]) -> dict[str, float]:
-    """按各自的价格分开算（美元）：未缓存的输入、输出、写入缓存、读取缓存。"""
+    """Cost in USD, computed separately at each part's own price: uncached input, output, cache write, cache read."""
     input_price, output_price = PRICES_PER_MTOK[model]
     write_price, read_price = CACHE_PRICES_PER_MTOK[model]
     parts = {
@@ -896,24 +935,26 @@ def cost_usd(model: str, usage: Mapping[str, int]) -> float:
 
 
 def _served_by_fallback(response: Any) -> bool:
-    """usage.iterations 里有 fallback_message，说明回退模型接手了（粘滞路由的回合没有 fallback 块）。"""
+    """A fallback_message in usage.iterations means a fallback model took over (a sticky-routed turn has no fallback
+    block)."""
     iterations = getattr(getattr(response, "usage", None), "iterations", None) or []
     return any(getattr(entry, "type", None) == "fallback_message" for entry in iterations)
 
 
-# ---------------------------------------------------------------- 调用
+# ---------------------------------------------------------------- Calls
 
 
 def _default_client() -> Any:
     try:
-        import anthropic  # 延迟导入：没有安装 SDK 时本模块仍可导入
+        import anthropic  # lazy import: this module still imports without the SDK installed
     except ImportError as exc:
         raise LLMError("需要 Anthropic Python SDK：pip install -r requirements.txt") from exc
-    return anthropic.Anthropic()  # 凭据从环境读取，不在代码里
+    return anthropic.Anthropic()  # credentials are read from the environment, not kept in the code
 
 
 def _send(client: Any, params: Mapping[str, Any], fallback_kwargs: Mapping[str, Any] | None, stream: bool) -> Any:
-    """一次请求。有服务端回退时走 beta 接口；流式用 messages.stream(...) 的 get_final_message()。"""
+    """One request. With server-side fallback it goes through the beta API; streaming uses messages.stream(...) and
+    its get_final_message()."""
     api = client.beta.messages if fallback_kwargs else client.messages
     kwargs = {**params, **(fallback_kwargs or {})}
     if stream:
@@ -930,7 +971,8 @@ def _relative(path: Path, root: Path) -> str:
 
 
 def _run_context(call: PromptPart, inputs: Mapping[str, str], variables: Mapping[str, str]) -> dict[str, Any]:
-    """放置模板的默认字段（outputs.place）：公司代码、期间、运行日、报告目录、被审对象。"""
+    """Default fields for the placement templates (outputs.place): company ticker, period, run date, report
+    directory, subject under review."""
     run_date = inputs.get("run_date", "").strip()
     return {
         "company": variables.get("代码"),
@@ -964,19 +1006,25 @@ def complete(
     schemas_dir: str | os.PathLike[str] | None = None,
     allow_truncated: bool = False,
 ) -> LLMResult:
-    """以角色 role 运行提示词 prompt_id 的一个部分，返回校验过的输出。
+    """Run one part of prompt prompt_id as role and return the validated outputs.
 
-    - part：部分键或编号（A／04A、B_lite／04B-lite、draft、revise／03R）；提示词没有 parts 时不给。
-    - pass_no：分遍的部分（04B、09B）第几遍；mode：有 modes 的提示词（02）的模式。
-    - inputs：{输入名: 文本}；images：{"rendered_pages": [图像文件, …]}。
-    - variables：提示词里 {{变量}} 的值，如 {"公司": "微软", "代码": "MSFT", "期间": "FY2027Q1"}。
-    - pipeline_fields：{输出名: {键: 值}}，流水线维护的字段（00 §G8，如 thesis 的 trust_level），校验前写进该输出。
-    - stream、max_tokens：默认流式；上限 01、02、11 为 128000，其余 64000（不流式时 16000）。
-    - prompts_dir、schemas_dir：提示词目录与 thesis-ci schema 目录，默认见 resolve_prompts_dir()、outputs.schema_validator()。
+    - part: the part key or id (A / 04A, B_lite / 04B-lite, draft, revise / 03R); omit it when the prompt has no
+      parts.
+    - pass_no: which pass of a multi-pass part (04B, 09B); mode: the mode of a prompt with modes (02).
+    - inputs: {input name: text}; images: {"rendered_pages": [image file, ...]}.
+    - variables: the values of the prompt's {{variables}}, e.g. company "Microsoft", ticker "MSFT" and period
+      "FY2027Q1" (keyed by the prompt's variable names, which are Chinese).
+    - pipeline_fields: {output name: {key: value}}, fields the pipeline maintains (00 §G8, e.g. thesis's
+      trust_level), written into that output before validation.
+    - stream, max_tokens: streaming by default; the limit is 128000 for 01, 02 and 11 and 64000 for the rest (16000
+      when not streaming).
+    - prompts_dir, schemas_dir: the prompts directory and the thesis-ci schema directory; for the defaults see
+      resolve_prompts_dir() and outputs.schema_validator().
 
-    发请求之前检查角色、部分、输入与变量（PromptError、InputRefused）和预算（BudgetExceeded）。
-    拒答抛出 LLMRefusal；截断抛出 LLMTruncated（allow_truncated=True 时照常返回，不校验输出）；
-    输出不合格重试一次，仍不合格抛出 LLMOutputInvalid。每次发出的请求都写一行日志。
+    Before any request is sent, it checks the role, part, inputs and variables (PromptError, InputRefused) and the
+    budget (BudgetExceeded). A refusal raises LLMRefusal; a truncation raises LLMTruncated (with allow_truncated=True
+    the result is returned as usual, without validating outputs). An invalid output is retried once; if it is still
+    invalid, LLMOutputInvalid is raised. Every request sent writes one log line.
     """
     root = Path(repo_root) if repo_root else REPO_ROOT
     log = _log_path(log_path)
@@ -1024,7 +1072,7 @@ def complete(
     if max_tokens is None:
         max_tokens = (LONG_MAX_TOKENS if prompt.id in LONG_OUTPUT_PROMPTS else STREAM_MAX_TOKENS) if stream else MAX_TOKENS
     system = [{"type": "text", "text": text, "cache_control": dict(CACHE_CONTROL)} for text in system_texts[:-1]]
-    system.append({"type": "text", "text": system_texts[-1]})  # 具体提示词在缓存断点之后
+    system.append({"type": "text", "text": system_texts[-1]})  # the specific prompt comes after the cache breakpoint
     params: dict[str, Any] = {
         "model": model_id,
         "max_tokens": max_tokens,
@@ -1082,7 +1130,7 @@ def complete(
             "stop_reason": None,
         }
         request = params
-        if attempt == 2:  # 重试：同一请求，后面附上第一次的校验错误
+        if attempt == 2:  # retry: the same request, with the first attempt's validation errors appended
             request = {**params, "messages": [{"role": "user", "content": _with_errors(content, errors)}]}
         try:
             response = _send(client, request, fallback_kwargs, stream)
@@ -1097,7 +1145,7 @@ def complete(
         record.update(
             model=served_model,
             served_by_fallback=_served_by_fallback(response),
-            usage=usage,  # 含 cache_creation_input_tokens 与 cache_read_input_tokens
+            usage=usage,  # includes cache_creation_input_tokens and cache_read_input_tokens
             cost_usd=cost_usd(price_model, usage),
             cost_breakdown=cost_breakdown(price_model, usage),
             stop_reason=getattr(response, "stop_reason", None),
@@ -1108,7 +1156,7 @@ def complete(
         total_usage = {k: total_usage[k] + usage[k] for k in total_usage}
         total_cost = round(total_cost + record["cost_usd"], 6)
 
-        # 先看 stop_reason，再读 content：拒答时 content 为空或只是残片。
+        # Check stop_reason before reading content: on a refusal, content is empty or only a fragment.
         if record["stop_reason"] == "refusal":
             details = getattr(response, "stop_details", None)
             category = getattr(details, "category", None)
@@ -1160,7 +1208,7 @@ def complete(
             _append_log(log, record)
             if not allow_truncated:
                 raise LLMTruncated(result)
-            return result  # 截断的回答不校验、不交出输出；调用方拿 text 自己处理
+            return result  # truncated replies are not validated and yield no outputs; the caller handles text itself
 
         parsed, errors = _outputs.parse_reply(
             text,

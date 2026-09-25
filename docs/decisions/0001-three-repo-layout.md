@@ -1,37 +1,37 @@
-# 0001 三个仓库的布局
+# 0001 Three-repository layout
 
-## 背景
+## Background
 
-DESIGN.md 规定三个仓库各司其职：thesis-ci 是任何人都能安装的开源工具，owners-office 是主人用它维护的公开记录，owners-office-private 放完整档案和金额。第 0 阶段要把这三个仓库的骨架在本地建起来，之后由主人审阅再推送到 GitHub 账号 `kentian742-creator`。需要定下：本地怎么摆、两个档案仓库怎么互相找到、公开与私有的边界落在哪一层，以及 owners-office 里的代码用什么许可（DESIGN.md 只写了“方法文档”和“研究内容”两类）。
+DESIGN.md gives each of the three repositories its own job: thesis-ci is an open-source tool anyone can install, owners-office is the public record the owner maintains with it, and owners-office-private holds the full archives and the amounts. Phase 0 has to build the skeletons of these three repositories locally; after that the owner reviews them and they are pushed to the GitHub account `kentian742-creator`. We need to decide how they are laid out locally, how the two archive repositories find each other, at which layer the public/private boundary sits, and which license the code in owners-office uses (DESIGN.md names only two categories, "method documents" and "research content").
 
-## 选项
+## Options
 
-1. 一个仓库，私有内容放进加密目录或子模块。
-2. 两个仓库：工具并入公开档案仓库，另加一个私有仓库。
-3. 三个兄弟仓库（DESIGN.md 的方案）：thesis-ci、owners-office、owners-office-private。
+1. One repository, with the private content in an encrypted directory or a submodule.
+2. Two repositories: the tool merged into the public archive repository, plus a private repository.
+3. Three sibling repositories (the DESIGN.md plan): thesis-ci, owners-office, owners-office-private.
 
-## 决定
+## Decision
 
-采用选项 3。
+Option 3.
 
-- 本地工作区 `/Users/asuka/OwnersOffice/` 下三个兄弟目录：`thesis-ci/`、`owners-office/`、`owners-office-private/`。原始资料留在工作区的 `inputs/`，不进任何仓库；PDF 的副本进私有仓库的 `reports/`。
-- 两个档案仓库根目录各有 `repo.yml`：`visibility`（public / private）、`owner: kentian742-creator`、`spec_version: "0.1"`、`counterpart`（对方仓库名）。thesis-ci 按 `visibility` 决定跑哪些检查；私有仓库的 lint 通过 `--counterpart ../owners-office` 读取公开仓库做跨仓检查。
-- 公开仓库的 CI 看不到私有仓库；跨仓检查只在私有仓库的 CI、本地和验收脚本里运行。
-- 许可：thesis-ci 代码 MIT、规范 CC BY 4.0（DESIGN.md）；owners-office 方法文档 CC BY 4.0、研究内容保留权利（DESIGN.md），胶水代码（`pipeline/`、`scripts/`、`tests/`、`.github/`）用 MIT，与 thesis-ci 的代码一致；私有仓库不公开。细节见 `LICENSE.md`。
+- Three sibling directories under the local workspace `/Users/asuka/OwnersOffice/`: `thesis-ci/`, `owners-office/`, `owners-office-private/`. The raw materials stay in the workspace's `inputs/` and go into no repository; copies of the PDFs go into the private repository's `reports/`.
+- The root of each of the two archive repositories has a `repo.yml`: `visibility` (public / private), `owner: kentian742-creator`, `spec_version: "0.1"`, `counterpart` (the name of the other repository). thesis-ci decides which checks to run from `visibility`; the private repository's lint reads the public repository through `--counterpart ../owners-office` for the cross-repository checks.
+- The public repository's CI cannot see the private repository; cross-repository checks run only in the private repository's CI, locally and in the acceptance script.
+- Licenses: thesis-ci code MIT, spec CC BY 4.0 (DESIGN.md); owners-office method documents CC BY 4.0 and research content all rights reserved (DESIGN.md), and its glue code (`pipeline/`, `scripts/`, `tests/`, `.github/`) MIT, the same as thesis-ci's code; the private repository is not public. Details in `LICENSE.md`.
 
-## 理由
+## Rationale
 
-- 可见性边界就是仓库边界。GitHub 没有目录级的可见性，边界落在仓库上最不容易出错，金额和价格不会因为一次配置失误进入公开历史。
-- 工具可以被别人单独安装和复用，不必拿到主人的档案；许可也各自清楚。
-- `counterpart` 让跨仓检查（例如公开仓库的每家公司在私有仓库都有 `valuation.yml`）有明确的入口，而公开 CI 永远不需要读私有仓库的权限。
-- 代码用 MIT 是因为 CC BY 不适合软件，而保留权利会让别人无法照着 CI 复现检查。
+- The visibility boundary is the repository boundary. GitHub has no directory-level visibility; a boundary on repositories is the hardest to get wrong, so amounts and prices can't reach the public history through a single configuration mistake.
+- Others can install and reuse the tool on its own without getting the owner's archives, and each license is clear.
+- `counterpart` gives the cross-repository checks (for example, that every company in the public repository has a `valuation.yml` in the private repository) a clear entry point, while the public CI never needs permission to read the private repository.
+- The code is MIT because CC BY does not suit software, and all rights reserved would keep others from reproducing the checks the way the CI runs them.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **一个仓库加加密目录或子模块**：密钥管理复杂，一次误操作就把金额写进公开历史，且无法撤回；子模块在 CI 里还要额外的访问令牌。
-- **工具并入公开档案仓库**：别人想用工具就得拉下主人的档案；工具的 MIT 许可和研究内容的保留权利混在一起，也不利于第 4 阶段把 thesis-ci 发成 v1.0。
-- **owners-office 的代码也用保留权利**：会让“任何人都能核对”的承诺落空。
+- **One repository with an encrypted directory or a submodule**: key management is complex, a single slip writes amounts into the public history for good, and a submodule needs an extra access token in CI.
+- **The tool merged into the public archive repository**: anyone who wants the tool would have to pull down the owner's archives; the tool's MIT license and the research content's reserved rights would be mixed together, which also gets in the way of releasing thesis-ci as v1.0 in Phase 4.
+- **owners-office code also all rights reserved**: the promise that "anyone can check" would be empty.
 
-## 日期
+## Date
 
 2026-09-24

@@ -1,21 +1,27 @@
-"""模型输出的解析、校验与放置（00 §F0、§F1、§F2、§F6）。本模块不调用模型。
+"""Parsing, validation and placement of model outputs (00 §F0, §F1, §F2, §F6). This module does not call a model.
 
-pipeline/llm.py 收到回答后调用 parse_reply()：把回答拆成 <output name="…"> 块，逐项按声明的格式校验，
-返回 {输出名: ParsedOutput} 和错误清单；有错误时 llm.py 带着这份清单重试一次。
+pipeline/llm.py calls parse_reply() when a reply arrives: it splits the reply into <output name="..."> blocks,
+validates each one against its declared format, and returns {output name: ParsedOutput} and a list of errors; when
+there are errors, llm.py retries once with that list.
 
-- 格式由提示词声明（00 front matter 的 output_formats，部分可用 formats 覆盖），调用方以 formats 传入：
-  yaml、markdown、text、file（00 §F0）。
-- 名字：必须是该部分 outputs 里的名字，一个名字只出现一次；必需输出不能缺（没有内容写“无”）。
-- yaml：不加代码围栏，能解析，没有重复键；有 thesis-ci schema 的（OUTPUT_SCHEMAS）再按 schema 校验。
-  pipeline_fields 给出的流水线维护字段（00 §G8）先写进文档再校验。
-- markdown：必须以 front matter 开头，至少写 company、doc、as_of、doc_status（00 §F1；股东信和它的私有附录
-  不写 company）；story.md 只按 story schema 校验 front matter。
-- text：不带 front matter，不校验内容；file：放不进文本块，出现即报错。
-- generated_by：注入每份 markdown 输出的 front matter，以及没有 schema 限制的 yaml 映射；
-  schema 不允许多余键的（thesis、ledger、story 等）不改文档，放在 ParsedOutput.generated_by 里一并返回。
+- Formats are declared by the prompts (output_formats in the 00 front matter, which a part can override with
+  formats) and passed in by the caller as formats: yaml, markdown, text, file (00 §F0).
+- Names: must be names in the part's outputs, and each name appears only once; required outputs cannot be missing
+  (with no content, write the empty marker EMPTY_MARK).
+- yaml: no code fences, must parse, no duplicate keys; outputs with a thesis-ci schema (OUTPUT_SCHEMAS) are then
+  validated against the schema. The pipeline-maintained fields (00 §G8) given in pipeline_fields are written into
+  the document before it is validated.
+- markdown: must start with front matter that has at least company, doc, as_of and doc_status (00 §F1; the letter
+  to the owner and its private appendix have no company); for story.md the front matter is validated only against
+  the story schema.
+- text: no front matter, content not validated; file: cannot go into a text block, so one appearing is an error.
+- generated_by: injected into the front matter of every markdown output, and into yaml mappings no schema restricts;
+  where the schema allows no extra keys (thesis, ledger, story, etc.) the document is left unchanged and
+  generated_by is returned alongside it in ParsedOutput.generated_by.
 
-放置表 PLACEMENT 把 00 §F2 写成数据（输出名 → 仓库与路径模板），place()／place_outputs() 只回答
-“这份输出该放到哪里”；写文件、开 PR 由调用方负责。表里没有的输出按 §F2 最后一行放私有仓库。
+The placement table PLACEMENT writes 00 §F2 down as data (output name → repository and path template); place() and
+place_outputs() only answer "where does this output go"; writing files and opening PRs is up to the caller. Outputs
+not in the table go to the private repository, per the last row of §F2.
 """
 
 from __future__ import annotations
@@ -31,17 +37,18 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCHEMAS_ENV = "OWNERS_OFFICE_SCHEMAS"  # 可把 schema 目录指到别处（测试用）；默认用已安装的 thesis-ci
+SCHEMAS_ENV = "OWNERS_OFFICE_SCHEMAS"  # overrides the schema directory (for tests); default: the installed thesis-ci
 DEFAULT_SCHEMAS_DIR = REPO_ROOT.parent / "thesis-ci" / "spec" / "schemas"
 
-EMPTY_MARK = "无"  # 00 §F0：没有内容写“无”，不省略
+EMPTY_MARK = "无"  # 00 §F0: with no content, write this mark instead of omitting the output
 MAX_ERRORS_PER_OUTPUT = 20
 
 MARKDOWN, YAML, TEXT, FILE = "markdown", "yaml", "text", "file"
-FORMATS = (YAML, MARKDOWN, TEXT, FILE)  # 00 §F0 的四种输出格式
+FORMATS = (YAML, MARKDOWN, TEXT, FILE)  # the four output formats of 00 §F0
 
-# 输出名 → thesis-ci schema（spec/schemas/<名>.schema.json）。只登记完整文件；story 校验的是 front matter；
-# sources_additions 是若干 sources 条目，去掉 visibility 后按 {"sources": [...]} 校验。
+# Output name → thesis-ci schema (spec/schemas/<name>.schema.json). Only complete files are registered; for story
+# the front matter is validated; sources_additions is a set of sources entries, validated as {"sources": [...]}
+# after visibility is removed.
 OUTPUT_SCHEMAS: dict[str, str] = {
     "thesis": "thesis",
     "ledger": "ledger",
@@ -52,46 +59,49 @@ OUTPUT_SCHEMAS: dict[str, str] = {
     "story": "story",
     "sources_additions": "sources",
 }
-# 有 schema 的输出必须声明成对应的格式，否则 schema 校验会落空。
+# An output with a schema must be declared in the matching format; otherwise the schema validation would be skipped.
 SCHEMA_FORMATS = {name: (MARKDOWN if name == "story" else YAML) for name in OUTPUT_SCHEMAS}
 
-# 00 §F1：markdown 输出至少写这些 front matter 键；股东信和它的私有附录不属于某一家公司，不写 company。
+# 00 §F1: a markdown output has at least these front matter keys. The letter to the owner and its private appendix
+# do not belong to any one company, so they have no company key.
 FRONT_MATTER_KEYS = ("company", "doc", "as_of", "doc_status")
 F1_WITHOUT_COMPANY = frozenset({"letter", "private_appendix"})
 SOURCE_VISIBILITIES = ("public", "private")
 
 
 class SchemaUnavailable(LookupError):
-    """需要按 thesis-ci schema 校验，却找不到 schema。"""
+    """Validation against a thesis-ci schema is needed, but the schema cannot be found."""
 
 
 @dataclasses.dataclass(frozen=True)
 class ParsedOutput:
-    """一份校验过的输出。text 是交给调用方写入的文本（Markdown 已注入 generated_by）；“无”为空输出。"""
+    """A validated output. text is the text handed to the caller to write (Markdown with generated_by already
+    injected); an output that is just the empty marker (EMPTY_MARK) is an empty output."""
 
     name: str
-    format: str  # 声明的格式：yaml / markdown / text / file
+    format: str  # the declared format: yaml / markdown / text / file
     text: str
-    data: Any = None  # YAML 的内容；Markdown 为 front matter
+    data: Any = None  # the YAML content; for Markdown, the front matter
     empty: bool = False
     schema: str | None = None
     generated_by: Mapping[str, Any] | None = None
     generated_by_injected: bool = False
-    pipeline_fields: tuple[str, ...] = ()  # 由流水线写入的键（00 §G8）
+    pipeline_fields: tuple[str, ...] = ()  # keys written by the pipeline (00 §G8)
 
 
 # ---------------------------------------------------------------- YAML
 
 
 def _yaml() -> Any:
-    import yaml  # PyYAML；延迟导入，保持模块轻量
+    import yaml  # PyYAML; imported lazily to keep the module light
 
     return yaml
 
 
 @functools.lru_cache(maxsize=None)
 def _unique_key_loader() -> type:
-    """SafeLoader，但重复键报错：thesis-ci 的 lint 也把重复键当错误（YAML 只保留最后一个值）。"""
+    """SafeLoader, but duplicate keys are an error: thesis-ci's lint also treats duplicate keys as errors (YAML keeps
+    only the last value)."""
     yaml = _yaml()
 
     class UniqueKeyLoader(yaml.SafeLoader):
@@ -106,7 +116,7 @@ def _unique_key_loader() -> type:
             try:
                 duplicate = key in seen
                 seen.add(key)
-            except TypeError:  # 不可哈希的键由 construct_mapping 自己报错
+            except TypeError:  # unhashable keys are reported by construct_mapping itself
                 continue
             if duplicate:
                 raise yaml.constructor.ConstructorError(
@@ -119,7 +129,7 @@ def _unique_key_loader() -> type:
 
 
 def load_yaml_text(text: str) -> Any:
-    """解析一段 YAML；重复键报错。出错抛出 yaml.YAMLError。"""
+    """Parse a piece of YAML; duplicate keys are an error. Raises yaml.YAMLError on errors."""
     return _yaml().load(text, Loader=_unique_key_loader())
 
 
@@ -128,7 +138,8 @@ def dump_yaml(data: Any) -> str:
 
 
 def jsonable(obj: Any) -> Any:
-    """把 YAML 数据映射到 JSON 数据模型再做 schema 校验：日期变成 ISO 字符串，键变成字符串（与 thesis-ci 一致）。"""
+    """Map YAML data onto the JSON data model before schema validation: dates become ISO strings, keys become strings
+    (consistent with thesis-ci)."""
     if isinstance(obj, (dt.date, dt.datetime)):
         return obj.isoformat()
     if isinstance(obj, Mapping):
@@ -158,7 +169,7 @@ def _yaml_problem(exc: Exception) -> str:
 
 
 def split_front_matter(text: str) -> tuple[str, str] | None:
-    """(front matter, 正文)；开头不是 --- 或没有结束的 --- 时返回 None。"""
+    """(front matter, body); None when the text does not start with --- or has no closing ---."""
     lines = text.splitlines(keepends=True)
     if not lines or lines[0].strip() != "---":
         return None
@@ -177,15 +188,15 @@ def _fenced(text: str) -> bool:
 
 
 def schema_validator(name: str, schemas_dir: str | os.PathLike[str] | None = None) -> Any:
-    """thesis-ci 的 JSON Schema 校验器。
+    """A thesis-ci JSON Schema validator.
 
-    查找顺序：参数 schemas_dir → 环境变量 OWNERS_OFFICE_SCHEMAS → 已安装的 thesis-ci（thesis_ci.contract）
-    → 兄弟检出 ../thesis-ci/spec/schemas。都找不到抛出 SchemaUnavailable。
+    Lookup order: the schemas_dir argument → the environment variable OWNERS_OFFICE_SCHEMAS → the installed thesis-ci
+    (thesis_ci.contract) → a sibling checkout, ../thesis-ci/spec/schemas. Raises SchemaUnavailable when none is found.
     """
     directory = schemas_dir if schemas_dir is not None else os.environ.get(SCHEMAS_ENV) or None
     if directory is None:
         try:
-            from thesis_ci import contract  # 公开 CI 按 requirements.txt 安装了 thesis-ci
+            from thesis_ci import contract  # the public CI installs thesis-ci from requirements.txt
         except ImportError:
             contract = None
         if contract is not None:
@@ -211,13 +222,15 @@ def _validator_from_file(path: str) -> Any:
 
 
 def validators_for(outputs: Iterable[str], schemas_dir: str | os.PathLike[str] | None = None) -> dict[str, Any]:
-    """这些输出要用到的 schema 校验器（schema 名 → 校验器）。llm.py 在发请求之前就解析好，找不到就不花钱。"""
+    """The schema validators these outputs need (schema name → validator). llm.py resolves them before sending the
+    request, so a schema that cannot be found costs no money."""
     names = sorted({OUTPUT_SCHEMAS[o] for o in outputs if o in OUTPUT_SCHEMAS})
     return {name: schema_validator(name, schemas_dir) for name in names}
 
 
 def format_problems(formats: Mapping[str, str]) -> list[str]:
-    """格式声明本身的问题：不认识的格式；有 schema 的输出声明成了别的格式。"""
+    """Problems in the format declarations themselves: unknown formats; outputs with a schema declared in another
+    format."""
     problems = [f"{name} 的格式 {fmt!r} 不是 {'、'.join(FORMATS)} 之一" for name, fmt in formats.items() if fmt not in FORMATS]
     problems += [
         f"{name} 有 thesis-ci schema（{OUTPUT_SCHEMAS[name]}），格式应当是 {SCHEMA_FORMATS[name]}，声明的是 {fmt}"
@@ -245,7 +258,7 @@ def schema_errors(validator: Any, instance: Any, schema_name: str) -> list[str]:
     return out
 
 
-# ---------------------------------------------------------------- 封装
+# ---------------------------------------------------------------- envelope
 
 
 _OPEN = re.compile(r"<output\s+name\s*=\s*([\"'])([^\"']*)\1\s*>")
@@ -253,7 +266,8 @@ _CLOSE = re.compile(r"</output\s*>")
 
 
 def split_envelope(reply: str) -> tuple[list[tuple[str, str]], list[str]]:
-    """[(输出名, 块内文本)] 与封装错误。块内文本去掉首尾的空行，非空的以一个换行结尾（便于直接写文件）。"""
+    """[(output name, block text)] and envelope errors. Leading and trailing blank lines are stripped from block text,
+    and non-empty text ends with one newline (so it can be written straight to a file)."""
     blocks: list[tuple[str, str]] = []
     errors: list[str] = []
     pos = 0
@@ -286,8 +300,9 @@ def parse_reply(
     pipeline_fields: Mapping[str, Mapping[str, Any]] | None = None,
     where: str = "本部分",
 ) -> tuple[dict[str, ParsedOutput], list[str]]:
-    """拆开并校验一次回答。declared 是该部分的 (输出名, 是否必需)，formats 是每个输出声明的格式；
-    validators 为 None 时按需解析 thesis-ci schema。返回 ({输出名: ParsedOutput}, 错误清单)。"""
+    """Split and validate one reply. declared is the part's (output name, required) pairs; formats is each output's
+    declared format; when validators is None, thesis-ci schemas are resolved as needed. Returns
+    ({output name: ParsedOutput}, list of errors)."""
     names = [name for name, _ in declared]
     undeclared = [name for name in names if name not in formats]
     if undeclared:
@@ -331,7 +346,8 @@ def parse_output(
     validators: Mapping[str, Any],
     fields: Mapping[str, Any] | None = None,
 ) -> tuple[ParsedOutput | None, list[str]]:
-    """按声明的格式 fmt 校验一份输出。返回 (ParsedOutput 或 None, 错误)。有 schema 的输出必须在 validators 里有校验器。"""
+    """Validate one output against its declared format fmt. Returns (ParsedOutput or None, errors). An output with a
+    schema must have a validator in validators."""
     if fmt not in FORMATS:
         raise ValueError(f"{name} 的格式 {fmt!r} 不是 {'、'.join(FORMATS)} 之一")
     schema = OUTPUT_SCHEMAS.get(name)
@@ -415,7 +431,7 @@ def _parse_markdown(
         front.update(fields)
         applied = tuple(fields)
     errors = []
-    if schema is None:  # story.md 是 §F1 的例外：只用 story schema 的字段
+    if schema is None:  # story.md is the exception to §F1: it uses only the story schema's fields
         keys = [k for k in FRONT_MATTER_KEYS if not (k == "company" and name in F1_WITHOUT_COMPANY)]
         errors += [f"{name}：front matter 缺少 {key}（00 §F1）" for key in keys if key not in front]
     validator = validators.get(schema) if schema else None
@@ -453,7 +469,8 @@ def _without_visibility(entry: Any) -> Any:
 
 
 def split_sources_additions(data: Any) -> dict[str, list[dict[str, Any]]]:
-    """按 visibility 把 sources_additions 分给两个仓库，并去掉 visibility（sources schema 不接受这个键）。"""
+    """Split sources_additions between the two repositories by visibility, and remove visibility (the sources schema
+    does not accept that key)."""
     entries = data.get("sources") if isinstance(data, dict) and set(data) == {"sources"} else data
     out: dict[str, list[dict[str, Any]]] = {v: [] for v in SOURCE_VISIBILITIES}
     for entry in entries or []:
@@ -464,7 +481,8 @@ def split_sources_additions(data: Any) -> dict[str, list[dict[str, Any]]]:
 
 
 def _append_generated_by(text: str, data: dict, generated_by: Mapping[str, Any]) -> tuple[str, dict, bool]:
-    """在 YAML 映射末尾追加 generated_by。追加后解析结果不对（例如流式映射）就不改，改为一并返回。"""
+    """Append generated_by at the end of a YAML mapping. If the result then parses wrong (a flow mapping, for
+    example), leave the text unchanged and return generated_by alongside instead."""
     candidate = text.rstrip("\n") + "\n" + dump_yaml({"generated_by": dict(generated_by)})
     expected = {**data, "generated_by": dict(generated_by)}
     try:
@@ -479,9 +497,11 @@ _TOP_KEY = re.compile(r"^([A-Za-z_][\w.-]*)[ \t]*:(?:[ \t]|$)")
 
 
 def apply_fields(text: str, data: dict, fields: Mapping[str, Any]) -> tuple[str, dict]:
-    """把流水线维护的顶层字段（00 §G8）写进 YAML 文本：已有的键原地替换，没有的加在开头的注释之后。
+    """Write the pipeline-maintained top-level fields (00 §G8) into YAML text: existing keys are replaced in place,
+    missing ones are added after the leading comments.
 
-    尽量保留模型写的注释与格式；改完解析结果与预期不一致时，退回整份重新输出（注释会丢）。
+    Keeps the model's comments and formatting where possible; when the edited text does not parse to the expected
+    data, falls back to dumping the whole document again (the comments are lost).
     """
     merged = {**data, **fields}
     lines = text.split("\n")
@@ -496,7 +516,7 @@ def apply_fields(text: str, data: dict, fields: Mapping[str, Any]) -> tuple[str,
         while end < len(lines) and _top_key(lines[end]) is None and lines[end].strip() not in ("---", "..."):
             end += 1
         while end - 1 > start and (not lines[end - 1].strip() or lines[end - 1].startswith("#")):
-            end -= 1  # 块后的空行和顶格注释属于下一段
+            end -= 1  # blank lines and unindented comments after the block belong to the next section
         lines[start:end] = block
     if missing:
         head = 0
@@ -517,20 +537,22 @@ def _top_key(line: str) -> str | None:
     return match.group(1) if match else None
 
 
-# ---------------------------------------------------------------- 放置（00 §F2）
+# ---------------------------------------------------------------- placement (00 §F2)
 
 
 PUBLIC, PRIVATE, SPLIT = "public", "private", "split"
 REPOS = {PUBLIC: "owners-office", PRIVATE: "owners-office-private"}
-PUBLIC_DOSSIERS = frozenset({"MSFT"})  # §F2：MSFT 的 dossier.md 公开（第 8 部分不含数字）
-UPDATE_SUBJECTS = frozenset({"季度更新", "update"})  # 04 的 {{被审对象}} 是季度更新时，04A 的 findings 随 PR 公开
+PUBLIC_DOSSIERS = frozenset({"MSFT"})  # §F2: MSFT's dossier.md is public (part 8 contains no numbers)
+# When 04's subject-under-review variable is a quarterly update, 04A's findings go public with the PR.
+UPDATE_SUBJECTS = frozenset({"季度更新", "update"})
 
 
 @dataclasses.dataclass(frozen=True)
 class Destination:
-    """放置表的一行。path 是相对仓库根的模板；None 表示不是文件（PR 正文、PR 附件）。"""
+    """A row of the placement table. path is a template relative to the repository root; None means it is not a file
+    (PR body, PR attachment)."""
 
-    visibility: str  # public | private | split（sources_additions：按每条的 visibility 分给两个仓库）
+    visibility: str  # public | private | split (sources_additions: entries split between the repos by visibility)
     path: str | None
     action: str = "write"  # write | append | patch | merge | front_matter | pr_body | pr_attachment
     when: Mapping[str, frozenset[str]] = dataclasses.field(default_factory=dict)
@@ -552,10 +574,11 @@ def _d(visibility: str, path: str | None, action: str = "write", note: str = "",
 
 
 _REPORTS = "reports/{company}/{doc}"
-# 输出名 → 候选去处，第一条 when 全部满足的生效；都不满足时用 DEFAULT_DESTINATION。
-# 模板字段：company、period、run_date、month、doc、slug、scope、part_id、output、ext（见 place()）。
+# Output name → candidate destinations; the first one whose `when` conditions all hold takes effect; if none does,
+# DEFAULT_DESTINATION is used.
+# Template fields: company, period, run_date, month, doc, slug, scope, part_id, output, ext (see place()).
 PLACEMENT: dict[str, tuple[Destination, ...]] = {
-    # 公开仓库（§F2 第一行；路径按 thesis-ci SPEC §2）
+    # Public repository (§F2 row 1; paths per thesis-ci SPEC §2)
     "thesis": (_d(PUBLIC, "companies/{company}/thesis.yml"),),
     "story": (_d(PUBLIC, "companies/{company}/story.md"),),
     "ledger": (_d(PUBLIC, "companies/{company}/ledger.yml"),),
@@ -568,7 +591,7 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
     "pr_body": (_d(PUBLIC, None, "pr_body", "审计意见、分歧与反向清单由流水线追加在后面"),),
     "mistakes_entry": (_d(PUBLIC, "mistakes.md", "append"),),
     "letter": (_d(PUBLIC, "letters/{month}.md"),),
-    # 档案：MSFT 公开（§F2 第二行），其余公司私有（§F2 第四行）
+    # Dossier: public for MSFT (§F2 row 2), private for the other companies (§F2 row 4)
     "dossier": (
         _d(PUBLIC, "companies/{company}/dossier.md", company=PUBLIC_DOSSIERS),
         _d(PRIVATE, "companies/{company}/dossier.md"),
@@ -577,14 +600,16 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
         _d(PUBLIC, "companies/{company}/dossier.md", "patch", "逐部分替换档案正文", company=PUBLIC_DOSSIERS),
         _d(PRIVATE, "companies/{company}/dossier.md", "patch", "逐部分替换档案正文"),
     ),
-    # 季度更新 PR 的附件：随 PR 公开，遵守 §H4（§F2 第三行）；其余情形的同名输出按默认放私有仓库
+    # Attachments to the quarterly update PR: public with the PR, subject to §H4 (§F2 row 3); outputs with the same
+    # names in other cases go to the private repository by default
     "findings": (_d(PUBLIC, None, "pr_attachment", part_id={"04A"}, subject=UPDATE_SUBJECTS),),
     "inversion_list": (_d(PUBLIC, None, "pr_attachment", part_id={"04B-lite"}),),
     "divergence_map": (_d(PUBLIC, None, "pr_attachment", part_id={"14B"}),),
     "qualitative_verdicts": (_d(PUBLIC, None, "pr_attachment", part_id={"14T"}),),
-    # 来源：按每条的 visibility 并入两边的 sources.yml，写入前去掉 visibility（split_sources_additions）
+    # Sources: merged into the sources.yml of both repositories according to each entry's visibility, which is removed
+    # before writing (split_sources_additions)
     "sources_additions": (_d(SPLIT, "companies/{company}/sources.yml", "merge", "按每条的 visibility 分开并入"),),
-    # 私有仓库（§F2 第四行；路径按 SPEC §2、§7）
+    # Private repository (§F2 row 4; paths per SPEC §2, §7)
     "valuation_yml": (
         _d(PRIVATE, "companies/{company}/valuation.yml", note="doc_status: proposed 的待审版本经 04C 批准才生效（§V20）"),
     ),
@@ -593,7 +618,8 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
     "memo": (_d(PRIVATE, "memos/{run_date}-{company}-{slug}.yml"),),
     "ranking": (_d(PRIVATE, "hq/ranking.yml"),),
     "private_appendix": (_d(PRIVATE, "letters/{month}-private-appendix.md"),),
-    # reports/：02、05、06–08、10、11、13 的正文、版面意图与连接清单，19 的 PDF 与页面图像
+    # reports/: the text, layout intent and connections list of 02, 05, 06–08, 10, 11, 13;
+    # the PDF and page images of 19
     "report": (_d(PRIVATE, f"{_REPORTS}/report.md"),),
     "revised_report": (_d(PRIVATE, f"{_REPORTS}/report.md"),),
     "document": (_d(PRIVATE, f"{_REPORTS}/document.md"),),
@@ -608,20 +634,22 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
     "rendered_pages": (_d(PRIVATE, f"{_REPORTS}/pages/"),),
 }
 DEFAULT_DESTINATION = _d(PRIVATE, "runs/{scope}/{run_date}-{part_id}/{output}.{ext}", note="§F2：表里没有列出的输出放私有仓库")
-TRUST_ROUTED_PROMPTS = frozenset({"03"})  # §G9：季度更新按信任等级分流
+TRUST_ROUTED_PROMPTS = frozenset({"03"})  # §G9: quarterly updates are routed by trust level
 
 
 class PlacementError(ValueError):
-    """路径模板缺少字段。"""
+    """A path template is missing a field."""
 
 
 def place(output: str, *, prompt_id: str, part_id: str, fmt: str | None = None, **context: Any) -> list[Placement]:
-    """一份输出该放到哪里（00 §F2）。sources_additions 返回两条（公开、私有），其余一条。
+    """Where one output goes (00 §F2). For sources_additions it returns two (public, private); for the rest, one.
 
-    fmt 是输出声明的格式，决定路径里 {ext} 的扩展名（yaml 用 yml，其余 md）；路径要用 {ext} 而没给 fmt 时报错。
-    context 给模板字段：company（代码）、period（FY<年>Q<季>）、run_date（YYYY-MM-DD）、month（YYYY-MM，股东信）、
-    doc（02／06／07／08／11，报告目录）、subject（04 的被审对象）、slug（备忘录与升级请求的文件名，默认取输出名）。
-    模板需要的字段缺了抛出 PlacementError。
+    fmt is the output's declared format and decides the {ext} extension in the path (yml for yaml, md otherwise); a
+    path that uses {ext} with no fmt given is an error.
+    context gives the template fields: company (ticker), period (FY<year>Q<quarter>), run_date (YYYY-MM-DD), month
+    (YYYY-MM, for the letter to the owner), doc (02/06/07/08/11, the report directory), subject (04's subject under
+    review), slug (the file name for memos and escalation requests; defaults to the output name).
+    Raises PlacementError when a field the template needs is missing.
     """
     ctx = {k: v for k, v in context.items() if v is not None}
     ctx.update(output=output, part_id=part_id, prompt_id=prompt_id)
@@ -653,7 +681,7 @@ def _note(note: str, prompt_id: str, visibility: str) -> str:
 def place_outputs(
     outputs: Mapping[str, ParsedOutput], *, prompt_id: str, part_id: str, **context: Any
 ) -> list[Placement]:
-    """一次调用的全部非空输出各该放到哪里。"""
+    """Where each non-empty output of one call goes."""
     placements: list[Placement] = []
     for name, parsed in outputs.items():
         if parsed.empty:

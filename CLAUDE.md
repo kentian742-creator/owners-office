@@ -1,64 +1,71 @@
-# Owner's Office · 常驻规则
+# Owner's Office · Standing rules
 
-这是 Owner's Office 的公开仓库：投资宪法、决策权、agent 定义、各公司的 thesis.yml 与两分钟故事、预注册、预测、言行账本和股东信。系统跟踪企业，也跟踪主人（Ken）作为所有者的判断是否可靠。设计以 `docs/DESIGN.md` 为准；文件格式以兄弟仓库 `../thesis-ci/spec/` 为准。
+This is the public repository of Owner's Office: the investment constitution, decision rights, agent definitions, each company's thesis.yml and two-minute story, pre-registrations, forecasts, say-do ledgers and letters to the owner. The system tracks the companies, and it also tracks whether the owner's (Ken's) judgment as an owner is reliable. `docs/DESIGN.md` is authoritative for the design; the sibling repository `../thesis-ci/spec/` is authoritative for file formats.
 
-## 新会话怎么接着做
+## How a new session picks up the work
 
-主人说“继续推进”时：
+When the owner says "keep going":
 
-1. 读 `docs/STATUS.md`，从“下一步”的第一项做起；
-2. 需要背景时再读 `docs/DESIGN.md` 的相关章节和 `docs/decisions/`；
-3. 每做完一段就更新 `docs/STATUS.md`（进度、待办、卡点），让下一个会话能接上。
+1. Read `docs/STATUS.md` and start with the first open item of the current phase checklist ("Phase 1 checklist");
+2. Read the relevant sections of `docs/DESIGN.md` and `docs/decisions/` only when you need background;
+3. After each piece of work, update `docs/STATUS.md` (progress, to-dos, blockers) so the next session can continue.
 
-## 授权范围（来自 DESIGN.md 的开工指令）
+## Scope of authority (from the kickoff instructions in DESIGN.md)
 
-- 当前阶段内的一切工程决策自己定：目录、schema、脚本、测试、CI。
-- 设计文档没写到的细节，按 `constitution/` 的原则自行决定，并记进 `docs/decisions/`。
-- 只有两类事情停下来问主人：涉及资金的操作，和修改投资宪法。其余不要问。
-  - 资金操作包括买入、加仓、减仓、卖出，也包括提高模型预算（见 `docs/decisions/0003`）。
-  - 修宪指改动 `constitution/` 里的规则本身；只改格式或补检查映射不算。
-- 只有主人本人能做的事写进 STATUS 待办，不代做：把模型 API key 放进 GitHub Secrets（绝不贴进聊天或代码）、审阅后首次创建并推送 GitHub 仓库。
-- SEC 访问用的 User-Agent 只放在工作区根目录的 `.env`（`SEC_USER_AGENT`），不进任何仓库、日志或提交（`docs/decisions/0013`）。
-- 系统不会、也无法替主人交易；资金事项的默认选项永远是维持现状。
+- Make every engineering decision within the current phase yourself: directories, schemas, scripts, tests, CI.
+- Details the design document does not cover: decide them yourself according to the principles in `constitution/`, and record them in `docs/decisions/`.
+- Stop and ask the owner about only two kinds of things: operations involving money, and amendments to the investment constitution. Don't ask about anything else.
+  - Money operations include buying, adding, trimming and selling, and also raising the model budget (see `docs/decisions/0003`).
+  - Amending the constitution means changing the rules themselves in `constitution/`; changing only the format or adding check mappings does not count.
+- Things only the owner can do go into the STATUS to-do list, and you don't do them on the owner's behalf: putting the model API key into GitHub Secrets (never paste it into a chat or into code), and creating and pushing the GitHub repositories for the first time after review.
+- The User-Agent for SEC access lives only in `.env` at the workspace root (`SEC_USER_AGENT`), never in any repository, log or commit (`docs/decisions/0013`).
+- The system will not and cannot trade for the owner; the default option for money matters is always the status quo.
 
-## 硬规则（开工指令原文，由 CI 执行）
+## Hard rules (as worded in the kickoff instructions; enforced by CI)
 
-| 硬规则 | 执行它的检查 |
+| Hard rule | Check that enforces it |
 | --- | --- |
-| 档案中的每个数字必须带来源标签； | `C-SRC-TAG`、`C-SRC-FACT`（`C-SRC-ACCESSION` 报警） |
-| 不抓取、不显示日常股价，价格只用于跨越价值区间时的提醒； | `C-NO-PRICE-FEED` |
-| 公开内容里不出现买卖建议；不执行任何交易； | `C-PUBLIC-NO-ADVICE`、`C-NO-TRADING` |
-| 价值区间和 L3 备忘录只存私有仓库，公开的 thesis.yml 不含 value_ranges； | `C-PUBLIC-NO-VALUATION`、`C-PUBLIC-NO-AMOUNTS` |
-| 模型调用只能放在 pipeline/llm.py，并记录模型名、提示词版本和输入哈希。 | `C-LLM-ENTRY`；日志字段由 `tests/test_llm.py` 覆盖 |
+| Every number in the archive must carry a source tag; | `C-SRC-TAG`, `C-SRC-FACT` (`C-SRC-ACCESSION` warns) |
+| Don't fetch or display daily stock prices; prices are used only for an alert when a value range is crossed; | `C-NO-PRICE-FEED` |
+| No buy or sell advice in public content; execute no trades; | `C-PUBLIC-NO-ADVICE`, `C-NO-TRADING` |
+| Value ranges and L3 memos are stored only in the private repository; the public thesis.yml contains no value_ranges; | `C-PUBLIC-NO-VALUATION`, `C-PUBLIC-NO-AMOUNTS` |
+| Model calls may live only in pipeline/llm.py, which records the model name, prompt version and input hash. | `C-LLM-ENTRY`; the log fields are covered by `tests/test_llm.py` |
 
-价格的细则以 00 §H2 为准：允许出现的价格只有四类，除公司披露的历史回购均价外都只在私有文件里。密钥只放 GitHub Secrets，由 `C-NO-SECRETS` 拦截。检查定义见 `../thesis-ci/spec/checks.yml`。CI 不过的内容不合并；不要为了通过检查去改检查，要改就先写决策记录。
+The detailed price rules are in 00 §H2: only four kinds of prices may appear, and all of them except a company's disclosed historical average buyback price appear only in private files. Secrets go only into GitHub Secrets, and `C-NO-SECRETS` blocks them anywhere else. The checks are defined in `../thesis-ci/spec/checks.yml`. Content that fails CI is not merged; don't change a check just to get past it; to change one, write a decision record first.
 
-## 写档案的约定
+## Conventions for writing the archives
 
-- 来源标签写成 `[src:TAG#LOCATOR]`，命名按 `../thesis-ci/spec/SPEC.md` §3.3：自有报告 `<代码>-RPT<编号>-<日期>`，定期报告 `<代码>-<表格>-<财年期间>`（如 `AXP-10Q-FY2026Q2`），临时报告 `<代码>-<表格>-<EDGAR filing date>`。报告的定位符 `pN` 是 PDF 页码（`docs/decisions/0006`）。标签必须在文件所在目录或仓库根的 `sources.yml` 里登记。
-- 不许编造数字：没有出处就留空（`null`）并记进待办。原文引用每处最多一句。
-- 公开仓库不写价格、价值区间、由价格推出的回报或倍数、仓位金额；这些放 `../owners-office-private/`（00 §H4，`docs/decisions/0004`）。
-- 文档以中文为主；README 中英双语，中文在前。
+- Source tags are written `[src:TAG#LOCATOR]` and named per `../thesis-ci/spec/SPEC.md` §3.3: own reports `<ticker>-RPT<number>-<date>`, periodic reports `<ticker>-<form>-<fiscal period>` (e.g. `AXP-10Q-FY2026Q2`), current reports `<ticker>-<form>-<EDGAR filing date>`. The locator `pN` of a report is the PDF page number (`docs/decisions/0006`). Tags must be registered in the `sources.yml` in the file's directory or at the repository root.
+- Never make up numbers: without a source, leave the value empty (`null`) and record a to-do. Quote at most one sentence of source text in any one place.
+- The public repository contains no prices, value ranges, returns or multiples derived from prices, or position amounts; these go into `../owners-office-private/` (00 §H4, `docs/decisions/0004`).
 
-## 文件地图
+## Language
 
-| 路径 | 内容 |
+- English first: every file outside `zh-CN/` is in English and never mixes in Chinese (the only exceptions are test data that exercises Chinese text and the linter's Chinese detection lists).
+- Chinese versions of the key documents live in `zh-CN/` at the same relative path (for example `zh-CN/README.md`, `zh-CN/docs/DESIGN.md`); which documents are key is listed in `docs/decisions/0020`. Each starts with a line linking to its English file, and the English file links to it; the exception is `zh-CN/docs/DESIGN.md`, the owner's original, which stays byte-identical to `inputs/DESIGN.md` (acceptance A2) and gets no such line.
+- When a key document changes, update its `zh-CN/` counterpart in the same commit.
+- Commit messages are in English.
+
+## File map
+
+| Path | Contents |
 | --- | --- |
-| `docs/DESIGN.md` | 设计（权威） |
-| `docs/STATUS.md` | 进度、待办、怎样接着做 |
-| `docs/decisions/` | 决策记录：背景、选项、决定、理由、被否决的方案、日期 |
-| `constitution/` | 投资宪法、大佬原则、规则与检查映射、三级决策权 |
-| `agents/` | 各角色的模型、可见范围、提示词编号 |
-| `companies/<TICKER>/` | thesis.yml、story.md、sources.yml、prereg/、ledger.yml、updates/ |
-| `trust/levels.yml` | 各角色的信任等级（流水线维护，`C-TRUST-WRITE` 核对） |
-| `industries/<id>/` | 行业模块与路标（不写持仓、不给建议） |
-| `forecasts/`、`letters/`、`mistakes.md` | 预测与覆盖、股东信、错误清单 |
-| `pipeline/llm.py` | 唯一的模型调用入口（日志在 `logs/`，不入库） |
-| `scripts/accept.py` | 阶段验收脚本 |
-| `../owners-office-private/` | 估值、L3 备忘录、升级请求、系列排名（`hq/`）、决策日志、PDF 报告、提示词 v3（`prompts/`） |
-| `../thesis-ci/` | 格式规范、lint、selftest |
+| `docs/DESIGN.md` | Design (authoritative) |
+| `docs/STATUS.md` | Progress, to-dos, how to pick up the work |
+| `docs/decisions/` | Decision records: background, options, decision, rationale, rejected alternatives, date |
+| `constitution/` | Investment constitution, the masters' principles, rules and their check mapping, the three decision levels |
+| `agents/` | Each role's model, visibility and prompt numbers |
+| `companies/<TICKER>/` | thesis.yml, story.md, sources.yml, prereg/, ledger.yml, updates/ |
+| `trust/levels.yml` | Each role's trust level (maintained by the pipeline, checked by `C-TRUST-WRITE`) |
+| `industries/<id>/` | Industry modules and signposts (no holdings, no recommendations) |
+| `forecasts/`, `letters/`, `mistakes.md` | Forecasts and overrides, letters to the owner, mistakes list |
+| `pipeline/llm.py` | The only model-call entry point (logs in `logs/`, not committed) |
+| `scripts/accept.py` | Phase acceptance script |
+| `zh-CN/` | Chinese versions of the key documents, at the same relative paths |
+| `../owners-office-private/` | Valuations, L3 memos, escalation requests, series ranking (`hq/`), decision log, PDF reports, prompts v3 (`prompts/`) |
+| `../thesis-ci/` | Format spec, lint, selftest |
 
-## 常用命令（在工作区根目录 `/Users/asuka/OwnersOffice` 下）
+## Common commands (from the workspace root `/Users/asuka/OwnersOffice`)
 
 ```bash
 .venv/bin/thesis-ci lint owners-office
@@ -67,30 +74,30 @@
 .venv/bin/thesis-ci selftest
 .venv/bin/python -m pytest -q owners-office/tests
 .venv/bin/python owners-office/scripts/accept.py --phase 0 --write-report docs/acceptance/phase-0.md
-# 在 owners-office 目录下：
-../.venv/bin/python -m pipeline.edgar next-release APP FY2026Q3            # 预计发布日、截止时间、最晚合并
-../.venv/bin/python -m pipeline.edgar next-release APP FY2026Q3 --announced 2026-11-05   # 公司宣布日期后
+# In the owners-office directory:
+../.venv/bin/python -m pipeline.edgar next-release APP FY2026Q3            # expected release date, deadline, latest merge time
+../.venv/bin/python -m pipeline.edgar next-release APP FY2026Q3 --announced 2026-11-05   # after the company announces the date
 ../.venv/bin/python -m pipeline.edgar check-sources companies/APP/sources.yml
 ../.venv/bin/python -m pipeline.timestamp status companies/APP/prereg/FY2026Q3.yml
 ```
 
-本机的 python.org Python 没有 CA 证书：访问 EDGAR 或 OpenTimestamps 日历失败时，命令前加 `SSL_CERT_FILE=/etc/ssl/cert.pem`。本地跑 lint 时 `ots` 要在 PATH 上（用 `.venv/bin`），否则截止后的时间证明只报“无法核验”。
+The python.org Python on this machine has no CA certificates: when access to EDGAR or the OpenTimestamps calendars fails, put `SSL_CERT_FILE=/etc/ssl/cert.pem` in front of the command. When running lint locally, `ots` must be on the PATH (use `.venv/bin`); otherwise timestamp proofs after the deadline are only reported as "cannot verify".
 
-仓库还没有提交时，验收加 `--allow-uncommitted`（结果只算临时通过）。验收通过即进入下一阶段，不需要主人签字；未通过写进股东信。
+While a repository has no commits yet, run acceptance with `--allow-uncommitted` (the result counts only as a provisional pass). Once acceptance passes, move on to the next phase without the owner's sign-off; a failure goes into the letter.
 
-## 提交约定
+## Commit conventions
 
-- 一次提交只做一件事；标题写 `<范围>: <摘要>`，例如 `AXP: 更新 2026Q3 论点`、`pipeline: 预算守卫`、`decisions: 0008 ...`。
-- 每条提交信息的最后一行必须是：
+- One commit does one thing; the subject is `<scope>: <summary>`, for example `AXP: update the 2026Q3 thesis`, `pipeline: budget guard`, `decisions: 0008 ...`.
+- The last line of every commit message must be:
 
   ```text
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
   ```
 
-- 提交的作者邮箱用 GitHub 的 noreply 地址（各仓库本地的 `git config user.email`），不用个人邮箱：公开仓库的提交记录也是公开内容。
-- 改变论点的 PR 打 `论点变更` 标签；改主意算成绩，不算污点。
-- 私有仓库的文件不得复制进本仓库；推送前先跑 lint 和测试。
+- The commit author email is the GitHub noreply address (each repository's local `git config user.email`), not a personal email: a public repository's commit history is public content too.
+- PRs that change a thesis get the `thesis change` label; changing your mind counts as an achievement, not a stain.
+- Files from the private repository must never be copied into this repository; run lint and the tests before pushing.
 
-## 决策记录
+## Decision records
 
-设计文档没写到、需要自己拍板的事，写成 `docs/decisions/NNNN-slug.md`（编号递增），结构固定：背景 / 选项 / 决定 / 理由 / 被否决的方案 / 日期。推翻旧决定时写新记录并在旧记录里注明“已被 NNNN 取代”。
+Things the design document doesn't cover and that you have to decide yourself are written up as `docs/decisions/NNNN-slug.md` (numbered in sequence), with a fixed structure: Background / Options / Decision / Rationale / Rejected alternatives / Date. When overturning an earlier decision, write a new record and note "Superseded by NNNN" in the old one.

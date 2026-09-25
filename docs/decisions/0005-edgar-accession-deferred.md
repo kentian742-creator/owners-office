@@ -1,42 +1,42 @@
-# 0005 EDGAR 登记号暂缓回填
+# 0005 Backfilling EDGAR accession numbers deferred
 
-> **已被 [0013](0013-sec-edgar-access.md) 取代（2026-09-24）：** 所有者已提供 SEC User-Agent 用的联系邮箱（只存本地 `.env`），EDGAR 可以访问，登记号改为回填。本记录保留作历史。
+> **Superseded by [0013](0013-sec-edgar-access.md) (2026-09-24):** the owner has provided a contact email for the SEC User-Agent (stored only in the local `.env`), EDGAR is reachable, and the accession numbers are backfilled instead. This record is kept for history.
 
-## 背景
+## Background
 
-thesis-ci 规范第 3.5 节要求 `kind: filing` 的来源条目带 EDGAR 登记号（accession）；缺失是警告（`C-SRC-ACCESSION`），不是错误，并要列进 `docs/STATUS.md` 的待办。SEC 的公平访问规则要求自动化请求在 User-Agent 里写明联系方式，并控制请求频率。第 0 阶段尝试读取五家公司的 submissions 接口时，SEC 返回的是“未声明的自动化工具”拦截页，没有拿到任何登记号。主人的邮箱只用于识别主人本人，没有主人同意，不拿它去向第三方服务声明身份。
+Section 3.5 of the thesis-ci spec requires source entries with `kind: filing` to carry the EDGAR accession number; a missing one is a warning (`C-SRC-ACCESSION`), not an error, and has to be listed among the to-dos in `docs/STATUS.md`. The SEC's fair access rules require automated requests to state contact details in the User-Agent and to limit the request rate. When Phase 0 tried to read the submissions API for the five companies, the SEC returned its "undeclared automated tool" block page, and no accession number was obtained. The owner's email is used only to identify the owner; without the owner's consent, it is not used to declare an identity to third-party services.
 
-五家公司的 CIK 已知：MSFT `0000789019`、AXP `0000004962`、PDD `0001737806`（外国私人发行人，报 20-F / 6-K）、BRK `0001067983`、SPGI `0000064040`。
+The five companies' CIKs are known: MSFT `0000789019`, AXP `0000004962`, PDD `0001737806` (a foreign private issuer, files 20-F / 6-K), BRK `0001067983`, SPGI `0000064040`.
 
-## 选项
+## Options
 
-1. 不问主人，直接把主人的邮箱写进 User-Agent。
-2. 写一个假的或占位的联系方式。
-3. 从第三方网站抄登记号。
-4. 暂缓：登记号先留 `null`，接受 `C-SRC-ACCESSION` 警告并列进待办；主人提供联系邮箱后，用脚本从 submissions 接口回填登记号和报送日期。
+1. Put the owner's email into the User-Agent without asking the owner.
+2. Write a fake or placeholder contact.
+3. Copy the accession numbers from third-party websites.
+4. Defer: leave the accession numbers `null` for now, accept the `C-SRC-ACCESSION` warning and list it as a to-do; once the owner provides a contact email, a script backfills the accession numbers and filing dates from the submissions API.
 
-## 决定
+## Decision
 
-采用选项 4。
+Option 4.
 
-- 所有 `kind: filing` 的来源条目 `accession: null`；lint 的警告保留，作为提醒。
-- 待办 T2（`docs/STATUS.md`）：请主人提供一个用于 SEC User-Agent 的联系邮箱，可以是专用邮箱。
-- 拿到后：User-Agent 放在 GitHub Actions 的变量或 Secrets 里（本地放环境变量），不写进代码；请求频率远低于 SEC 的上限；回填脚本只填 `accession`、`filed` 和 `form`，改动逐条进 diff。
-- 时间要求：第 1 阶段第一份持仓的业绩公告（AXP 的 8-K，PDD 的 6-K）出现之前必须到位，因为预注册的时点核验要用 EDGAR 的 `acceptanceDateTime`。
+- Every source entry with `kind: filing` has `accession: null`; the lint warning stays as a reminder.
+- To-do T2 (`docs/STATUS.md`): ask the owner for a contact email for the SEC User-Agent; it can be a dedicated address.
+- Once it is available: the User-Agent goes into GitHub Actions variables or Secrets (an environment variable locally), never into code; the request rate stays far below the SEC's limit; the backfill script fills only `accession`, `filed` and `form`, and every change shows up in the diff.
+- Timing: this has to be in place before the first earnings release of a holding in Phase 1 (AXP's 8-K, PDD's 6-K), because the timing check of pre-registrations uses EDGAR's `acceptanceDateTime`.
 
-## 理由
+## Rationale
 
-- 用主人的邮箱去声明身份是对外提供个人信息，需要主人本人同意；它既不是资金事项也不是修宪，但属于只有主人能做的事，记进待办而不是代做。
-- 假的联系方式违反 SEC 的规则，可能导致整个网段被封，第 2 阶段的 EDGAR 监听就无从谈起。
-- 第三方抄来的登记号无法核验，违背“每个数字可追溯”的原则。
-- 规范本来就把缺登记号定为警告，暂缓不会阻塞第 0 阶段的验收；数字先引用主人报告的页码（见 `0006`），出处仍然可追溯。
+- Using the owner's email to declare an identity means giving personal information to outsiders, which needs the owner's own consent; it is neither a money matter nor an amendment to the constitution, but it is something only the owner can do, so it goes into the to-dos instead of being done on the owner's behalf.
+- Fake contact details break the SEC's rules and could get the whole network range blocked, which would make the Phase 2 EDGAR monitoring impossible.
+- Accession numbers copied from third parties cannot be verified, which goes against the principle "every number is traceable".
+- The spec already makes a missing accession number a warning, so deferring does not block Phase 0 acceptance; the numbers cite the owner's report pages for now (see `0006`), so their sources are still traceable.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **直接用主人的邮箱**：未经同意对外提供个人信息。
-- **占位联系方式**：违反 SEC 公平访问规则，有被封禁的风险。
-- **第三方数据**：不可核验，而且一样绕开了 SEC 的规则。
+- **Use the owner's email directly**: gives personal information to outsiders without consent.
+- **Placeholder contact details**: break the SEC's fair access rules and risk a block.
+- **Third-party data**: cannot be verified, and still sidesteps the SEC's rules.
 
-## 日期
+## Date
 
 2026-09-24

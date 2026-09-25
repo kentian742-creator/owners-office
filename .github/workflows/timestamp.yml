@@ -1,14 +1,18 @@
-# 预注册的时间戳（docs/decisions/0018；thesis-ci SPEC §2.1、C-PREREG-IMMUTABLE）。
+# Timestamps for pre-registrations (docs/decisions/0018; thesis-ci SPEC §2.1, C-PREREG-IMMUTABLE).
 #
-# - 预注册条目文件（companies/*/prereg/<期间>.yml 与 <期间>-owner.yml）合并进 main 后，立即给它们打
-#   OpenTimestamps 时间戳，把 <文件>.ots 提交回 main。截止时间已过的不打；已有证明而内容变了的拒绝
-#   （pipeline/timestamp.py），这一轮以失败结束，由人处理。
-# - 每 6 小时：把待确认的证明升级为比特币确认的证明并提交；上一轮因日历联系不上而没打成的，这时补打。
+# - Once pre-registration items files (companies/*/prereg/<period>.yml and <period>-owner.yml) are merged into main,
+#   stamp them with OpenTimestamps right away and commit <file>.ots back to main. Files whose deadline has passed are
+#   not stamped; a file that already has a proof but whose content has changed is refused (pipeline/timestamp.py),
+#   and the run ends in failure for a person to handle.
+# - Every 6 hours: upgrade pending proofs to Bitcoin-confirmed proofs and commit them; files that could not be stamped
+#   in the previous run because the calendars were unreachable are stamped now.
 #
-# 权限：默认只读；只有下面这一个 job 有 contents: write（推送证明），而且只在 main 上运行。
-# 不需要任何密钥：推送用 GitHub 为这次运行发放的 GITHUB_TOKEN。
-# 不会循环：(1) 用 GITHUB_TOKEN 推送的提交不触发任何 workflow（GitHub 的规则）；(2) 这里只提交 *.ots，
-# 不匹配下面的 paths；(3) 没有新打或升级的证明就不提交。
+# Permissions: read-only by default; only the one job below has contents: write (to push proofs), and it runs only
+# on main.
+# No secrets needed: the push uses the GITHUB_TOKEN that GitHub issues for this run.
+# No loops: (1) commits pushed with GITHUB_TOKEN trigger no workflow (GitHub's rule); (2) only *.ots files are
+# committed here, and they don't match the paths below; (3) nothing is committed when no proof was newly stamped or
+# upgraded.
 name: timestamp
 
 "on":
@@ -39,9 +43,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: 安装 OpenTimestamps 客户端（版本取自 requirements.txt）
+      - name: Install the OpenTimestamps client (version from requirements.txt)
         run: pip install -c requirements.txt opentimestamps-client pyyaml
-      - name: 打时间戳、升级证明，提交回 main
+      - name: Stamp, upgrade proofs, commit back to main
         shell: bash
         run: |
           set -u
@@ -54,23 +58,23 @@ jobs:
             git ls-files -z --others --modified --exclude-standard -- 'companies/*/prereg/*.ots' \
               | xargs -0 -r git add --
             if git diff --cached --quiet; then
-              echo "没有新打或升级的证明。"
+              echo "No proof newly stamped or upgraded."
               exit "$rc"
             fi
             proofs=$(git diff --cached --name-only)
             base=$(git rev-parse HEAD)
-            git commit -q -m "prereg: 时间戳证明（打时间戳或升级）" -m "$proofs" \
+            git commit -q -m "prereg: timestamp proofs (stamped or upgraded)" -m "$proofs" \
               -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
             if git push -q origin HEAD:main; then
               exit "$rc"
             fi
             git fetch -q origin main
             if [ "$(git rev-parse origin/main)" = "$base" ]; then
-              echo "推送被拒绝，而 main 没有变：不是并发，停下。" >&2
+              echo "Push rejected although main has not moved: not a concurrent run; stopping." >&2
               exit 1
             fi
-            echo "main 已前进：丢掉这次提交，从新的 main 重做（第 $attempt 次）。"
+            echo "main has moved on: dropping this commit and redoing it from the new main (attempt $attempt)."
             git reset -q --hard origin/main
           done
-          echo "连续三次推送都没成功。" >&2
+          echo "Three pushes in a row failed." >&2
           exit 1

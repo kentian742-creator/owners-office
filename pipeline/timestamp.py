@@ -1,49 +1,70 @@
-"""预注册的时间戳证明：OpenTimestamps 的打时间戳、升级、状态与核验（docs/decisions/0018）。本模块不调用模型。
+"""Timestamp proofs for pre-registrations: OpenTimestamps stamping, upgrading, status and verification
+(docs/decisions/0018). This module does not call a model.
 
-规范（thesis-ci SPEC §2.1）：每个预注册条目文件——companies/<代码>/prereg/<期间>.yml（系统）与 <期间>-owner.yml
-（所有者）——旁边放一份 OpenTimestamps 证明 <文件>.ots。截止时间过后，C-PREREG-IMMUTABLE 要求证明存在；PATH 上有
-客户端时（thesis-ci v0.2.1 起）先用 `ots info` 在本地比对证明承诺的 sha256 与文件的 sha256，不符或读不出即报错；
-相符之后再运行 `ots verify -f <文件> <文件>.ots`：通过即可，客户端说证明本身坏了才报错，其余（没有比特币节点、
-尚待确认、日历联系不上、超时）只报警。
+Specification (thesis-ci SPEC §2.1): every pre-registration items file, companies/<TICKER>/prereg/<period>.yml (the
+system's) and <period>-owner.yml (the owner's), has an OpenTimestamps proof <file>.ots next to it. After the deadline,
+C-PREREG-IMMUTABLE requires the proof to exist. When the client is on PATH (thesis-ci v0.2.1 and later), it first uses
+`ots info` to compare locally the sha256 the proof commits to with the file's sha256; a mismatch or an unreadable
+proof is an error. Once they match, it runs `ots verify -f <file> <file>.ots`: a pass is enough; it reports an error
+only when the client says the proof itself is bad; anything else (no Bitcoin node, still pending, calendars
+unreachable, timeout) is only a warning.
 
-每一步都交给官方客户端 opentimestamps-client（命令 ots，版本固定在 requirements.txt），本模块只调用它、解析它的输出：
+Every step is left to the official client, opentimestamps-client (command ots, version pinned in requirements.txt);
+this module only calls it and parses its output:
 
-- stamp(paths)：给每个文件打时间戳，证明写在文件旁边。同一份内容已有证明时什么都不做。拒绝两种情况：预注册条目
-  文件的截止时间已过（截止之后打的证明证明不了截止之前的内容）；<文件>.ots 已存在，证明的却是另一份内容（不覆盖
-  证明。截止之前确需改动时——15A：公司公布发布日后只改 event 与 deadline——在同一个 PR 里删掉旧证明，git 历史
-  保留它，合并后工作流重新打）。
-- upgrade(paths)：向日历取比特币确认，把待确认的证明升级为完整证明。客户端升级时会在原地留下 <证明>.bak，所以在
-  临时副本上升级，有变化才原子地替换原证明；仍待确认不算失败，没有一个日历答复算失败。
-- status(path)：missing / pending / attested / error。离线读 ots info（证明承诺的 sha256、待确认的日历、比特币区块
-  高度与该区块的 merkle root），与文件现在的 sha256 比对；已有比特币确认的再跑一次 ots verify：有比特币节点时
-  客户端打印区块日期，没有节点时区块时间留空，并给出可以在任一区块浏览器上手工核对的区块高度与 merkle root。
-- verify(path)：判法与 C-PREREG-IMMUTABLE（thesis-ci v0.2.1）一步不差：先 ots info 本地比对 sha256，再 ots verify。
-  True 通过；None 无法在本机核验（尚待确认、没有比特币节点、日历联系不上、超时）；False 失败（与文件不符、证明读不出
-  或损坏、没有证明）。
+- stamp(paths): timestamps each file and writes the proof next to it. Does nothing when a proof of the same content
+  already exists. Refuses in two cases: the deadline of a pre-registration items file has passed (a proof made after
+  the deadline cannot prove the content before it); or <file>.ots already exists but proves different content. The
+  proof is not overwritten: when a change before the deadline is really needed (15A: once the company announces the
+  release date, only event and deadline change), delete the old proof in the same PR; git history keeps it, and the
+  workflow stamps again after the merge.
+- upgrade(paths): gets the Bitcoin attestation from the calendars and upgrades a pending proof to a complete proof.
+  The client leaves <proof>.bak in place when it upgrades, so the upgrade runs on a temporary copy and replaces the
+  original proof atomically only when something changed. Still pending is not a failure; no calendar answering is a
+  failure.
+- status(path): missing / pending / attested / error. Reads ots info offline (the sha256 the proof commits to, the
+  pending calendars, the Bitcoin block height and that block's merkle root) and compares it with the file's current
+  sha256. For a proof that already has a Bitcoin attestation it also runs ots verify: with a Bitcoin node the client
+  prints the block date; without a node the block time stays empty, and the block height and merkle root are given
+  so they can be checked by hand on any block explorer.
+- verify(path): judges exactly as C-PREREG-IMMUTABLE (thesis-ci v0.2.1) does, step for step: first ots info and a
+  local sha256 comparison, then ots verify. True: passed; None: cannot be verified on this machine (still pending, no
+  Bitcoin node, calendars unreachable, timeout); False: failed (does not match the file, proof unreadable or corrupt,
+  no proof).
 
-客户端 0.7.2 的实际行为（读源码并实测）：
+What client 0.7.2 actually does (from reading its source and testing it):
 
-- stamp 只把 sha256(sha256(文件) ‖ 16 字节随机数) 发给日历，文件和它的哈希都不离开本机。默认四个日历，至少两个
-  在 5 秒内应答才算成功，否则不写证明。刚写出的证明是“待确认”：日历承诺把它写进比特币，通常几个小时后才有区块。
-- verify 先在本地比对文件的 sha256，不符即 “File does not match original!”。之后，待确认的证明要联系日历；完整的
-  证明不联系日历，直接向比特币节点（Bitcoin Core 的 RPC，按本机 bitcoin.conf 与 .cookie；剪枝节点也行）取区块头。
-  客户端没有区块浏览器后备：没有节点只报 “Could not connect to Bitcoin node”；区块时间只在核验通过时打印，只到日期。
-- 日历联系不上（DNS、TLS 出错）时，待确认证明的核验输出里没有 “pending”：thesis-ci v0.2.0 的 C-PREREG-IMMUTABLE
-  因此把完好的证明判为错误，v0.2.1 先在本地比对哈希，改为只报警。升级过的证明核验时不联系日历、自带通到比特币
-  区块头的全部路径，所以仍在截止之前升级完（.github/workflows/timestamp.yml 每 6 小时升级一次）。
-- 客户端等日历应答没有超时，这里每次调用限 OTS_TIMEOUT 秒。一律加 --no-cache：结果只取决于证明文件本身，与 CI
-  上（缓存总是空的）一致。
-- python.org 安装的 macOS Python 可能没有 CA 证书，连日历会报 CERTIFICATE_VERIFY_FAILED；设
-  SSL_CERT_FILE=/etc/ssl/cert.pem 即可。
+- stamp sends only sha256(sha256(file) ‖ 16 random bytes) to the calendars; neither the file nor its hash leaves this
+  machine. There are four calendars by default; stamping succeeds only when at least two answer within 5 seconds,
+  otherwise no proof is written. A freshly written proof is "pending": the calendars promise to write it into
+  Bitcoin, and there is usually a block only a few hours later.
+- verify first compares the file's sha256 locally; a mismatch gives "File does not match original!". After that, a
+  pending proof has to contact the calendars; a complete proof does not contact them and gets the block header
+  directly from a Bitcoin node (Bitcoin Core's RPC, using the local bitcoin.conf and .cookie; a pruned node works
+  too). The client has no block-explorer fallback: without a node it only reports
+  "Could not connect to Bitcoin node"; the block time is printed only when verification passes, and only as a date.
+- When the calendars cannot be reached (DNS or TLS errors), the verify output for a pending proof does not contain
+  "pending": thesis-ci v0.2.0's C-PREREG-IMMUTABLE therefore judged a sound proof to be an error; v0.2.1 compares the
+  hash locally first and only warns. An upgraded proof does not contact the calendars when verified and carries the
+  whole path to the Bitcoin block header, so proofs are still upgraded before the deadline
+  (.github/workflows/timestamp.yml upgrades every 6 hours).
+- The client waits for calendar answers with no timeout; here every call is limited to OTS_TIMEOUT seconds.
+  --no-cache is always added: the result depends only on the proof file itself, the same as on CI (where the cache
+  is always empty).
+- A macOS Python installed from python.org may have no CA certificates, and connecting to a calendar then fails with
+  CERTIFICATE_VERIFY_FAILED; setting SSL_CERT_FILE=/etc/ssl/cert.pem fixes it.
 
-命令行（在仓库根目录）：
+Command line (at the repository root):
 
-    python -m pipeline.timestamp stamp FILE…     # 或 --prereg：截止时间未过的全部条目文件（已有同一内容证明的跳过）
-    python -m pipeline.timestamp upgrade FILE…   # 或 --prereg：仓库里全部预注册证明
-    python -m pipeline.timestamp status FILE…    # 或 --prereg：全部条目文件
-    python -m pipeline.timestamp verify FILE…    # 退出状态：0 全部通过，1 有失败，3 有无法在本机核验的
+    python -m pipeline.timestamp stamp FILE...     # or --prereg: every items file whose deadline has not passed
+                                                   # (skipping those that have a proof of the same content)
+    python -m pipeline.timestamp upgrade FILE...   # or --prereg: every pre-registration proof in the repository
+    python -m pipeline.timestamp status FILE...    # or --prereg: every items file
+    python -m pipeline.timestamp verify FILE...    # exit status: 0 all passed, 1 some failed,
+                                                   # 3 some cannot be verified on this machine
 
-FILE 可以是被打时间戳的文件，也可以是它的 .ots。stamp、upgrade、status 有失败或错误时退出状态为 1。
+FILE can be the timestamped file or its .ots. stamp, upgrade and status exit with status 1 when there is a failure or
+an error.
 """
 
 from __future__ import annotations
@@ -66,48 +87,51 @@ from urllib.parse import urlparse
 from .outputs import load_yaml_text
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-OTS_TIMEOUT = 120  # 秒，与 C-PREREG-IMMUTABLE 相同
+OTS_TIMEOUT = 120  # seconds, the same as C-PREREG-IMMUTABLE
 PROOF_SUFFIX = ".ots"
 SETTLEMENT_SUFFIX = ".settlement.yml"
-PREREG_ITEMS_GLOB = "companies/*/prereg/*.yml"  # 去掉 *.settlement.yml 就是条目文件（与 thesis-ci 相同）
+PREREG_ITEMS_GLOB = "companies/*/prereg/*.yml"  # minus *.settlement.yml: the items files (same as thesis-ci)
 PREREG_PROOFS_GLOB = "companies/*/prereg/*.yml.ots"
 
 EXIT_OK, EXIT_FAILED, EXIT_UNVERIFIED = 0, 1, 3
 
-# ots info 的输出（opentimestamps 0.4 的 Timestamp.str_tree）
+# ots info output (Timestamp.str_tree in opentimestamps 0.4)
 _INFO_BITCOIN = re.compile(
     r"verify BitcoinBlockHeaderAttestation\((\d+)\)(?:[ \t]*\r?\n[ \t]*# Bitcoin block merkle root ([0-9a-f]{64}))?"
 )
 _INFO_PENDING = re.compile(r"verify PendingAttestation\('([^']*)'\)")
-# ots verify 通过时的一行。区块日期按本地时区打印，run_ots 把 TZ 设为 UTC。
+# The line ots verify prints when it passes. It prints the block date in the local time zone; run_ots sets TZ to UTC.
 _VERIFY_OK = re.compile(r"Success! Bitcoin block (\d+) attests existence as of (\d{4}-\d{2}-\d{2})")
 _NO_NODE = re.compile(r"Could not connect to (?:local )?Bitcoin node", re.I)
 _CALENDAR_LINE = re.compile(r"^Calendar (\S+): (.+)$", re.M)
-# thesis-ci（v0.2.1）src/thesis_ci/checks/archive.py 的两条正则，一字不改：verify() 与 C-PREREG-IMMUTABLE 判得一样
-# （tests/test_timestamp.py 在装有 thesis-ci 时逐条比对）。第一条从 ots info 取证明承诺的 sha256（只认 sha256）；
-# 第二条在哈希相符之后判 ots verify 的输出：匹配即证明本身坏了，不匹配的失败都只是无法在本机核验。
+# The two regexes of thesis-ci (v0.2.1) src/thesis_ci/checks/archive.py, copied verbatim, so that verify() judges
+# exactly as C-PREREG-IMMUTABLE does (tests/test_timestamp.py compares them case by case when thesis-ci is
+# installed). The first takes the sha256 the proof commits to from ots info (sha256 only). The second judges the ots
+# verify output once the hashes match: a match means the proof itself is bad; any failure that does not match only
+# means it cannot be verified on this machine.
 OTS_INFO_DIGEST_RE = re.compile(r"File sha256 hash:\s*([0-9a-f]{64})", re.I)
 OTS_BAD_PROOF_RE = re.compile(r"does not match|mismatch|bad timestamp|invalid|corrupt|not a timestamp", re.I)
 UPGRADE_COMPLETE = "Success! Timestamp complete"
 UPGRADE_PENDING = "Failed! Timestamp not complete"
-CALENDAR_PENDING = "Pending confirmation"  # 日历的回答：收到了，还没写进比特币
+CALENDAR_PENDING = "Pending confirmation"  # the calendar's answer: received, not yet written into Bitcoin
 _SSL_HINT = "本机 Python 没有 CA 证书：设 SSL_CERT_FILE=/etc/ssl/cert.pem（macOS）后重试"
 
 
 class TimestampError(RuntimeError):
-    """OpenTimestamps 客户端找不到或无法运行。"""
+    """The OpenTimestamps client cannot be found or cannot run."""
 
 
 @dataclasses.dataclass(frozen=True)
 class StepResult:
-    """stamp() 或 upgrade() 对一个文件的结果。
+    """The result of stamp() or upgrade() for one file.
 
-    action——stamp：stamped（新打）、already_stamped（同一内容已有证明）、refused（拒绝）、failed（没打成）；
-    upgrade：upgraded（刚升级为比特币确认）、complete（本来就是完整证明）、pending（仍待确认）、failed。
+    action: for stamp, stamped (newly stamped), already_stamped (a proof of the same content already exists),
+    refused, failed (stamping did not succeed); for upgrade, upgraded (just upgraded to a Bitcoin attestation),
+    complete (already a complete proof), pending (still pending), failed.
     """
 
-    path: Path  # 被打时间戳的文件
-    proof: Path  # <文件>.ots
+    path: Path  # the timestamped file
+    proof: Path  # <file>.ots
     action: str
     detail: str = ""
     block_height: int | None = None
@@ -119,40 +143,45 @@ class StepResult:
 
 @dataclasses.dataclass(frozen=True)
 class ProofStatus:
-    """status() 与 verify() 的结果。
+    """The result of status() and verify().
 
-    state：missing（没有证明）、pending（待确认）、attested（有比特币确认）、error（证明损坏、与文件不符、核验失败）。
-    verified：verify() 与 C-PREREG-IMMUTABLE 一样三分——True 通过，None 无法在本机核验，False 失败；status() 只核验
-    已有比特币确认的证明（为了区块时间），其余为 None。
-    block_time：客户端用比特币节点核验通过后打印的区块日期（UTC，只到日期）；没有节点时为 None。
-    merkle_root：该区块的 merkle root（区块浏览器的显示顺序），没有节点时可在任一区块浏览器上手工核对。
+    state: missing (no proof), pending, attested (has a Bitcoin attestation), error (proof corrupt, does not match the
+    file, verification failed).
+    verified: verify() splits it three ways like C-PREREG-IMMUTABLE: True passed, None cannot be verified on this
+    machine, False failed. status() verifies only proofs that already have a Bitcoin attestation (for the block
+    time); for the others it is None.
+    block_time: the block date the client prints after verifying against a Bitcoin node (UTC, date only); None
+    without a node.
+    merkle_root: that block's merkle root (in the order block explorers display it); without a node it can be
+    checked by hand on any block explorer.
     """
 
     path: Path
     proof: Path
     state: str
     detail: str = ""
-    file_sha256: str | None = None  # 证明所承诺的 sha256
-    block_height: int | None = None  # 最早的比特币确认
+    file_sha256: str | None = None  # the sha256 the proof commits to
+    block_height: int | None = None  # the earliest Bitcoin attestation
     merkle_root: str | None = None
     block_time: str | None = None
-    calendars: tuple[str, ...] = ()  # 待确认的日历
+    calendars: tuple[str, ...] = ()  # the calendars still pending
     verified: bool | None = None
 
 
 class ProofInfo(NamedTuple):
-    """ots info 解析出来的内容。"""
+    """The content parsed from the ots info output."""
 
-    file_digest: str  # 证明承诺的 sha256
-    bitcoin: tuple[tuple[int, str | None], ...]  # (区块高度, merkle root)
+    file_digest: str  # the sha256 the proof commits to
+    bitcoin: tuple[tuple[int, str | None], ...]  # (block height, merkle root)
     calendars: tuple[str, ...]
 
 
-# ---------------------------------------------------------------- 客户端
+# ---------------------------------------------------------------- client
 
 
 def ots_executable() -> str:
-    """PATH 上的 ots；没有时用与当前解释器同一目录的（没有激活的虚拟环境）。"""
+    """The ots on PATH; if there is none, the one in the same directory as the running interpreter (for a virtual
+    environment that is not activated)."""
     found = shutil.which("ots")
     if found:
         return found
@@ -163,9 +192,9 @@ def ots_executable() -> str:
 
 
 def run_ots(args: Sequence[str], timeout: float = OTS_TIMEOUT) -> tuple[int | None, str]:
-    """运行 `ots args…`，返回 (退出状态, stdout 与 stderr 合起来的输出)；超时的退出状态为 None。
+    """Run `ots args...` and return (exit status, stdout and stderr combined); the exit status is None on a timeout.
 
-    本模块只通过这个函数运行客户端（测试替换它）。
+    This module runs the client only through this function (the tests replace it).
     """
     env = dict(os.environ, TZ="UTC")
     try:
@@ -182,8 +211,8 @@ def run_ots(args: Sequence[str], timeout: float = OTS_TIMEOUT) -> tuple[int | No
 
 
 def parse_info(output: str) -> ProofInfo | None:
-    """ots info 的输出 → ProofInfo；找不到证明承诺的 sha256（读不出，或不是 sha256）时为 None。与 thesis-ci 一样
-    只看输出，不看退出状态。"""
+    """ots info output → ProofInfo; None when the sha256 the proof commits to is not found (unreadable, or not
+    sha256). Like thesis-ci, looks only at the output, not at the exit status."""
     head = OTS_INFO_DIGEST_RE.search(output)
     if head is None:
         return None
@@ -193,8 +222,9 @@ def parse_info(output: str) -> ProofInfo | None:
 
 
 def classify_verify(returncode: int | None, output: str) -> bool | None:
-    """ots verify 的结果，只在文件与证明的 sha256 已在本地比对相符之后才问；判法与 C-PREREG-IMMUTABLE 相同：
-    退出状态 0 通过；输出说证明本身坏了（OTS_BAD_PROOF_RE）失败；其余（含超时）无法在本机核验。"""
+    """The ots verify result, asked for only after the sha256 of the file and the proof matched locally. Judged as in
+    C-PREREG-IMMUTABLE: exit status 0 passes; output saying the proof itself is bad (OTS_BAD_PROOF_RE) fails; anything
+    else (a timeout included) cannot be verified on this machine."""
     if returncode is None:
         return None
     if returncode == 0:
@@ -202,17 +232,17 @@ def classify_verify(returncode: int | None, output: str) -> bool | None:
     return False if OTS_BAD_PROOF_RE.search(output) else None
 
 
-# ---------------------------------------------------------------- 文件
+# ---------------------------------------------------------------- files
 
 
 def proof_path(path: str | os.PathLike[str]) -> Path:
-    """<文件>.ots：证明放在被打时间戳的文件旁边（SPEC §2.1）。"""
+    """<file>.ots: the proof sits next to the timestamped file (SPEC §2.1)."""
     p = Path(path)
     return p.with_name(p.name + PROOF_SUFFIX)
 
 
 def _pair(path: str | os.PathLike[str]) -> tuple[Path, Path]:
-    """(被打时间戳的文件, 证明)；path 可以是两者之一。"""
+    """(timestamped file, proof); path can be either of the two."""
     p = Path(path)
     if p.name.endswith(PROOF_SUFFIX) and len(p.name) > len(PROOF_SUFFIX):
         return p.with_name(p.name[: -len(PROOF_SUFFIX)]), p
@@ -228,7 +258,8 @@ def file_sha256(path: str | os.PathLike[str]) -> str:
 
 
 def is_prereg_items_file(path: str | os.PathLike[str]) -> bool:
-    """companies/<代码>/prereg/ 下除结算文件以外的 .yml：<期间>.yml 与 <期间>-owner.yml（与 thesis-ci 的判法相同）。"""
+    """A .yml under companies/<TICKER>/prereg/ other than a settlement file: <period>.yml and <period>-owner.yml
+    (the same test as in thesis-ci)."""
     p = Path(os.path.abspath(path))
     return (
         p.suffix == ".yml"
@@ -239,10 +270,10 @@ def is_prereg_items_file(path: str | os.PathLike[str]) -> bool:
 
 
 def prereg_deadline(path: str | os.PathLike[str]) -> dt.datetime:
-    """条目文件的 deadline（带时区偏移的 ISO 8601）。读不出来抛出 ValueError。"""
+    """The items file's deadline (ISO 8601 with a time zone offset). Raises ValueError when it cannot be read."""
     try:
-        data = load_yaml_text(Path(path).read_text(encoding="utf-8"))  # 重复键报错
-    except Exception as exc:  # noqa: BLE001  （读文件、编码、YAML 语法、重复键：一律当作读不出）
+        data = load_yaml_text(Path(path).read_text(encoding="utf-8"))  # duplicate keys are an error
+    except Exception as exc:  # noqa: BLE001  (I/O, encoding, YAML syntax, duplicate keys: all treated as unreadable)
         raise ValueError(f"{Path(path).name} 读不出：{exc}") from exc
     value = data.get("deadline") if isinstance(data, dict) else None
     if value is None:
@@ -269,7 +300,7 @@ def _aware(now: dt.datetime) -> dt.datetime:
 
 
 def _replace_bytes(path: Path, data: bytes) -> None:
-    """原子地替换 path 的内容：先写同一目录里的临时文件，再 os.replace。"""
+    """Replace the content of path atomically: write a temporary file in the same directory first, then os.replace."""
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
     try:
         with os.fdopen(fd, "wb") as fh:
@@ -281,7 +312,7 @@ def _replace_bytes(path: Path, data: bytes) -> None:
         raise
 
 
-# ---------------------------------------------------------------- 输出的摘要
+# ---------------------------------------------------------------- summaries of the output
 
 
 def _host(url: str) -> str:
@@ -298,7 +329,8 @@ def _with_hint(text: str, output: str) -> str:
 
 
 def _calendar_summary(output: str) -> str:
-    """把 “Calendar <url>: <消息>” 按消息归并：alice…, bob…: Pending confirmation in Bitcoin blockchain。"""
+    """Group the "Calendar <url>: <message>" lines by message:
+    alice..., bob...: Pending confirmation in Bitcoin blockchain."""
     by_message: dict[str, list[str]] = {}
     for url, message in _CALENDAR_LINE.findall(output):
         by_message.setdefault(message.strip(), []).append(_host(url))
@@ -310,7 +342,7 @@ def _pending_detail(calendars: Sequence[str]) -> str:
 
 
 def _stamp_failure(returncode: int | None, output: str) -> str:
-    """ots -v stamp 失败时各日历的错误（-v 才打印），去重。"""
+    """The errors of each calendar when ots -v stamp fails (printed only with -v), without duplicates."""
     if returncode is None:
         return output
     lines = [
@@ -321,7 +353,7 @@ def _stamp_failure(returncode: int | None, output: str) -> str:
     return _with_hint(text, output)
 
 
-# ---------------------------------------------------------------- 状态与核验
+# ---------------------------------------------------------------- status and verification
 
 
 def _run_info(proof: Path) -> tuple[int | None, str]:
@@ -329,7 +361,8 @@ def _run_info(proof: Path) -> tuple[int | None, str]:
 
 
 def _info(path: Path, proof: Path, run: tuple[int | None, str] | None = None) -> ProofStatus:
-    """离线读证明（ots info）：承诺的 sha256、比特币确认、待确认的日历。不与文件比对。"""
+    """Read the proof offline (ots info): the sha256 it commits to, Bitcoin attestations, pending calendars. Does not
+    compare it with the file."""
     returncode, output = run or _run_info(proof)
     info = parse_info(output)
     if info is None:
@@ -345,7 +378,7 @@ def _info(path: Path, proof: Path, run: tuple[int | None, str] | None = None) ->
 
 
 def _run_verify(st: ProofStatus) -> ProofStatus:
-    """对 st（已由 _info 读过）运行 ots verify，按 C-PREREG-IMMUTABLE 的判法填 verified。"""
+    """Run ots verify for st (already read by _info) and fill in verified the way C-PREREG-IMMUTABLE judges."""
     returncode, output = run_ots(["--no-cache", "verify", "-f", os.path.abspath(st.path), os.path.abspath(st.proof)])
     verified = classify_verify(returncode, output)
     if verified:
@@ -376,13 +409,14 @@ def _run_verify(st: ProofStatus) -> ProofStatus:
 
 
 def status(path: str | os.PathLike[str]) -> ProofStatus:
-    """证明的状态。离线（ots info 与本地哈希）；已有比特币确认的再跑 ots verify 取区块时间（需要比特币节点）。"""
+    """The proof's status. Offline (ots info and the local hash); a proof that already has a Bitcoin attestation also
+    gets an ots verify run for the block time (needs a Bitcoin node)."""
     target, proof = _pair(path)
     if not proof.is_file():
         return ProofStatus(target, proof, "missing", "没有证明")
     st = _info(target, proof)
     if st.file_sha256 is None:
-        return st  # 证明读不出
+        return st  # the proof cannot be read
     if not target.is_file():
         return dataclasses.replace(st, state="error", detail="被打时间戳的文件不存在")
     mismatch = _digest_mismatch(st, target)
@@ -392,7 +426,8 @@ def status(path: str | os.PathLike[str]) -> ProofStatus:
 
 
 def _digest_mismatch(st: ProofStatus, target: Path) -> ProofStatus | None:
-    """本地比对证明承诺的 sha256 与文件现在的 sha256（不需要网络）；不符时返回失败的结果。"""
+    """Compare locally the sha256 the proof commits to with the file's current sha256 (no network needed); on a
+    mismatch, return a failed result."""
     actual = file_sha256(target)
     if actual == st.file_sha256:
         return None
@@ -403,11 +438,13 @@ def _digest_mismatch(st: ProofStatus, target: Path) -> ProofStatus | None:
 
 
 def verify(path: str | os.PathLike[str]) -> ProofStatus:
-    """与 C-PREREG-IMMUTABLE（thesis-ci v0.2.1 的 ots_verify）一步不差：
+    """Step for step the same as C-PREREG-IMMUTABLE (ots_verify in thesis-ci v0.2.1):
 
-    1. ots info：超时为 None；输出里找不到证明承诺的 sha256（读不出）为 False；与文件的 sha256 不符为 False。
-    2. 相符之后 ots verify -f <文件> <证明>：超时为 None；退出状态 0 为 True；输出说证明本身坏了为 False；
-       其余为 None（没有比特币节点、尚待确认、日历联系不上）。待确认的证明这一步会联系日历。
+    1. ots info: None on a timeout; False when the output has no sha256 the proof commits to (unreadable); False when
+       it differs from the file's sha256.
+    2. Once they match, ots verify -f <file> <proof>: None on a timeout; True for exit status 0; False when the output
+       says the proof itself is bad; None otherwise (no Bitcoin node, still pending, calendars unreachable). For a
+       pending proof this step contacts the calendars.
     """
     target, proof = _pair(path)
     if not proof.is_file():
@@ -423,13 +460,14 @@ def verify(path: str | os.PathLike[str]) -> ProofStatus:
     return _digest_mismatch(st, target) or _run_verify(st)
 
 
-# ---------------------------------------------------------------- 打时间戳与升级
+# ---------------------------------------------------------------- stamping and upgrading
 
 
 def stamp(paths: Iterable[str | os.PathLike[str]], *, now: dt.datetime | None = None) -> list[StepResult]:
-    """给每个文件打时间戳，证明写在旁边（<文件>.ots）。被打时间戳的文件只读不写。
+    """Timestamp each file and write the proof next to it (<file>.ots). The timestamped files are read, never written.
 
-    一个文件的问题不影响其他文件：拒绝与失败都记在各自的结果里（看 StepResult.ok），不抛异常。
+    A problem with one file does not affect the others: refusals and failures are recorded in each file's own result
+    (see StepResult.ok); no exception is raised.
     """
     now = _aware(now or _utcnow())
     return [_stamp_one(Path(p), now) for p in paths]
@@ -442,7 +480,7 @@ def _stamp_one(path: Path, now: dt.datetime) -> StepResult:
     if not path.is_file():
         return StepResult(path, proof, "failed", "文件不存在")
     digest = file_sha256(path)
-    too_late = None  # 预注册条目文件不能再打的原因：截止时间已过，或读不出截止时间
+    too_late = None  # why an items file can no longer be stamped: the deadline has passed, or it cannot be read
     if is_prereg_items_file(path):
         try:
             deadline = prereg_deadline(path)
@@ -462,19 +500,21 @@ def _stamp_one(path: Path, now: dt.datetime) -> StepResult:
         return StepResult(path, proof, "refused", f"{proof.name} 已存在，{why}；不覆盖证明。{advice}")
     if too_late:
         return StepResult(path, proof, "refused", f"{too_late}：截止之后打的时间戳证明不了截止之前的内容")
-    # 绝对路径：文件名以 - 开头也不会被当成选项；客户端把证明写在 <参数>.ots
+    # An absolute path, so a file name starting with - is not taken for an option; the client writes the proof to
+    # <argument>.ots
     returncode, output = run_ots(["--no-cache", "-v", "stamp", os.path.abspath(path)])
     if not proof.is_file():
         return StepResult(path, proof, "failed", f"ots stamp 没有写出证明：{_stamp_failure(returncode, output)}")
     made = _info(path, proof)
     if made.file_sha256 != digest:
-        proof.unlink()  # 刚写出、还没提交的证明
+        proof.unlink()  # a proof just written and not yet committed
         return StepResult(path, proof, "failed", f"新证明与文件不符（{made.detail}；打时间戳时文件变了？），已删掉，请重打")
     return StepResult(path, proof, "stamped", made.detail)
 
 
 def upgrade(paths: Iterable[str | os.PathLike[str]]) -> list[StepResult]:
-    """把待确认的证明升级为比特币确认的证明（联系日历）。path 可以是被打时间戳的文件或它的 .ots；只改证明。"""
+    """Upgrade pending proofs to proofs with a Bitcoin attestation (contacts the calendars). Each path can be the
+    timestamped file or its .ots; only the proofs are changed."""
     return [_upgrade_one(*_pair(p)) for p in paths]
 
 
@@ -488,7 +528,8 @@ def _upgrade_one(path: Path, proof: Path) -> StepResult:
         return StepResult(path, proof, "complete", before.detail, before.block_height)
     original = proof.read_bytes()
     with tempfile.TemporaryDirectory(prefix="ots-upgrade-") as tmp:
-        work = Path(tmp) / proof.name  # 客户端把旧证明改名为 <证明>.bak：只让它留在临时目录里
+        # The client renames the old proof to <proof>.bak: let that stay in the temporary directory only.
+        work = Path(tmp) / proof.name
         work.write_bytes(original)
         returncode, output = run_ots(["--no-cache", "upgrade", str(work)])
         upgraded = work.read_bytes() if work.is_file() else original
@@ -503,25 +544,27 @@ def _upgrade_one(path: Path, proof: Path) -> StepResult:
         action = "upgraded" if upgraded != original else "complete"
         return StepResult(path, proof, action, after.detail, after.block_height)
     summary = _calendar_summary(output) or _last_line(output, returncode)
-    if CALENDAR_PENDING not in output:  # 没有一个日历答复“收到了、待确认”：这次没查成
+    if CALENDAR_PENDING not in output:  # no calendar answered "received, pending": the query failed this time
         return StepResult(path, proof, "failed", _with_hint(f"没有日历答复，未能升级（{summary}）", output))
     return StepResult(path, proof, "pending", f"仍待确认（{summary}）")
 
 
-# ---------------------------------------------------------------- 仓库里的预注册文件
+# ---------------------------------------------------------------- pre-registration files in the repository
 
 
 def prereg_items_files(root: str | os.PathLike[str] = REPO_ROOT) -> list[Path]:
-    """仓库里的预注册条目文件：companies/*/prereg/*.yml，去掉 *.settlement.yml。"""
+    """The pre-registration items files in the repository: companies/*/prereg/*.yml minus *.settlement.yml."""
     return sorted(
         p for p in Path(root).glob(PREREG_ITEMS_GLOB) if p.is_file() and not p.name.endswith(SETTLEMENT_SUFFIX)
     )
 
 
 def files_to_stamp(root: str | os.PathLike[str] = REPO_ROOT, now: dt.datetime | None = None) -> list[Path]:
-    """stamp --prereg 的对象：截止时间未过、或读不出截止时间（交给 stamp() 拒绝并报出来）的条目文件。
+    """What stamp --prereg covers: items files whose deadline has not passed, or whose deadline cannot be read (left to
+    stamp() to refuse and report).
 
-    截止时间已过的不在其中：缺证明或证明不符由 C-PREREG-IMMUTABLE 报错，事后打时间戳补不了。
+    Files past their deadline are not included: a missing or mismatched proof is an error reported by
+    C-PREREG-IMMUTABLE, and stamping after the fact cannot fix it.
     """
     now = _aware(now or _utcnow())
     out = []
@@ -536,11 +579,11 @@ def files_to_stamp(root: str | os.PathLike[str] = REPO_ROOT, now: dt.datetime | 
 
 
 def prereg_proofs(root: str | os.PathLike[str] = REPO_ROOT) -> list[Path]:
-    """仓库里的预注册证明：companies/*/prereg/*.yml.ots。"""
+    """The pre-registration proofs in the repository: companies/*/prereg/*.yml.ots."""
     return sorted(p for p in Path(root).glob(PREREG_PROOFS_GLOB) if p.is_file())
 
 
-# ---------------------------------------------------------------- 命令行
+# ---------------------------------------------------------------- command line
 
 COMMANDS = {
     "stamp": "打时间戳，<文件>.ots 写在文件旁边；截止时间已过的预注册条目文件、已有证明却是另一份内容的，一律拒绝",
@@ -557,7 +600,7 @@ _PREREG_HELP = {
 
 
 def _display(path: Path) -> str:
-    """当前目录之下的写相对路径，其余写绝对路径。"""
+    """A relative path for files under the current directory, an absolute path for the rest."""
     absolute = Path(os.path.abspath(path))
     try:
         return str(absolute.relative_to(Path.cwd()))

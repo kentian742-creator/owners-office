@@ -1,232 +1,234 @@
-# Owner's Office：项目框架与工作思路
+# Owner's Office: Project Framework and Approach
 
 Sep 24, 2026 · @Ken
 
-## 定位与差异化
+A Chinese version is in [zh-CN/docs/DESIGN.md](../zh-CN/docs/DESIGN.md).
 
-Owner's Office 不和现有项目比“谁更会研究企业”，而是补上它们都没做的一件事：持续测量你作为所有者的判断是否可靠。别人只追踪企业，它同时追踪你。
+## Positioning and differentiation
 
-| 方向 | 代表项目 | 回答的问题 | 和本项目的关系 |
+Owner's Office does not compete with existing projects on "who researches companies better". It adds the one thing none of them does: it keeps measuring whether your judgment as an owner is reliable. Others track only the companies; it tracks you as well.
+
+| Direction | Representative projects | Question answered | Relation to this project |
 | --- | --- | --- | --- |
-| 交易型多智能体 | [ai-hedge-fund](https://github.com/virattt/ai-hedge-fund/tree/main)、[TradingAgents](https://github.com/tauricresearch/tradingagents) | 现在该买还是卖？ | 不做：无交易信号、无回测 |
-| 研报生成 | [FinRobot](https://github.com/ai4finance-foundation/finrobot) | 这家公司值多少？ | 你的 02 报告已覆盖，不作卖点 |
-| 数据与研究平台 | [OpenBB](https://github.com/orgs/OpenBB-finance/repositories) | 数据在哪、怎么看？ | 仅作数据来源候选 |
-| 论点监控 | [Helm、MyThesis](https://helmterminal.dev/blog/thesis-tracking-apps)、[ThesisLoop](https://thesisloop.ai/)、[Mira](https://github.com/topics/decision-log) | 企业还符合我的论点吗？ | 最近的邻居；监控本身不算创新 |
-| 大师方法论 + 多 agent | [ai-berkshire](https://github.com/topics/investment-research) | 大师会怎么看？ | 最需要避开的雷同方向 |
-| 预测校准 | [Fatebook](https://forum.effectivealtruism.org/posts/DWFRBzK3rAH3HFDZr/fatebook-the-fastest-way-to-make-and-track-predictions) | 我的概率判断准吗？ | 借鉴计分方法，但它不懂财报 |
+| Trading multi-agent systems | [ai-hedge-fund](https://github.com/virattt/ai-hedge-fund/tree/main), [TradingAgents](https://github.com/tauricresearch/tradingagents) | Should I buy or sell now? | Not done here: no trading signals, no backtests |
+| Research report generation | [FinRobot](https://github.com/ai4finance-foundation/finrobot) | What is this company worth? | Already covered by your 02 reports; not a selling point |
+| Data and research platforms | [OpenBB](https://github.com/orgs/OpenBB-finance/repositories) | Where is the data, and how do I read it? | Only a candidate data source |
+| Thesis monitoring | [Helm, MyThesis](https://helmterminal.dev/blog/thesis-tracking-apps), [ThesisLoop](https://thesisloop.ai/), [Mira](https://github.com/topics/decision-log) | Does the company still fit my thesis? | The closest neighbor; monitoring by itself is not an innovation |
+| Master investors' methods + multi-agent | [ai-berkshire](https://github.com/topics/investment-research) | What would the masters think? | The look-alike direction we most need to avoid |
+| Forecast calibration | [Fatebook](https://forum.effectivealtruism.org/posts/DWFRBzK3rAH3HFDZr/fatebook-the-fastest-way-to-make-and-track-predictions) | Are my probability judgments accurate? | We borrow its scoring method, but it knows nothing about financial reports |
 
-这些项目都在评价企业或交易，没有一类在系统地评价投资者本人。论点监控类工具甚至天然带锚：它们透过你的论点读新证据，AI 和你被同一个结论牵着走。
+All of these projects evaluate companies or trades; none of them systematically evaluates the investor. Thesis-monitoring tools even carry a built-in anchor: they read new evidence through your thesis, so the AI and you are led by the same conclusion.
 
-本项目押注五件事，后文逐一展开：
+This project bets on five things, each developed below:
 
-1. **伯克希尔式分权。** 系统按你的投资宪法自治运行，你只做资本配置和修宪；每个 agent 的权限靠历史准确率挣来。
-2. **双向问责。** 管理层对股东的承诺、系统和你的预测，用同一种账本、同一套规则结算。
-3. **可验证的预注册。** 财报前的预期必须在业绩首次公开之前合并，并带上任何人都能核对的时间戳。
-4. **反锚定。** 一个看不到论点的“盲推”模型独立下结论；它和起草模型的分歧，是复核最该花时间的地方。
-5. **能力圈实测。** 按领域统计的校准分，把芒格说的“能力圈”从自我声明变成数据。
+1. **Berkshire-style decentralization.** The system runs autonomously under your investment constitution; you only allocate capital and amend the constitution. Each agent earns its authority through its track record of accuracy.
+2. **Two-way accountability.** Management's promises to shareholders, and the system's and your forecasts, are settled in the same kind of ledger under the same rules.
+3. **Verifiable pre-registration.** Pre-earnings expectations must be merged before the results are first made public, with a timestamp anyone can check.
+4. **Anti-anchoring.** A "blind reader" model that cannot see the thesis reaches its own conclusions; where it diverges from the drafting model is where review time is best spent.
+5. **Circle of competence, measured.** Calibration scores by domain turn Munger's "circle of competence" from a self-assessment into data.
 
-诚实地说，单个零件都有先例。Brier 计分是超预测研究的标准工具，也已有人主张投资者给子预测记分（[来源](https://evakeiffenheim.substack.com/p/how-to-engineer-skill-in-investing)）；ThesisLoop 已在宣传管理层承诺兑现评分。新意在于把这些零件接进同一份档案和同一条财报时间线。大佬的哲学在这里是组织原则，不是荐股人设：系统里没有“巴菲特 agent”，只有一间按伯克希尔方式运转的办公室。对外介绍也据此区分，不用“大师方法论”或“多 agent 对抗”当卖点，这两个说法已被占据。
+To be honest, every individual part has precedents. Brier scoring is a standard tool of superforecasting research, and some have already argued that investors should score their sub-forecasts ([source](https://evakeiffenheim.substack.com/p/how-to-engineer-skill-in-investing)); ThesisLoop already advertises scoring of whether management delivers on its promises. What is new is wiring these parts into one archive and one earnings timeline. The great investors' philosophy serves here as an organizing principle, not as a stock-picking persona: there is no "Buffett agent" in the system, only an office run the Berkshire way. External descriptions draw the same line and do not use "master investors' methods" or "multi-agent debate" as selling points; both labels are already taken.
 
-## 设计原则
+## Design principles
 
-七条原则。和上一版相比，核心变化是分权：系统在你的投资宪法之内自治运行，你只做两件事，资本配置和修宪。
+Seven principles. Compared with the previous version, the core change is decentralization: the system runs autonomously within your investment constitution, and you do only two things: allocate capital and amend the constitution.
 
-1. **所有者视角。** 跟踪对象是企业论点，不是交易。系统不产生买卖信号，不做回测，不预测股价。
-2. **分权自治，例外上报。** 日常决策由各 agent 依据投资宪法自行做出并执行；只有涉及资金或修改宪法的事项才上报给你。
-3. **默认不动。** 凡涉及资金的事项，默认选项永远是维持现状；你不回复，就按默认处理。系统不会、也无法替你交易。
-4. **价格静默。** 不显示日常股价。价格只作为事件出现：进入或离开事先写好的合理区间、便宜区间时，提醒一次。
-5. **先写下，后验证。** 预期、概率和判定标准在结果出来之前登记；事后按事先的标准结算，评价决策过程而不是结果。
-6. **每个数字可追溯。** 档案中的事实都带出处（哪份文件、哪一节、哪天）；没有出处的数字不能合并。
-7. **独立，且信任靠挣。** 起草、审计、盲推看不到彼此的结论；每个 agent 的自治权限随它的历史准确率扩大或收缩。
+1. **The owner's view.** What we track is the business thesis, not trades. The system produces no buy or sell signals, runs no backtests and makes no stock price predictions.
+2. **Decentralized autonomy; escalate the exceptions.** Day-to-day decisions are made and carried out by the agents on their own under the investment constitution; only matters involving money or amendments to the constitution are escalated to you.
+3. **Default to inaction.** For any matter involving money, the default option is always the status quo; if you don't reply, the default applies. The system will not and cannot trade for you.
+4. **Price silence.** No daily stock prices are shown. Price appears only as an event: one alert when it enters or leaves a pre-written fair range or cheap range.
+5. **Write it down first, verify later.** Expectations, probabilities and resolution criteria are registered before the results are known; afterwards they are settled against the criteria set in advance, judging the decision process rather than the outcome.
+6. **Every number is traceable.** Every fact in the archive carries its source (which document, which section, which date); a number without a source cannot be merged.
+7. **Independence, and trust is earned.** Drafting, audit and blind read cannot see each other's conclusions; each agent's autonomy grows or shrinks with its track record of accuracy.
 
-## 核心架构：论点即代码
+## Core architecture: thesis as code
 
-每家公司的论点按软件项目来维护：档案是源代码，thesis breakers 是测试，新财报触发测试，合并一个 PR 就是一次有记录的决策。
+Each company's thesis is maintained like a software project: the archive is the source code, the thesis breakers are the tests, new filings trigger the tests, and merging a PR is a recorded decision.
 
-| 软件工程 | 在 Owner's Office 里 | 解决什么 |
+| Software engineering | In Owner's Office | What it solves |
 | --- | --- | --- |
-| 源代码 | 公司档案：12 维框架，Markdown + YAML | 理解只有一个权威版本 |
-| diff | 每次更新一个提交，逐行显示论点变化 | 看得见认知如何演变 |
-| 单元测试 | thesis tests，由 thesis breakers 改写而成 | “什么会证明我错”变成可执行的检查 |
-| CI | 新的 10-Q、10-K、8-K 自动触发全部测试 | 检查不依赖记忆和心情 |
-| Code review | 独立审计 + 你亲笔写的结论 | 防止自我确认 |
-| 依赖 | 公司档案引用行业研究模块 | 行业变化自动波及相关公司 |
-| Release | 年度“致自己的股东信” + 错误清单 | 固定节奏的复盘 |
+| Source code | Company archive: 12-dimension framework, Markdown + YAML | Understanding has one authoritative version |
+| diff | One commit per update, showing thesis changes line by line | You can see how understanding evolves |
+| Unit tests | Thesis tests, rewritten from the thesis breakers | "What would prove me wrong" becomes an executable check |
+| CI | Each new 10-Q, 10-K or 8-K automatically triggers all tests | Checks don't depend on memory or mood |
+| Code review | Independent audit + the conclusion you write yourself | Guards against self-confirmation |
+| Dependencies | Company archives reference industry research modules | Industry changes automatically reach the affected companies |
+| Release | An annual "letter to the owner" written to yourself + the mistakes list | Review on a fixed rhythm |
 
-**三类 thesis tests。** 每条测试都在结果出来之前写好门槛，结果分为通过、警告、失败、无法判定四种。
+**Three kinds of thesis tests.** Every test has its threshold written down before the results are known, and there are four possible results: pass, warn, fail, undetermined.
 
-1. **定量测试：** 直接用 XBRL 财务数据计算。例：稀释后股本连续两年上升即失败，用来检验回购纪律。
-2. **定性测试：** 由独立模型对照财报原文判定，必须附出处和一句以内的原文摘录。例：管理层是否下调了中期财务目标。
-3. **时效测试：** 档案里每条事实都带截至日期，过期未复核就报警。例：护城河一节超过四个季度没有复核。
+1. **Quantitative tests:** computed directly from XBRL financial data. Example: fail if diluted shares rise two years in a row; this tests buyback discipline.
+2. **Qualitative tests:** judged by an independent model against the filing text, with a source and a quote of at most one sentence. Example: did management lower its medium-term financial targets?
+3. **Staleness tests:** every fact in the archive carries an as-of date, and an alert fires when it goes stale without review. Example: the moat section has not been reviewed for more than four quarters.
 
-**测试失败不等于卖出。** 失败后，负责这家公司的 agent 必须在 7 天内按宪法写出结论：维持、修改论点，还是建议减仓，并附理由。只有结论触及宪法里的卖出条件，才升级为给你的备忘录：护城河永久受损、商业模式根本改变、管理层变质、资本配置严重失误，或出现明显更好的机会。备忘录的默认选项仍是维持现状。
+**A failed test is not a sale.** After a failure, the agent responsible for the company must write a conclusion under the constitution within 7 days: hold, revise the thesis, or recommend trimming the position, with reasons. Only when the conclusion touches a sell condition in the constitution is it escalated to you as a memo: the moat is permanently impaired, the business model has fundamentally changed, management has deteriorated, capital allocation has gone seriously wrong, or a clearly better opportunity has appeared. The memo's default option is still the status quo.
 
-**PR 即决策记录。** 每个更新 PR 的正文结构固定：AI 摘要、证据与出处、测试结果、审计意见、盲推分歧，以及公司 agent 引用宪法条款写出的“这改变论点吗？”。检查全部通过、且该 agent 的信任等级足够时自动合并；否则按分权规则升级。合并时间由 GitHub 服务器记录，预注册另加 OpenTimestamps 时间戳。
+**The PR is the decision record.** Every update PR has a fixed body structure: AI summary, evidence and sources, test results, audit opinion, blind-read divergences, and "Does this change the thesis?", written by the company agent citing constitution clauses. It merges automatically when all checks pass and the agent's trust level is high enough; otherwise it is escalated under the decentralization rules. GitHub's servers record the merge time; pre-registrations also get an OpenTimestamps timestamp.
 
-**可复现。** 每份 AI 产出都记下模型名、提示词版本（git 哈希）和输入文件哈希。结论变了，你能分清是世界变了，还是提示词变了。
+**Reproducible.** Every AI output records the model name, the prompt version (git hash) and the input file hashes. When a conclusion changes, you can tell whether the world changed or the prompt did.
 
-## 分权治理：伯克希尔式的决策权
+## Decentralized governance: Berkshire-style decision rights
 
-整个系统照伯克希尔的方式组织：总部极小，各公司自治，董事长只管资本配置和选人。你是董事长，Claude Code 和各个 agent 是经理人。巴菲特在股东手册里写道，伯克希尔授权到近乎放手：约 37.7 万名员工里只有 26 人在总部，他和芒格主要负责资本配置和照顾关键经理人（[股东手册](https://www.berkshirehathaway.com/ownman.pdf)）。
+The whole system is organized the Berkshire way: a tiny headquarters, autonomous companies, and a chairman who handles only capital allocation and picking people. You are the chairman; Claude Code and the agents are the managers. Buffett wrote in the Owner's Manual that Berkshire delegates almost to the point of abdication: of about 377,000 employees, only 26 work at headquarters, and he and Munger mainly allocate capital and look after key managers ([Owner's Manual](https://www.berkshirehathaway.com/ownman.pdf)).
 
-**三级决策权：**
+**Three decision levels:**
 
-| 级别 | 谁决定 | 事项 | 你看到什么 |
+| Level | Who decides | Matters | What you see |
 | --- | --- | --- | --- |
-| L1 自治 | agent 自行决定并执行 | 抓取、解析、起草、测试、审计、例行更新合并、档案事实修订、行业路标检查 | 不打扰，月度股东信里汇总 |
-| L2 自治并报备 | agent 决定并执行，事后报备 | 预注册内容、情景概率调整、测试警告的处置、候选名单轮换、模型选用、公开发布（须审计无误） | 月度股东信里各占一行 |
-| L3 董事长 | 你决定；系统给一页备忘录和默认选项 | 买入、加仓、减仓、卖出；修改投资宪法 | 一页备忘录；14 天不回复即按默认处理，也就是维持现状 |
+| L1 autonomous | The agent decides and executes on its own | Fetching, parsing, drafting, testing, auditing, merging routine updates, correcting facts in the archive, checking industry signposts | No interruptions; summarized in the monthly letter |
+| L2 act and report | The agent decides and executes, and reports afterwards | Pre-registration content, scenario probability changes, handling test warnings, rotating the candidate list, choosing models, public releases (the audit must be clean) | One line each in the monthly letter |
+| L3 chairman | You decide; the system provides a one-page memo and a default option | Buying, adding, trimming, selling; amending the investment constitution | A one-page memo; no reply within 14 days means the default applies, that is, the status quo |
 
-**组织结构：**
+**Organization:**
 
 ```mermaid
 flowchart TD
-  K["你：董事长<br/>资本配置 · 修宪"] --> HQ["总部：资本配置官<br/>排名 · 备忘录 · 股东信"]
-  HQ --> CM["公司经理<br/>每家公司一个"]
-  HQ --> IR["行业研究员<br/>每个行业一个"]
-  AU["独立监督<br/>审计 · 盲推 · 反向清单"] -.-> CM
+  K["You: chairman<br/>capital allocation · constitutional amendments"] --> HQ["HQ: capital allocator<br/>ranking · memos · letters"]
+  HQ --> CM["Company manager<br/>one per company"]
+  HQ --> IR["Industry researcher<br/>one per industry"]
+  AU["Independent oversight<br/>audit · blind read · inversion list"] -.-> CM
   AU -.-> HQ
 ```
 
-公司经理相当于伯克希尔的子公司 CEO：负责自家公司的档案、预注册、测试和账本，把结论交给总部。总部只做跨公司比较和资本配置建议；独立监督不向任何经理人汇报。
+A company manager is like the CEO of a Berkshire subsidiary: it is responsible for its company's archive, pre-registrations, tests and ledger, and hands its conclusions to HQ. HQ only compares across companies and makes capital allocation recommendations; independent oversight reports to no manager.
 
-**宪法要点**（系统据以自治的规则，由 Claude Code 展开成 `constitution/owner.md`）：
+**Constitution highlights** (the rules the system governs itself by; Claude Code expands them into `constitution/owner.md`):
 
-1. 企业质量第一，管理层第二，估值第三；宁可用合理价格买优秀企业，也不用低价买普通企业。
-2. 质量的试金石：股市关闭十年，是否仍愿意持有？看护城河、定价权、资本回报和不断增长的自由现金流。
-3. 管理层看资本配置是否理性、是否像所有者一样思考，回购、分红和再投资是否得当。
-4. 集中持有 4–5 家；10–20% 是入选门槛而不是目标；仓位来自理解深度、质量、确定性和安全边际，不来自波动率模型。
-5. DCF 只是近似和辅助；折现率等于长期无风险利率加企业特定风险溢价，质量越高溢价越低，6–10% 只是当前利率下的参考。
-6. 只因永久性恶化或明显更好的机会卖出；不因价格下跌、衰退、恐慌或单季不及预期卖出。
-7. 每个持仓的长期预期必须胜过 VOO 或伯克希尔；现金是期权，不为凑仓位或消化闲置现金而买。
-8. 少交易，一次下单建仓，不追求完美买点。
+1. Business quality first, management second, valuation third; better a fair price for an excellent business than a cheap price for an ordinary one.
+2. The touchstone of quality: if the stock market closed for ten years, would you still want to own it? Look at the moat, pricing power, capital returns and growing free cash flow.
+3. Judge management by whether it allocates capital rationally, whether it thinks like an owner, and whether buybacks, dividends and reinvestment are handled sensibly.
+4. Concentrate in 4–5 holdings; 10–20% is an entry bar, not a target; position size comes from depth of understanding, quality, certainty and margin of safety, not from volatility models.
+5. DCF is only an approximation and a support; the discount rate equals the long-term risk-free rate plus a business-specific risk premium, the higher the quality the lower the premium, and 6–10% is only a reference under current rates.
+6. Sell only for permanent deterioration or a clearly better opportunity; don't sell because of a price decline, a recession, panic or a single quarter below expectations.
+7. Every holding's long-term expectation must beat VOO or Berkshire; cash is an option, and we don't buy to fill a position size or to put idle cash to work.
+8. Trade rarely, build a position in one order, don't chase the perfect entry point.
 
-**大佬原则怎样变成系统规则：**
+**How the masters' principles become system rules:**
 
-| 来源 | 原则 | 在系统里变成 |
+| Source | Principle | Becomes in the system |
 | --- | --- | --- |
-| [巴菲特](https://www.berkshirehathaway.com/ownman.pdf) | 授权到近乎放手；总部只管资本配置和选人 | 三级决策权，你只处理 L3；“选人”对应总部按错误率和成本为每个角色选模型 |
-| [巴菲特](https://rationalwalk.com/highlights-from-warren-buffetts-letter-to-shareholders/) | 宁可承担少数坏决定的可见代价，也不要官僚拖延的隐形代价 | 例行事项不设人工审批，错误靠事后审计和降级纠正 |
-| [巴菲特](https://www.berkshirehathaway.com/ownman.pdf) | 坦诚：告诉股东他们处境互换时想知道的事实 | 月度股东信先写坏消息和“本月最大的不确定” |
-| [芒格](https://jamesclear.com/great-speeches/2007-usc-law-school-commencement-address-by-charlie-munger) | 最高的形态是“应得信任”织成的无缝网络：程序很少，信任要配得上 | agent 权限随历史准确率升降，出一次事实错误就降级 |
-| 芒格 | 反过来想；守住能力圈 | 每次更新附“怎样会永久亏损”的反向清单；校准差的领域不进 10–20% 候选 |
-| [林奇](https://invest-like.com/investors/peter-lynch/) | 公司分六类；两分钟讲清持有理由 | 按类别自动套用监控模板，类别变化即换模板；每家维护一段两分钟故事，你只读这一段 |
-| [德鲁肯米勒](https://actionablenews.substack.com/p/aia-october-2024) | 看 18–24 个月后的世界，而不是现在 | 预注册以 18 个月为主视野，辅以本季可检验的短期项 |
-| [卡尼曼](https://behavioralscientist.org/a-conversation-with-daniel-kahneman-about-noise/) | 先分项、独立、基于事实地判断，推迟整体直觉 | 审计与盲推互不可见；总部先看分项评分，再下整体结论 |
+| [Buffett](https://www.berkshirehathaway.com/ownman.pdf) | Delegate almost to the point of abdication; headquarters handles only capital allocation and picking people | Three decision levels, and you handle only L3; "picking people" corresponds to HQ choosing a model for each role by error rate and cost |
+| [Buffett](https://rationalwalk.com/highlights-from-warren-buffetts-letter-to-shareholders/) | Better to bear the visible cost of a few bad decisions than the invisible cost of bureaucratic delay | No manual approval for routine matters; errors are corrected by after-the-fact audits and downgrades |
+| [Buffett](https://www.berkshirehathaway.com/ownman.pdf) | Candor: tell shareholders the facts you would want to know if your positions were reversed | The monthly letter leads with the bad news and "this month's biggest uncertainty" |
+| [Munger](https://jamesclear.com/great-speeches/2007-usc-law-school-commencement-address-by-charlie-munger) | The highest form is a seamless web of deserved trust: little procedure, and trust that is deserved | Agent authority rises and falls with its accuracy record; a single factual error means a downgrade |
+| Munger | Invert; stay within your circle of competence | Every update comes with an inversion list, "how could we lose money permanently?"; domains with poor calibration don't make the 10–20% candidates |
+| [Lynch](https://invest-like.com/investors/peter-lynch/) | Companies fall into six categories; explain why you own one in two minutes | Monitoring templates are applied automatically by category and switched when the category changes; each company keeps a two-minute story, and that is the only part you read |
+| [Druckenmiller](https://actionablenews.substack.com/p/aia-october-2024) | Look at the world 18–24 months out, not at today | Pre-registration uses 18 months as the main horizon, plus short-term items testable this quarter |
+| [Kahneman](https://behavioralscientist.org/a-conversation-with-daniel-kahneman-about-noise/) | Judge component by component, independently and on facts, and delay the overall intuition | Audit and blind read cannot see each other; HQ looks at the component scores before reaching an overall conclusion |
 
-**挣来的信任：**
+**Earned trust:**
 
-- 每个公司经理有 0–3 级信任等级，由最近 8 次更新的审计错误数和分歧的事后裁定决定。
-- 3 级：通过全部检查的更新自动合并并公开。2 级：自动合并，公开前由总部复核。1 级：更新先留在私有仓库，由总部逐条复核。0 级：暂停自治，写进股东信的“待你一看”栏。
-- 出现一次事实错误降一级，连续 4 次零错误升一级；新 agent 从 1 级起步。
+- Each company manager has a trust level of 0–3, set by the number of audit errors in its last 8 updates and by the after-the-fact rulings on divergences.
+- Level 3: updates that pass all checks are merged and published automatically. Level 2: merged automatically, reviewed by HQ before publication. Level 1: updates stay in the private repository first and HQ reviews them item by item. Level 0: autonomy is suspended, and this goes into the "For your attention" section of the letter.
+- One factual error drops a level; 4 consecutive error-free updates raise it one level; new agents start at level 1.
 
-**你还要做的事：** 每月读一封股东信，约 10 分钟；每年读一封年度信，决定是否修宪；L3 备忘录目标每月不超过 2 份。其余全部交给系统。
+**What you still do:** read one letter a month, about 10 minutes; read one annual letter a year and decide whether to amend the constitution; the target is no more than 2 L3 memos a month. Everything else is left to the system.
 
-**这样做的代价：** 巴菲特自己承认，放手意味着有时发现经理人的问题会晚一步（[2009 年股东信](https://rationalwalk.com/highlights-from-warren-buffetts-letter-to-shareholders/)）。本系统用三样东西弥补：硬性的 tripwire、独立审计，以及会自动降级的信任。
+**The cost of doing it this way:** Buffett himself admits that letting go means problems with managers are sometimes found a step late ([2009 shareholder letter](https://rationalwalk.com/highlights-from-warren-buffetts-letter-to-shareholders/)). This system compensates with three things: hard tripwires, independent audits and trust that is downgraded automatically.
 
-## 四个创新模块
+## Four innovation modules
 
-四个模块共用一条主线：你用什么标准要求企业，就用同样的标准要求自己，而且标准必须在结果出来之前写下。
+The four modules share one thread: hold yourself to the same standards you hold companies to, and write those standards down before the results are known.
 
-### A. 财报前预注册
+### A. Pre-earnings pre-registration
 
-每个持仓在业绩发布前登记 3–5 条可结算的预期，事后按事先写好的标准结算。做法借鉴临床试验和科学界的注册报告：先登记假设，再看数据，杜绝事后编假设。
+Before results are released, each holding registers 3–5 settleable expectations, which are later settled against the criteria written in advance. The practice borrows from clinical trials and from registered reports in science: register the hypothesis first, then look at the data, so no hypothesis can be made up after the fact.
 
-- **谁来写：** 公司经理 agent 起草全部预期，以 18 个月为主视野，辅以本季可检验的短期项。你可以在发布前改一个概率或加一条，也可以什么都不做；你改过的每一处单独记账，称为“覆盖”。
-- **每条预期包含：** 陈述、概率、判定标准、数据来源。格式示例：“本季营收同比增速不低于上季，概率 60%，以 10-Q 利润表为准。”
-- **时间规则：** 必须在业绩首次公开之前合并。系统用 EDGAR 上业绩公告的 `acceptanceDateTime` 核对（8-K 的 Item 2.02；PDD 这类外国发行人为 6-K）；新闻稿可能早于备案，所以截止时间定在发布日前一天结束。合并时加 OpenTimestamps 时间戳，任何人都能独立核对没有倒填。
-- **结算：** 财报入库后，AI 按判定标准结算并附出处；有歧义的由总部裁定，仍有争议的记为“无法判定”，不计分。
+- **Who writes it:** the company manager agent drafts all expectations, with 18 months as the main horizon plus short-term items testable this quarter. Before the release you may change a probability or add an item, or do nothing; every change you make is recorded separately and called an "override".
+- **Each expectation contains:** a statement, a probability, a resolution criterion and a data source. Example: "This quarter's year-over-year revenue growth is no lower than last quarter's; probability 60%; resolved by the 10-Q income statement."
+- **Timing rule:** it must be merged before the results are first made public. The system checks against the `acceptanceDateTime` of the earnings release on EDGAR (Item 2.02 of the 8-K; a 6-K for foreign issuers such as PDD). The press release may come out before the filing, so the deadline is set at the end of the day before the release date. An OpenTimestamps timestamp is added at merge, so anyone can independently check that nothing was backdated.
+- **Settlement:** once the report is filed, the AI settles each item against its criterion and cites the source; ambiguous cases are ruled on by HQ, and those still disputed are recorded as "undetermined" and not scored.
 
-### B. 双向言行账本
+### B. Two-way say-do ledger
 
-同一种账本记两本账：管理层对股东说过的话，和你对自己说过的话。
+One kind of ledger keeps two books: what management has told shareholders, and what you have told yourself.
 
-- **管理层一侧：** 从股东信、10-K 的 MD&A、业绩新闻稿和投资者日材料中，抽取可检验的承诺：数字目标、资本开支计划、回购授权、产品时间表。每条记下出处和到期日。
-- **四档结算：** 兑现、部分兑现、未兑现、悄然消失。“悄然消失”指之后的沟通再也不提，这往往比公开承认未兑现更说明问题。
-- **坦诚度：** 未兑现的承诺，下一封股东信有没有主动承认？这是巴菲特评价管理层的老办法，现在可以逐年计数。
-- **资本配置记分卡：** 每次回购的均价，对比回购当时你档案里的内在价值区间，看回购是在创造价值还是在高位消耗现金。从建档之日起累积。
-- **系统与你这一侧：** 预注册的预期、08 情景文档里的三年判断、决策日志里的“预期结果”，全部进同一本账，按同样四档结算。
+- **Management's side:** testable promises are extracted from shareholder letters, the MD&A in the 10-K, earnings press releases and investor-day materials: numeric targets, capital expenditure plans, buyback authorizations, product timelines. Each records its source and due date.
+- **Four settlement grades:** kept, partially kept, not kept, silently dropped. "Silently dropped" means later communications never mention it again, which often says more than openly admitting a promise was not kept.
+- **Candor:** does the next shareholder letter volunteer that a promise was not kept? This is Buffett's old way of judging management, and now it can be counted year by year.
+- **Capital allocation scorecard:** the average price of each buyback is compared with the intrinsic value range in your archive at the time of the buyback, to see whether buybacks create value or burn cash at high prices. It accumulates from the day the archive is created.
+- **The system's and your side:** pre-registered expectations, the three-year judgments in the 08 scenario document and the "expected outcome" in the decision log all go into the same ledger and are settled with the same four grades.
 
-只给管理层打分，ThesisLoop 这类产品已经在做；这里的新意在于对称。
+Scoring management alone is something products like ThesisLoop already do; what is new here is the symmetry.
 
-### C. 校准与能力圈实测
+### C. Calibration and a measured circle of competence
 
-所有已结算的预期按领域汇总成校准分，让能力圈的边界由记录画出来，而不是由感觉画出来。
+All settled expectations are aggregated by domain into calibration scores, so the boundary of the circle of competence is drawn by the record rather than by feel.
 
 ```latex
 BS = \frac{1}{N}\sum_{i=1}^{N}(p_i - o_i)^2
 ```
 
-其中 p 是你给出的概率，o 是结果（发生记 1，未发生记 0）。0 分为完美；每条都报 50% 得 0.25 分。
+Here p is the probability you gave and o is the outcome (1 if it happened, 0 if not). A score of 0 is perfect; reporting 50% on every item scores 0.25.
 
-- **按领域分组：** 企业软件、支付与金融数据、消费品、半导体、电商等，每组给出 Brier 分和校准曲线，也就是“说 70% 的事，实际发生了几成”。
-- **两本账：** 一本记系统自己的预测，一本只记你的覆盖。你的覆盖如果在某个领域长期比系统准，说明你在那里有真正的增量；反之，那里就该少插手。能力圈由此实测，而且几乎不花你的时间。
-- **怎么用：** 作为仓位判断的一项证据，而不是公式。校准差的领域不进 10–20% 仓位的候选，这正是你“仓位来自理解深度”的原则。
-- **诚实的限制：** 样本要够。以 4 个持仓、每家每季 4 条计，到 2027 年底约 80 条系统预测，分到各领域后仍然偏少，你的覆盖会更少。在那之前只看趋势，不下结论。
+- **Grouped by domain:** enterprise software, payments and financial data, consumer goods, semiconductors, e-commerce and so on. Each group gets a Brier score and a calibration curve, that is, "of the things you called 70%, how many actually happened".
+- **Two books:** one records the system's own forecasts, the other only your overrides. If your overrides are consistently more accurate than the system in a domain, you add real value there; if not, you should interfere less there. This is how the circle of competence gets measured, and it costs you almost no time.
+- **How to use it:** as one piece of evidence for position sizing, not as a formula. Domains with poor calibration don't make the candidates for a 10–20% position, which is exactly your principle that "position size comes from depth of understanding".
+- **An honest limitation:** the sample has to be large enough. With 4 holdings and 4 items per company per quarter, there will be about 80 system forecasts by the end of 2027; split across domains that is still thin, and your overrides will be fewer still. Until then, look only at trends and draw no conclusions.
 
-### D. 行业—公司依赖图
+### D. Industry–company dependency graph
 
-Business Library 的行业研究变成可被引用的模块；公司档案声明自己依赖哪些行业，行业一变，相关公司自动进入复核。
+The industry research in the Business Library becomes citable modules; each company archive declares which industries it depends on, and when an industry changes, the affected companies automatically enter review.
 
-- **示例：** AXP 依赖“支付与卡组织”，PEP、KO 依赖“非酒精即饮饮料”，INTC、NVDA 依赖“半导体代工”，正好是你已完成的三个行业。
-- **路标机制：** 行业模块里写下可观测的路标，比如某种账户到账户实时支付或稳定币的使用量越过事先定的门槛。路标触发时，CI 为所有依赖它的公司开复核 issue，并重跑相关 thesis tests。
-- **保留你的规则：** 行业模块本身不谈持仓、不给建议；依赖关系只写在公司一侧。
-- **范围：** 第一版只做行业到公司；公司之间的客户、供应商、竞争关系放到后续阶段。路标写不清楚的行业判断，无法自动监控。
+- **Example:** AXP depends on "payments and card networks", PEP and KO on "non-alcoholic ready-to-drink beverages", INTC and NVDA on "semiconductor foundry"; these are exactly the three industries you have already completed.
+- **Signposts:** industry modules record observable signposts, for example the usage of some account-to-account real-time payment system or of stablecoins crossing a threshold set in advance. When a signpost triggers, CI opens a review issue for every company that depends on it and reruns the relevant thesis tests.
+- **Your rule is kept:** industry modules themselves never discuss holdings or give recommendations; dependencies are written only on the company side.
+- **Scope:** the first version covers only industry-to-company links; customer, supplier and competitor relationships between companies come in later phases. An industry judgment whose signposts can't be written down clearly cannot be monitored automatically.
 
-## 仓库结构与开源策略
+## Repository structure and open-source strategy
 
-三个仓库各司其职：thesis-ci 是任何人都能安装的开源工具，owners-office 是你用它维护的公开记录，私有仓库放完整档案和金额。从第一天起公开开发，更新本身就是项目在 GitHub 上的持续记录。
+Each of the three repositories has its own job: thesis-ci is an open-source tool anyone can install, owners-office is the public record you maintain with it, and the private repository holds the full archives and the amounts. Development is public from day one, and the updates themselves are the project's running record on GitHub.
 
-| 仓库 | 可见性 | 内容 | 许可 |
+| Repository | Visibility | Contents | License |
 | --- | --- | --- | --- |
-| thesis-ci | 公开 | YAML 格式规范；EDGAR 监听与结算的 GitHub Action；预注册核验（含 OpenTimestamps）；Brier 与校准工具 | 代码 MIT，规范 CC BY 4.0 |
-| owners-office | 公开 | 投资宪法与大佬原则、决策权配置、agent 定义、各公司 thesis.yml、预注册、预测与覆盖、言行账本、股东信；MSFT 完整示范档案 | 方法文档 CC BY 4.0，研究内容保留权利 |
-| owners-office-private | 私有 | 其余公司的完整档案、PDF 报告、带金额的决策日志、估值配置器的情景内容 | 不公开 |
+| thesis-ci | public | YAML format spec; GitHub Action for EDGAR monitoring and settlement; pre-registration verification (including OpenTimestamps); Brier and calibration tools | Code MIT, spec CC BY 4.0 |
+| owners-office | public | Investment constitution and the masters' principles, decision-rights configuration, agent definitions, each company's thesis.yml, pre-registrations, forecasts and overrides, say-do ledgers, letters to the owner; a complete MSFT sample archive | Method documents CC BY 4.0, research content all rights reserved |
+| owners-office-private | private | Full archives of the other companies, PDF reports, the decision log with amounts, scenario content for the valuation configurator | Not public |
 
 ```text
 owners-office/
-├── CLAUDE.md                  # 常驻规则，200 行以内
+├── CLAUDE.md                  # standing rules, at most 200 lines
 ├── docs/
-│   ├── DESIGN.md              # 本文档
-│   ├── STATUS.md              # 进度，新会话读它接着做
-│   └── decisions/             # 自主决定的记录
+│   ├── DESIGN.md              # this document
+│   ├── STATUS.md              # progress; a new session reads it to pick up the work
+│   └── decisions/             # records of autonomous decisions
 ├── constitution/
-│   ├── owner.md               # 你的投资宪法
-│   ├── masters.md             # 大佬原则 → 系统规则
-│   └── decision-rights.yml    # 三级决策权与信任等级
-├── agents/                    # 各角色的提示词、权限、所用模型
-├── industries/                # 行业模块与路标
+│   ├── owner.md               # your investment constitution
+│   ├── masters.md             # masters' principles → system rules
+│   └── decision-rights.yml    # three decision levels and trust levels
+├── agents/                    # each role's prompts, permissions and model
+├── industries/                # industry modules and signposts
 ├── companies/
-│   └── MSFT/                  # 每家一个目录；MSFT 另含完整档案
+│   └── MSFT/                  # one directory per company; MSFT also has the full archive
 │       ├── thesis.yml
-│       ├── story.md           # 两分钟持有理由
+│       ├── story.md           # the two-minute case for holding it
 │       ├── prereg/
 │       ├── ledger.yml
 │       └── updates/
-├── forecasts/                 # 系统预测 + 你的覆盖记录
-├── letters/                   # 月度与年度股东信
-└── .github/workflows/         # 定时任务、自动合并、升级
+├── forecasts/                 # system forecasts + your override record
+├── letters/                   # monthly and annual letters to the owner
+└── .github/workflows/         # scheduled jobs, automerge, escalation
 ```
 
-`thesis.yml` 是核心文件，人和机器都读它：
+`thesis.yml` is the core file; both people and machines read it:
 
 ```yaml
 company: AXP
-category: stalwart         # 林奇分类，决定默认监控模板
+category: stalwart         # Lynch category; sets the default monitoring template
 depends_on: [industries/payments-card-networks]
-trust_level: 1             # 0–3，随历史准确率自动调整
-value_ranges:              # 来自 02 报告；价格只在跨越区间时提醒
+trust_level: 1             # 0–3, adjusted automatically with the accuracy record
+value_ranges:              # from the 02 report; price alerts only when a range is crossed
   fair: [null, null]
   cheap: [null, null]
 tests:
   - id: AXP-Q1
     type: quantitative
-    claim: 稀释后股本持续下降，回购在真正缩减股本
+    claim: Diluted shares keep falling; buybacks are really shrinking the share count
     metric: diluted_shares_yoy
-    fail_if: "> 0，连续 2 年"
+    fail_if: "> 0 for 2 years in a row"
   - id: AXP-L1
     type: qualitative
-    claim: 管理层没有下调已公布的中期财务目标
+    claim: Management has not lowered its published medium-term financial targets
     judge: independent_model
     evidence: required
   - id: AXP-S1
@@ -235,154 +237,154 @@ tests:
     max_age_quarters: 4
 ```
 
-- **出处约定：** 档案中的数字用来源标签标注，标签在 `sources.yml` 里对应 EDGAR 登记号、章节和日期；lint 检查不通过的不能合并。
-- **决策日志：** 沿用你现有的九个字段（日期、决策、公司、原始论点、假设、预期结果、风险、复盘日期、结果）。L3 备忘录一经你决定，系统自动生成日志草稿并链接 PR；你在券商执行后，只需回复“已执行”。
-- **分部数据：** Azure 增速这类分部指标，往往不在 EDGAR 的 companyfacts 标准数据里，需要解析财报正文，由模型抽取并标注出处。
-- **版本节奏：** thesis-ci 先标 v0.x，跑完两个财报季再定 v1.0。盲推分歧检查等攒够数据、能证明有效时，再拆成独立工具开源。
+- **Source convention:** numbers in the archive are marked with source tags; in `sources.yml` each tag maps to an EDGAR accession number, a section and a date. Anything that fails the lint check cannot be merged.
+- **Decision log:** keeps your existing nine fields (date, decision, company, original thesis, assumptions, expected outcome, risks, review date, outcome). Once you decide on an L3 memo, the system drafts the log entry automatically and links the PR; after you execute at your broker, you only need to reply "executed".
+- **Segment data:** segment metrics such as Azure growth are often not in EDGAR's standard companyfacts data; the filing text has to be parsed, with a model extracting the figures and citing the source.
+- **Versioning:** thesis-ci is labeled v0.x at first and becomes v1.0 after two earnings seasons. The blind-read divergence check will be split out as a separate open-source tool once enough data has accumulated to show that it works.
 
-## 一次财报事件的流水线
+## The pipeline for one earnings event
 
-从 EDGAR 出现新文件到合并，整条流水线默认不需要你：公司经理起草，审计和盲推独立检查，检查全过且信任等级够就自动合并并公开。目标是新文件入库后 24 小时内完成。
+From a new filing appearing on EDGAR to the merge, the whole pipeline needs nothing from you by default: the company manager drafts, the audit and the blind read check independently, and when all checks pass and the trust level is high enough, the update is merged and published automatically. The target is to finish within 24 hours after a new filing arrives.
 
 ```mermaid
 flowchart TD
-  A["EDGAR 出现新文件"] --> B["解析：XBRL + 正文"]
-  B --> C["定量 thesis tests"]
-  B --> D["公司经理：起草更新与结论"]
-  B --> E["盲推：只看原文，独立作答"]
-  D --> F["审计：逐条核对出处"]
-  C --> G{"全部通过且信任够？"}
+  A["New filing on EDGAR"] --> B["Parse: XBRL + text"]
+  B --> C["Quantitative thesis tests"]
+  B --> D["Company manager: draft update and conclusion"]
+  B --> E["Blind read: source text only, independent answers"]
+  D --> F["Audit: check every source"]
+  C --> G{"All pass and trust high enough?"}
   E --> G
   F --> G
-  G -->|是| H["自动合并并公开"]
-  G -->|否| I["总部复核，必要时升级 L3"]
-  H --> J["结算预注册、账本、校准"]
+  G -->|Yes| H["Merge and publish automatically"]
+  G -->|No| I["HQ review; escalate to L3 if needed"]
+  H --> J["Settle pre-registrations, ledger, calibration"]
   I --> J
 ```
 
-流水线由 GitHub Actions 定时查询 EDGAR 的 submissions 接口触发，遵守 SEC 的公平访问规则：控制请求频率，并在 User-Agent 里写明联系方式（[接口说明](https://fundamentalshub.com/blog/data-sec-gov-submissions-json)）。
+The pipeline is triggered by GitHub Actions polling EDGAR's submissions API on a schedule, following the SEC's fair access rules: limit the request rate and state contact details in the User-Agent ([API notes](https://fundamentalshub.com/blog/data-sec-gov-submissions-json)).
 
-| 角色 | 能看到 | 看不到 | 产出 |
+| Role | Can see | Cannot see | Produces |
 | --- | --- | --- | --- |
-| 公司经理 | 档案、宪法、新财报 | 无限制 | 更新草稿、引用宪法的结论、下季预注册 |
-| 审计 | 草稿里的每条事实 + 对应原文片段 | 档案里的推理和结论 | 逐条标记：准确、有误、无出处 |
-| 盲推 | 新财报原文 + 论点问题清单 | 档案、草稿、任何结论 | 对每个论点问题的独立回答 |
-| 总部 | 所有公司的论点、评分、价值区间 | 无限制 | 10–20% 仓位达标排名、L3 备忘录、月度股东信 |
+| Company manager | Archive, constitution, new filings | No restrictions | Update draft, a conclusion citing the constitution, next quarter's pre-registration |
+| Audit | Every fact in the draft + the matching source excerpt | The reasoning and conclusions in the archive | Item-by-item marks: accurate, wrong, no source |
+| Blind read | New filing text + the thesis question list | Archive, draft, any conclusion | An independent answer to each thesis question |
+| HQ | All companies' theses, scores, value ranges | No restrictions | Ranking against the 10–20% entry bar, L3 memos, the monthly letter |
 
-**分歧图先交给总部，而不是你。** 系统把公司经理的结论与盲推回答逐题对比，标成一致、分歧、无法判断三类。总部的复核时间先花在分歧上；复核后仍无法消解、且触及论点的分歧，才进股东信的“待你一看”栏。
+**The divergence map goes to HQ first, not to you.** The system compares the company manager's conclusions with the blind read's answers question by question and marks each as agree, diverge or cannot tell. HQ spends its review time on the divergences first; only divergences that are still unresolved after review and touch the thesis go into the "For your attention" section of the letter.
 
-**13 个提示词全部进日程，不再等你发起。** 03 是公司经理的季度更新，04 是审计，05 是 PR 开出前的一轮自动修订。每份年报入库后，自动按 06–08 刷新深度理解，再按 11 合成完整报告；09、10、12、13 是对应的审计与修订。01 建档和 02 研报在候选公司进入名单时自动运行。
+**All 13 prompts go on the schedule instead of waiting for you to start them.** 03 is the company manager's quarterly update, 04 is the audit, 05 is a round of automatic revision before the PR is opened. After each annual report is filed, 06–08 automatically refresh the deep understanding, then 11 synthesizes the complete report; 09, 10, 12 and 13 are the corresponding audits and revisions. 01 (building the archive) and 02 (the research report) run automatically when a candidate company joins the list.
 
-**稳健性要求：**
+**Robustness requirements:**
 
-- 任何一步失败，都开 issue 说明原因，绝不静默跳过；同一步连续失败两次，写进股东信。
-- 盲推只对持仓运行；候选公司只跑定量测试和公司经理草稿，控制成本。
-- 所有模型调用集中在一个模块，统一记录模型名、提示词版本和输入哈希。
-- L3 备忘录目标每月不超过 2 份；超出时，总部要在股东信里解释原因，并调高升级门槛。
+- When any step fails, open an issue explaining why; never skip silently. If the same step fails twice in a row, it goes into the letter.
+- The blind read runs only for holdings; candidate companies get only the quantitative tests and the company manager's draft, to control cost.
+- All model calls go through one module, which records the model name, prompt version and input hash in one place.
+- The target is no more than 2 L3 memos a month; when it is exceeded, HQ must explain why in the letter and raise the escalation threshold.
 
-## 对外展示：估值配置器
+## Public face: the valuation configurator
 
-估值配置器是 owners-office 的对外门面：用户配置的是企业判断，不是数字。它排在第 5 阶段，要等系统攒下情景和校准数据之后才做。
+The valuation configurator is the public face of owners-office: users configure judgments about the business, not numbers. It is scheduled for Phase 5 and will only be built after the system has accumulated scenario and calibration data.
 
-**为什么不做自由滑块。** 以下一年现金流计，终值倍数约为 1/(r−g)。折现率从 8% 降到 7%、永续增长从 3% 提到 3.5%，倍数就从 20 倍变成约 28.6 倍，终值涨 43%。自由滑块会让用户一直调到价格“看起来合理”为止，而且这类计算器已经很常见。巴菲特也说，内在价值是估计而不是精确数字，两个人看同一组事实也会算出不同结果（[股东手册](https://www.berkshirehathaway.com/ownman.pdf)）。
+**Why no free sliders.** Based on next year's cash flow, the terminal multiple is about 1/(r−g). Lowering the discount rate from 8% to 7% and raising perpetual growth from 3% to 3.5% moves the multiple from 20x to about 28.6x and raises terminal value by 43%. Free sliders let users keep adjusting until the price "looks reasonable", and calculators like that are already common. Buffett also says intrinsic value is an estimate, not a precise figure, and two people looking at the same set of facts will arrive at different figures ([Owner's Manual](https://www.berkshirehathaway.com/ownman.pdf)).
 
-**怎么做：**
+**How it works:**
 
-- **折现率由判断生成：** 用户回答护城河在变宽还是变窄、现金流可预测性如何、管理层落在芒格格子的哪一格；系统据此给出风险溢价，加上自动更新的长期无风险利率。完全按宪法里“质量越高、溢价越低”的规则，映射表写在公开的宪法里。
-- **增长来自情景卡：** 卡片取自 08 情景文档，每张附证据、概率，以及系统在这类判断上的校准记录。
-- **输出是区间：** 给出价值区间，再加一栏“现价在假设什么”，也就是反向 DCF。
-- **动画承载含义：** 例如“十年之后的价值占比”随用户的选择伸缩，让人看见估值有多依赖遥远的未来。
-- **边界：** 只做档案里的精选公司，从 MSFT 单页开始；页面呈现的是“这些假设意味着什么”，不是买卖建议。前端和情景内容闭源，作为未来的订阅产品。
+- **The discount rate comes from judgments:** users answer whether the moat is widening or narrowing, how predictable the cash flows are, and which cell of the Munger matrix management falls into; from these the system sets a risk premium and adds the automatically updated long-term risk-free rate. It follows the constitution's rule "the higher the quality, the lower the premium" exactly, and the mapping table is written in the public constitution.
+- **Growth comes from scenario cards:** the cards are taken from the 08 scenario document, each with evidence, a probability and the system's calibration record on judgments of that kind.
+- **The output is a range:** a value range, plus a panel "what the current price assumes", that is, a reverse DCF.
+- **Animation carries meaning:** for example, "the share of value beyond year ten" grows and shrinks with the user's choices, so people can see how much the valuation depends on the distant future.
+- **Limits:** only selected companies from the archives, starting with a single MSFT page; the page shows "what these assumptions imply", not buy or sell advice. The front end and the scenario content are closed source, as a future subscription product.
 
-## 分阶段路线图与验收标准
+## Phased roadmap and acceptance criteria
 
-六个阶段，节奏跟着财报季走。阶段是否完成由验收脚本判定：通过后 Claude Code 自动进入下一阶段，不需要你签字；未通过才写进股东信。
+Six phases, paced by the earnings seasons. An acceptance script decides whether a phase is complete: when it passes, Claude Code moves to the next phase automatically, without your sign-off; only a failure goes into the letter.
 
-| 阶段 | 时间 | 交付 | 自动验收 |
+| Phase | Timing | Deliverables | Automatic acceptance |
 | --- | --- | --- | --- |
-| 0 骨架、宪法与迁移 | 9 月底–10 月中旬，第一家持仓发布业绩之前 | 三个仓库；CLAUDE.md；schema 与 lint；constitution/；4 个持仓的 thesis.yml 和两分钟故事 | lint 全部通过；每家至少 5 条 thesis tests；宪法每条规则都对应一个可执行检查 |
-| 1 半自动跑一季 | 2026 年 10 月中–11 月底（Q3 财报季） | Claude Code 逐步触发流水线；系统写预注册；第一封月度股东信 | 预注册全部在发布前合并并带时间戳；每份财报入库后 7 天内合并更新 |
-| 2 自动化 | 2026 年 11 月–2027 年 1 月 | EDGAR 监听、自动开 PR、自动合并规则、信任等级 | 回放 Q3 财报，自动结果与第 1 阶段结论逐条比对，差异都有解释；新文件 24 小时内出 PR |
-| 3 隔离、账本与总部 | 2027 年 1–2 月（Q4 财报季） | 审计与盲推、分歧图、言行账本、资本配置官、L3 备忘录 | 每个 PR 附审计意见和分歧图；L3 备忘录每月不超过 2 份 |
-| 4 校准与开源 | 2027 年春起 | thesis-ci v1.0、校准看板、行业依赖图、中英文 README | 每次结算后自动更新校准；行业路标变化自动开复核 issue |
-| 5 估值配置器 | 2027 年下半年起 | MSFT 单页配置器，再逐步加入精选公司 | 每张情景卡都有证据和校准记录；页面不出现买卖建议 |
+| 0 Skeleton, constitution and migration | End of September to mid-October, before the first holding reports results | Three repositories; CLAUDE.md; schema and lint; constitution/; thesis.yml and two-minute stories for the 4 holdings | lint passes completely; at least 5 thesis tests per company; every constitution rule maps to an executable check |
+| 1 Run one season semi-automatically | Mid-October to end of November 2026 (Q3 earnings season) | Claude Code triggers the pipeline step by step; the system writes pre-registrations; the first monthly letter | All pre-registrations merged and timestamped before the release; an update merged within 7 days after each report is filed |
+| 2 Automation | November 2026 to January 2027 | EDGAR monitoring, automatic PRs, automerge rules, trust levels | Replay the Q3 reports and compare the automatic results with the Phase 1 conclusions item by item, with every difference explained; a PR within 24 hours of a new filing |
+| 3 Isolation, ledgers and HQ | January–February 2027 (Q4 earnings season) | Audit and blind read, divergence map, say-do ledger, capital allocator, L3 memos | Every PR carries an audit opinion and a divergence map; no more than 2 L3 memos a month |
+| 4 Calibration and open source | From spring 2027 | thesis-ci v1.0, calibration dashboard, industry dependency graph, Chinese and English README | Calibration updated automatically after every settlement; a review issue opened automatically when an industry signpost changes |
+| 5 Valuation configurator | From the second half of 2027 | A single-page MSFT configurator, then selected companies added step by step | Every scenario card has evidence and a calibration record; no buy or sell advice on the page |
 
-**成功标准：**
+**Success criteria:**
 
-- **持续性：** 连续 4 个财报季，每个持仓都按时预注册、按时合并更新。这是项目“活着”的唯一硬指标。
-- **质量：** 合并内容里无出处数字始终为 0；审计错误率逐季下降，信任等级整体上升。
-- **你的时间：** 每月约 15 分钟：读一封股东信，处理 0–2 份备忘录。
-- **学习：** 到 2027 年底约 80 条已结算的系统预测，第一次按领域输出校准表，并对比你的覆盖记录。
+- **Continuity:** for 4 consecutive earnings seasons, every holding is pre-registered on time and has its updates merged on time. This is the project's only hard measure of being "alive".
+- **Quality:** unsourced numbers in merged content stay at 0; the audit error rate falls quarter by quarter and trust levels rise overall.
+- **Your time:** about 15 minutes a month: read one letter and handle 0–2 memos.
+- **Learning:** about 80 settled system forecasts by the end of 2027, the first calibration table by domain, compared with your override record.
 
-## 风险、边界与非目标
+## Risks, boundaries and non-goals
 
-分权之后，最大的风险从“你想得太少”变成“问题发现得太晚”。对策是把你的注意力换成硬规则：tripwire、独立审计和会自动降级的信任。
+With decentralization, the biggest risk shifts from "you think too little" to "problems are found too late". The countermeasure is to replace your attention with hard rules: tripwires, independent audits and trust that is downgraded automatically.
 
-| 风险 | 具体表现 | 对策 |
+| Risk | What it looks like | Countermeasure |
 | --- | --- | --- |
-| 发现太晚 | 放手之后，问题要过一阵才暴露；巴菲特也承认这是分权的代价 | 硬 tripwire、独立审计、信任自动降级；股东信必须先写坏消息 |
-| 规则被钻空子 | agent 学会迎合检查，而不是追求准确 | 总部每月随机抽一份已合并更新，交给独立模型从零复核，结果计入信任等级 |
-| 模型读错数字 | 草稿引用了错误数据 | 能和 XBRL 对上的数字自动核对；其余必须带出处，由审计逐条检查 |
-| 公开放大避免不一致性倾向 | 越公开越不愿认错 | 单独的 `mistakes.md`；“论点变更”作为 PR 标签公开统计，改主意算成绩而不是污点 |
-| 复杂度失控 | 自动化做了一半，季度更新断了 | 验收脚本卡住阶段；流水线出故障就退回第 1 阶段的半自动流程，更新不能停 |
-| 隐私 | 金额或账户信息外泄 | 金额只存私有仓库；API 密钥只放 GitHub Secrets，绝不进代码 |
-| 版权与商标 | 公开仓库存了第三方全文或公司 logo | 只存结构化摘录、链接和一句以内的引文；logo 只留在私有报告里 |
-| 合规 | 公开内容被当作投资建议；将来收费 | README 写明不构成投资建议；收费前先弄清安大略省证券监管对收费研究的要求 |
+| Found too late | After letting go, problems take a while to surface; Buffett admits this is the price of decentralization | Hard tripwires, independent audits, automatic trust downgrades; the letter must lead with the bad news |
+| Gaming the rules | Agents learn to please the checks instead of pursuing accuracy | Each month HQ picks one merged update at random for an independent model to review from scratch; the result counts toward the trust level |
+| The model misreads numbers | The draft cites wrong data | Numbers that can be matched to XBRL are checked automatically; the rest must carry sources and are checked item by item by the audit |
+| Publicity amplifies the inconsistency-avoidance tendency | The more public, the less willing to admit mistakes | A separate `mistakes.md`; "thesis change" is a PR label counted publicly, and changing your mind counts as an achievement, not a stain |
+| Complexity out of control | Automation is half done and the quarterly updates break | Acceptance scripts gate the phases; if the pipeline breaks, fall back to the Phase 1 semi-automatic process, and updates must not stop |
+| Privacy | Amounts or account information leak | Amounts are stored only in the private repository; API keys go only into GitHub Secrets, never into code |
+| Copyright and trademarks | The public repository stores third-party full texts or company logos | Store only structured excerpts, links and quotes of at most one sentence; logos stay only in private reports |
+| Compliance | Public content is taken as investment advice; charging fees in the future | The README states that it is not investment advice; before charging, find out what Ontario securities regulation requires of paid research |
 
-**非目标：**
+**Non-goals:**
 
-- **不做交易信号、回测和股价预测。** 这是交易型项目的地盘，也违背所有者视角。
-- **不做通用研究平台或数据终端。** OpenBB 这类项目已经做得很好，本项目只消费数据。
-- **不做自动交易。** 资金事项永远停在 L3，由你在券商里亲手执行。
-- **不追求覆盖面。** 流水线只接持仓和总部选出的三家候选；其余档案每年随年报自动刷新一次。
+- **No trading signals, backtests or stock price predictions.** That is the territory of trading projects, and it goes against the owner's view.
+- **No general research platform or data terminal.** Projects like OpenBB already do this well; this project only consumes data.
+- **No automated trading.** Money matters always stop at L3, and you execute them yourself at your broker.
+- **No pursuit of coverage.** The pipeline handles only the holdings and the three candidates chosen by HQ; the other archives are refreshed automatically once a year with the annual report.
 
-## 交给 Claude Code 的开工指令
+## Kickoff instructions for Claude Code
 
-你只需要做一次性的三件事，之后由 Claude Code 按本文档自主推进。原先需要你拍板的问题，已按你的宪法定好默认值，随时可以推翻。
+You only need to do three one-time things; after that, Claude Code proceeds on its own according to this document. The questions that used to need your decision now have defaults set according to your constitution, and you can overturn them at any time.
 
-**已替你定下的默认值：**
+**Defaults already set for you:**
 
-| 决定 | 默认 | 依据 |
+| Decision | Default | Basis |
 | --- | --- | --- |
-| 公开什么 | 宪法、方法和预测记录全部公开；完整档案只公开 MSFT，其余私有 | 研报是未来的订阅产品；一份完整样本足以证明质量 |
-| 仓库语言 | 文档以中文为主，README 中英双语 | 你的研究语言是中文，开源受众需要英文入口 |
-| 模型分工 | 起草用中档模型，审计和盲推用最强模型 | 审计是防错的最后一道，值得用最好的 |
-| 模型预算 | 每月 20 美元上限；接近上限时先停候选公司，再降级起草模型 | 从小开始，按实际用量再调 |
-| 候选公司 | 总部按 10–20% 仓位达标排名取前三家，每季自动轮换 | 机会成本原则：候选必须和现有持仓比较 |
-| 阶段推进 | 验收脚本通过即自动进入下一阶段 | 分权：用硬检查代替签字 |
+| What is public | The constitution, the method and the forecast record are all public; of the full archives, only MSFT's is public, the rest are private | Research reports are a future subscription product; one complete sample is enough to prove quality |
+| Repository language | Documents mainly in Chinese; the README bilingual in Chinese and English | Your research language is Chinese; the open-source audience needs an English entry point |
+| Model assignment | A mid-tier model for drafting, the strongest model for audit and blind read | The audit is the last line of defense against errors and deserves the best |
+| Model budget | A cap of $20 a month; near the cap, pause candidate companies first, then downgrade the drafting model | Start small and adjust to actual usage |
+| Candidate companies | HQ takes the top three in its ranking against the 10–20% entry bar, rotated automatically each quarter | The opportunity cost principle: candidates must be compared with the existing holdings |
+| Phase progression | Move to the next phase automatically once the acceptance script passes | Decentralization: hard checks instead of sign-offs |
 
-**一次性的三件事：**
+**The three one-time tasks:**
 
-1. 在电脑上装好 Claude Code，并用 GitHub 命令行工具登录（`gh auth login`）。
-2. 把现有档案 PDF、01–13 提示词放进同一个文件夹；开工时说一声，我把本文档导出成 `DESIGN.md` 一起放进去。然后在那个文件夹里启动 Claude Code，贴入下面的指令。
-3. Claude Code 建好仓库后，会请你在 GitHub Secrets 里放一次模型 API key。密钥只能你自己放，不要贴进任何聊天。
+1. Install Claude Code on your computer and log in with the GitHub command-line tool (`gh auth login`).
+2. Put the existing archive PDFs and the 01–13 prompts into one folder; when you start, tell me and I will export this document as `DESIGN.md` into the same folder. Then start Claude Code in that folder and paste in the instructions below.
+3. Once Claude Code has created the repositories, it will ask you to put the model API key into GitHub Secrets once. Only you can put the key there; never paste it into any chat.
 
-之后每次打开 Claude Code，只需说“继续推进”：它会读 `docs/STATUS.md`，从上次停下的地方接着做。CLAUDE.md 每次会话都会自动载入，写得越短越容易被遵循（[官方说明](https://code.claude.com/docs/en/memory)）；硬规则要做成 CI 检查或 hooks，不能只写在 CLAUDE.md 里。
+After that, each time you open Claude Code, just say "keep going": it reads `docs/STATUS.md` and picks up where it left off. CLAUDE.md is loaded automatically in every session, and the shorter it is, the more reliably it is followed ([official docs](https://code.claude.com/docs/en/memory)); hard rules must be made into CI checks or hooks, not just written in CLAUDE.md.
 
-**开工指令：**
+**Kickoff instructions:**
 
 ```text
-你是 Owner's Office 的总工程师。先完整阅读 DESIGN.md，然后自主推进，直到第 0 阶段的验收脚本全部通过。
+You are the chief engineer of Owner's Office. First read DESIGN.md in full, then proceed on your own until the Phase 0 acceptance script passes completely.
 
-授权范围：
-- 第 0 阶段内的一切工程决策由你决定：目录、schema、脚本、测试、CI。
-- 设计文档没写到的细节，按 constitution/ 里的原则自行决定，记进 docs/decisions/，写明选项、理由和被否决的方案。
-- 只有两类事情停下来问我：涉及资金的操作，和修改投资宪法。其余不要问我。
-- 用 docs/STATUS.md 记录进度，让以后的新会话能接着做。
+Scope of authority:
+- You make every engineering decision within Phase 0: directories, schemas, scripts, tests, CI.
+- Details the design document does not cover, decide yourself according to the principles in constitution/, and record them in docs/decisions/ with the options, the rationale and the rejected alternatives.
+- Stop and ask me about only two kinds of things: operations involving money, and amendments to the investment constitution. Don't ask me about anything else.
+- Record progress in docs/STATUS.md so that later sessions can pick up the work.
 
-硬规则（写进 CLAUDE.md，并尽量做成 CI 检查）：
-- 档案中的每个数字必须带来源标签；
-- 不抓取、不显示日常股价，价格只用于跨越价值区间时的提醒；
-- 公开内容里不出现买卖建议；不执行任何交易；
-- 价值区间和 L3 备忘录只存私有仓库，公开的 thesis.yml 不含 value_ranges；
-- 模型调用只能放在 pipeline/llm.py，并记录模型名、提示词版本和输入哈希。
+Hard rules (put them in CLAUDE.md and make them CI checks as far as possible):
+- Every number in the archive must carry a source tag;
+- Don't fetch or display daily stock prices; prices are used only for an alert when a value range is crossed;
+- No buy or sell advice in public content; execute no trades;
+- Value ranges and L3 memos are stored only in the private repository; the public thesis.yml contains no value_ranges;
+- Model calls may live only in pipeline/llm.py, which records the model name, prompt version and input hash.
 
-第 0 阶段任务：
-1. 建立 thesis-ci、owners-office（公开）和 owners-office-private（私有）三个仓库的骨架，把 DESIGN.md 放进 owners-office/docs/。
-2. 把设计文档里的宪法要点和大佬原则整理进 constitution/，每条规则标注它对应的可执行检查。
-3. 定义 thesis、prereg、ledger、forecast、decision-rights 的 JSON Schema，写 lint 并接入 CI。
-4. 用文件夹里的档案，为 4 个持仓生成 thesis.yml 和两分钟故事：先按林奇分类套用监控模板，再从 thesis breakers 补充。不许编造数字，缺数据就留空并记入待办。
-5. 验收通过后，写一封第 0 阶段股东信（一页以内）：完成了什么、做了哪些决定、下一阶段的计划。
+Phase 0 tasks:
+1. Build the skeletons of the three repositories thesis-ci, owners-office (public) and owners-office-private (private), and put DESIGN.md into owners-office/docs/.
+2. Organize the constitution highlights and the masters' principles from the design document into constitution/, marking each rule with the executable check it maps to.
+3. Define JSON Schemas for thesis, prereg, ledger, forecast and decision-rights, write the lint and wire it into CI.
+4. Using the archives in the folder, generate thesis.yml and a two-minute story for each of the 4 holdings: first apply the monitoring template by Lynch category, then add from the thesis breakers. Never make up numbers; where data is missing, leave it empty and record it as a to-do.
+5. Once acceptance passes, write a Phase 0 letter to the owner (one page at most): what was done, which decisions were made, and the plan for the next phase.
 ```
 
-**核对过的资料：** [Claude Code 记忆文档](https://code.claude.com/docs/en/memory)、[EDGAR submissions 接口说明](https://fundamentalshub.com/blog/data-sec-gov-submissions-json)、[论点追踪类产品概览](https://helmterminal.dev/blog/thesis-tracking-apps)、[伯克希尔股东手册](https://www.berkshirehathaway.com/ownman.pdf)、[巴菲特 2009 年股东信摘录](https://rationalwalk.com/highlights-from-warren-buffetts-letter-to-shareholders/)。
+**Sources checked:** [Claude Code memory docs](https://code.claude.com/docs/en/memory), [EDGAR submissions API notes](https://fundamentalshub.com/blog/data-sec-gov-submissions-json), [overview of thesis-tracking products](https://helmterminal.dev/blog/thesis-tracking-apps), [Berkshire Owner's Manual](https://www.berkshirehathaway.com/ownman.pdf), [excerpts from Buffett's 2009 shareholder letter](https://rationalwalk.com/highlights-from-warren-buffetts-letter-to-shareholders/).

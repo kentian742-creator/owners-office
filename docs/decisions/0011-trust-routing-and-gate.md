@@ -1,41 +1,41 @@
-# 0011 信任等级按设计文档四级分流，放行关口写进决策权配置
+# 0011 Trust levels route updates by the design document's four levels; the release gate goes into the decision-rights configuration
 
-## 背景
+## Background
 
-设计文档给每个公司经理 0–3 级信任等级，并写明四级各自怎样处理更新：3 级通过全部检查自动合并并公开；2 级自动合并，公开前由总部复核；1 级先留私有仓库，由总部逐条复核；0 级暂停自治，写进股东信“待你一看”。等级“由最近 8 次更新的审计错误数和分歧的事后裁定决定”。
+The design document gives each company manager a trust level of 0–3 and states how updates are handled at each of the four levels: at level 3, updates that pass all checks are merged and published automatically; at level 2, they are merged automatically and reviewed by HQ before publication; at level 1, they stay in the private repository first and HQ reviews them item by item; at level 0, autonomy is suspended and this goes into the "For your attention" section of the letter. The level is "set by the number of audit errors in the last 8 updates and by the after-the-fact rulings on divergences".
 
-旧的 `decision-rights.yml` 只在各级的说明文字里带出这层意思：schema 里没有路由，没有放行规则；“分歧的事后裁定”怎样计分、谁的哪类产出算一次“更新”，也都没有写。提示词 v3 的总部放行（17A）需要一份机器可读的 `gate_rules`，00 §G9 与 17A 的路由要和设计文档一致，thesis-ci 规范 0.2 相应地给 `trust` 加了 `routing`，给决策权配置加了 `gate`。
+The old `decision-rights.yml` carried this only in the description text of each level: the schema had no routing and no release rules, and it did not say how "the after-the-fact rulings on divergences" are scored, or which outputs by whom count as an "update". HQ's release step in prompt set v3 (17A) needs machine-readable `gate_rules`; the routing in 00 §G9 and 17A has to match the design document; and thesis-ci spec 0.2 accordingly added `routing` to `trust` and `gate` to the decision-rights configuration.
 
-## 选项
+## Options
 
-1. 维持现状：路由只写在说明文字里，放行由总部临场判断。
-2. 简化成三级：2 级和 3 级一样自动公开。
-3. 按设计文档的四级写成机器可读的路由，另写放行关口和计分规则。
+1. Keep things as they are: routing only in the description text, with HQ deciding releases case by case.
+2. Simplify to three levels: level 2 publishes automatically, just like level 3.
+3. Write the design document's four levels as machine-readable routing, plus a release gate and scoring rules.
 
-## 决定
+## Decision
 
-采用选项 3，写进 [decision-rights.yml](../../constitution/decision-rights.yml)。
+Option 3, written into [decision-rights.yml](../../constitution/decision-rights.yml).
 
-- **`trust.routing`：** 3 级“通过全部检查自动合并并公开”；2 级“自动合并，公开前总部复核”；1 级“私有仓库暂存，总部逐条复核后公开”；0 级“暂停自治，写进股东信待你一看”。预注册不走这套分流，只需通过格式与时间检查（00 §G9）——它有截止时间，不能等复核。
-- **`trust.scoring`：** 一次事实错误（00 §F3 的 fact_error，包括总部月度随机复核查出的）降一级；分歧图裁定公司经理一边读错的，最近 8 次计分产出的窗口内不升级；计分的产出是季度更新、档案建立与重建、研报。连续 4 次零事实错误升一级；新角色从 1 级起步。
-- **`gate.blocking`：** 以下任何一条成立就不放行——格式检查有错误；事实审计的必须改没有处理完；有 breaker 失败没有处置；触及论点支柱的分歧既没有消解、也没有标记进股东信；信任等级不够自动放行（按路由走复核那一条路）。其余问题在合并后复核，不挡合并。
-- **谁写等级：** 等级只由流水线计算和写入（00 §G8）：记录在 `trust/levels.yml`，公司经理的抄在各公司 `thesis.yml` 的 `trust_level`，行业研究员的抄在 `industry.yml` 的 `trust_level`；两处不一致由 C-TRUST-WRITE 报出。受信任等级管理的角色是公司经理和行业研究员（`agents/*.yml` 的 `trust_managed`）。
-- `levels` 与 `trust` 决定各角色自身的权限，按修宪程序，改动它们是决策 L3。
+- **`trust.routing`:** level 3 "merged and published automatically once all checks pass"; level 2 "merged automatically; HQ reviews before publishing"; level 1 "held in the private repository; published after HQ reviews each item"; level 0 "autonomy suspended; goes into the letter under For your attention". Pre-registrations don't go through this routing and only need to pass the format and timing checks (00 §G9): they have a deadline and can't wait for a review.
+- **`trust.scoring`:** one factual error (a fact_error under 00 §F3, including those found by HQ's monthly random review) drops the level by one; a divergence map ruling that the company manager's side misread blocks any upgrade within the window of the last 8 scored outputs; the scored outputs are quarterly updates, archive builds and rebuilds, and research reports. 4 consecutive outputs with zero factual errors raise the level by one; new roles start at level 1.
+- **`gate.blocking`:** a release is blocked if any of the following holds: the format checks report errors; the fact audit's must-fix items have not all been handled; a breaker has failed and has not been dealt with; a divergence touching a pillar of the thesis has been neither resolved nor flagged into the letter; the trust level is not high enough for automatic release (the review path of the routing applies). Other problems are reviewed after the merge and don't block it.
+- **Who writes the levels:** levels are computed and written only by the pipeline (00 §G8): they are recorded in `trust/levels.yml`, the company manager's level is copied into `trust_level` in each company's `thesis.yml`, and the industry researcher's into `trust_level` in `industry.yml`; C-TRUST-WRITE reports any mismatch between the two places. The roles managed by trust level are the company manager and the industry researcher (`trust_managed` in `agents/*.yml`).
+- `levels` and `trust` determine each role's own authority; under the amendment procedure, changing them is a decision at level L3.
 
-## 理由
+## Rationale
 
-- 四级路由照录设计文档，是所有者定的规则；写成机器可读的形式，流水线和总部放行才会按同一套规则执行，而不是靠临场判断。
-- 放行关口只挡会让错误进入公开记录的几类问题，其余在合并后复核：设计文档宁可承担少数坏决定的可见代价，也不要官僚拖延的隐形代价。
-- 计分写清楚，才不会被钻空子：只有事实错误降级，因为只有它有一手证据可以对质；分歧被裁定读错说明判断有问题，但分歧本身正是盲推想要的东西，拿它降级会逼公司经理迎合，所以只让它挡住升级。
-- 预注册有硬截止时间，放进信任分流就可能错过时间；它的质量靠格式与时间检查和事后结算。
+- The four-level routing copies the design document and is a rule the owner set; written in machine-readable form, the pipeline and HQ's release step execute the same rules instead of deciding case by case.
+- The release gate blocks only the kinds of problems that would let errors into the public record, and everything else is reviewed after the merge: the design document prefers the visible cost of a few bad decisions to the invisible cost of bureaucratic delay.
+- Scoring that is written down is harder to game. Only factual errors cause a downgrade, because only they can be checked against primary evidence. A divergence ruled a misreading shows a problem of judgment, but divergence itself is exactly what the blind read is for, and downgrading on it would push company managers to pander; so it only blocks upgrades.
+- Pre-registrations have hard deadlines, and trust routing could make them miss the deadline; their quality is ensured by the format and timing checks and by settlement afterwards.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **维持现状：** 17A 没有可执行的放行清单，同一份更新在不同时候可能得到不同处理。
-- **三级：** 与设计文档不符；2 级“公开前复核”正是新公司经理从复核走向自治的过渡。
-- **“无出处”也计错误：** 00 §F3 只把事实错误计入信任等级；无出处的数字是必须改，补齐之前本来就过不了放行关口。
-- **分歧裁定也降级：** 见上。
+- **Keep things as they are:** 17A would have no executable release checklist, and the same update could be handled differently at different times.
+- **Three levels:** doesn't match the design document; level 2, "review before publication", is exactly the transition by which a new company manager moves from review to autonomy.
+- **Count "no source" as an error too:** 00 §F3 counts only factual errors toward the trust level; an unsourced number is a must-fix, and it can't pass the release gate anyway until the source is added.
+- **Downgrade on divergence rulings too:** see above.
 
-## 日期
+## Date
 
 2026-09-24

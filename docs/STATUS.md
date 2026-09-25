@@ -1,84 +1,92 @@
-# 进度 STATUS
+# Status
 
-- 更新：2026-09-25
-- 当前阶段：**第 1 阶段 · 半自动跑一季（准备中；三季度财报季 10 月中开始）**
-- 组合：持仓 APP、PDD；候选 AXP、MSFT、SPGI；BRK 归档（`decisions/0008`，所有者确认）。六家公司的 `thesis.yml` 与 `story.md` 已按此标注。
-- 下一个硬期限：APP 的 FY2026Q3 预注册，按保守估计最晚 **2026-10-30** 合并（截止 11-01 结束时；APP 宣布发布日后更新，待办 T11）。
+- Updated: 2026-09-25
+- Current phase: **Phase 1 · Run one season semi-automatically (in preparation; the Q3 earnings season starts in mid-October)**
+- Portfolio: holdings APP, PDD; candidates AXP, MSFT, SPGI; BRK archived (`decisions/0008`, confirmed by the owner). The `thesis.yml` and `story.md` of all six companies are labeled accordingly.
+- Next hard deadline: APP's FY2026Q3 pre-registration, to be merged by **2026-10-30** at the latest on a conservative estimate (the deadline is the end of 11-01; to be updated once APP announces its release date, to-do T11).
 
-## 当前
+## Current
 
-第 0 阶段完成：验收 A1–A7 PASS，第 0 阶段股东信已写（`letters/2026-09.md`）。三个仓库已在 GitHub 建好并推送（2026-09-25），推送后的 CI 全部通过：
+Phase 0 is complete: acceptance A1–A7 PASS, and the Phase 0 letter to the owner is written (`letters/2026-09.md`). The three repositories have been created on GitHub and pushed (2026-09-25), and CI passed everywhere after the push:
 
-- thesis-ci（公开）：https://github.com/kentian742-creator/thesis-ci ，发版标签 `v0.2.0`
-- owners-office（公开）：https://github.com/kentian742-creator/owners-office ，CI 固定使用 thesis-ci `v0.2.0`
-- owners-office-private（私有）：https://github.com/kentian742-creator/owners-office-private
+- thesis-ci (public), release tags `v0.2.0` and `v0.2.1`: https://github.com/kentian742-creator/thesis-ci
+- owners-office (public), CI pinned to thesis-ci `v0.2.1`: https://github.com/kentian742-creator/owners-office
+- owners-office-private (private): https://github.com/kentian742-creator/owners-office-private
 
-所有者要做的：把模型 API key 放进私有仓库 owners-office-private 的 Actions secrets（T4），不要放进公开仓库。
+Owner decisions on 2026-09-25:
 
-## 阶段总览
+- **English first** (`decisions/0020`): all repositories, the prompt set and model outputs are English; Chinese versions of key documents live in `zh-CN/`. The translation is in progress (see the Phase 1 checklist).
+- **Model budget $50 a month** for API calls (`decisions/0021`); candidates get quarterly updates in phase 1 as designed.
+- **Model backend** (decision 0022, to be written with the implementation): model calls run through the Claude Code CLI on the owner's Max plan by default (`claude -p` with a replaced system prompt, no tools, chosen model and effort), still through `pipeline/llm.py`; the API is the fallback. The API key (T4) is therefore optional for now.
+- **Series rule 00 §E10:** where there is no Form 4, use other official sources; use official data as far as possible (since 2026-03-18 foreign private issuers' insiders file Forms 3/4). Applied in the English prompt set.
 
-时间与验收标准照抄 `DESIGN.md` 的路线图。验收脚本通过即自动进入下一阶段。
+## Phase overview
 
-| 阶段 | 时间 | 交付 | 状态 |
+Timing and acceptance criteria are copied from the roadmap in `DESIGN.md`. Once the acceptance script passes, the next phase starts automatically.
+
+| Phase | Timing | Deliverables | Status |
 | --- | --- | --- | --- |
-| 0 骨架、宪法与迁移 | 9 月底–10 月中旬 | 三个仓库；CLAUDE.md；schema 与 lint；constitution/；持仓（及候选）的 thesis.yml 和两分钟故事 | 完成（2026-09-25） |
-| 1 半自动跑一季 | 2026 年 10 月中–11 月底 | 流水线逐步触发；预注册；第一封月度股东信 | 准备中 |
-| 2 自动化 | 2026 年 11 月–2027 年 1 月 | EDGAR 监听、自动开 PR、自动合并、信任等级 | 未开始 |
-| 3 隔离、账本与总部 | 2027 年 1–2 月 | 审计与盲推、分歧图、言行账本、资本配置官、L3 备忘录 | 未开始 |
-| 4 校准与开源 | 2027 年春起 | thesis-ci v1.0、校准看板、行业依赖图 | 未开始 |
-| 5 估值配置器 | 2027 年下半年起 | MSFT 单页配置器 | 未开始 |
+| 0 Skeleton, constitution and migration | End of September to mid-October | Three repositories; CLAUDE.md; schema and lint; constitution/; thesis.yml and two-minute stories for the holdings (and candidates) | Done (2026-09-25) |
+| 1 Run one season semi-automatically | Mid-October to end of November 2026 | Pipeline triggered step by step; pre-registrations; the first monthly letter | In preparation |
+| 2 Automation | November 2026 to January 2027 | EDGAR monitoring, automatic PRs, automerge, trust levels | Not started |
+| 3 Isolation, ledgers and HQ | January–February 2027 | Audit and blind read, divergence map, say-do ledger, capital allocator, L3 memos | Not started |
+| 4 Calibration and open source | From spring 2027 | thesis-ci v1.0, calibration dashboard, industry dependency graph | Not started |
+| 5 Valuation configurator | From the second half of 2027 | Single-page MSFT configurator | Not started |
 
-## 第 1 阶段清单
+## Phase 1 checklist
 
-验收（`DESIGN.md` 路线图）：预注册全部在业绩发布前合并并带时间戳；每份财报入库后 7 天内合并更新。按期限排序：
+Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped before the results are released; an update merged within 7 days after each report is filed. Sorted by deadline:
 
-- [ ] T22 PDD 档案的首次事实审计（照 APP 的流程），赶在 11 月下旬的预注册之前
-- [x] T18 EDGAR 抓取进 `pipeline/edgar.py`（`decisions/0017`，64 个测试）。估计（`placeholder: true`，公司宣布日期后用 `--announced` 更新）：APP FY2026Q3 发布约 2026-11-02，截止 2026-11-01T23:59:59-05:00，**最晚 2026-10-30T00:59:59-04:00 合并**；PDD FY2026Q3 发布约 2026-11-13，截止 2026-11-12T23:59:59-05:00，最晚 2026-11-09T23:59:59-05:00 合并。候选的预计发布日：AXP 10-14、MSFT 10-21、SPGI 10-21（BRK 已归档）
-- [x] T8 OpenTimestamps（`pipeline/timestamp.py`，`decisions/0018`）：预注册文件合并进 main 后由 CI 自动打时间戳，每 6 小时升级待确认的证明；thesis-ci v0.2.1 先在本地比对哈希，连不上日历服务器不再误报。所有者改写概率的文件至少提前一天合并，好让比特币确认落在截止之前
-- [ ] 第 1 阶段验收脚本（`scripts/accept.py --phase 1`）
-- [ ] 业绩日历：六家公司下一期的预计发布日（按 `release_history` 与公司公告），截止时间随公司宣布的日期更新
-- [ ] T11 APP FY2026Q3 预注册（业绩约 11 月初）：冻结问题清单 → 写预注册 → 截止前至少 72 小时合并并打时间戳
-- [ ] T11 PDD FY2026Q3 预注册（业绩约 11 月下旬，6-K）
-- [ ] 季度更新：每份财报入库后 7 天内合并；公司经理从 1 级起步，更新先留私有仓库、由总部复核后公开（00 §G9）
-- [ ] T12 第一封月度股东信（写 10 月），最迟 11 月 2 日
-- [ ] T22 其余四家档案的事实审计（AXP、MSFT、SPGI、BRK）
-- [ ] T21 价格参照的来源；T17 电话会纪要的来源
+- [ ] T22 First fact audit of the PDD archive: 16A extracted 372 facts; 04A (six slices) found 304 accurate, 32 consistent with citation, 20 L2 only, 4 basis issues, 12 errors; HQ rulings written; the company manager's revision is in progress in late November
+- [x] T18 EDGAR fetching moved into `pipeline/edgar.py` (`decisions/0017`, 64 tests). Estimates (`placeholder: true`; update with `--announced` once the company announces its date): APP FY2026Q3 release around 2026-11-02, deadline 2026-11-01T23:59:59-05:00, **merge by 2026-10-30T00:59:59-04:00 at the latest**; PDD FY2026Q3 release around 2026-11-13, deadline 2026-11-12T23:59:59-05:00, merge by 2026-11-09T23:59:59-05:00 at the latest. Expected release dates for the candidates: AXP 10-14, MSFT 10-21, SPGI 10-21 (BRK is archived)
+- [x] T8 OpenTimestamps (`pipeline/timestamp.py`, `decisions/0018`): CI timestamps pre-registration files automatically once they are merged into main, and upgrades pending proofs every 6 hours; thesis-ci v0.2.1 compares hashes locally first, so an unreachable calendar server no longer causes a false error. Files in which the owner rewrites probabilities are merged at least one day early, so the Bitcoin confirmation lands before the deadline
+- [x] Phase 1 acceptance script (`scripts/accept.py --phase 1`): P1 pre-registrations, P2 updates within 7 days, P3 first monthly letter, P4 phase 0 criteria; items not yet due report PENDING (exit code 3)
+- [ ] English first (`decisions/0020`): thesis-ci docs and English-aware checks (release 0.3.0 with `C-LANGUAGE`); owners-office docs, constitution, agents, five archives and industries translated; still to do: the PDD archive (after its audit revision), the private repository's documents, the prompt set (Chinese v3 kept in the private `zh-CN/prompts/`), and the pipeline's Chinese string literals
+- [ ] Model backend `claude-code` in `pipeline/llm.py` (decision 0022) and local execution in the pipeline runner
+- [ ] Earnings calendar: the next expected release date of each of the six companies (from `release_history` and company announcements), with deadlines updated as the companies announce their dates
+- [ ] T11 APP FY2026Q3 pre-registration (results around early November): freeze the question list → write the pre-registration → merge and timestamp at least 72 hours before the deadline
+- [ ] T11 PDD FY2026Q3 pre-registration (results around late November, 6-K)
+- [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)
+- [ ] T12 The first monthly letter (covering October), by November 2 at the latest
+- [ ] T22 Fact audits of the other four archives (AXP, MSFT, SPGI, BRK)
+- [ ] T21 Source for price references; T17 source for earnings call transcripts
 
-## 第 0 阶段清单（已完成）
+## Phase 0 checklist (done)
 
-- [x] 三个仓库的骨架、CLAUDE.md、`pipeline/llm.py`、`scripts/accept.py`、公开 CI、私有仓库骨架；`docs/DESIGN.md`
-- [x] 提示词 v3（00、00D、01–19）定稿，放在私有仓库 `prompts/`（`decisions/0009`）
-- [x] `constitution/`：`owner.md` 按所有者宪法全文重建为 R1–R13（与 00 §C 一致）+ H1–H5；`rules.yml`、`decision-rights.yml`（规范 0.2）、`masters.md` 同步
-- [x] `agents/`：十三个角色；可见范围用提示词的输入名，逐部分核对过
-- [x] 决策记录 `0001`–`0014`（0002、0005 已被取代，0004、0006 部分修正）
-- [x] CLAUDE.md、README 的过时表述与 `decisions/0004` 的 H4 用语已改；`trust/levels.yml` 建立，各角色从 1 级起步
-- [x] **`pipeline/llm.py` 升级**（原待办 T10，`decisions/0015`）：角色取自 `agents/*.yml`；系统提示 = 00（排版部分加 00D）+ 提示词，00 与 00D 走提示词缓存；输入按角色的可见范围裁剪；输出按 §F0 的格式声明解析，结构化输出先过 schema、不合格带错误重试一次；按 §F2 给出放置位置；日志记模型、00 与提示词的版本和修订、输入哈希、缓存用量。130 个测试通过；用真实提示词、假客户端跑过全部 40 个部分。
-- [x] **thesis-ci 规范 0.2**：schema、`checks.yml`（34 项）与检查实现、SPEC、CHANGELOG；687 个测试与自检 34/34 通过。C-HURDLE、C-CONCENTRATION 按所有者原文改正（`decisions/0014`）；公开文件的价格倍数检查补上市净率与"价格低于 N 倍账面"一类写法。
-- [x] **内容迁移**：六家公司的 `thesis.yml`、`story.md`、`sources.yml`、`ledger.yml` 与私有 `valuation.yml` 迁到规范 0.2；EDGAR 登记号全部回填；来源标签按 SPEC §3.3 改名（自有报告 `<代码>-RPT1-<日期>`，定期报告按财年期间，临时报告按 EDGAR filing date）；价格评级按 §V11 机械尺重算（AXP B− → C，BRK B+ → B，其余不变）；APP 草稿的六处待改项、BRK 公开文件里三处由价格推出的数字已处理。逐条比对过：除交代过的改写（APP-L4、APP-L5、BRK-Q7、BRK-Q8）外，没有任何测试的门槛、方向或判定句改动。lint：公开仓库零错误零警告，私有仓库零错误、一条警告（SPGI 的国债收益率是两个日期的中点，没有单一的取值日期）。
-- [x] **APP 审计**：两轮试跑查出的六项已在迁移中改正；16A 抽出 237 条事实，04A 分四份独立核对：202 条准确，7 条错误（实为两处问题：债务本金与净债务照抄了报告的约数；股本期初取错年份），其余为只与报告一致、仅二手、口径或未经确认。57 条结论里 45 条已改、12 条不用改；估值数字没有改，写进 T15。
-- [x] 集成：三个仓库 `git init` 与首次提交（本地，不推送；作者邮箱用 GitHub noreply 地址）
-- [x] 验收：`scripts/accept.py --phase 0` A1–A7 全部 PASS（2026-09-25），报告在 `docs/acceptance/phase-0.md`
-- [x] `mistakes.md` 第一条（APP 首次事实审计查出的错误）
-- [x] 第 0 阶段股东信（一页以内）：`letters/2026-09.md`；私有附录在私有仓库 `letters/2026-09-private-appendix.md`
+- [x] Skeletons of the three repositories, CLAUDE.md, `pipeline/llm.py`, `scripts/accept.py`, public CI, private repository skeleton; `docs/DESIGN.md`
+- [x] Prompt set v3 (00, 00D, 01–19) finalized and kept in the private repository's `prompts/` (`decisions/0009`)
+- [x] `constitution/`: `owner.md` rebuilt from the full text of the owner's constitution as R1–R13 (consistent with 00 §C) + H1–H5; `rules.yml`, `decision-rights.yml` (spec 0.2) and `masters.md` updated to match
+- [x] `agents/`: thirteen roles; visibility uses the prompts' input names, checked part by part
+- [x] Decision records `0001`–`0014` (0002 and 0005 superseded; 0004 and 0006 partly amended)
+- [x] Outdated wording in CLAUDE.md and the README, and the H4 terms in `decisions/0004`, corrected; `trust/levels.yml` created, with every role starting at level 1
+- [x] **`pipeline/llm.py` upgrade** (formerly to-do T10, `decisions/0015`): roles come from `agents/*.yml`; system prompt = 00 (plus 00D for the typesetting parts) + the prompt, with 00 and 00D going through prompt caching; inputs are trimmed to the role's visibility; outputs are parsed per the format declarations of §F0, structured outputs must pass the schema first, and a failing output gets one retry carrying the errors; placements are given per §F2; the log records the model, the versions and revisions of 00 and the prompt, the input hash and cache usage. 130 tests pass; all 40 parts were run with the real prompts and a fake client.
+- [x] **thesis-ci spec 0.2**: schemas, `checks.yml` (34 checks) and the check implementations, SPEC, CHANGELOG; 687 tests and selftest 34/34 pass. C-HURDLE and C-CONCENTRATION corrected to follow the owner's original text (`decisions/0014`); the price-multiple check for public files now also covers price-to-book and phrasings like "price below N times book".
+- [x] **Content migration**: the six companies' `thesis.yml`, `story.md`, `sources.yml`, `ledger.yml` and the private `valuation.yml` migrated to spec 0.2; all EDGAR accession numbers backfilled; source tags renamed per SPEC §3.3 (own reports `<ticker>-RPT1-<date>`, periodic reports by fiscal period, current reports by EDGAR filing date); price grades recomputed with the §V11 mechanical scale (AXP B− → C, BRK B+ → B, the rest unchanged); the six open fixes in the APP draft and the three price-derived numbers in BRK's public files dealt with. Compared item by item: apart from the rewrites already explained (APP-L4, APP-L5, BRK-Q7, BRK-Q8), no test's threshold, direction or resolution sentence changed. lint: public repository zero errors and zero warnings; private repository zero errors and one warning (SPGI's Treasury yield is the midpoint of two dates and has no single observation date).
+- [x] **APP audit**: the six items found in two trial runs were corrected during the migration; 16A extracted 237 facts and 04A checked them independently in four batches: 202 accurate, 7 errors (really two problems: debt principal and net debt copied the report's rounded figures, and the opening share count was taken from the wrong year), and the rest consistent with the report only, secondary only, basis issues or unconfirmed. Of 57 conclusions, 45 were fixed and 12 needed no change; the valuation numbers were not changed and went into T15.
+- [x] Integration: `git init` and first commit in all three repositories (local, not pushed; the author email is the GitHub noreply address)
+- [x] Acceptance: `scripts/accept.py --phase 0` A1–A7 all PASS (2026-09-25); the report is in `docs/acceptance/phase-0.md`
+- [x] First entry in `mistakes.md` (the errors found by APP's first fact audit)
+- [x] Phase 0 letter to the owner (one page at most): `letters/2026-09.md`; the private appendix is in the private repository at `letters/2026-09-private-appendix.md`
 
-## 待办
+## To-dos
 
-| # | 事项 | 谁 | 说明 |
+| # | Item | Who | Notes |
 | --- | --- | --- | --- |
-| T4 | 模型 API key | 所有者 | 放进**私有仓库 owners-office-private** 的 Settings → Secrets and variables → Actions，名字 `ANTHROPIC_API_KEY`；不要放进公开仓库。模型调用只在私有仓库的 Actions 里运行：公开仓库的运行日志人人可见，而调用的输入输出里有私有内容。绝不贴进聊天或代码。 |
-| T5 | MSFT 完整公开档案 | 系统 | 第 1 阶段；估值一节不写由价格推出的数字（`decisions/0004`）。 |
-| T7 | 模型调用日志的持久化 | 系统 | 第 2 阶段；用 `OWNERS_OFFICE_LLM_LOG` 把日志指到私有仓库。 |
-| T11 | 第一批预注册 | 系统 | APP FY2026Q3：最晚 2026-10-30 合并（保守估计，APP 宣布发布日后更新）；先冻结问题清单（14Q），再写预注册（15A）。PDD FY2026Q3：最晚 2026-11-09 合并。时间戳、EDGAR 模块、来源标签迁移与 `llm.py` 升级都已完成；还差在私有仓库 Actions 里运行流水线的执行器，以及所有者放进私有仓库的 API key（T4）。 |
-| T12 | 月度股东信 | 系统（总部） | 18 每月第一个工作日写上个月；最迟 11 月 2 日发出第一封（写 10 月）。 |
-| T13 | 设计文档第 5 阶段的"质量到溢价映射表" | 所有者（第 5 阶段前） | 与 00 §V1"不查表、不套档位"冲突，在所有者另作决定之前不写（`decisions/0012`）。C-HURDLE 与 C-CONCENTRATION 已按原文改正（`decisions/0014`）。 |
-| T15 | 估值刷新待审（04C） | 系统 | 迁移中查出、按规则不在迁移里改的估值方法问题，已写进各家私有 `valuation.yml` 的 todo，下一次 02 估值刷新时处理并经 04C 审：BRK 最优先（它的回报测算是所有公司的第一道门槛，§V6）：可能的 §V3 重复打折、溢价缺 §V1 依据；SPGI 溢价在其他公司之间插值（§V10）；PDD 溢价是否含整数目标回报、起点是否重复打折、2025 年罚款是否正常化；APP 溢价起点是全市场股权溢价（§V1、§V10）；AXP 买入区间下沿的算法与 §V7 不同。 |
-| T16 | BRK-Q7、BRK-Q8 的价格线 | 总部 | 两条破坏线的门槛按 §H4 只在私有估值文件；判定需要期末价格。年末收盘价属于 §H2 允许的第 2 类，季末价格不在四类之内，要总部写决策记录。BRK 已归档，优先级低。 |
-| T17 | 电话会纪要的来源 | 系统 | EDGAR 不收录电话会；MSFT 的 FY2027 指引、SPGI 的超大规模云厂商发行额等只出自电话会，现在引用转述它们的报告页。定下纪要从哪里取（公司 IR 网站的回放与纪要），并登记来源。 |
-| T19 | 规范 0.3 的候选 | 系统 | 定性测试也能写 `evaluate_on`（PDD-L7 需要）；APP-L5(b) 在找到可引用、可冻结的头部发行商名单之前每季记为无法判定。 |
-| T20 | 排版（19）的运行环境 | 系统 | 19 的产出是文件（PDF 与页面图像），`llm.py` 不能直接运行；第 2 阶段前定下在哪里执行（能运行代码的环境），再接入版面审查。 |
-| T21 | 价格参照的来源 | 系统 | §H2 规定价格参照由流水线提供、带日期和来源。现有六份估值的价格参照取自报告，APP 的一份只追到第三方日线（二手）。第一次估值刷新之前，定下交易所官方收盘价从哪里取，只写进私有文件。 |
-| T22 | 其余五家档案的首次事实审计 | 系统 | ★ 第 0 阶段只给 APP 跑了 16A → 04A → 修订。PDD 是持仓，最先做，赶在 11 月下旬的预注册之前；AXP、MSFT、SPGI、BRK 在各自第一次预注册或下一次更新之前做。流程照 APP：抽取、分片独立核对、总部裁定、公司经理修订，记录进私有仓库 `runs/`。 |
+| T4 | Model API key (optional) | Owner | Only needed for the API fallback or for unattended runs on GitHub (decision 0022). If used: put it into Settings → Secrets and variables → Actions of the **private repository owners-office-private**, named `ANTHROPIC_API_KEY`, never into a public repository, a chat or code. Unattended runs on the Max plan would instead use a token from `claude setup-token` stored as `CLAUDE_CODE_OAUTH_TOKEN` in the same private repository. |
+| T5 | Full public MSFT archive | System | Phase 1; the valuation section contains no price-derived numbers (`decisions/0004`). |
+| T7 | Persisting the model-call log | System | Phase 2; point the log at the private repository with `OWNERS_OFFICE_LLM_LOG`. |
+| T11 | The first pre-registrations | System | APP FY2026Q3: merge by 2026-10-30 at the latest (conservative estimate, to be updated once APP announces its release date); freeze the question list (14Q) first, then write the pre-registration (15A). PDD FY2026Q3: merge by 2026-11-09 at the latest. Timestamps, the EDGAR module, the source tag migration and the `llm.py` upgrade are all done; still missing are the runner that executes the pipeline in the private repository's Actions, and the API key the owner puts into the private repository (T4). |
+| T12 | Monthly letter | System (HQ) | 18 writes up the previous month on the first business day of each month; the first one (covering October) goes out by November 2 at the latest. |
+| T13 | The "quality-to-premium mapping table" for Phase 5 in the design document | Owner (before Phase 5) | Conflicts with 00 §V1 "no lookup tables, no fixed tiers"; not written until the owner decides otherwise (`decisions/0012`). C-HURDLE and C-CONCENTRATION have been corrected to follow the original text (`decisions/0014`). |
+| T15 | Valuation refresh pending review (04C) | System | Valuation method issues found during the migration, which by rule were not changed in the migration, are recorded in the todo of each company's private `valuation.yml`, to be handled at the next 02 valuation refresh and reviewed by 04C. BRK comes first (its return estimate is the first hurdle for every company, §V6): a possible §V3 double discount, and the premium lacks a §V1 basis. SPGI: the premium is interpolated between other companies (§V10). PDD: whether the premium contains a round-number target return, whether the starting point is discounted twice, whether the 2025 fine is normalized. APP: the premium starts from the market-wide equity premium (§V1, §V10). AXP: the method for the lower bound of the buy range differs from §V7. |
+| T16 | Price lines of BRK-Q7 and BRK-Q8 | HQ | Under §H4 the thresholds of these two breaker lines are only in the private valuation file; resolving them needs period-end prices. Year-end closing prices are category 2 of the prices allowed by §H2, but quarter-end prices are not among the four categories, so HQ has to write a decision record. BRK is archived; low priority. |
+| T17 | Source for earnings call transcripts | System | EDGAR does not carry earnings calls; MSFT's FY2027 guidance, SPGI's hyperscaler issuance volume and the like come only from calls, and are currently cited through the report pages that paraphrase them. Decide where transcripts come from (the replays and transcripts on the companies' IR websites) and register the source. |
+| T19 | Candidates for spec 0.3 | System | Qualitative tests can also have `evaluate_on` (PDD-L7 needs it); APP-L5(b) is recorded as undetermined every quarter until a citable, freezable list of top publishers is found. |
+| T20 | Runtime environment for typesetting (19) | System | 19 produces files (PDF and page images), so `llm.py` cannot run it directly; before Phase 2, decide where to execute it (an environment that can run code), then connect design review. |
+| T21 | Source for price references | System | §H2 requires price references to be supplied by the pipeline with a date and a source. The price references in the existing six valuations come from the reports, and APP's could only be traced to third-party daily price data (secondary). Before the first valuation refresh, decide where official exchange closing prices come from; they are written only into private files. |
+| T22 | First fact audit of the other five archives | System | ★ In Phase 0 only APP went through 16A → 04A → revision. PDD is a holding and goes first, in time for its pre-registration in late November; AXP, MSFT, SPGI and BRK are done before their own first pre-registration or next update. The process follows APP's: extraction, independent checking in shards, HQ rulings, revision by the company manager, recorded in the private repository's `runs/`. |
+| T23 | thesis-ci backlog from the phase 1 acceptance work | System | (1) candidates have no event record: wire `accept.edgar_acceptance()` to `pipeline.edgar` or add an event file; (2) SPEC: private staging path for level-1 updates; (3) optional `period:` in update front matter; (4) require ISO 8601 with offset for `acceptance_datetime` (the compact form is read as naive); (5) record the owner file's merge time; (6) nothing checks that the Bitcoin attestation predates the release; (7) company status is read as of now, not as of the event. |
 
-## 怎样接着做
+## How to pick up the work
 
-新会话里所有者说“继续”，就先读本文件，按“第 1 阶段清单”从第一项未完成的事做起，期限近的优先（APP 的预注册截止时间约在 11 月初）。每完成一项就在这里打勾，新的自主决定写进 `docs/decisions/`；只有资金事项和修宪才停下来问所有者，所有者才能做的事记进待办表。第 1 阶段验收脚本写好后，用它判定能否进入第 2 阶段。
+When the owner says "continue" in a new session, read this file first and start from the first unfinished item in the "Phase 1 checklist", nearest deadline first (APP's pre-registration deadline is around early November). Tick each item here when it is done, and write new autonomous decisions into `docs/decisions/`; stop to ask the owner only about money matters and constitutional amendments, and record things only the owner can do in the to-do table. Once the Phase 1 acceptance script is written, use it to decide whether Phase 2 can start.

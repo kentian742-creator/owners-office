@@ -1,10 +1,11 @@
-# 公开仓库的 CI：thesis-ci lint + 流水线单元测试。
+# CI for the public repository: thesis-ci lint + pipeline unit tests.
 #
-# 注意：这里检查不到私有仓库 owners-office-private。公开仓库的 CI 没有读取私有仓库的权限，
-# 也不应该有。跨仓库的检查（私有仓库带 --counterpart 的 lint、验收脚本 scripts/accept.py）
-# 在私有仓库自己的 CI 和本地运行。
+# Note: this CI cannot check the private repository owners-office-private. The public repository's CI has no
+# permission to read the private repository, and it should not have one. Cross-repository checks (the private
+# repository's lint with --counterpart, the acceptance script scripts/accept.py) run in the private repository's
+# own CI and locally.
 #
-# 本 workflow 不需要任何密钥：lint 和测试都不调用模型（测试用假客户端）。
+# This workflow needs no secrets: neither lint nor the tests call a model (the tests use a fake client).
 name: lint
 
 "on":
@@ -22,11 +23,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: 安装 thesis-ci（见 docs/decisions/0007）
+      - name: Install thesis-ci (see docs/decisions/0007)
         run: pip install -r requirements-lint.txt
-      # C-PREREG-IMMUTABLE 在 PATH 上有 ots 时用 ots verify 核验预注册的证明，没有就只报警（docs/decisions/0018）。
-      # 版本取自 requirements.txt（-c 只借用它的版本约束，不装其他依赖）。
-      - name: 安装 OpenTimestamps 客户端
+      # With ots on the PATH, C-PREREG-IMMUTABLE verifies pre-registration proofs with ots verify; without it, the
+      # check only warns (docs/decisions/0018).
+      # The version comes from requirements.txt (-c only borrows its version constraints; nothing else is installed).
+      - name: Install the OpenTimestamps client
         run: pip install -c requirements.txt opentimestamps-client
       - name: thesis-ci lint
         run: thesis-ci lint .
@@ -38,7 +40,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: 安装依赖
+      - name: Install dependencies
         run: pip install -r requirements.txt
       - name: pytest
         run: python -m pytest -q tests

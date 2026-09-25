@@ -1,31 +1,33 @@
-# 0003 模型分工与预算
+# 0003 Model assignment and budget
 
-## 背景
+> **Partly superseded by [0021](0021-model-budget-50.md) (2026-09-25):** the monthly cap is $50, decided by the owner. The rest of this record stands.
 
-DESIGN.md 已定默认值：起草用中档模型，审计和盲推用最强模型；每月模型预算有上限，接近上限时先停候选公司，再降级起草模型。第 0 阶段要把它落成具体的模型、价格表、预算守卫和降级顺序，并估算两个持仓加三个候选每月大约花多少。所有模型调用都经过 `pipeline/llm.py`，它按 `agents/<role>.yml` 选模型，没有配置时用这里定的默认值。
+## Background
 
-## 选项
+DESIGN.md already sets the defaults: a mid-tier model for drafting, the strongest model for audit and blind read; a monthly cap on the model budget, and near the cap, pause candidate companies first, then downgrade the drafting model. Phase 0 has to turn this into concrete models, a price table, a budget guard and a downgrade order, and estimate roughly how much two holdings plus three candidates cost per month. All model calls go through `pipeline/llm.py`, which picks the model from `agents/<role>.yml` and uses the defaults set here when there is no configuration.
 
-1. 全部角色用最强模型。
-2. 起草用中档模型，审计、盲推、反向清单用最强模型（DESIGN.md 的方案）。
-3. 全部角色用中档模型。
-4. 监督角色用次强模型，以省钱。
+## Options
 
-## 决定
+1. The strongest model for every role.
+2. A mid-tier model for drafting; the strongest model for audit, blind read and the inversion list (the DESIGN.md plan).
+3. A mid-tier model for every role.
+4. The second-strongest model for the oversight roles, to save money.
 
-采用选项 2。
+## Decision
 
-| 角色 | 模型 | effort | 说明 |
+Option 2.
+
+| Role | Model | effort | Notes |
 | --- | --- | --- | --- |
-| 公司经理 `company_manager`、行业研究员 `industry_researcher`、总部 `hq_capital_allocator` | `claude-sonnet-5` | `high` | 起草、修订、预注册、股东信 |
-| 审计 `auditor`、盲推 `blind_reader`、反向清单 `red_team` | `claude-fable-5-1` | `high` | 走 beta 接口并开启服务端拒答回退：`betas=["server-side-fallback-2026-07-01"]`、`fallbacks="default"` |
+| Company manager `company_manager`, industry researcher `industry_researcher`, HQ `hq_capital_allocator` | `claude-sonnet-5` | `high` | Drafting, revisions, pre-registrations, letters to the owner |
+| Audit `auditor`, blind read `blind_reader`, inversion list `red_team` | `claude-fable-5-1` | `high` | Uses the beta API with the server-side refusal fallback enabled: `betas=["server-side-fallback-2026-07-01"]`, `fallbacks="default"` |
 
-- 思考：这些模型省略 `thinking` 参数即为自适应思考；不发送 `budget_tokens`。深浅用 `output_config.effort` 控制。
-- 拒答：先检查 `stop_reason == "refusal"` 再读内容，抛出明确的错误并开 issue；由回退模型接手的回答按回退模型的价格记账，日志里 `served_by_fallback` 为真，PR 正文要写明审计由回退模型完成。
-- 价格表（美元 / 每百万 token；与 `pipeline/llm.py` 的 `PRICES_PER_MTOK` 一致；来源：[Anthropic 模型价格](https://platform.claude.com/docs/en/about-claude/pricing)，2026-09-24 核对）：
+- Thinking: with these models, omitting the `thinking` parameter means adaptive thinking; `budget_tokens` is not sent. Depth is set with `output_config.effort`.
+- Refusals: check `stop_reason == "refusal"` before reading the content, raise a clear error and open an issue; an answer taken over by the fallback model is costed at the fallback model's price, the log sets `served_by_fallback` to true, and the PR body must say that the audit was done by the fallback model.
+- Price table (USD per million tokens; matches `PRICES_PER_MTOK` in `pipeline/llm.py`; source: [Anthropic model pricing](https://platform.claude.com/docs/en/about-claude/pricing), checked 2026-09-24):
 
   ```text
-  模型                输入    输出
+  Model               Input   Output
   claude-sonnet-5      2      10
   claude-fable-5-1    10      50
   claude-opus-5        5      25
@@ -33,68 +35,68 @@ DESIGN.md 已定默认值：起草用中档模型，审计和盲推用最强模�
   claude-haiku-4-5     1       5
   ```
 
-  不在表里的模型，`pipeline/llm.py` 拒绝调用，因为花费无法记账。
+  `pipeline/llm.py` refuses to call a model that is not in the table, because its cost could not be recorded.
 
-- 预算：`constitution/decision-rights.yml` 的 `budget.monthly_usd`，默认值取 DESIGN.md 的上限（`20`）。按 UTC 日历月累计 `logs/llm-calls.jsonl` 里的 `cost_usd`；调用前已达上限就抛出 `BudgetExceeded`，请求不发出。`remaining_budget()` 和 `budget_status()` 给出剩余额度和当前阶段。
-- 降级顺序（`budget_status()` 的 `stage`，按本月花费占预算的比例；阶段名与 `decision-rights.yml` 的 `budget.degrade_order` 一致）：
-
-  ```text
-  比例      阶段                       动作
-  < 0.70    normal                     照常
-  ≥ 0.70    pause_candidates           暂停候选公司的模型调用；它们的定量测试（XBRL，不用模型）照常
-  ≥ 0.85    downgrade_drafting_model   起草角色改用 claude-haiku-4-5；审计、盲推、反向清单不降级
-  ≥ 1.00    stopped                    所有模型调用停止到下个月；失败的步骤开 issue，写进月度股东信；
-                                       季度更新退回第 1 阶段的半自动流程，不能停
-  ```
-
-  审计永远不降级。提高预算是资金事项，由主人决定，系统只在股东信里给出用量和理由。
-
-- 月度花费估算（假设，不是事实；思考 token 按输出计价；第一个财报季之后用实际日志重估）：
+- Budget: `budget.monthly_usd` in `constitution/decision-rights.yml`, defaulting to the DESIGN.md cap (`20`). `cost_usd` in `logs/llm-calls.jsonl` is summed per UTC calendar month; if the cap has already been reached before a call, `BudgetExceeded` is raised and the request is not sent. `remaining_budget()` and `budget_status()` give the remaining budget and the current stage.
+- Downgrade order (the `stage` of `budget_status()`, by the share of the budget spent this month; the stage names match `budget.degrade_order` in `decision-rights.yml`):
 
   ```text
-  单次调用假设（输入 / 输出 token → 美元）
-    起草 claude-sonnet-5
-      预注册草稿            20K / 4K   → 0.08
-      季度更新 03           60K / 10K  → 0.22
-      自动修订 05           30K / 8K   → 0.14
-      月度股东信            40K / 6K   → 0.14
-      年报深度刷新 06–08、11（每次） 100K / 15K → 0.35
-    监督 claude-fable-5-1
-      审计 04               30K / 10K  → 0.80
-      盲推                  60K / 10K  → 1.10
-      定性测试判定          40K / 4K   → 0.60
-      反向清单              20K / 6K   → 0.50
-      股东信审计            20K / 6K   → 0.50
-      每月随机复核          60K / 10K  → 1.10
-      年报审计 09、10、12、13（每次） 50K / 10K → 1.00
-
-  每个持仓每季   0.08 + 0.22 + 0.14 + 0.80 + 1.10 + 0.60 + 0.50 = 3.44
-  每个候选每季   0.22（只有公司经理草稿）
-  一轮季报       2 × 3.44 + 3 × 0.22 = 7.54
-  每月固定       0.14 + 0.50 + 1.10 = 1.74
-  年报刷新       持仓 4 × 0.35 + 4 × 1.00 = 5.40；候选 4 × 0.35 = 1.40
-  全年           4 × 7.54 + 12 × 1.74 + 2 × 5.40 + 3 × 1.40 = 66.04
-  平均每月       约 5.5
-  财报月         7.54 + 1.74 = 9.28
-  最坏的月份     季报、全部年报和固定项落在同一个月：9.28 + 10.80 + 4.20 = 24.28，超过上限，按降级顺序处理
-  不确定性       监督角色的思考 token 是最大变量，实际可能是假设的两倍左右
+  Share     Stage                      Action
+  < 0.70    normal                     business as usual
+  ≥ 0.70    pause_candidates           pause model calls for candidate companies; their quantitative tests (XBRL, no model) go on as usual
+  ≥ 0.85    downgrade_drafting_model   drafting roles switch to claude-haiku-4-5; audit, blind read and inversion list are not downgraded
+  ≥ 1.00    stopped                    all model calls stop until next month; failed steps open issues and go into the monthly letter;
+                                       quarterly updates fall back to the Phase 1 semi-automatic process and must not stop
   ```
 
-## 理由
+  The audit is never downgraded. Raising the budget is a money matter for the owner to decide; the system only reports usage and reasons in the letter.
 
-- 审计是防错的最后一道，DESIGN.md 明确值得用最好的模型；盲推要和起草模型独立作答，用不同的、更强的模型还能减少同源偏差。
-- 起草的草稿会被审计逐条核对，用中档模型的错误能被抓住，而起草的输入最长，换中档模型省下的钱最多。
-- 按上面的估算，平时远低于上限，财报月也在上限之内；只有年报与季报叠加的月份会碰到上限，降级顺序正是为这种月份准备的。
-- 先停候选、再降起草、审计不动，与 DESIGN.md 的次序一致：候选只是比较对象，持仓的审计质量不能打折。
+- Estimated monthly spend (assumptions, not facts; thinking tokens are priced as output; re-estimate from the actual logs after the first earnings season):
 
-## 被否决的方案
+  ```text
+  Per-call assumptions (input / output tokens → USD)
+    Drafting, claude-sonnet-5
+      pre-registration draft        20K / 4K   → 0.08
+      quarterly update 03           60K / 10K  → 0.22
+      automatic revision 05         30K / 8K   → 0.14
+      monthly letter                40K / 6K   → 0.14
+      annual deep refresh 06–08, 11 (each)  100K / 15K → 0.35
+    Oversight, claude-fable-5-1
+      audit 04                      30K / 10K  → 0.80
+      blind read                    60K / 10K  → 1.10
+      qualitative test judgment     40K / 4K   → 0.60
+      inversion list                20K / 6K   → 0.50
+      letter audit                  20K / 6K   → 0.50
+      monthly random review         60K / 10K  → 1.10
+      annual report audits 09, 10, 12, 13 (each)  50K / 10K → 1.00
 
-- **全部用最强模型**：起草的输入最长，全换成最强模型后财报月会超过上限，而审计已经在兜底。
-- **全部用中档模型**：违反 DESIGN.md“审计和盲推用最强模型”的默认值，也削弱了盲推的独立性。
-- **监督角色用次强模型**：省下的钱不多，却动了防错的最后一道；次强模型保留为拒答回退的目标。
-- **起草默认用最便宜的模型**：论点更新的质量风险太大；它只作为降级的一步。
-- **每次调用前先数 token、按单次估价拦截**：多一次请求和延迟；按月累计的守卫对当前规模已经够用。
+  Per holding per quarter     0.08 + 0.22 + 0.14 + 0.80 + 1.10 + 0.60 + 0.50 = 3.44
+  Per candidate per quarter   0.22 (company manager draft only)
+  One round of quarterlies    2 × 3.44 + 3 × 0.22 = 7.54
+  Fixed per month             0.14 + 0.50 + 1.10 = 1.74
+  Annual report refresh       holdings 4 × 0.35 + 4 × 1.00 = 5.40; candidates 4 × 0.35 = 1.40
+  Full year                   4 × 7.54 + 12 × 1.74 + 2 × 5.40 + 3 × 1.40 = 66.04
+  Average per month           about 5.5
+  Earnings month              7.54 + 1.74 = 9.28
+  Worst month                 quarterlies, all annual reports and the fixed items in the same month: 9.28 + 10.80 + 4.20 = 24.28, over the cap, handled by the downgrade order
+  Uncertainty                 the oversight roles' thinking tokens are the biggest variable; actual spend may be about twice the assumption
+  ```
 
-## 日期
+## Rationale
+
+- The audit is the last line of defense against errors, and DESIGN.md says explicitly that it deserves the best model; the blind read has to answer independently of the drafting model, and a different, stronger model also reduces same-source bias.
+- Drafts are checked item by item by the audit, so errors from a mid-tier model get caught; drafting also has the longest inputs, so switching it to a mid-tier model saves the most.
+- By the estimate above, ordinary months are far below the cap and earnings months are within it; only months in which annual and quarterly reports coincide reach the cap, and the downgrade order exists for exactly those months.
+- Pause the candidates first, then downgrade drafting, and leave the audit alone: this is the order in DESIGN.md. Candidates are only points of comparison, and the audit quality of the holdings must not be cut.
+
+## Rejected alternatives
+
+- **The strongest model everywhere**: drafting has the longest inputs; with the strongest model for everything, earnings months would go over the cap, and the audit is already the safety net.
+- **A mid-tier model everywhere**: breaks the DESIGN.md default "the strongest model for audit and blind read", and weakens the independence of the blind read.
+- **The second-strongest model for the oversight roles**: saves little money but weakens the last line of defense; the second-strongest model is kept as the target of the refusal fallback.
+- **The cheapest model as the drafting default**: too much quality risk for thesis updates; it is only one step in the downgrade order.
+- **Counting tokens before each call and blocking on a per-call cost estimate**: one more request and more latency; a monthly cumulative guard is enough at the current scale.
+
+## Date
 
 2026-09-24

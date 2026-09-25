@@ -1,42 +1,42 @@
-# 0012 折现率检查不再在公司之间比较溢价
+# 0012 The discount-rate check no longer compares premiums across companies
 
-> 部分修正 [0004](0004-valuation-private-even-for-msft.md)。本记录不写任何公司的折现率或溢价。
+> Partly amends [0004](0004-valuation-private-even-for-msft.md). This record states no company's discount rate or premium.
 
-## 背景
+## Background
 
-thesis-ci 规范 0.1 的 C-DISCOUNT-RATE 除了检查折现率的算术，还做一项跨公司比较：按各公司的质量评级排序，质量更高的公司溢价不得更高。旧的 `owner.md` 第 5 条也把“质量更高的公司溢价不得更高”写成了规则。私有仓库现有的四个 C-DISCOUNT-RATE 错误，全都来自这项跨公司比较。
+In thesis-ci spec 0.1, C-DISCOUNT-RATE checked not only the arithmetic of the discount rate but also made a cross-company comparison: with companies sorted by quality rating, a higher-quality company could not have a higher premium. Rule 5 of the old `owner.md` also stated "a higher-quality company may not have a higher premium" as a rule. All four existing C-DISCOUNT-RATE errors in the private repository came from this cross-company comparison.
 
-所有者的估值规则 10 说的正相反：一家公司的溢价必须从这家公司自己的现金流记录推出，不能在系列内其他公司的溢价之间插值；规则 13 补充说，这条只禁止借用别家的溢价，不构成删减或改动系列排名的理由。00 §V1 把它写成：溢价只为这家公司现金流穿越完整周期的波动与可预测性定价，不查表、不套档位、不按芒格矩阵的格子或评级套数；§V10 另说，个别公司的溢价与评级次序不一致时，在 `method_note` 里写明依据，不为凑次序而调整。
+The owner's valuation rule 10 says the opposite: a company's premium must be derived from that company's own cash-flow record and must not be interpolated between the premiums of other companies in the series; rule 13 adds that this only forbids borrowing other companies' premiums and is no reason to cut or change the series ranking. 00 §V1 puts it this way: the premium prices only the volatility and predictability of this company's cash flows across a full cycle, with no lookup tables, no fixed tiers, and no numbers assigned by the cells of the Munger matrix or by rating; §V10 adds that when an individual company's premium does not follow the rating order, the basis is stated in `method_note`, and the premium is not adjusted to fit the order.
 
-所有者的投资宪法原文确实说过“更可预测、质量更高的企业一般溢价更低”——是“一般”，是倾向，不是跨公司的硬约束。
+The original text of the owner's investment constitution does say that "more-predictable, higher-quality businesses generally warrant a lower risk premium": "generally" marks a tendency, not a hard constraint across companies.
 
-## 选项
+## Options
 
-1. 保留跨公司比较，作为错误。
-2. 保留跨公司比较，降为警告。
-3. 只在同一领域的公司之间比较。
-4. 删去跨公司比较；检查改为 `total = risk_free + premium`、国债收益率的取值带日期、`method_note` 写明溢价的判断依据。
+1. Keep the cross-company comparison, as an error.
+2. Keep the cross-company comparison, downgraded to a warning.
+3. Compare only between companies in the same domain.
+4. Drop the cross-company comparison; the check becomes `total = risk_free + premium`, a dated Treasury yield reading, and a `method_note` that states the basis of the premium judgment.
 
-## 决定
+## Decision
 
-采用选项 4（thesis-ci 规范 0.2 的 C-DISCOUNT-RATE）。
+Option 4 (C-DISCOUNT-RATE in thesis-ci spec 0.2).
 
-- `owner.md` 的 R5 按 00 §C 重写，释义保留所有者“一般而言溢价更低”的原话，并在“系统怎么执行”里写明它是倾向、不是跨公司的硬约束。
-- [0004](0004-valuation-private-even-for-msft.md) 里“质量评级怎样影响折现率的溢价”一句不再成立：溢价按本公司自己的现金流记录判断，不按评级套档。0004 其余部分不变，顶部注明。
-- 设计文档第 5 阶段设想的“质量到溢价的映射表，写在公开的宪法里”，与 00 §V1 的“不查表、不套档位”冲突；在所有者就此另作决定之前，不写这样的映射表（见 STATUS 待办）。
+- R5 of `owner.md` is rewritten per 00 §C; its interpretation keeps the owner's own wording, "generally warrant a lower risk premium", and "How the system enforces it" states that this is a tendency, not a hard constraint across companies.
+- The phrase in [0004](0004-valuation-private-even-for-msft.md) "how the quality rating affects the discount-rate premium" no longer holds: the premium is judged from the company's own cash-flow record, not slotted by rating. The rest of 0004 is unchanged, with a note at its top.
+- The design document's Phase 5 idea of "a quality-to-premium mapping table, written in the public constitution" conflicts with the 00 §V1 rule "no lookup tables, no fixed tiers"; until the owner decides otherwise, no such mapping table is written (see the STATUS to-dos).
 
-## 理由
+## Rationale
 
-- 检查不能强迫所有者规则禁止的做法。跨公司比较会逼着某家公司为了“次序对”而调整溢价——这正是规则 10 和 §V10 要防的插值和凑次序。
-- 溢价应当解释的是这家公司现金流的波动与可预测性，而质量评级混合了生意、管理层、资本配置等多个维度；两者相关，但不是一一对应。
-- 算术、日期和依据说明才是机器能可靠检查的部分；溢价的判断是否站得住，由模型审查（04C）逐项审查，并看对称性。
+- A check must not force a practice the owner's rules forbid. The cross-company comparison would push some company's premium to be adjusted so that "the order is right", which is exactly the interpolation and order-fitting that rule 10 and §V10 guard against.
+- What the premium should explain is the volatility and predictability of this company's cash flows, while the quality rating mixes several dimensions such as business, management and capital allocation; the two are correlated, but they don't map one to one.
+- The arithmetic, the date and the stated basis are the parts a machine can check reliably; whether the premium judgment holds up is examined item by item by model review (04C), including its symmetry.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **保留为错误：** 直接违背规则 10，私有仓库现有的四个错误就是它造成的误报。
-- **降为警告：** 每次都报，只会制造噪音，或者暗中推着人去凑次序。
-- **只在同一领域内比较：** 仍是用别家的溢价约束本家的溢价，只是范围小一些。
+- **Keep it as an error:** contradicts rule 10 directly; the four existing errors in the private repository are false positives it caused.
+- **Downgrade to a warning:** it would fire every time and only produce noise, or quietly push people toward fitting the order.
+- **Compare only within the same domain:** still constrains one company's premium by other companies' premiums, just within a smaller scope.
 
-## 日期
+## Date
 
 2026-09-24

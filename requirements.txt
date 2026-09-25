@@ -1,10 +1,12 @@
-# 流水线与测试依赖。模型 SDK 只允许在 pipeline/llm.py 中使用（CI 检查 C-LLM-ENTRY）。
+# Pipeline and test dependencies. The model SDK may be used only in pipeline/llm.py (CI check C-LLM-ENTRY).
 anthropic
 pyyaml
 jsonschema
 pytest
-# OpenTimestamps 客户端（命令 ots）：pipeline/timestamp.py 打时间戳、升级、核验；lint job 也装它，C-PREREG-IMMUTABLE
-# 用 ots verify 核验预注册的证明（docs/decisions/0018）。两边都解析它的输出，所以固定版本。
+# OpenTimestamps client (the ots command): pipeline/timestamp.py uses it to stamp, upgrade and verify; the lint job
+# installs it too, and C-PREREG-IMMUTABLE verifies pre-registration proofs with ots verify (docs/decisions/0018).
+# Both parse its output, so the version is pinned.
 opentimestamps-client==0.7.2
-# CA 证书：pipeline/edgar.py 访问 SEC 时用它校验 TLS（python.org 的 macOS 版 Python 不带 CA 证书；docs/decisions/0017）。
+# CA certificates: pipeline/edgar.py uses them to verify TLS when accessing the SEC (the python.org macOS Python ships
+# without CA certificates; docs/decisions/0017).
 certifi

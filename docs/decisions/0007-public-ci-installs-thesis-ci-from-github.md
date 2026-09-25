@@ -1,45 +1,45 @@
-# 0007 公开仓库的 CI 从 GitHub 安装 thesis-ci
+# 0007 The public repository's CI installs thesis-ci from GitHub
 
-## 背景
+## Background
 
-owners-office 的 CI 要跑 `thesis-ci lint`。thesis-ci 是单独的公开仓库（见 `0001`），第 0 阶段还没有发布版本，规范也还是 v0.x，会随财报季调整。需要定下公开 CI 怎样拿到 thesis-ci；私有仓库的 CI 同样需要它。
+The owners-office CI has to run `thesis-ci lint`. thesis-ci is a separate public repository (see `0001`); in Phase 0 it has no release yet, and its spec is still v0.x and will change over the earnings seasons. We need to decide how the public CI gets thesis-ci; the private repository's CI needs it too.
 
-## 选项
+## Options
 
-1. 把 thesis-ci 的代码复制进 owners-office。
-2. 用 git 子模块引用 thesis-ci。
-3. 用 pip 从 GitHub 安装：`requirements-lint.txt` 写 `thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@main`。
-4. 发布到 PyPI，按版本号安装。
-5. 在 thesis-ci 里做一个可复用的 GitHub Action，owners-office 用 `uses:` 调用。
+1. Copy thesis-ci's code into owners-office.
+2. Reference thesis-ci as a git submodule.
+3. Install it with pip from GitHub: `requirements-lint.txt` says `thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@main`.
+4. Publish it on PyPI and install it by version number.
+5. Build a reusable GitHub Action in thesis-ci and call it from owners-office with `uses:`.
 
-## 决定
+## Decision
 
-采用选项 3。
+Option 3.
 
-- `requirements-lint.txt` 只有这一行；公开 CI 的 lint 任务 `pip install -r requirements-lint.txt` 后运行 `thesis-ci lint .`。
-- 私有仓库的 CI 同时检出本仓库，用同一个 `requirements-lint.txt` 安装，保证两边用的是同一个版本。
-- thesis-ci 打出第一个版本标签后，把 `@main` 改成固定标签（例如 `@v0.1.0`），升级 thesis-ci 变成一次有记录的提交。
-- 第 4 阶段 thesis-ci 定 v1.0 时，再考虑发布到 PyPI 或提供可复用 Action。
+- `requirements-lint.txt` has only this line; the public CI's lint job runs `pip install -r requirements-lint.txt` and then `thesis-ci lint .`.
+- The private repository's CI also checks out this repository and installs from the same `requirements-lint.txt`, so both sides use the same version.
+- Once thesis-ci has its first version tag, `@main` changes to a fixed tag (for example `@v0.1.0`), so that upgrading thesis-ci becomes a recorded commit.
+- When thesis-ci reaches v1.0 in Phase 4, consider publishing it on PyPI or providing a reusable Action.
 
-## 理由
+## Rationale
 
-- 只有一份代码，不会出现复制品和原件不一致。
-- 任何人照着 `requirements-lint.txt` 就能在本地复现 CI，正好兑现“任何人都能安装”的承诺。
-- 不需要令牌：thesis-ci 是公开仓库。
-- 子模块和 PyPI 在 v0.x 阶段都是额外负担，而版本标签已经能提供可复现性。
+- There is only one copy of the code, so no copy can drift from the original.
+- Anyone can reproduce the CI locally from `requirements-lint.txt`, which delivers on the promise that "anyone can install it".
+- No token is needed: thesis-ci is a public repository.
+- Submodules and PyPI are extra overhead at v0.x, and version tags already provide reproducibility.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **复制代码**：两份代码必然漂移，lint 的结果会和 thesis-ci 自己的测试不一致。
-- **git 子模块**：检出和更新都更麻烦，CI 还要多一步，收益与固定标签相同。
-- **PyPI**：v0.x 期间改动频繁，发版成本高；等 v1.0 再说。
-- **可复用 Action**：以后可以做，但第 0 阶段还没有这层包装，先用最简单的安装方式。
+- **Copying the code**: two copies are bound to drift, and the lint results would disagree with thesis-ci's own tests.
+- **git submodule**: checking out and updating are more cumbersome and CI needs an extra step, for the same benefit as a fixed tag.
+- **PyPI**: changes are frequent during v0.x, which makes releases costly; wait for v1.0.
+- **Reusable Action**: can come later, but that wrapper doesn't exist yet in Phase 0; start with the simplest way to install.
 
-## 影响
+## Consequences
 
-- 必须先把 thesis-ci 推到 GitHub，owners-office 的 CI 才能通过（STATUS 待办 T3 的推送顺序）。
-- 在固定标签之前，thesis-ci 主分支上的不兼容改动会直接让 owners-office 的 CI 变红；这正是尽快打标签的理由。
+- thesis-ci has to be pushed to GitHub before the owners-office CI can pass (the push order in STATUS to-do T3).
+- Until a tag is pinned, an incompatible change on thesis-ci's main branch turns the owners-office CI red immediately; that is exactly why a tag should be set soon.
 
-## 日期
+## Date
 
 2026-09-24

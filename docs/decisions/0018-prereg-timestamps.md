@@ -1,62 +1,62 @@
-# 0018 预注册的时间戳：合并进 main 即打，每 6 小时升级，CI 核对文件未改
+# 0018 Pre-registration timestamps: stamped on merge into main, upgraded every 6 hours, CI checks that the file is unchanged
 
-## 背景
+## Background
 
-thesis-ci SPEC §2.1 要求每个预注册条目文件（`<期间>.yml` 与 `<期间>-owner.yml`）旁边有 OpenTimestamps 证明 `<文件>.ots`；设计文档要求“合并时加 OpenTimestamps 时间戳，任何人都能独立核对没有倒填”。`C-PREREG-IMMUTABLE` 在截止时间过后要求证明存在；PATH 上有客户端时（thesis-ci v0.2.1 起），先用 `ots info` 在本地比对证明承诺的 sha256 与文件的 sha256，不符或读不出即报错；相符之后再运行 `ots verify -f <文件> <文件>.ots`：通过即可，客户端说证明本身坏了才报错，其余（没有比特币节点、待确认、日历联系不上、超时）只报警。STATUS 待办 T8 要在 APP 第一份预注册（业绩约 11 月初）之前接好。
+thesis-ci SPEC §2.1 requires an OpenTimestamps proof `<file>.ots` next to every pre-registration items file (`<period>.yml` and `<period>-owner.yml`); the design document requires that "an OpenTimestamps timestamp is added at merge, so anyone can independently check that nothing was backdated". After the deadline, `C-PREREG-IMMUTABLE` requires the proof to exist; when the client is on the PATH (from thesis-ci v0.2.1), it first uses `ots info` to compare locally the sha256 the proof commits to with the sha256 of the file, and reports an error if they differ or the proof can't be read; once they match, it runs `ots verify -f <file> <file>.ots`: passing is enough, an error is reported only when the client says the proof itself is broken, and everything else (no Bitcoin node, pending, calendar unreachable, timeout) only warns. STATUS to-do T8 has to be wired up before APP's first pre-registration (results around early November).
 
-读 opentimestamps-client 0.7.2（PyPI 上的最新版）的源码并实测，下面几点决定了设计：
+Reading the source of opentimestamps-client 0.7.2 (the latest version on PyPI) and testing it showed the following points, which shaped the design:
 
-1. **打时间戳**只把 sha256(sha256(文件) ‖ 16 字节随机数) 发给默认的四个日历，至少两个在 5 秒内应答才写出证明；文件和它的哈希都不离开本机。刚写出的证明是“待确认”：日历承诺把它写进比特币，通常几个小时后才有区块。
-2. **核验**先在本地比对文件的 sha256，不符即 “File does not match original!”，这一步不需要网络。之后核验比特币确认，必须有比特币节点（Bitcoin Core 的 RPC，剪枝节点也行）。客户端没有区块浏览器后备：没有节点只报 “Could not connect to Bitcoin node”；`--no-bitcoin` 只打印“请手工核对区块 N 的 merkle root 是否为 X”。区块时间也只在节点核验通过后打印，而且只到日期。
-3. **待确认的证明**核验时要联系日历。日历联系不上时（实测：本机 Python 缺 CA 证书，TLS 失败），输出里没有 “pending”：thesis-ci v0.2.0 的 `C-PREREG-IMMUTABLE` 因此把完好的证明判为错误，还提示“文件在打时间戳之后改过”。这个误报在 v0.2.1 修好了：先在本地比对哈希，相符之后网络上的失败一律只报警。**升级过的证明**核验时不再联系日历。
-4. **升级**（`ots upgrade`）有变化时把旧证明改名为 `<证明>.bak`，留在原地；证明仍待确认时以状态 1 退出；向日历取升级时没有超时。
+1. **Stamping** sends only sha256(sha256(file) ‖ 16 random bytes) to the four default calendars, and writes a proof only if at least two of them answer within 5 seconds; neither the file nor its hash leaves the machine. A freshly written proof is "pending": the calendars promise to write it into Bitcoin, and there is usually a block only a few hours later.
+2. **Verification** first compares the file's sha256 locally, and a mismatch gives "File does not match original!"; this step needs no network. After that it verifies the Bitcoin confirmation, which requires a Bitcoin node (Bitcoin Core's RPC; a pruned node works too). The client has no block explorer fallback: without a node it only reports "Could not connect to Bitcoin node"; `--no-bitcoin` only prints "check by hand that the merkle root of block N is X". The block time is also printed only after the node verification passes, and only to the day.
+3. **Pending proofs** need to contact the calendars when they are verified. When the calendars can't be reached (seen in testing: the local Python lacks CA certificates, so TLS fails), the output does not contain "pending": thesis-ci v0.2.0's `C-PREREG-IMMUTABLE` therefore judged an intact proof an error, and even suggested that "the file was changed after it was timestamped". This false positive was fixed in v0.2.1: the hash is compared locally first, and once it matches, any network failure is only a warning. **Upgraded proofs** don't contact the calendars when they are verified.
+4. **Upgrading** (`ots upgrade`), when something changes, renames the old proof to `<proof>.bak` and leaves it in place; it exits with status 1 when the proof is still pending; fetching the upgrade from the calendars has no timeout.
 
-## 选项
+## Options
 
-1. **何时打：** (a) 作者在 PR 分支上打；(b) 合并进 main 后由工作流打；(c) 截止时刻统一打。
-2. **何时升级：** (a) 不升级，核验时再问日历；(b) 定时升级，提交回仓库。
-3. **CI 怎样核验比特币确认：** (a) 在 CI 里运行比特币节点；(b) 查区块浏览器的接口；(c) 不核验比特币这一层，只核对文件与证明相符，比特币这一层留给有节点的人。
-4. **已有证明而文件内容变了：** (a) 自动重打、覆盖；(b) 拒绝，截止之前确需改动时在同一个 PR 里删掉旧证明。
-5. **截止时间已过：** (a) 照样打；(b) 拒绝。
+1. **When to stamp:** (a) the author stamps on the PR branch; (b) a workflow stamps after the merge into main; (c) stamp everything at the deadline.
+2. **When to upgrade:** (a) never upgrade, and ask the calendars at verification time; (b) upgrade on a schedule and commit back to the repository.
+3. **How CI verifies the Bitcoin confirmation:** (a) run a Bitcoin node in CI; (b) query a block explorer API; (c) don't verify the Bitcoin layer, only check that the file and the proof match, and leave the Bitcoin layer to anyone with a node.
+4. **A proof exists but the file's content has changed:** (a) restamp automatically and overwrite; (b) refuse; when a change before the deadline is really needed, delete the old proof in the same PR.
+5. **The deadline has passed:** (a) stamp anyway; (b) refuse.
 
-## 决定
+## Decision
 
-采用 1(b)、2(b)、3(c)、4(b)、5(b)。
+1(b), 2(b), 3(c), 4(b), 5(b).
 
-- **`pipeline/timestamp.py`**：`stamp(paths)`、`upgrade(paths)`、`status(path)`、`verify(path)`，命令行 `python -m pipeline.timestamp stamp|upgrade|status|verify [文件…] [--prereg]`。每一步都调用客户端 `ots`、解析它的输出，不自己读写证明格式；被打时间戳的文件只读不写。
-  - `stamp` 把证明写在文件旁边，同一内容已有证明时什么都不做。拒绝：条目文件的截止时间已过（含截止时刻本身）或读不出（没有、不带时区、重复键）；`<文件>.ots` 已存在而证明的是另一份内容，或者读不出。打完再读一遍新证明，确认它承诺的正是这份内容。
-  - `upgrade` 在临时副本上运行，有变化才原子地替换原证明，仓库里不留 `.bak`；仍待确认不算失败，没有一个日历答复算失败。
-  - `status` 离线给出 missing / pending / attested / error：证明承诺的 sha256 与文件现在的是否一致、待确认的日历、比特币区块高度与该区块的 merkle root；已确认的再跑一次 `ots verify`，有节点时带上区块日期。
-  - `verify` 与 `C-PREREG-IMMUTABLE`（thesis-ci v0.2.1）一步不差：先 `ots info` 在本地比对 sha256，再 `ots verify`；同样的两条正则（`OTS_INFO_DIGEST_RE`、`OTS_BAD_PROOF_RE`）、同样的 120 秒上限；测试在装有 thesis-ci 时用同一个假客户端逐条比对两边的判定：通过、无法在本机核验、失败。
-  - 每次调用限 120 秒；一律加 `--no-cache`，结果只取决于证明文件本身，与 CI 的空缓存一致；`TZ=UTC`，区块日期按 UTC 打印。
-- **`.github/workflows/timestamp.yml`**：一个 job。触发：push 到 main 且改动了 `companies/*/prereg/*.yml`；每 6 小时一次；手动。步骤：`stamp --prereg`（截止未过的全部条目文件，已有同一内容证明的跳过）→ `upgrade --prereg`（全部证明）→ 有新打或升级的 `*.ots` 就提交回 main。提交人是 `github-actions[bot]`（GitHub 的 noreply 地址），最后一行是固定的 `Co-Authored-By` 尾注。
-  - 权限：工作流默认 `contents: read`；只有这个 job 有 `contents: write`，且只在 `refs/heads/main` 上运行，手动在别的分支上触发也不会写 main。仓库的默认令牌权限是只读，写权限在这里明确给出。不用任何密钥。
-  - 不会循环：用 `GITHUB_TOKEN` 推送的提交不触发任何工作流；提交只含 `*.ots`，不匹配触发用的 paths；没有变化就不提交。`concurrency` 让各次运行排队，不并行。同一条规则也让 lint 不为这些提交运行；它们只含 `*.ots`，下一次推送时一并检查。
-  - 推送被拒而 main 已经前进时，丢掉这次提交，从新的 main 重做，最多三次，证明总是针对 main 上最新的内容；main 没变而推送被拒（例如以后加了分支保护）就停下报错。
-  - 有拒绝（已有证明而内容变了）或没打成（日历联系不上）时，能提交的照样提交，这一轮以失败结束；没打成的下一轮（最迟 6 小时后）再打。
-- **lint job** 安装客户端，`C-PREREG-IMMUTABLE` 因此实际核验证明：截止之后文件改过即报错；没有比特币节点、仍待确认、日历联系不上只报警（v0.2.1 起；v0.2.0 会把“待确认而日历联系不上”误判为错误）。
-- **客户端版本**固定为 `opentimestamps-client==0.7.2`，写在 `requirements.txt`；lint 与时间戳 job 用 `pip install -c requirements.txt opentimestamps-client` 借用这个约束。升级客户端之前，先核对 `ots` 的输出与 thesis-ci 的两条正则。
-- **截止之前改条目文件**（15A：公司公布发布日后只改 `event` 与 `deadline`，条目一字不改）：在同一个 PR 里删掉旧证明（git 历史保留它），合并后工作流给新内容打时间戳。忘了删，工作流拒绝并以失败结束。
-- **这次不做：** 结算文件的 `merged_at` 与 `ots_proof` 由结算流水线写；区块时间早于截止时间这一条，没有检查去比（`C-PREREG-IMMUTABLE` 不比，CI 也拿不到区块时间）。
+- **`pipeline/timestamp.py`**: `stamp(paths)`, `upgrade(paths)`, `status(path)`, `verify(path)`, command line `python -m pipeline.timestamp stamp|upgrade|status|verify [file…] [--prereg]`. Every step calls the `ots` client and parses its output, without reading or writing the proof format itself; the timestamped files are only read, never written.
+  - `stamp` writes the proof next to the file, and does nothing when a proof for the same content already exists. It refuses when the items file's deadline has passed (including the deadline moment itself) or can't be read (missing, without a time zone, duplicate keys), or when `<file>.ots` already exists but proves different content, or can't be read. After stamping, it reads the new proof again to confirm that it commits to exactly this content.
+  - `upgrade` runs on a temporary copy and replaces the original proof atomically, only when something changed, so no `.bak` is left in the repository; a proof that is still pending is not a failure, but no calendar answering is.
+  - `status` reports missing / pending / attested / error offline: whether the sha256 the proof commits to matches the file's current one, the pending calendars, the Bitcoin block height and that block's merkle root; for a confirmed proof it also runs `ots verify` once more, which adds the block date when a node is available.
+  - `verify` matches `C-PREREG-IMMUTABLE` (thesis-ci v0.2.1) step for step: first `ots info` to compare the sha256 locally, then `ots verify`; the same two regular expressions (`OTS_INFO_DIGEST_RE`, `OTS_BAD_PROOF_RE`) and the same 120-second limit; when thesis-ci is installed, a test runs the same fake client through both and compares their verdicts one by one: pass, cannot be verified on this machine, fail.
+  - Every call is limited to 120 seconds; `--no-cache` is always added, so the result depends only on the proof file itself, like CI's empty cache; `TZ=UTC`, so block dates are printed in UTC.
+- **`.github/workflows/timestamp.yml`**: one job. Triggers: a push to main that changes `companies/*/prereg/*.yml`; every 6 hours; manual. Steps: `stamp --prereg` (all items files whose deadline has not passed, skipping those that already have a proof of the same content) → `upgrade --prereg` (all proofs) → if any `*.ots` was newly stamped or upgraded, commit it back to main. The committer is `github-actions[bot]` (GitHub's noreply address), and the last line is the fixed `Co-Authored-By` trailer.
+  - Permissions: the workflow default is `contents: read`; only this job has `contents: write`, and it runs only on `refs/heads/main`, so a manual trigger on another branch can't write to main either. The repository's default token permission is read-only, and write permission is granted explicitly here. No secrets are used.
+  - No loops: commits pushed with `GITHUB_TOKEN` trigger no workflow; the commits contain only `*.ots`, which doesn't match the trigger's paths; nothing is committed when nothing changed. `concurrency` queues the runs, so they don't run in parallel. The same rule also means lint doesn't run for these commits; they contain only `*.ots`, which gets checked with the next push.
+  - If the push is rejected because main has moved on, the commit is dropped and redone from the new main, up to three times, so the proofs always cover the latest content on main; if the push is rejected while main has not changed (for example because branch protection is added later), the job stops with an error.
+  - When there is a refusal (a proof exists but the content has changed) or a stamp did not happen (calendars unreachable), whatever can be committed is still committed, and the run ends in failure; what was not stamped is stamped in the next run (at most 6 hours later).
+- **The lint job** installs the client, so that `C-PREREG-IMMUTABLE` really verifies the proofs: a file changed after the deadline is an error; no Bitcoin node, still pending or calendars unreachable only warn (from v0.2.1; v0.2.0 would misjudge "pending with the calendars unreachable" as an error).
+- **Client version** pinned to `opentimestamps-client==0.7.2` in `requirements.txt`; the lint and timestamp jobs borrow this constraint with `pip install -c requirements.txt opentimestamps-client`. Before upgrading the client, check the output of `ots` against thesis-ci's two regular expressions.
+- **Changing an items file before the deadline** (15A: once the company announces its release date, only `event` and `deadline` change, and the items stay word for word): delete the old proof in the same PR (the git history keeps it), and after the merge the workflow timestamps the new content. If the deletion is forgotten, the workflow refuses and ends in failure.
+- **Not done this time:** `merged_at` and `ots_proof` in the settlement file are written by the settlement pipeline; nothing checks that the block time is before the deadline (`C-PREREG-IMMUTABLE` doesn't compare them, and CI can't get the block time either).
 
-## 理由
+## Rationale
 
-- **合并即打。** 设计文档要的是“合并时”。GitHub 记录合并时间（结算文件的 `merged_at`），时间戳则独立于 GitHub，证明合并进 main 的这份内容在那时已经存在。15A 要求至少提前 72 小时合并，比特币确认通常几个小时，截止之前来得及。
-- **定时升级。** 升级不再是为了躲开误报（thesis-ci v0.2.1 已修好），但仍然值得在截止之前做完：待确认的证明离不开日历服务器，日历下线或删了数据，比特币这一层就再也核验不了；升级后的证明带着通到比特币区块头的全部路径，核验只需要区块头，任何人用自己的节点都能核验，不必信任日历，也不必信任本系统。
-- **CI 只核对文件未改。** CI 能做、也最要紧的是本地哈希比对：截止之后改过的文件，`C-PREREG-IMMUTABLE` 用 `ots info` 取出证明承诺的 sha256 一比就报错，不联系任何服务器。比特币这一层交给任何有节点的人独立完成；没有节点时，`status` 给出区块高度与 merkle root，可以在任一区块浏览器上手工核对。
-- **不覆盖、截止后不打。** `C-PREREG-IMMUTABLE` 只核对证明与文件相符，不比较区块时间与截止时间。如果截止之后还能重打，改过的文件配上新证明照样通过检查，时间戳就没有意义。所以两条拒绝放在唯一会写证明的地方。截止之前的正当改动，要人明确删掉旧证明，改动在 PR 里看得见。
-- **证明的时间是区块时间。** 截止前最后几个小时才合并的文件（例如所有者的改写），区块可能落在截止之后，那时截止前已存在只能靠 GitHub 的 `merged_at`。所有者的改写最好至少提前一天合并。
+- **Stamp on merge.** The design document asks for it "at merge". GitHub records the merge time (`merged_at` in the settlement file), while the timestamp is independent of GitHub and proves that the content merged into main existed at that time. 15A requires merging at least 72 hours early, and Bitcoin confirmation usually takes a few hours, so it arrives before the deadline.
+- **Scheduled upgrades.** Upgrading is no longer needed to avoid the false positive (thesis-ci v0.2.1 fixed it), but it is still worth finishing before the deadline: a pending proof depends on the calendar servers, and if a calendar goes offline or deletes its data, the Bitcoin layer can never be verified; an upgraded proof carries the whole path to the Bitcoin block header, verification needs only block headers, and anyone can verify it with their own node, without trusting the calendars or this system.
+- **CI only checks that the file is unchanged.** What CI can do, and what matters most, is the local hash comparison: for a file changed after the deadline, `C-PREREG-IMMUTABLE` takes the sha256 the proof commits to from `ots info`, compares, and reports an error, without contacting any server. The Bitcoin layer is left to anyone with a node to verify independently; without a node, `status` gives the block height and the merkle root, which can be checked by hand on any block explorer.
+- **No overwriting, no stamping after the deadline.** `C-PREREG-IMMUTABLE` only checks that the proof and the file match; it does not compare the block time with the deadline. If a file could be restamped after the deadline, a changed file with a new proof would still pass the check, and the timestamp would mean nothing. So both refusals sit in the only place that writes proofs. A legitimate change before the deadline needs a person to delete the old proof explicitly, and the change is visible in the PR.
+- **The time of a proof is the block time.** For a file merged only in the last few hours before the deadline (for example, the owner's rewrite), the block may fall after the deadline, and then its existence before the deadline rests only on GitHub's `merged_at`. The owner's rewrites are best merged at least one day early.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **PR 分支上打：** 合并之前内容还会变，每改一次都要重打；证明的是草稿，不是合并进 main 的内容。
-- **截止时刻统一打：** 比特币区块一定晚于截止时间，证明不了截止之前的内容。
-- **不升级：** 核验永远依赖日历服务器；日历下线或删了数据，没升级的证明就只剩“文件与证明相符”这一层，比特币这一层再也核验不了。
-- **CI 里运行比特币节点：** 节点要先把整条链下载并校验一遍（剪枝节点也一样），一次 CI 运行做不到。
-- **查区块浏览器：** 等于信任第三方；`C-PREREG-IMMUTABLE` 只认客户端的判断，结果仍是“无法核验”。需要人工核对时，`status` 给出的区块高度与 merkle root 已经够用。
-- **自动覆盖证明：** 截止之后的改动可以悄悄配上新证明；截止之前的正当改动也应当在 PR 里看得见。
-- **截止之后照样打：** 同上：证明不了任何事，还会让检查通过。
+- **Stamping on the PR branch:** the content still changes before the merge, so every change would need a new stamp; the proof would cover a draft, not the content merged into main.
+- **Stamping everything at the deadline:** the Bitcoin block is always later than the deadline, so it can't prove the content existed before the deadline.
+- **No upgrades:** verification would depend on the calendar servers forever; if a calendar goes offline or deletes its data, an un-upgraded proof is left with only the "file matches proof" layer, and the Bitcoin layer can never be verified again.
+- **Running a Bitcoin node in CI:** a node first has to download and validate the whole chain (a pruned node too), which one CI run can't do.
+- **Querying a block explorer:** amounts to trusting a third party; `C-PREREG-IMMUTABLE` accepts only the client's verdict, so the result would still be "cannot verify". When a check by hand is needed, the block height and merkle root from `status` are enough.
+- **Overwriting proofs automatically:** a change after the deadline could quietly get a new proof; and a legitimate change before the deadline should be visible in the PR.
+- **Stamping after the deadline anyway:** as above: it proves nothing, and it lets the check pass.
 
-## 日期
+## Date
 
 2026-09-25

@@ -1,38 +1,38 @@
-# 0006 数字引用主人报告的页码，一手文件先登记待回填
+# 0006 Numbers cite the owner's report pages; primary filings are registered first and backfilled later
 
-> **部分被 [0009](0009-prompt-set-v3.md) 取代（2026-09-24）：** 自有报告的来源标签改用 00 §E1 的命名 `<代码>-RPT<编号>-<日期>`，迁移须在第一份预注册打时间戳之前完成；页码位置 `#pN` 的写法不变。登记号的回填见 [0013](0013-sec-edgar-access.md)。
+> **Partly superseded by [0009](0009-prompt-set-v3.md) (2026-09-24):** source tags for own reports switch to the 00 §E1 naming `<ticker>-RPT<number>-<date>`, and the migration must be finished before the first pre-registration is timestamped; the `#pN` page locator stays as it is. For the backfill of accession numbers, see [0013](0013-sec-edgar-access.md).
 
-## 背景
+## Background
 
-硬规则要求档案中的每个数字都带来源标签，标签在 `sources.yml` 里登记。第 0 阶段手里的资料是：主人的五份企业报告（02 报告，PDF）、三份 Business Library 行业研究、PDD 的 2025 财年 20-F，以及两封伯克希尔股东信。其他公司的 10-K、10-Q 不在工作区里，EDGAR 暂时也访问不了（见 `0005`）。thesis-ci 规范允许标签带位置：`TAG#LOCATOR`。
+The hard rules require every number in an archive to carry a source tag, registered in `sources.yml`. The material at hand in Phase 0 was the owner's five company reports (02 reports, PDF), three Business Library industry studies, PDD's 20-F for fiscal 2025, and two Berkshire shareholder letters. The other companies' 10-Ks and 10-Qs were not in the workspace, and EDGAR could not be reached for the time being (see `0005`). The thesis-ci spec allows a tag to carry a location: `TAG#LOCATOR`.
 
-## 选项
+## Options
 
-1. 只引用一手文件（10-K、10-Q、20-F），拿不到的数字先不写。
-2. 引用主人报告的 PDF 页码，同时把报告背后的一手文件在 `sources.yml` 里登记，登记号待回填。
-3. 引用主人报告的章节号而不是页码。
+1. Cite only primary filings (10-K, 10-Q, 20-F), and leave out for now the numbers that can't be sourced from them.
+2. Cite the PDF page numbers of the owner's reports, and at the same time register the primary filings behind the reports in `sources.yml`, with the accession numbers to be backfilled.
+3. Cite the section numbers of the owner's reports instead of page numbers.
 
-## 决定
+## Decision
 
-采用选项 2。
+Option 2.
 
-- 主人报告的标签是 `<TICKER>-RPT-2026-09`（报告日期都是 2026 年 9 月）；行业研究是 `IND-<ID>-2026-09`；PDD 年报是 `PDD-20F-FY2025`；伯克希尔股东信是 `BRK-LTR-<YYYY>`。
-- 位置写 `#p<N>`，N 是 PDF 的物理页码，即抽取文本里 `===== [page N] =====` 标记的页码，从 1 开始；不是报告上印的页码。Markdown 里写成 `[src:MSFT-RPT-2026-09#p10]` 这样的形式，YAML 里写 `source: MSFT-RPT-2026-09#p10`。
-- 报告和行业研究是私有文件，条目写 `location: private:reports/<文件名>`；公开读者打不开，但出处清楚，审计（能读私有仓库）可以逐条核对。
-- 报告引用的一手文件（例如某年的 10-K）作为 `kind: filing` 条目登记，`accession: null`，待 EDGAR 可用后回填（见 `0005`）。之后审计核对一手文件时，可以把引用从报告页码改指一手文件，改动逐条进 diff。
+- The owner's reports are tagged `<TICKER>-RPT-2026-09` (all the reports are dated September 2026); industry studies are `IND-<ID>-2026-09`; PDD's annual report is `PDD-20F-FY2025`; Berkshire's shareholder letters are `BRK-LTR-<YYYY>`.
+- The location is written `#p<N>`, where N is the physical page number in the PDF, that is, the page number in the `===== [page N] =====` markers of the extracted text, starting from 1; it is not the page number printed on the report. In Markdown this is written like `[src:MSFT-RPT-2026-09#p10]`, in YAML `source: MSFT-RPT-2026-09#p10`.
+- The reports and industry studies are private files, so their entries say `location: private:reports/<file name>`; public readers can't open them, but the source is clear, and the audit (which can read the private repository) can check each item.
+- Primary filings cited by the reports (for example a given year's 10-K) are registered as `kind: filing` entries with `accession: null`, to be backfilled once EDGAR is available (see `0005`). Later, when the audit checks the primary filings, a citation can be switched from the report page to the primary filing, with every change in the diff.
 
-## 理由
+## Rationale
 
-- 主人的报告就是论点的出发点，引用它最忠实地反映“这个数字是从哪里来的”；页码让审计一步就能找到原文。
-- 物理页码对抽取文本和 PDF 阅读器都成立，印刷页码则因封面、目录而对不上。
-- 诚实地标明这是二手出处，同时把一手文件登记在案，回填就是机械工作，不需要重新研究。
-- 只引用一手文件的话，第 0 阶段大部分数字都得留空，thesis tests 的基线也写不出来。
+- The owner's reports are where the theses start from, so citing them is the most faithful answer to "where did this number come from"; the page number lets the audit find the original text in one step.
+- Physical page numbers hold for both the extracted text and PDF readers, while printed page numbers are thrown off by covers and tables of contents.
+- It says honestly that this is a secondary source while putting the primary filings on record, so the backfill is mechanical work that needs no new research.
+- Citing only primary filings would leave most Phase 0 numbers empty, and the baselines of the thesis tests could not be written.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **只引用一手文件**：一手文件现在拿不到，结果是大量数字空缺，第 0 阶段无法交付。
-- **引用章节号**：一节常常跨好几页，审计要自己找；章节编号在不同报告里也不统一。
+- **Primary filings only**: the primary filings can't be obtained now, so many numbers would be missing and Phase 0 could not be delivered.
+- **Section numbers**: a section often spans several pages, so the audit would have to search; section numbering also differs between reports.
 
-## 日期
+## Date
 
 2026-09-24

@@ -1,58 +1,58 @@
-# 0002 持仓与候选名单
+# 0002 Holdings and candidate list
 
-> **已被 [0008](0008-portfolio-app-pdd.md) 取代（2026-09-24）：** 所有者确认持仓为 APP、PDD；候选为 AXP、MSFT、SPGI；BRK 归档。本记录保留作历史。
+> **Superseded by [0008](0008-portfolio-app-pdd.md) (2026-09-24):** the owner confirmed the holdings as APP and PDD; the candidates are AXP, MSFT and SPGI; BRK is archived. This record is kept for history.
 
-> 状态：**待复核**。做出决定之后，同一天工作区里出现了 APP 的企业报告，见文末“新证据”。
+> Status: **pending review**. Later on the day the decision was made, APP's company report appeared in the workspace; see "New evidence" at the end.
 
-## 背景
+## Background
 
-DESIGN.md 的第 0 阶段任务写的是“为 4 个持仓生成 thesis.yml 和两分钟故事”，例子用的是 AXP。开工时主人给出的持仓是“APP”和 PDD。开工时工作区里的企业报告（02 报告）有五份：MSFT、AXP、PDD、BRK、SPGI，没有代码为 APP 的公司的报告。候选公司的规则是“总部按宪法第 4 条的入选门槛排名取前三家，每季自动轮换”，但排名要等第 3 阶段的资本配置官上线。
+The Phase 0 task in DESIGN.md is "generate thesis.yml and two-minute stories for the 4 holdings", and its example uses AXP. At kickoff the owner gave the holdings as "APP" and PDD. At kickoff the workspace had five company reports (02 reports): MSFT, AXP, PDD, BRK and SPGI, and no report on a company with the ticker APP. The rule for candidate companies is "HQ ranks companies against the entry bar of rule 4 of the constitution, takes the top three and rotates them automatically each quarter", but the ranking has to wait until the capital allocator comes online in Phase 3.
 
-需要定下：“APP”指哪家公司、持仓与候选各是谁、第 0 阶段给哪些公司建档。
+We need to decide which company "APP" refers to, who the holdings and the candidates are, and which companies get archives in Phase 0.
 
-## 选项
+## Options
 
-1. 把“APP”当作代码为 APP 的另一家公司，另起档案。
-2. 把“APP”理解为 AXP 的笔误：开工时只有 AXP 的报告对得上，DESIGN.md 的 thesis.yml 示例也是 AXP（依赖支付与卡组织行业模块，而这个行业研究正好在工作区里）。
-3. 停下来问主人。
+1. Treat "APP" as another company with the ticker APP and start a separate archive for it.
+2. Read "APP" as a typo for AXP: at kickoff only the AXP report matched, and the thesis.yml example in DESIGN.md is also AXP (depending on the payments and card networks industry module, whose industry research happens to be in the workspace).
+3. Stop and ask the owner.
 
-## 决定
+## Decision
 
-采用选项 2，并请主人确认。
+Option 2, with a request for the owner to confirm.
 
-- 持仓（`status: holding`）：AXP、PDD。
-- 候选（`status: candidate`）：MSFT、BRK、SPGI，也就是工作区里另外三份企业报告。第 3 阶段资本配置官上线之前名单不轮换；之后按 DESIGN.md 每季由总部排名轮换。
-- 第 0 阶段给全部五家公司建 thesis.yml、story.md 和 sources.yml；验收标准“每家至少 5 条 thesis tests”对五家同样适用。候选公司只跑定量测试和公司经理草稿（DESIGN.md 的成本规则），不预注册、不盲推。
-- 如果主人指的不是 AXP：把 AXP 改成 `candidate` 或 `archive`，为那家公司建 thesis.yml、story.md、sources.yml 和私有的 valuation.yml。改动是一次普通提交，不涉及资金。
+- Holdings (`status: holding`): AXP, PDD.
+- Candidates (`status: candidate`): MSFT, BRK, SPGI, that is, the other three company reports in the workspace. The list does not rotate until the Phase 3 capital allocator comes online; after that, HQ ranks and rotates it every quarter as DESIGN.md describes.
+- In Phase 0 all five companies get thesis.yml, story.md and sources.yml; the acceptance criterion "at least 5 thesis tests per company" applies to all five. Candidate companies run only the quantitative tests and the company manager's draft (the DESIGN.md cost rule), with no pre-registration and no blind read.
+- If the owner did not mean AXP: change AXP to `candidate` or `archive`, and create thesis.yml, story.md, sources.yml and the private valuation.yml for that company. The change is an ordinary commit and involves no money.
 
-## 理由
+## Rationale
 
-- 开工时只有 AXP 这份报告能对上，且 DESIGN.md 自己就拿 AXP 作持仓示例；按 APP 另起档案，手里没有任何材料，只能编造，违反“不许编造数字”。
-- 记录持仓状态不是资金操作，也不是修宪；按授权范围不应为此停工。理解错了的代价很小，改一个字段即可。
-- 五家都建档，候选公司才有东西和持仓比较，符合宪法的机会成本原则。
+- At kickoff only the AXP report matched, and DESIGN.md itself uses AXP as its holding example; starting a separate APP archive with no material at hand could only mean making numbers up, which breaks "never make up numbers".
+- Recording holding status is neither a money operation nor a constitutional amendment; under the scope of authority, work should not stop for it. The cost of a misunderstanding is small: changing one field.
+- With archives for all five, the candidates have something to be compared with the holdings on, in line with the constitution's opportunity cost principle.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **另起 APP 档案**（开工时）：没有报告，数字只能编造或留空，thesis tests 写不出来。
-- **停下来问**：不属于两类必须上报的事项，会拖住整个第 0 阶段，而第 0 阶段要在第一家持仓发布业绩之前完成。
-- **只给两家持仓建档**：候选公司没有档案就无法比较，第 3 阶段的排名也没有起点。
+- **A separate APP archive** (at kickoff): with no report, the numbers could only be made up or left empty, and no thesis tests could be written.
+- **Stop and ask**: this is not one of the two kinds of matters that must be escalated, and it would hold up all of Phase 0, while Phase 0 has to be finished before the first holding reports results.
+- **Archives only for the two holdings**: candidate companies without archives can't be compared, and the Phase 3 ranking would have no starting point.
 
-## 影响
+## Consequences
 
-DESIGN.md 的成功标准“到 2027 年底约 80 条已结算的系统预测”是按四个持仓估的；现在只有两个持仓做预注册，样本大约减半，按领域下校准结论要更晚。
+DESIGN.md's success criterion "about 80 settled system forecasts by the end of 2027" was estimated for four holdings; now only two holdings are pre-registered, so the sample is roughly halved and calibration conclusions by domain will come later.
 
-## 新证据（2026-09-24，决定之后）
+## New evidence (2026-09-24, after the decision)
 
-第 0 阶段进行中，工作区的 `inputs/reports/` 新增了 `APP.pdf`，并生成了对应的抽取文本：一份 AppLovin（纳斯达克代码 APP）的完整企业报告，报告日期 2026-09-23，体例与另外五份 02 报告相同。副本已放进私有仓库 `reports/APP.pdf`，标签 `APP-RPT-2026-09`；随后已经开始为 APP 建档（`companies/APP/`）。
+While Phase 0 was under way, `APP.pdf` appeared in the workspace's `inputs/reports/`, together with its extracted text: a complete company report on AppLovin (Nasdaq ticker APP), dated 2026-09-23, in the same format as the other five 02 reports. A copy has been put into the private repository as `reports/APP.pdf`, tagged `APP-RPT-2026-09`, and work on an archive for APP (`companies/APP/`) has begun.
 
-这推翻了选项 2 的主要依据（“只有 AXP 的报告对得上”）。现在最直接的理解是：主人说的“APP”就是 AppLovin。
+This overturns the main basis for option 2 ("only the AXP report matched"). The most direct reading now is that the owner's "APP" is AppLovin.
 
-建议（交给集成步骤决定，并请主人确认）：
+Recommendation (for the integration step to decide, with confirmation from the owner):
 
-- 持仓改为 APP、PDD。APP 的 thesis.yml 至少 5 条测试、三类齐全，另有 story.md、sources.yml 和私有的 valuation.yml；APP 的业务不属于现有三个行业模块，`depends_on` 可以为空。
-- AXP 的档案保留，状态改为 `candidate`。第 3 阶段排名上线之前，候选暂为 AXP、MSFT、BRK、SPGI 四家；排名上线后按 DESIGN.md 取前三家。
-- 名单定下之后写一份新的决策记录取代本记录，并在本记录顶部注明“已被 NNNN 取代”；同时更新 `docs/STATUS.md` 的组合一行和待办 T9。
+- Change the holdings to APP and PDD. APP's thesis.yml gets at least 5 tests covering all three kinds, plus story.md, sources.yml and the private valuation.yml; APP's business does not belong to any of the three existing industry modules, so `depends_on` can be empty.
+- Keep the AXP archive and change its status to `candidate`. Until the Phase 3 ranking goes live, the candidates are provisionally the four companies AXP, MSFT, BRK and SPGI; once it is live, take the top three per DESIGN.md.
+- Once the list is settled, write a new decision record that supersedes this one and note "superseded by NNNN" at the top of this record; also update the portfolio line and to-do T9 in `docs/STATUS.md`.
 
-## 日期
+## Date
 
 2026-09-24

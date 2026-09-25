@@ -1,2 +1,3 @@
-# 公开 CI 从 GitHub 安装 thesis-ci（见 docs/decisions/0007），固定到发版标签，规范升级时一起改。
+# Public CI installs thesis-ci from GitHub (see docs/decisions/0007), pinned to a release tag; change it together
+# with spec upgrades.
 thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@v0.2.1

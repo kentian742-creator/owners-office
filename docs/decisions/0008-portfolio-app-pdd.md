@@ -1,50 +1,50 @@
-# 0008 持仓与候选名单更正：持仓 APP、PDD
+# 0008 Holdings and candidate list corrected: holdings APP, PDD
 
-> 取代 [0002](0002-holdings-and-candidates.md)。
+> Supersedes [0002](0002-holdings-and-candidates.md).
 
-## 背景
+## Background
 
-[0002](0002-holdings-and-candidates.md) 把开工时说的“APP”理解为 AXP 的笔误，定下持仓 AXP、PDD，候选 MSFT、BRK、SPGI。当天工作区随后出现了 AppLovin（纳斯达克代码 APP）的完整企业报告，`companies/APP/` 也开始建档；0002 的“新证据”一节已经建议改为持仓 APP、PDD，并请所有者确认。写本记录时，公开仓库里 APP、AXP、PDD 三家的 `thesis.yml` 都标为 `holding`，BRK、MSFT、SPGI 标为 `candidate`，与任何一种说法都对不上。
+[0002](0002-holdings-and-candidates.md) read the "APP" given at kickoff as a typo for AXP and set the holdings as AXP and PDD and the candidates as MSFT, BRK and SPGI. Later that day, a complete company report on AppLovin (Nasdaq ticker APP) appeared in the workspace, and work on an archive in `companies/APP/` began; the "New evidence" section of 0002 already recommended changing the holdings to APP and PDD and asked the owner to confirm. When this record was written, the `thesis.yml` files of APP, AXP and PDD in the public repository were all marked `holding`, and those of BRK, MSFT and SPGI `candidate`, which matched neither account.
 
-2026-09-24，所有者确认：持仓是 APP 和 PDD。
+On 2026-09-24 the owner confirmed: the holdings are APP and PDD.
 
-候选的规则来自设计文档与总部的季度排名（17C）：持仓之外排名最前的三家为候选，其余转为归档，随年报每年刷新一次。总部的季度排名还没有跑过；现在唯一存在的排名，是所有者系列报告里的系列排名（私有，数字不在公开仓库）。
+The candidate rule comes from the design document and from HQ's quarterly ranking (17C): the three highest-ranked companies outside the holdings are the candidates, and the rest are archived and refreshed once a year with the annual report. HQ's quarterly ranking has not run yet; the only ranking that exists now is the series ranking in the owner's series of reports (private; its numbers are not in the public repository).
 
-## 选项
+## Options
 
-1. 维持 0002：持仓 AXP、PDD。
-2. 持仓 APP、PDD；AXP、MSFT、BRK、SPGI 四家都作候选，等总部第一次排名再定。
-3. 持仓 APP、PDD；按所有者系列排名，取持仓之外排名最前的三家作候选，其余归档。
+1. Keep 0002: holdings AXP, PDD.
+2. Holdings APP, PDD; AXP, MSFT, BRK and SPGI all candidates until HQ's first ranking decides.
+3. Holdings APP, PDD; the three highest-ranked companies outside the holdings in the owner's series ranking become the candidates, and the rest are archived.
 
-## 决定
+## Decision
 
-采用选项 3。
+Option 3.
 
-- **持仓（`status: holding`）：** APP、PDD（所有者确认）。
-- **候选（`status: candidate`）：** AXP、MSFT、SPGI——所有者系列排名里持仓之外排名最前的三家。
-- **归档（`status: archive`）：** BRK。档案保留，随年报每年刷新一次。它仍是估值的第一道参照锚：按 00 §V6 的工程默认，伯克希尔的长期回报测算是第一道门槛，数字取自 BRK 档案的当前版本并带基准日，归档不影响这一用途。
-- 名单之后按总部的季度排名轮换（17C，决策 L2，在月度股东信里报备）。
-- 把各公司 `thesis.yml`、`story.md` 的 `status` 改过来属于内容迁移，不在本记录的改动范围内，列在 [STATUS](../STATUS.md)。
-- 0002 保留作历史，顶部注明已被本记录取代。
+- **Holdings (`status: holding`):** APP, PDD (confirmed by the owner).
+- **Candidates (`status: candidate`):** AXP, MSFT, SPGI, the three highest-ranked companies outside the holdings in the owner's series ranking.
+- **Archived (`status: archive`):** BRK. Its archive is kept and refreshed once a year with the annual report. It remains the first reference anchor for valuation: under the engineering default in 00 §V6, Berkshire's long-term return estimate is the first hurdle, with its numbers taken from the current version of the BRK archive together with their base date, and archiving does not affect that use.
+- From now on the list rotates with HQ's quarterly ranking (17C, decision level L2, reported in the monthly letter).
+- Correcting the `status` in each company's `thesis.yml` and `story.md` belongs to the content migration and is outside the changes made by this record; it is listed in [STATUS](../STATUS.md).
+- 0002 is kept for history, with a note at the top that this record supersedes it.
 
-## 理由
+## Rationale
 
-- 持仓是所有者的事实，不是系统可以推断的事；所有者已经确认，就以这个确认为准。
-- 设计文档的候选数是三家，理由是控制成本和机会成本原则：候选必须和持仓放在一起比较。在总部第一次排名之前，所有者系列报告里的排名是唯一现成、按同一框架做出的排名，用它取前三家最接近设计文档的规则。
-- BRK 是比较线本身。它退出候选，不等于退出系统：比较线要的是它档案里的当前读数，而不是它占一个候选名额。
+- The holdings are a fact about the owner, not something the system can infer; the owner has confirmed them, and that confirmation is what counts.
+- The design document sets the number of candidates at three, to control cost and to apply the opportunity cost principle: candidates must be compared side by side with the holdings. Until HQ's first ranking, the ranking in the owner's series of reports is the only existing ranking made within one framework, and taking its top three comes closest to the design document's rule.
+- BRK is the hurdle itself. Leaving the candidates does not mean leaving the system: the hurdle needs the current reading from its archive, not a candidate slot.
 
-## 被否决的方案
+## Rejected alternatives
 
-- **维持 0002：** 与所有者确认的持仓相反。
-- **四家都作候选：** 超出设计文档的三家；候选公司每季度都要跑定量测试、账本结算和季度更新，多一家就多一份成本，而排名已经给出了先后。
-- **把 BRK 彻底移出系统：** 它是 R7 的比较线和 §V6 的第一道参照锚，档案必须保持更新。
+- **Keep 0002:** the opposite of the holdings the owner confirmed.
+- **All four as candidates:** more than the three in the design document; candidate companies get quantitative tests, ledger settlement and quarterly updates every quarter, so each extra one adds cost, and the ranking already gives an order.
+- **Take BRK out of the system entirely:** it is the hurdle of R7 and the first reference anchor of §V6, so its archive has to stay up to date.
 
-## 影响
+## Consequences
 
-- 预注册、问题清单与盲推、定性测试的独立判定只对 APP、PDD 运行；第一批预注册是 APP 的 FY2026Q3（业绩预计 11 月初）和 PDD 的同期业绩（预计 11 月下旬），见 [STATUS](../STATUS.md)。
-- 候选公司只跑精简流程：定量测试（含指标抽取）、账本结算、季度更新，以及事实抽取 → 事实审计 → 修订。
-- 设计文档的学习目标“到 2027 年底约 80 条已结算的系统预测”按四个持仓估算；现在是两个，样本大约减半，按领域下校准结论要更晚（0002 已指出）。
+- Pre-registration, the question list and blind read, and the independent judging of qualitative tests run only for APP and PDD; the first pre-registrations are APP's FY2026Q3 (results expected in early November) and PDD's results for the same period (expected in late November); see [STATUS](../STATUS.md).
+- Candidate companies run only a slimmed-down process: quantitative tests (including metric extraction), ledger settlement, quarterly updates, and fact extraction → fact audit → revision.
+- The design document's learning target "about 80 settled system forecasts by the end of 2027" was estimated for four holdings; now there are two, so the sample is roughly halved and calibration conclusions by domain will come later (as 0002 already pointed out).
 
-## 日期
+## Date
 
 2026-09-24
