@@ -1,6 +1,6 @@
 # 进度 STATUS
 
-- 更新：2026-09-24
+- 更新：2026-09-25
 - 当前阶段：**第 0 阶段 · 骨架、宪法与迁移（进行中）**
 - 组合：持仓 APP、PDD；候选 AXP、MSFT、SPGI；BRK 归档（`decisions/0008`，所有者确认）。六家公司的 `thesis.yml` 与 `story.md` 已按此标注。
 - 下一个硬期限：APP 的 FY2026Q3 预注册——业绩预计 11 月初发布，至少在截止时间前 72 小时合并（待办 T11）。
@@ -30,8 +30,8 @@
 - [x] **thesis-ci 规范 0.2**：schema、`checks.yml`（34 项）与检查实现、SPEC、CHANGELOG；687 个测试与自检 34/34 通过。C-HURDLE、C-CONCENTRATION 按所有者原文改正（`decisions/0014`）；公开文件的价格倍数检查补上市净率与"价格低于 N 倍账面"一类写法。
 - [x] **内容迁移**：六家公司的 `thesis.yml`、`story.md`、`sources.yml`、`ledger.yml` 与私有 `valuation.yml` 迁到规范 0.2；EDGAR 登记号全部回填；来源标签按 SPEC §3.3 改名（自有报告 `<代码>-RPT1-<日期>`，定期报告按财年期间，临时报告按 EDGAR filing date）；价格评级按 §V11 机械尺重算（AXP B− → C，BRK B+ → B，其余不变）；APP 草稿的六处待改项、BRK 公开文件里三处由价格推出的数字已处理。逐条比对过：除交代过的改写（APP-L4、APP-L5、BRK-Q7、BRK-Q8）外，没有任何测试的门槛、方向或判定句改动。lint：公开仓库零错误零警告，私有仓库零错误、一条警告（SPGI 的国债收益率是两个日期的中点，没有单一的取值日期）。
 - [ ] **APP 审计**：两轮试跑查出的六项已在迁移中改正（见上）。正在按提示词跑 16A → 04A，之后按审计结论修订。
-- [ ] 集成：三个仓库 `git init` 与首次提交（本地，不推送）
-- [ ] 验收：`scripts/accept.py --phase 0` 全部 PASS，报告写到 `docs/acceptance/phase-0.md`
+- [x] 集成：三个仓库 `git init` 与首次提交（本地，不推送；作者邮箱用 GitHub noreply 地址）
+- [x] 验收：`scripts/accept.py --phase 0` A1–A7 全部 PASS（2026-09-25），报告在 `docs/acceptance/phase-0.md`
 - [ ] 第 0 阶段股东信（一页以内，放 `letters/`）
 
 ## 待办
