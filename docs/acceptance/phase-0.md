@@ -1,6 +1,6 @@
 # 第 0 阶段验收报告
 
-- 生成时间：2026-09-25T04:24:44+00:00
+- 生成时间：2026-09-25T15:59:20+00:00
 - 生成方式：`scripts/accept.py`（工作区中 thesis-ci、owners-office、owners-office-private 为兄弟目录）
 - 结论：**PASS**
 
@@ -20,8 +20,8 @@
 
 ```text
 thesis-ci: 1 个提交
-owners-office: 1 个提交
-owners-office-private: 1 个提交
+owners-office: 6 个提交
+owners-office-private: 4 个提交
 ```
 
 ## A2 owners-office/docs/DESIGN.md 存在，并与 inputs/DESIGN.md 一致
@@ -38,7 +38,7 @@ sha256 一致：be1a60821207865642bff48d24614811867753db5fdc9620b890b457a2c5ab52
 
 ```text
 CLAUDE.md 89 行
-决策记录 15 份
+决策记录 16 份
 agents/*.yml 13 个
 调用 thesis-ci lint 的 workflow：lint.yml
 私有 valuation.yml 覆盖全部 6 家公开公司
@@ -99,6 +99,6 @@ H5: C-LLM-ENTRY
 
 ```text
 thesis-ci selftest: 通过
-thesis-ci pytest: 688 passed in 31.59s
-owners-office pytest: 130 passed in 1.93s
+thesis-ci pytest: 688 passed in 29.53s
+owners-office pytest: 130 passed in 1.67s
 ```
