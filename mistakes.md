@@ -29,6 +29,14 @@ One subsection per entry, newest first. Factual numbers carry `[src:...]` tags a
 
 ## The list
 
+### 2026-09-25 · Process · private information in a public file
+
+- What was written: the public progress file `docs/STATUS.md` recorded, company by company, how the grades given to two companies' prices changed under the owner's chosen scale. Those grades belong only in the private repository (hard rule H4).
+- What happened: the line was in the public repository from its first commit (2026-09-25) until it was found the same day by the new English wording check; it has been reworded to say only that two companies moved one step, with the details in the private repository.
+- Where it went wrong: the public-content check did not scan `docs/`, and the line was written by hand while summarising the migration.
+- Whose error: the system's (phase 0 engineering), not a role's.
+- What changed: the public-content check now also scans `docs/STATUS.md`; STATUS reports private changes only as counts.
+
 ### 2026-09-25 · APP · Factual error
 
 - Judgment at the time: the APP archive built in Phase 0 (`companies/APP/thesis.yml`) copied the rounded figures in the company report for debt principal and net debt; for the change in share count, it took the opening figure from the following year's year-end; the five-year reading for management criterion (a) mixed two sets of numbers, from before and after a restatement.
