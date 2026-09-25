@@ -1,2 +1,2 @@
-# 公开 CI 从 GitHub 安装 thesis-ci（见 docs/decisions/0007）。thesis-ci 打出第一个版本标签后改为固定标签。
-thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@main
+# 公开 CI 从 GitHub 安装 thesis-ci（见 docs/decisions/0007），固定到发版标签，规范升级时一起改。
+thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@v0.2.0
