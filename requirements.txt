@@ -3,3 +3,8 @@ anthropic
 pyyaml
 jsonschema
 pytest
+# OpenTimestamps 客户端（命令 ots）：pipeline/timestamp.py 打时间戳、升级、核验；lint job 也装它，C-PREREG-IMMUTABLE
+# 用 ots verify 核验预注册的证明（docs/decisions/0018）。两边都解析它的输出，所以固定版本。
+opentimestamps-client==0.7.2
+# CA 证书：pipeline/edgar.py 访问 SEC 时用它校验 TLS（python.org 的 macOS 版 Python 不带 CA 证书；docs/decisions/0017）。
+certifi

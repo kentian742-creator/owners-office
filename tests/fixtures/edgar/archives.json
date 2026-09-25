@@ -1,0 +1,628 @@
+{
+ "_fixture": "Real EDGAR responses fetched 2026-09-25, keyed by URL: index.json of every PDD 6-K in CIK0001737806.json and of APP 8-K 0001751008-26-000057 (items: name and size only); the first EX-99 exhibit of each 6-K (the 6-K itself when it has none), cut at the first paragraph that still shows the same headline and dateline, with style attributes and comments removed.",
+ "responses": {
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926100534/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-26-100534-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-100534-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-100534.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2623874d1_6k.htm",
+      "size": "9915"
+     },
+     {
+      "name": "tm2623874d1_ex99-1.htm",
+      "size": "340535"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465926100534"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926100534/tm2623874d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2623874d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><FONT><B>PDD Holdings\nAnnounces </B></FONT><B>Second Quarter 2026 Unaudited Financial Results</B></P>\n<P>&nbsp;</P>\n<P><FONT>DUBLIN\nand SHANGHAI, </FONT><FONT>Aug.</FONT>&nbsp;<FONT>24,\n2026 (GLOBE NEWSWIRE) </FONT>&ndash; <FONT>PDD Holdings Inc. (</FONT>&ldquo;<FONT>PDD\nHoldings</FONT>&rdquo; <FONT>or the </FONT>&ldquo;<FONT>Company</FONT>&rdquo;<FONT>)\n(NASDAQ: PDD), today announced its unaudited financial results for the second quarter ended June</FONT>&nbsp;<FONT>30,\n2026.</FONT></P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926099679/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-26-099679-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-099679-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-099679.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2623778d1_6k.htm",
+      "size": "11404"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465926099679"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926099679/tm2623778d1_6k.htm": "<DOCUMENT>\n<TYPE>6-K\n<SEQUENCE>1\n<FILENAME>tm2623778d1_6k.htm\n<DESCRIPTION>FORM 6-K\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>UNITED STATES</B></P>\n<P><B>SECURITIES AND EXCHANGE COMMISSION</B></P>\n<P><B>WASHINGTON, D.C. 20549</B></P>\n<P>&nbsp;</P>\n<P><B>FORM&nbsp;6-K</B></P>\n<P>&nbsp;</P>\n<P><B>REPORT OF FOREIGN PRIVATE ISSUER</B></P>\n<P><B>PURSUANT TO RULE 13a-16 OR 15d-16 UNDER</B></P>\n<P><B>THE SECURITIES EXCHANGE ACT OF 1934</B></P>\n<P>&nbsp;</P>\n<P>For the month of August&nbsp;2026</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P>Commission File Number: 001-38591</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Inc.</B></P>\n<P>&nbsp;</P>\n<P>First Floor, 25 St Stephen&rsquo;s Green,</P>\n<P>Dublin 2, D02 XF99</P>\n<P>Ireland<BR>\n(Address of principal executive offices)</P>\n<P>&nbsp;</P>\n<P>Indicate by check mark whether the registrant files or will file annual\nreports under cover of Form&nbsp;20-F or Form&nbsp;40-F.</P>\n<P>&nbsp;</P>\n<P>Form&nbsp;20-F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT>&#120;</FONT> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;40-F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT>&#168;</FONT></P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P></P>\n    <DIV><P>&nbsp;</P></DIV>\n    <DIV><P>&nbsp;</P></DIV>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces Passing of an Independent Director</B></P>\n<P>&nbsp;</P>\n<P>PDD Holdings Inc. (the &quot;Company&quot;) (NASDAQ: PDD) announces\nwith profound sadness that Dr.&nbsp;Ivonne M.C.M. Rietjens, an independent director of the Company, passed away in August&nbsp;2026 at\nage 67.</P>\n<P>&nbsp;</P>\n<P>Dr.&nbsp;Rietjens had served as an independent director of the Company\nsince August&nbsp;2023. A distinguished scientist and academic, Dr.&nbsp;Rietjens brought deep expertise and thoughtful judgment to the\nBoard's work. During her tenure, Dr.&nbsp;Rietjens made valuable contributions to the Company's governance and development that will leave\na lasting impact.</P>\n<P>&nbsp;</P>\n<P>The Company's board of directors (the &quot;Board&quot;) and management\nteam are deeply saddened by Dr.&nbsp;Rietjens' passing and hold her contributions and dedicated service in the highest regard. It was\na true privilege to have Dr.&nbsp;Rietjens alongside us during her time with the Company, and she will be greatly missed. The Board extends\nits deepest condolences to Dr.&nbsp;Rietjens' family and friends during this profoundly difficult time.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926067186/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-26-067186-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-067186-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-067186.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2615739d1_6k.htm",
+      "size": "9189"
+     },
+     {
+      "name": "tm2615739d1_ex99-1.htm",
+      "size": "202141"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465926067186"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926067186/tm2615739d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2615739d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><FONT><B>PDD Holdings Announces\n</B></FONT><B>First Quarter 2026 Unaudited Financial Results</B></P>\n<P>&nbsp;</P>\n<P><FONT>DUBLIN\nand SHANGHAI, </FONT><FONT>May</FONT>&nbsp;<FONT>27,\n2026 (GLOBE NEWSWIRE) </FONT>&ndash; <FONT>PDD Holdings Inc. (</FONT>&ldquo;<FONT>PDD\nHoldings</FONT>&rdquo; <FONT>or the </FONT>&ldquo;<FONT>Company</FONT>&rdquo;<FONT>)\n(NASDAQ: PDD), today announced its unaudited financial results for the first quarter ended March</FONT>&nbsp;<FONT>31,\n2026.</FONT></P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926034813/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-26-034813-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-034813-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-26-034813.txt",
+      "size": ""
+     },
+     {
+      "name": "tm269789d1_6k.htm",
+      "size": "9085"
+     },
+     {
+      "name": "tm269789d1_ex99-1.htm",
+      "size": "282580"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465926034813"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465926034813/tm269789d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm269789d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><FONT><B>PDD Holdings\nAnnounces Fourth Quarter 2025 and Fiscal Year 202</B></FONT><B>5 Unaudited Financial Results</B></P>\n<P>&nbsp;&nbsp;</P>\n<P><FONT>DUBLIN\nand SHANGHAI, March</FONT>&nbsp;<FONT>25, 2026 (GLOBE NEWSWIRE) </FONT>&ndash; <FONT>PDD\nHoldings Inc. (</FONT>&ldquo;<FONT>PDD Holdings</FONT>&rdquo; <FONT>or\nthe </FONT>&ldquo;<FONT>Company</FONT>&rdquo;<FONT>)\n(NASDAQ: PDD), today announced its unaudited financial results for the fourth quarter ended and the fiscal year ended December</FONT>&nbsp;<FONT>31,\n2025.</FONT></P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925122766/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-122766-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-122766-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-122766.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2533961d1_6k.htm",
+      "size": "12618"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925122766"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925122766/tm2533961d1_6k.htm": "<DOCUMENT>\n<TYPE>6-K\n<SEQUENCE>1\n<FILENAME>tm2533961d1_6k.htm\n<DESCRIPTION>FORM 6-K\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>UNITED STATES</B></P>\n<P><B>SECURITIES AND EXCHANGE COMMISSION</B></P>\n<P><B>WASHINGTON, D.C. 20549</B></P>\n<P>&nbsp;</P>\n<P><B>FORM&nbsp;6-K</B></P>\n<P>&nbsp;</P>\n<P><B>REPORT OF FOREIGN PRIVATE ISSUER</B></P>\n<P><B>PURSUANT TO RULE 13a-16 OR 15d-16 UNDER</B></P>\n<P><B>THE SECURITIES EXCHANGE ACT OF 1934</B></P>\n<P>&nbsp;</P>\n<P><FONT>For the month of\nDecember&nbsp;202</FONT>5</P>\n<P>&nbsp;</P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P><FONT>Commission File Number:\n</FONT>001-38591</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Inc.</B></P>\n<P>&nbsp;</P>\n<P>First Floor, 25 St Stephen&rsquo;s Green,</P>\n<P>Dublin 2, D02 XF99</P>\n<P>Ireland<BR>\n(Address of principal executive offices)</P>\n<P>&nbsp;</P>\n<P>Indicate by check mark whether the registrant files or will file annual\nreports under cover of Form&nbsp;20-F or Form&nbsp;40-F.</P>\n<P>&nbsp;</P>\n<P>&nbsp;</P>\n<P>Form&nbsp;20-F &#8239;&#8239;&#8239;<FONT>&#120;</FONT>&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;Form&nbsp;40-F&#8239;&#8239;&#8239;&#8239;<FONT>&#168;</FONT></P>\n<P>&nbsp;</P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P></P>\n    <DIV><P>&nbsp;</P></DIV>\n    <DIV><P>&nbsp;</P></DIV>\n<P>&nbsp;</P>\n<P><B>Appointment of Co-Chairman of the Board and\nnew executive officers</B></P>\n<P>&nbsp;</P>\n<P><FONT>The board of directors\n(the &ldquo;Board&rdquo;) of </FONT>PDD Holdings Inc. (the &ldquo;Company&rdquo;) has appointed Mr.&nbsp;Jiazhen Zhao, director of the\nCompany and Co-Chief Executive Officer (&ldquo;Co-CEO&rdquo;) as Co-Chairman of the Board, along with Mr.&nbsp;Lei Chen. Following the\nappointment, Mr.&nbsp;Zhao and Mr.&nbsp;Chen are now Co-Chairmen of the Board and Co-CEOs.</P>\n<P>&nbsp;</P>\n<P><FONT>A founding member\nof the Company, Mr.&nbsp;Zhao was appointed as director and Co-CEO of the Company in April&nbsp;2023. </FONT>Mr.&nbsp;Zhao served as a\nsenior vice president from 2018 to 2023. Mr.&nbsp;Zhao has held several leadership roles across the Company. He started the Duo Duo Grocery\nbusiness and led the operations of a few key product categories on the Pinduoduo platform, including agriculture, and also led the Company&rsquo;s\nsupply chain efforts. Mr.&nbsp;Zhao received his Bachelor&rsquo;s degree in E-commerce Management from South China University of Technology.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925122765/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-122765-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-122765-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-122765.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2533961d2_6k.htm",
+      "size": "27804"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925122765"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925122765/tm2533961d2_6k.htm": "<DOCUMENT>\n<TYPE>6-K\n<SEQUENCE>1\n<FILENAME>tm2533961d2_6k.htm\n<DESCRIPTION>FORM 6-K\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>UNITED STATES</B></P>\n<P><B>SECURITIES AND EXCHANGE COMMISSION</B></P>\n<P><B>WASHINGTON, D.C. 20549</B></P>\n<P>&nbsp;</P>\n<P><B>FORM&nbsp;6-K</B></P>\n<P>&nbsp;</P>\n<P><B>REPORT OF FOREIGN PRIVATE ISSUER</B></P>\n<P><B>PURSUANT TO RULE 13a-16 OR 15d-16 UNDER</B></P>\n<P><B>THE SECURITIES EXCHANGE ACT OF 1934</B></P>\n<P>&nbsp;</P>\n<P><FONT>For the month of\nDecember&nbsp;202</FONT>5</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><FONT>Commission File Number:\n</FONT>001-38591</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Inc.</B></P>\n<P>&nbsp;</P>\n<P>First Floor, 25 St Stephen&rsquo;s Green,</P>\n<P>Dublin 2, D02 XF99</P>\n<P>Ireland<BR>\n(Address of principal executive offices)</P>\n<P>&nbsp;</P>\n<P>Indicate by check mark whether the registrant files or will file annual\nreports under cover of Form&nbsp;20-F or Form&nbsp;40-F.</P>\n<P>&nbsp;</P>\n<P>Form&nbsp;20-F <FONT>&#120;</FONT>&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;Form&nbsp;40-F <FONT>&#168;</FONT></P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P></P>\n    <DIV><P>&nbsp;</P></DIV>\n    <DIV><P>&nbsp;</P></DIV>\n<P>&nbsp;</P>\n<P><B>Results of PDD Holdings\nInc.&rsquo;s 2025 Annual General Meeting</B></P>\n<P>&nbsp;</P>\n<P>At the 2025 <FONT>annual\ngeneral meeting of shareholders of PDD Holdings Inc. (the &ldquo;<B>Company</B>&rdquo;), held on December&nbsp;19, 2025 at 7:00 a.m.,&nbsp;Irish\nStandard Time (the &ldquo;<B>2025 Annual General Meeting</B>&rdquo;), shareholders of the Company adopted the following resolutions proposed\nby the Company:</FONT></P>\n<P>&nbsp;</P>\n<TABLE><TR>\n<TD></TD><TD>1.</TD><TD><FONT>as an ordinary resolution, THAT Mr.&nbsp;Lei Chen be re-elected\nas a director of the Company;</FONT></TD></TR></TABLE>\n<P>&nbsp;</P>\n<TABLE><TR>\n<TD></TD><TD>2.</TD><TD><FONT>as an ordinary resolution, THAT Mr.&nbsp;Jiazhen Zhao be re-elected\nas a director of the Company;</FONT></TD></TR></TABLE>\n<P>&nbsp;</P>\n<TABLE><TR>\n<TD></TD><TD>3.</TD><TD><FONT>as an ordinary resolution, THAT Mr.&nbsp;Anthony Kam Ping Leung\nbe re-elected as a director of the Company;</FONT></TD></TR></TABLE>\n<P>&nbsp;</P>\n<TABLE><TR>\n<TD></TD><TD>4.</TD><TD><FONT>as an ordinary resolution, THAT Mr.&nbsp;Haifeng Lin be re-elected\nas a director of the Company;</FONT></TD></TR>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925113965/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-113965-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-113965-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-113965.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2531576d1_6k.htm",
+      "size": "8835"
+     },
+     {
+      "name": "tm2531576d1_ex99-1.htm",
+      "size": "10335"
+     },
+     {
+      "name": "tm2531576d1_ex99-2.htm",
+      "size": "23757"
+     },
+     {
+      "name": "tm2531576d1_ex99-3.htm",
+      "size": "18342"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925113965"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925113965/tm2531576d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2531576d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Inc.</B></P>\n<P>(Incorporated in the Cayman Islands with limited\nliability)</P>\n<P>(NASDAQ Ticker: PDD)</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>NOTICE OF ANNUAL GENERAL MEETING</B></P>\n<P>&nbsp;</P>\n<P><B>NOTICE IS HEREBY GIVEN</B> that an annual general\nmeeting (the &ldquo;<B>2025 Annual Meeting</B>&rdquo;) of PDD Holdings Inc. (the &ldquo;<B>Company</B>&rdquo;) will be held at 7:00 a.m.,&nbsp;Irish\nStandard Time, on December&nbsp;19, 2025.</P>\n<P>&nbsp;</P>\n<P>To provide a consistent experience to all shareholders\nregardless of location, the 2025 Annual Meeting will be held in virtual format through live webcast and teleconference. Holders of the\nCompany&rsquo;s ordinary shares as of the close of business on November&nbsp;19, 2025,&nbsp;Irish Standard Time, the record date, are\ncordially invited to attend the 2025 Annual Meeting. We are sending a Notice of Access to the 2025 Annual Meeting to our shareholders.\nPlease follow the procedure set out in the notice for admission to the 2025 Annual Meeting.</P>\n<P>&nbsp;</P>\n<P>Under the deposit agreement, holders of the Company&rsquo;s\nAmerican depository shares (&ldquo;<B>ADSs</B>&rdquo;) may not attend or vote at the 2025 Annual Meeting. Instead, holders of ADSs as\nof November&nbsp;19, 2025 will need to instruct Deutsche Bank Trust Company Americas, the depository, as to how to vote the Company&rsquo;s\nordinary shares represented by the ADSs.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925113490/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-113490-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-113490-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-113490.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2531580d1_6k.htm",
+      "size": "8749"
+     },
+     {
+      "name": "tm2531580d1_ex99-1.htm",
+      "size": "258233"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925113490"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925113490/tm2531580d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2531580d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces Third Quarter 2025 Unaudited Financial Results</B></P>\n<P>&nbsp;</P>\n<P>November 18, 2025</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925082502/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-082502-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-082502-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-082502.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2524268d1_6k.htm",
+      "size": "9178"
+     },
+     {
+      "name": "tm2524268d1_ex99-1.htm",
+      "size": "388298"
+     },
+     {
+      "name": "tm2524268d1_ex99-2.htm",
+      "size": "1579"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925082502"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925082502/tm2524268d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2524268d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT><B>Exhibit 99.1</B></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT><B>PDD Holdings\nAnnounces Second Quarter 2025 Unaudited Financial Results</B></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT>DUBLIN and SHANGHAI,\nAugust&nbsp;25, 2025 (GLOBE NEWSWIRE) &ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD),\ntoday announced its unaudited financial results for the second quarter ended June&nbsp;30, 2025.</FONT></P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925069796/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-069796-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-069796-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-069796.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2521517d1_6k.htm",
+      "size": "9281"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925069796"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925069796/tm2521517d1_6k.htm": "<DOCUMENT>\n<TYPE>6-K\n<SEQUENCE>1\n<FILENAME>tm2521517d1_6k.htm\n<DESCRIPTION>FORM 6-K\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P><B>UNITED STATES</B></P>\n<P><B>SECURITIES AND EXCHANGE COMMISSION</B></P>\n<P><B>WASHINGTON, D.C. 20549</B></P>\n<P>&nbsp;</P>\n<P><B>FORM&nbsp;6-K</B></P>\n<P>&nbsp;</P>\n<P><B>REPORT OF FOREIGN PRIVATE ISSUER</B></P>\n<P><B>PURSUANT TO RULE 13a-16 OR 15d-16 UNDER</B></P>\n<P><B>THE SECURITIES EXCHANGE ACT OF 1934</B></P>\n<P>&nbsp;</P>\n<P><FONT>For the month of\n</FONT>July&nbsp;2025</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P><FONT>Commission File Number:\n</FONT>001-38591</P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Inc.</B></P>\n<P>&nbsp;</P>\n<P>First Floor, 25 St Stephen&rsquo;s Green,</P>\n<P>Dublin 2, D02 XF99</P>\n<P>Ireland<BR>\n(Address of principal executive offices)</P>\n<P>&nbsp;</P>\n<P>Indicate by check mark whether the registrant files or will file annual\nreports under cover of Form&nbsp;20-F or Form&nbsp;40-F.</P>\n<P>&nbsp;</P>\n<P>Form&nbsp;20-F&#8239;&#8239;&#8239;&#8239;&#8239; <FONT>&#120;</FONT>&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;Form&nbsp;40-F&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;&#8239;<FONT>&#168;</FONT></P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P></P>\n    <DIV><P>&nbsp;</P></DIV>\n    <DIV><P>&nbsp;</P></DIV>\n<P>&nbsp;</P>\n<P><FONT>On July&nbsp;23, 2025, PDD Holdings Inc.\n(the &ldquo;Company&rdquo;) appointed Ernst&nbsp;&amp; Young, located in Hong Kong, as the Company&rsquo;s independent registered public\naccounting firm for the audits of the Company&rsquo;s financial statements and internal control over financial reporting for the year\nending December&nbsp;31, 2025, to be filed with the S</FONT>ecurities and Exchange Commission (the &ldquo;Company&rsquo;s Auditor&rdquo;).\nPreviously, the Company&rsquo;s Auditor was Ernst&nbsp;&amp; Young Hua Ming LLP.</P>\n<P>&nbsp;</P>\n<P></P>\n    <DIV><P>&nbsp;</P></DIV>\n    <DIV><P>&nbsp;</P></DIV>\n<P>&nbsp;</P>\n<P>SIGNATURES</P>\n<P>&nbsp;</P>\n<P>Pursuant to the requirements of the Securities\nExchange Act of 1934, the registrant has duly caused this report to be signed on its behalf by the undersigned, thereunto duly authorized.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925053013/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-053013-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-053013-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-053013.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2516198d1_6k.htm",
+      "size": "9742"
+     },
+     {
+      "name": "tm2516198d1_ex99-1.htm",
+      "size": "164069"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925053013"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925053013/tm2516198d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2516198d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces First Quarter 2025 Unaudited\nFinancial Results</B></P>\n<P><B>&nbsp;</B></P>\n<P>DUBLIN and SHANGHAI, May 27, 2025 (GLOBE NEWSWIRE)\n&ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD), today announced its unaudited financial\nresults for the first quarter ended March 31, 2025.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925026115/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-25-026115-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-026115-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-25-026115.txt",
+      "size": ""
+     },
+     {
+      "name": "tm259886d1_6k.htm",
+      "size": "8913"
+     },
+     {
+      "name": "tm259886d1_ex99-1.htm",
+      "size": "359705"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465925026115"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465925026115/tm259886d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm259886d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces Fourth Quarter 2024 and\nFiscal Year 2024 Unaudited Financial Results</B></P>\n<P><B>&nbsp;</B></P>\n<P>DUBLIN and SHANGHAI, March 20, 2025 (GLOBE NEWSWIRE)\n&ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD), today announced its unaudited financial\nresults for the fourth quarter ended and the fiscal year ended December 31, 2024.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924130517/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-24-130517-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-130517-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-130517.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2431720d1_6k.htm",
+      "size": "32551"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465924130517"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924130517/tm2431720d1_6k.htm": "<DOCUMENT>\n<TYPE>6-K\n<SEQUENCE>1\n<FILENAME>tm2431720d1_6k.htm\n<DESCRIPTION>FORM 6-K\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT><B>UNITED STATES</B></FONT></P>\n<P><FONT><B>SECURITIES AND\nEXCHANGE COMMISSION</B></FONT></P>\n<P><FONT><B>WASHINGTON, D.C.\n20549</B></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT><B>FORM 6-K</B></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT><B>REPORT OF FOREIGN\nPRIVATE ISSUER</B></FONT></P>\n<P><FONT><B>PURSUANT TO RULE\n13a-16 OR 15d-16 UNDER</B></FONT></P>\n<P><FONT><B>THE SECURITIES\nEXCHANGE ACT OF 1934</B></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT>For the month of\nDecember 2024</FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT>Commission File\nNumber: 001-38591</FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT><B>PDD Holdings\nInc.</B></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT>First Floor, 25\nSt Stephen&rsquo;s Green,</FONT></P>\n<P><FONT>Dublin 2, D02 XF99</FONT></P>\n<P><FONT>Ireland<BR>\n(Address of principal executive offices)</FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT>Indicate by check mark whether the registrant\nfiles or will file annual reports under cover of Form 20-F or Form 40-F.</FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT>Form 20-F <FONT><FONT>&#120;</FONT></FONT>\n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form 40-F <FONT>&#168;</FONT></FONT></P>\n<P>&nbsp;</P>\n<P></P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n    <DIV><P>&nbsp;</P></DIV>\n    <DIV><P>&nbsp;</P></DIV>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT><B>Results of PDD\nHoldings Inc.&rsquo;s 2024 Annual General Meeting</B></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<P><FONT>At\nthe 2024 <FONT>annual general meeting of shareholders of PDD Holdings Inc. (the &ldquo;<B>Company</B>&rdquo;),\nheld on December 20, 2024 at 7:00 a.m.,&nbsp;Irish Standard Time (the &ldquo;<B>2024 Annual General Meeting</B>&rdquo;), shareholders\nof the Company adopted the following resolutions proposed by the Company:</FONT></FONT></P>\n<P><FONT>&nbsp;</FONT></P>\n<TABLE><TR>\n<TD></TD><TD><FONT>1.</FONT></TD><TD><FONT>as\n                                            an ordinary resolution, THAT Mr. Lei Chen be re-elected as a director of the Company;</FONT></TD></TR></TABLE>\n<P><FONT>&nbsp;</FONT></P>\n<TABLE><TR>\n<TD></TD><TD><FONT>2.</FONT></TD><TD><FONT>as\n                                            an ordinary resolution, THAT Mr.&nbsp;Jiazhen Zhao be re-elected as a director of the Company;</FONT></TD></TR></TABLE>\n<P><FONT>&nbsp;</FONT></P>\n<TABLE><TR>\n<TD></TD><TD><FONT>3.</FONT></TD><TD><FONT>as\n                                            an ordinary resolution, THAT Mr. Anthony Kam Ping Leung be re-elected as a director of the\n                                            Company;</FONT></TD></TR></TABLE>\n<P><FONT>&nbsp;</FONT></P>\n<TABLE><TR>\n<TD></TD><TD><FONT>4.</FONT></TD><TD><FONT>as\n                                            an ordinary resolution, THAT Mr. Haifeng Lin be re-elected as a director of the Company;</FONT></TD></TR>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924123667/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-24-123667-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-123667-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-123667.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2429488d1_6k.htm",
+      "size": "8706"
+     },
+     {
+      "name": "tm2429488d1_ex99-1.htm",
+      "size": "11653"
+     },
+     {
+      "name": "tm2429488d1_ex99-2.htm",
+      "size": "25715"
+     },
+     {
+      "name": "tm2429488d1_ex99-3.htm",
+      "size": "20351"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465924123667"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924123667/tm2429488d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2429488d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Inc.</B></P>\n<P>(Incorporated in the Cayman Islands with limited\nliability)</P>\n<P>(NASDAQ Ticker: PDD)</P>\n<P>&nbsp;</P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P>&nbsp;</P>\n<P></P>\n<P><B>NOTICE OF ANNUAL GENERAL MEETING</B></P>\n<P>&nbsp;</P>\n<P><B>NOTICE IS HEREBY GIVEN</B> that an annual general\nmeeting (the &ldquo;<B>2024 Annual Meeting</B>&rdquo;) of PDD Holdings Inc. (the &ldquo;<B>Company</B>&rdquo;) will be held at 7:00 a.m.,&nbsp;Irish\nStandard Time, on December&nbsp;20, 2024.</P>\n<P>&nbsp;</P>\n<P>To provide a consistent experience to all shareholders\nregardless of location, the 2024 Annual Meeting will be held in virtual format through live webcast and teleconference. Holders of the\nCompany&rsquo;s ordinary shares as of the close of business on November&nbsp;27, 2024,&nbsp;Irish Standard Time, the record date, are\ncordially invited to attend the 2024 Annual Meeting. We are sending a Notice of Access to the 2024 Annual Meeting to our shareholders.\nPlease follow the procedure set out in the notice for admission to the 2024 Annual Meeting.</P>\n<P>&nbsp;</P>\n<P>Under the deposit agreement, holders of the Company&rsquo;s\nAmerican depository shares (&ldquo;<B>ADSs</B>&rdquo;) may not attend or vote at the 2024 Annual Meeting. Instead, holders of ADSs as\nof November&nbsp;27, 2024 will need to instruct Deutsche Bank Trust Company Americas, the depository, as to how to vote the Company&rsquo;s\nordinary shares represented by the ADSs.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924121500/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-24-121500-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-121500-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-121500.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2429127d1_6k.htm",
+      "size": "8397"
+     },
+     {
+      "name": "tm2429127d1_ex99-1.htm",
+      "size": "284112"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465924121500"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924121500/tm2429127d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2429127d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces Third Quarter 2024 Unaudited\nFinancial Results</B></P>\n<P>&nbsp;</P>\n<P>DUBLIN and SHANGHAI, November&nbsp;21, 2024 (GLOBE\nNEWSWIRE) &ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD), today announced its unaudited\nfinancial results for the third quarter ended September&nbsp;30, 2024.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924092851/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-24-092851-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-092851-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-092851.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2422641d1_6k.htm",
+      "size": "8504"
+     },
+     {
+      "name": "tm2422641d1_ex99-1.htm",
+      "size": "286438"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465924092851"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924092851/tm2422641d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2422641d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces Second Quarter 2024 Unaudited\nFinancial Results</B></P>\n<P>&nbsp;</P>\n<P>DUBLIN and SHANGHAI, August&nbsp;26, 2024 (GLOBE\nNEWSWIRE) &ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD), today announced its unaudited\nfinancial results for the second quarter ended June&nbsp;30, 2024.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924064321/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-24-064321-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-064321-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-064321.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2415048d1_6k.htm",
+      "size": "9772"
+     },
+     {
+      "name": "tm2415048d1_ex99-1.htm",
+      "size": "168979"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465924064321"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924064321/tm2415048d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2415048d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces First Quarter 2024 Unaudited\nFinancial Results</B></P>\n<P><B>&nbsp;</B></P>\n<P>DUBLIN and SHANGHAI, May 22, 2024 (GLOBE NEWSWIRE)\n &ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD), today announced its unaudited financial\nresults for the first quarter ended March 31, 2024.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924036850/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-24-036850-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-036850-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-24-036850.txt",
+      "size": ""
+     },
+     {
+      "name": "tm249325d1_6k.htm",
+      "size": "13714"
+     },
+     {
+      "name": "tm249325d1_ex99-1.htm",
+      "size": "243329"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465924036850"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465924036850/tm249325d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm249325d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces Fourth Quarter 2023 and\nFiscal Year 2023 Unaudited Financial Results</B></P>\n<P>&nbsp;</P>\n<P>DUBLIN and SHANGHAI, March&nbsp;20, 2024 (GLOBE\nNEWSWIRE) &ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD), today announced its unaudited\nfinancial results for the fourth quarter ended and the fiscal year ended December&nbsp;31, 2023.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465923121637/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-23-121637-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-23-121637-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-23-121637.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2331648d3_6k.htm",
+      "size": "10804"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465923121637"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465923121637/tm2331648d3_6k.htm": "<DOCUMENT>\n<TYPE>6-K\n<SEQUENCE>1\n<FILENAME>tm2331648d3_6k.htm\n<DESCRIPTION>FORM 6-K\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P><B>UNITED STATES</B></P>\n<P><B>SECURITIES AND EXCHANGE COMMISSION</B></P>\n<P><B>WASHINGTON, D.C. 20549</B></P>\n<P>&nbsp;</P>\n<P><B>FORM&nbsp;6-K</B></P>\n<P>&nbsp;</P>\n<P><B>REPORT OF FOREIGN PRIVATE ISSUER</B></P>\n<P><B>PURSUANT TO RULE 13a-16 OR 15d-16 UNDER</B></P>\n<P><B>THE SECURITIES EXCHANGE ACT OF 1934</B></P>\n<P>&nbsp;</P>\n<P><FONT>For\nthe month of </FONT>November&nbsp;2023</P>\n<P>&nbsp;</P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P><FONT>Commission\nFile Number: </FONT>001-38591</P>\n<P>&nbsp;</P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Inc.</B></P>\n<P>&nbsp;</P>\n<P>First Floor, 25 St Stephen&rsquo;s Green,</P>\n<P>Dublin 2, D02 XF99</P>\n<P>Ireland<BR>\n(Address of principal executive offices)</P>\n<P>&nbsp;</P>\n<P>Indicate by check mark whether the registrant files or will file annual\nreports under cover of Form&nbsp;20-F or Form&nbsp;40-F.</P>\n<P>&nbsp;</P>\n<P>Form&nbsp;20-F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n<FONT>&#120;</FONT> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;40-F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n<FONT>&#168;</FONT></P>\n<P>&nbsp;</P>\n<DIV><DIV>&nbsp;</DIV></DIV>\n<P></P>\n<P>&nbsp;</P>\n<P></P>\n    <DIV><P></P></DIV>\n    <DIV><P>&nbsp;</P></DIV>\n<P>&nbsp;</P>\n<P><B>Resignation of a Director</B></P>\n<P>&nbsp;</P>\n<P>PDD Holdings Inc. (the &ldquo;<B>Company</B>&rdquo;)\ntoday announced that Dr. Qi Lu stepped down from the Company&rsquo;s board of directors (the &ldquo;<B>Board</B>&rdquo;), effective as\nof November 28, 2023. The departure of Dr. Qi Lu was not due to any disagreement with the Company regarding its business, finance, accounting\nand/or any other matters.</P>\n<P>&nbsp;</P>\n<P><FONT>Dr. Qi Lu\nsaid: &ldquo;During my time as director, I have had the opportunity to witness the Company&rsquo;s impressive development. I am proud\nof what we as an organization have accomplished over the past many years. </FONT>In order to spend more time needed for my other work,\nI have made the difficult decision to resign from the Board.&rdquo;</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465923121457/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001104659-23-121457-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-23-121457-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001104659-23-121457.txt",
+      "size": ""
+     },
+     {
+      "name": "tm2331648d1_6k.htm",
+      "size": "9033"
+     },
+     {
+      "name": "tm2331648d1_ex99-1.htm",
+      "size": "235990"
+     }
+    ],
+    "name": "/Archives/edgar/data/1737806/000110465923121457"
+   }
+  },
+  "https://www.sec.gov/Archives/edgar/data/1737806/000110465923121457/tm2331648d1_ex99-1.htm": "<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>tm2331648d1_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<HTML>\n<HEAD>\n     <TITLE></TITLE>\n</HEAD>\n<BODY>\n<P>&nbsp;</P>\n<P><B>Exhibit 99.1</B></P>\n<P>&nbsp;</P>\n<P><B>PDD Holdings Announces Third Quarter 2023 Unaudited\nFinancial Results</B></P>\n<P>&nbsp;</P>\n<P>DUBLIN and SHANGHAI, November&nbsp;28, 2023 (GLOBE\nNEWSWIRE) &ndash; PDD Holdings Inc. (&ldquo;PDD Holdings&rdquo; or the &ldquo;Company&rdquo;) (NASDAQ: PDD), today announced its unaudited\nfinancial results for the third quarter ended September&nbsp;30, 2023.</P>\n</BODY>\n</HTML>\n",
+  "https://www.sec.gov/Archives/edgar/data/1751008/000175100826000057/index.json": {
+   "directory": {
+    "item": [
+     {
+      "name": "0001751008-26-000057-index-headers.html",
+      "size": ""
+     },
+     {
+      "name": "0001751008-26-000057-index.html",
+      "size": ""
+     },
+     {
+      "name": "0001751008-26-000057.txt",
+      "size": ""
+     },
+     {
+      "name": "0001751008-26-000057-xbrl.zip",
+      "size": "22167"
+     },
+     {
+      "name": "app-20260805.htm",
+      "size": "25675"
+     },
+     {
+      "name": "app-20260805.xsd",
+      "size": "1795"
+     },
+     {
+      "name": "app-20260805_htm.xml",
+      "size": "2722"
+     },
+     {
+      "name": "app-20260805_lab.xml",
+      "size": "21629"
+     },
+     {
+      "name": "app-20260805_pre.xml",
+      "size": "12521"
+     },
+     {
+      "name": "exhibit991-2q26earningspre.htm",
+      "size": "226449"
+     },
+     {
+      "name": "FilingSummary.xml",
+      "size": "1630"
+     },
+     {
+      "name": "MetaLinks.json",
+      "size": "16997"
+     },
+     {
+      "name": "R1.htm",
+      "size": "38082"
+     },
+     {
+      "name": "report.css",
+      "size": "2766"
+     },
+     {
+      "name": "Show.js",
+      "size": "1084"
+     }
+    ],
+    "name": "/Archives/edgar/data/1751008/000175100826000057"
+   }
+  }
+ }
+}
