@@ -13,7 +13,7 @@
 - owners-office（公开）：https://github.com/kentian742-creator/owners-office ，CI 固定使用 thesis-ci `v0.2.0`
 - owners-office-private（私有）：https://github.com/kentian742-creator/owners-office-private
 
-所有者要做的：把模型 API key 放进 GitHub Secrets（T4）。
+所有者要做的：把模型 API key 放进私有仓库 owners-office-private 的 Actions secrets（T4），不要放进公开仓库。
 
 ## 阶段总览
 
@@ -65,7 +65,7 @@
 
 | # | 事项 | 谁 | 说明 |
 | --- | --- | --- | --- |
-| T4 | 模型 API key | 所有者 | 放进 GitHub Secrets 的 `ANTHROPIC_API_KEY`，绝不贴进聊天或代码。 |
+| T4 | 模型 API key | 所有者 | 放进**私有仓库 owners-office-private** 的 Settings → Secrets and variables → Actions，名字 `ANTHROPIC_API_KEY`；不要放进公开仓库。模型调用只在私有仓库的 Actions 里运行：公开仓库的运行日志人人可见，而调用的输入输出里有私有内容。绝不贴进聊天或代码。 |
 | T5 | MSFT 完整公开档案 | 系统 | 第 1 阶段；估值一节不写由价格推出的数字（`decisions/0004`）。 |
 | T7 | 模型调用日志的持久化 | 系统 | 第 2 阶段；用 `OWNERS_OFFICE_LLM_LOG` 把日志指到私有仓库。 |
 | T8 | OpenTimestamps | 系统 | ★ 接入预注册的三个文件：条目、`.ots` 时间戳证明、结算文件。APP 第一份预注册之前。 |
