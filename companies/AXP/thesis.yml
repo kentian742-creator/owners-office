@@ -1,12 +1,12 @@
-# AXP 论点文件（公开；thesis-ci spec §4；schema: spec/schemas/thesis.schema.json）
-# 生成方式：先套林奇 stalwart 模板与 _common 时效测试，再逐条补入 02 报告第十节的
-# 论点破坏信号（severity: breaker）与每季度前瞻指标（severity: watch）。
-# 门槛按报告原文；报告没给门槛的地方在测试 note 里写明本档案的操作化方式。
-# 与价格有关的一切（区间、参考价、对价格的评级）只在私有仓库 owners-office-private/companies/AXP/valuation.yml。
-# 2026-09-24 按事实审计与设计审计修订：更正措辞与页码，拆分 AXP-Q5，写明判定窗口，补 AXP-L6 至 AXP-L8、AXP-Q15、AXP-Q16。
+# AXP thesis file (public; thesis-ci spec §4; schema: spec/schemas/thesis.schema.json)
+# How it was built: first the Lynch stalwart template and the _common staleness tests, then, one by one, the
+# thesis breakers (severity: breaker) and quarterly watch indicators (severity: watch) from section ten of the 02 report.
+# Thresholds follow the report's text; where the report gives none, the test note states how this archive operationalizes it.
+# Everything price-related (ranges, reference price, the rating of the price) is only in the private repository, owners-office-private/companies/AXP/valuation.yml.
+# Revised 2026-09-24 after the fact audit and the design audit: wording and page numbers corrected, AXP-Q5 split, judgment windows written out, AXP-L6 to AXP-L8, AXP-Q15 and AXP-Q16 added.
 schema_version: "0.2"
 company: AXP
-name: American Express Company（美国运通）
+name: American Express Company
 exchange: NYSE
 status: candidate
 filer:
@@ -17,16 +17,16 @@ filer:
   annual_form: 10-K
 category: stalwart
 category_secondary: cyclical
-# 次类 cyclical 模板的三条测试：Q-cycle（拨备同比增速）由 AXP-Q12 与 AXP-Q7 覆盖，拨备的净方向与准备金率比拨备增速更早，也不受基数影响；
-# Q-leverage（净负债 ÷ EBITDA）不适用，发卡机构的新增债务对应新增卡余额（见 AXP-Q2 的 note）；L-cycle-capalloc 套用为 AXP-L7。
-category_rationale: "FY2025 收入 722.29 亿美元 [src:AXP-RPT1-2026-09-17#p3]、同比增长 10% [src:AXP-RPT1-2026-09-17#p8]，2026 年收入指引上调到 +10% [src:AXP-RPT1-2026-09-17#p9]，是大而稳、增速一成左右的稳定增长型；次类为周期型，因为它本质是带订阅叠加层的利差放贷机构 [src:AXP-RPT1-2026-09-17#p4]，三十五年里出现过四次 30% 以上的盈利回撤（四次口径不一，只用于看频率与量级）[src:AXP-RPT1-2026-09-17#p11]。"
+# The secondary cyclical template's three tests: Q-cycle (provision growth YoY) is covered by AXP-Q12 and AXP-Q7, since the net direction of provisions and the reserve rate move earlier than provision growth and are not distorted by the base;
+# Q-leverage (net debt ÷ EBITDA) does not apply, because a card issuer's new debt funds new card balances (see the AXP-Q2 note); L-cycle-capalloc is applied as AXP-L7.
+category_rationale: "FY2025 revenue of $72.229 billion [src:AXP-RPT1-2026-09-17#p3], up 10% year on year [src:AXP-RPT1-2026-09-17#p8], with 2026 revenue guidance raised to +10% [src:AXP-RPT1-2026-09-17#p9]: a large, steady stalwart growing at around ten percent. The secondary category is cyclical, because at bottom it is a spread lender with a subscription layer on top [src:AXP-RPT1-2026-09-17#p4], and in thirty-five years it has had four earnings drawdowns of 30% or more (the four are measured on different bases and serve only to gauge frequency and size) [src:AXP-RPT1-2026-09-17#p11]."
 domain: payments_financial_data
 depends_on:
   - industries/payments-card-networks
 trust_level: 1
 as_of: 2026-09-24
 
-# 档案十二个部分与芒格矩阵的最近复核日期 = 02 报告日期（报告十二节齐全，第六节为矩阵落位）
+# Last review dates of the dossier's twelve parts and the Munger matrix = the 02 report date (the report has all twelve sections; section six places the company in the matrix)
 reviewed:
   business: 2026-09-17
   economics: 2026-09-17
@@ -42,7 +42,7 @@ reviewed:
   breakers: 2026-09-17
   munger: 2026-09-17
 
-# 报告第一节的评级；评级表中单列的“内部晋升与人才留存”一维报告留空，不评分
+# Ratings from section one of the report; the separate "internal promotion and talent retention" dimension in the rating table is left blank by the report and not scored
 ratings:
   business: A−
   management: A−
@@ -51,186 +51,186 @@ ratings:
   source: AXP-RPT1-2026-09-17#p3
 
 thesis:
-  summary: "美国运通是一门把年费当订阅费收、用商户折扣和利息补贴权益、再用权益留住高消费客群的会员制生意：FY2025 的 722.29 亿美元收入里商户折扣占 51.8%、净卡费占 13.8% [src:AXP-RPT1-2026-09-17#p3]。定价权的证据是净卡费从 2019 年二季度约 10 亿美元/季长到 2026 年二季度的 28.6 亿美元/季，穿过了疫情停摆、零利率、加息与降息 [src:AXP-RPT1-2026-09-17#p3]。它不是吃免费浮存金的公司，而是带订阅叠加层的利差放贷机构：1,570 亿美元存款一年约付 52 亿美元利息，相当于 FY2025 税前利润的 38% [src:AXP-RPT1-2026-09-17#p4]，历史上两次把它推到生死线的（1991、2008）都是内部的资产负债表 [src:AXP-RPT1-2026-09-17#p10]。论点最怕两件事：代理替用户选卡让“人不再挑选”，以及 2029 年底到期的达美联名让“客群不属于自己” [src:AXP-RPT1-2026-09-17#p3] [src:AXP-RPT1-2026-09-17#p8]。"
+  summary: "American Express is a membership business that collects the annual fee as a subscription, uses merchant discount and interest to subsidize benefits, and uses the benefits to keep a high-spending customer base: of FY2025 revenue of $72.229 billion, merchant discount was 51.8% and net card fees 13.8% [src:AXP-RPT1-2026-09-17#p3]. The evidence of pricing power is that net card fees grew from about $1 billion a quarter in Q2 2019 to $2.86 billion a quarter in Q2 2026, through pandemic shutdowns, zero rates, rate hikes and rate cuts [src:AXP-RPT1-2026-09-17#p3]. It is not a company living on free float but a spread lender with a subscription layer on top: $157 billion of deposits cost about $5.2 billion a year in interest, equal to 38% of FY2025 pretax income [src:AXP-RPT1-2026-09-17#p4], and both times history pushed it to the brink (1991, 2008) the cause was its own balance sheet [src:AXP-RPT1-2026-09-17#p10]. The thesis fears two things most: agents choosing cards for users, so that \"people no longer choose\", and the Delta co-brand expiring at the end of 2029, so that \"the customer base is not its own\" [src:AXP-RPT1-2026-09-17#p3] [src:AXP-RPT1-2026-09-17#p8]."
   pillars:
     - id: P1
-      claim: "年费订阅是经营杠杆所在，会员付费意愿在变强：二季度单卡年化平均费 131 美元（同比 +12%）、新开户中 75% 落在收费产品、净卡费同比 +15.4% [src:AXP-RPT1-2026-09-17#p4]，但这条线还要在 2027 年证明年费能追上提价后的权益成本 [src:AXP-RPT1-2026-09-17#p6]。"
+      claim: "The annual-fee subscription is where the operating leverage is, and members' willingness to pay is getting stronger: in Q2 the annualized average fee per card was $131 (+12% year on year), 75% of new accounts were in fee-paying products, and net card fees were up 15.4% year on year [src:AXP-RPT1-2026-09-17#p4]; but in 2027 this line still has to prove that fees can catch up with the benefit costs that followed the price increases [src:AXP-RPT1-2026-09-17#p6]."
       source: AXP-RPT1-2026-09-17#p7
     - id: P2
-      claim: "商户费率与利息这两条补贴线不会被议价力或监管断崖式重新定价：费率代理值每年只下滑 2–3 个基点，且其中一部分来自联名占比上升 [src:AXP-RPT1-2026-09-17#p7]；2018 年最高法院判例仍保护反引导条款，伊利诺伊州的互换费限制对国民银行与支付卡网络已被永久禁止执行 [src:AXP-RPT1-2026-09-17#p8]。"
+      claim: "The two subsidy lines, merchant rates and interest, will not be repriced off a cliff by bargaining power or regulation: the rate proxy slips only 2–3 basis points a year, and part of that comes from the rising co-brand share [src:AXP-RPT1-2026-09-17#p7]; the 2018 Supreme Court precedent still protects anti-steering provisions, and Illinois's interchange fee limits have been permanently enjoined as to national banks and payment card networks [src:AXP-RPT1-2026-09-17#p8]."
       source: AXP-RPT1-2026-09-17#p7
     - id: P3
-      claim: "客群大体属于自己：联名伙伴达美（约占全球账单业务 13%、持卡人贷款 21%）会在 2029 年底协议到期前续约并保持独家，联名酬金的增长不会持续跑赢运通自己的收入 [src:AXP-RPT1-2026-09-17#p8]。"
+      claim: "The customer base is largely its own: co-brand partner Delta (about 13% of worldwide billed business and 21% of Card Member loans) will renew and stay exclusive before the agreement expires at the end of 2029, and growth in co-brand remuneration will not persistently outrun Amex's own revenue [src:AXP-RPT1-2026-09-17#p8]."
       source: AXP-RPT1-2026-09-17#p8
     - id: P4
-      claim: "由人挑选支付工具这个前提仍然成立：代理商务没有把选卡变成按总成本排序的默认值；运通已在 2026-04-14 发布 ACE 开发者工具包并推出代理购买赔付保障 [src:AXP-RPT1-2026-09-17#p8]。"
+      claim: "The premise that people choose their payment instrument still holds: agentic commerce has not turned card choice into a default ranked by total cost; on 2026-04-14 Amex released the ACE developer kit and launched purchase protection for purchases made by agents [src:AXP-RPT1-2026-09-17#p8]."
       source: AXP-RPT1-2026-09-17#p8
     - id: P5
-      claim: "客群信用优势和资产负债表能扛过一次信贷周期：运通主要净核销率 2.0%，比行业 3.92% 低 1.92 个百分点 [src:AXP-RPT1-2026-09-17#p11]；先收后付的资金成本随市价重定价但没有失控，2026 年上半年利息支出同比 −3%、利息收入同比 +7% [src:AXP-RPT1-2026-09-17#p5]。"
+      claim: "The customer base's credit advantage and the balance sheet can get through a credit cycle: Amex's main net write-off rate is 2.0%, 1.92 percentage points below the industry's 3.92% [src:AXP-RPT1-2026-09-17#p11]; the cost of its collect-first, pay-later funding reprices with the market but is not out of control, with interest expense −3% and interest income +7% year on year in the first half of 2026 [src:AXP-RPT1-2026-09-17#p5]."
       source: AXP-RPT1-2026-09-17#p11
     - id: P6
-      claim: "管理层与资本纪律延续：报告给管理层的两条可计算标准都通过，三个经营分部 2023–2025 年每年都盈利，近三年返还 76% 的普通股净利润、股数三年净减 5.4% [src:AXP-RPT1-2026-09-17#p10]；资本配置本身只评 B，回购在内在价值附近进行，没有明显创造或毁灭价值 [src:AXP-RPT1-2026-09-17#p3]。这是一个内部人管理的组织 [src:AXP-RPT1-2026-09-17#p9]，“优秀管理层”的判定挂在具体的人和年份上 [src:AXP-RPT1-2026-09-17#p10]。"
+      claim: "Management quality and capital discipline continue: management passes both of the report's calculable tests, all three operating segments were profitable in every year of 2023–2025, and 76% of net income to common was returned over the last three years, with the share count down a net 5.4% in three years [src:AXP-RPT1-2026-09-17#p10]; capital allocation itself rates only B: buybacks are made near intrinsic value and neither clearly create nor destroy value [src:AXP-RPT1-2026-09-17#p3]. This is an organization run by insiders [src:AXP-RPT1-2026-09-17#p9], and the \"excellent management\" verdict is tied to specific people and years [src:AXP-RPT1-2026-09-17#p10]."
       source: AXP-RPT1-2026-09-17#p10
-  # 芒格反向清单：怎样会永久亏损（取自报告第五、七节与第十二节“最可能错在哪”）；每条末尾写明由哪些测试监测
+  # Munger inversion list: how a permanent loss could happen (from sections five and seven of the report and the "where am I most likely wrong" part of section twelve); each item ends with the tests that monitor it
   permanent_loss_paths:
-    - "信贷周期叠加资产负债表失误：一次衰退里行业核销率回到峰值以上、准备金由释放转计提 [src:AXP-RPT1-2026-09-17#p14]，回购会先停 [src:AXP-RPT1-2026-09-17#p6]；三十五年里出现过四次 30% 以上的盈利回撤（口径不一，只看频率与量级）[src:AXP-RPT1-2026-09-17#p11]，若像 1991 年那样信贷失误、非主业失血与商户集体行动在同一个衰退里同时暴露，周期性回撤会变成永久性损失 [src:AXP-RPT1-2026-09-17#p10] [src:AXP-RPT1-2026-09-17#p13]。监测：AXP-Q7、AXP-Q11、AXP-Q12。"
-    - "联名关系断裂或变贵：达美约占全球账单业务 13%、持卡人贷款 21%，现行协议 2029 年底到期 [src:AXP-RPT1-2026-09-17#p8]。可比先例是好市多：2015 年 2 月运通宣布不再与好市多续约时，好市多约占全球账单业务 8%、全球贷款约 20% [src:AXP-RPT1-2026-09-17#p8]；当年好市多组合的贷款/账单比是 2.5 倍，达美是 1.6 倍，达美组合对利息的依赖反而更低 [src:AXP-RPT1-2026-09-17#p8]。报告记载此后 2015 与 2016 两年收入连续下滑、2015 年被迫重置中期目标，但同期还流失了 JetBlue 联名，且这段注明未逐项核对原文 [src:AXP-RPT1-2026-09-17#p9]。监测：AXP-Q5、AXP-L6。"
-    - "选卡权转移：AI 代理按总成本替用户选卡且不许锁卡，年费、积分与权益这套“让人选我”的机制失去对象 [src:AXP-RPT1-2026-09-17#p4]，商户费率溢价被按成本套利，而 2018 年的反引导判例约束的是商户对人的言行，约束不到对机器的排序参数 [src:AXP-RPT1-2026-09-17#p8]。监测：AXP-L2。"
-    - "会员制单位经济恶化：权益竞赛让成本曲线持续跑赢费收曲线，每多收一块年费要多花的权益成本从 0.84 倍升到 1.62 倍 [src:AXP-RPT1-2026-09-17#p6]；公司不披露续卡率，如果“留下来的人付得更多”其实掩盖了“愿意付的人在变少”，年费定价权就是错觉 [src:AXP-RPT1-2026-09-17#p16]。监测：AXP-Q6、AXP-Q9、AXP-Q13。"
-    - "监管重新定价：联邦信用卡利率上限打在约占收入 24% 的净利息收入上 [src:AXP-RPT1-2026-09-17#p3] [src:AXP-RPT1-2026-09-17#p14]，或《信用卡竞争法案》删除三方网络豁免、州级互换费立法扩散 [src:AXP-RPT1-2026-09-17#p14]。监测：AXP-L3、AXP-L4。"
-    - "获客端的信任受损：运通把服务写成护城河的核心，最近一次被监管处罚的却是销售行为，2025 年 1 月与司法部约 2.3 亿美元和解，针对 2014–2017 年对小企业的欺骗性营销 [src:AXP-RPT1-2026-09-17#p9]；报告认为它的信任风险出在获客端而不是赔付端，并把这列为反方论点的起点之一 [src:AXP-RPT1-2026-09-17#p9]。监测：AXP-L8。"
+    - "A credit cycle on top of a balance-sheet mistake: in a recession the industry charge-off rate goes back above its peak and reserves swing from releases to builds [src:AXP-RPT1-2026-09-17#p14], and buybacks stop first [src:AXP-RPT1-2026-09-17#p6]; in thirty-five years there have been four earnings drawdowns of 30% or more (on different bases, so only frequency and size matter) [src:AXP-RPT1-2026-09-17#p11], and if, as in 1991, credit mistakes, bleeding non-core businesses and collective action by merchants are exposed in the same recession, a cyclical drawdown becomes a permanent loss [src:AXP-RPT1-2026-09-17#p10] [src:AXP-RPT1-2026-09-17#p13]. Monitored by: AXP-Q7, AXP-Q11, AXP-Q12."
+    - "The co-brand relationship breaks or gets expensive: Delta is about 13% of worldwide billed business and 21% of Card Member loans, and the current agreement expires at the end of 2029 [src:AXP-RPT1-2026-09-17#p8]. The comparable precedent is Costco: when Amex announced in February 2015 that it would not renew with Costco, Costco was about 8% of worldwide billed business and about 20% of worldwide loans [src:AXP-RPT1-2026-09-17#p8]; that year the Costco portfolio's loans-to-billings ratio was 2.5x against Delta's 1.6x, so the Delta portfolio actually depends less on interest [src:AXP-RPT1-2026-09-17#p8]. The report records that revenue then fell in both 2015 and 2016 and that the medium-term targets had to be reset in 2015, but the JetBlue co-brand was also lost in the same period, and the passage is marked as not checked item by item against the original [src:AXP-RPT1-2026-09-17#p9]. Monitored by: AXP-Q5, AXP-L6."
+    - "The choice of card moves away from people: AI agents choose cards for users by total cost and do not allow a card to be locked in, so the \"choose me\" machinery of annual fees, points and benefits loses its audience [src:AXP-RPT1-2026-09-17#p4], the merchant-rate premium is arbitraged away on cost, and the 2018 anti-steering precedent constrains what merchants say and do to people, not the ranking parameters given to machines [src:AXP-RPT1-2026-09-17#p8]. Monitored by: AXP-L2."
+    - "Membership unit economics deteriorate: the benefits race keeps the cost curve outrunning the fee curve, and the benefit cost of each extra dollar of annual fees has risen from 0.84x to 1.62x [src:AXP-RPT1-2026-09-17#p6]; the company does not disclose renewal rates, and if \"those who stay pay more\" actually hides \"fewer people are willing to pay\", the pricing power of the annual fee is an illusion [src:AXP-RPT1-2026-09-17#p16]. Monitored by: AXP-Q6, AXP-Q9, AXP-Q13."
+    - "Regulatory repricing: a federal credit card interest rate cap hits net interest income, about 24% of revenue [src:AXP-RPT1-2026-09-17#p3] [src:AXP-RPT1-2026-09-17#p14], or the Credit Card Competition Act removes the three-party network exemption and state interchange legislation spreads [src:AXP-RPT1-2026-09-17#p14]. Monitored by: AXP-L3, AXP-L4."
+    - "Trust damaged at the acquisition end: Amex describes service as the core of its moat, yet its most recent regulatory penalty was over sales practices, a settlement of about $230 million with the Department of Justice in January 2025 over deceptive marketing to small businesses in 2014–2017 [src:AXP-RPT1-2026-09-17#p9]; the report holds that its trust risk lies at the acquisition end rather than the servicing end, and lists this as one of the starting points of the bear case [src:AXP-RPT1-2026-09-17#p9]. Monitored by: AXP-L8."
 
-# 报告中的基准事实，供审计与日后 XBRL/申报文件逐条核对
+# Baseline facts from the report, for the audit and for item-by-item checks against XBRL and filings later
 baseline_facts:
   - id: F1
-    label: 账单业务（持卡人全球消费）
+    label: Billed business (Card Member spending worldwide)
     value: 16698
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
     source: AXP-RPT1-2026-09-17#p3
   - id: F2
-    label: 总收入（扣除利息支出后）
+    label: Total revenues (net of interest expense)
     value: 722.29
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
     source: AXP-RPT1-2026-09-17#p3
   - id: F3
-    label: 商户折扣收入
+    label: Discount revenue
     value: 374.01
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
     source: AXP-RPT1-2026-09-17#p3
-    note: "占总收入 51.8% [src:AXP-RPT1-2026-09-17#p3]。"
+    note: "51.8% of total revenues [src:AXP-RPT1-2026-09-17#p3]."
   - id: F4
-    label: 净卡费
+    label: Net card fees
     value: 99.93
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
     source: AXP-RPT1-2026-09-17#p3
-    note: "占收入 13.8%，2026 年上半年占 14.6% [src:AXP-RPT1-2026-09-17#p3]。"
+    note: "13.8% of revenue, and 14.6% in the first half of 2026 [src:AXP-RPT1-2026-09-17#p3]."
   - id: F5
-    label: 单季净卡费
+    label: Quarterly net card fees
     value: 28.6
-    unit: 亿美元
+    unit: USD 100 million
     period: 2026Q2
     as_of: 2026-06-30
     source: AXP-RPT1-2026-09-17#p3
-    note: "2019 年二季度约 10 亿美元/季 [src:AXP-RPT1-2026-09-17#p3]。"
+    note: "About $1 billion a quarter in Q2 2019 [src:AXP-RPT1-2026-09-17#p3]."
   - id: F6
-    label: 客户存款
+    label: Customer deposits
     value: 1570
-    unit: 亿美元
+    unit: USD 100 million
     as_of: 2026-06-30
     source: AXP-RPT1-2026-09-17#p3
-    note: "超过 99% 是计息存款 [src:AXP-RPT1-2026-09-17#p3]。"
+    note: "Over 99% are interest-bearing deposits [src:AXP-RPT1-2026-09-17#p3]."
   - id: F7
-    label: 存款利息支出
+    label: Interest expense on deposits
     value: 26
-    unit: 亿美元
+    unit: USD 100 million
     period: 1H26
     as_of: 2026-06-30
     source: AXP-RPT1-2026-09-17#p3
-    note: "年化约 52 亿美元，相当于 FY2025 税前利润 137.95 亿美元的 38%（报告算式一）[src:AXP-RPT1-2026-09-17#p4]。"
+    note: "About $5.2 billion annualized, equal to 38% of FY2025 pretax income of $13.795 billion (the report's formula one) [src:AXP-RPT1-2026-09-17#p4]."
   - id: F8
-    label: 商户费率代理值（折扣收入 ÷ 账单业务，报告口径）
+    label: Merchant rate proxy (discount revenue ÷ billed business, report's basis)
     value: [2.269, 2.240, 2.226]
     unit: "%"
     period: FY2024 / FY2025 / 1H26
     as_of: 2026-06-30
     source: AXP-RPT1-2026-09-17#p7
   - id: F9
-    label: 联名卡占账单业务比例（2022 年起的年报口径）
+    label: Co-brand share of billed business (annual-report basis from 2022)
     value: [18, 21, 26]
     unit: "%"
     period: 2022 / 2023 / 2025
     as_of: 2025-12-31
     source: AXP-RPT1-2026-09-17#p7
   - id: F10
-    label: 达美占全球账单业务 / 持卡人贷款
+    label: Delta's share of worldwide billed business / Card Member loans
     value: [13, 21]
     unit: "%"
     period: FY2025
     as_of: 2025-12-31
     source: AXP-RPT1-2026-09-17#p8
-    note: 现行协议 2019 年续签、2029 年底到期。
+    note: The current agreement was renewed in 2019 and expires at the end of 2029.
   - id: F11
-    label: 卡余额
+    label: Card balances
     value: 2180
-    unit: 亿美元
+    unit: USD 100 million
     as_of: 2026-06-30
     source: AXP-RPT1-2026-09-17#p11
   - id: F12
-    label: 准备金率
+    label: Reserve rate
     value: 2.7
     unit: "%"
     period: 2026Q2
     as_of: 2026-06-30
     source: AXP-RPT1-2026-09-17#p11
-    note: "从 3.0% 降到三年低点，二季度拨备含 1.91 亿美元净释放 [src:AXP-RPT1-2026-09-17#p11]。"
+    note: "Down from 3.0% to a three-year low, with Q2 provisions including a net reserve release of $191 million [src:AXP-RPT1-2026-09-17#p11]."
   - id: F13
-    label: 净核销率：运通（主要）/ 行业（FRED 非季调）
+    label: "Net write-off rate: Amex (main) / industry (FRED, not seasonally adjusted)"
     value: [2.0, 3.92]
     unit: "%"
     period: 2026Q2
     as_of: 2026-06-30
     source: AXP-RPT1-2026-09-17#p11
-    note: 运通一侧是报告所称的“主要净核销率”，对应公司哪一个口径（仅本金，或含利息与费用）待与二季度业绩 8-K 附件 99.2 核对。
+    note: The Amex side is what the report calls the "main net write-off rate"; which company basis it corresponds to (principal only, or including interest and fees) is to be checked against Exhibit 99.2 of the Q2 earnings 8-K.
 
 tests:
-  # ---------- 林奇 stalwart 模板（替换两条对发卡行无意义的指标）与次类 cyclical 模板 ----------
+  # ---------- Lynch stalwart template (two metrics that mean nothing for a card issuer replaced) and the secondary cyclical template ----------
   - id: AXP-Q1
     type: quantitative
-    claim: 增长没有滑出稳定增长型的区间
+    claim: Growth has not slipped out of the stalwart range
     origin: template:stalwart
     severity: watch
     covers: [growth]
     pillar: P1
     metric_def:
       id: revenue_net_of_interest_expense_yoy
-      description: 扣除利息支出后的总收入同比增速（运通的收入口径）
+      description: Year-on-year growth in total revenues net of interest expense (Amex's revenue basis)
       unit: "%"
       frequency: quarter
       data: xbrl
       xbrl: [us-gaap:RevenuesNetOfInterestExpense, us-gaap:Revenues]
       formula: revenue_t / revenue_{t-4q} - 1
-    fail_if: 连续 4 个季度低于 5%
+    fail_if: Below 5% for 4 consecutive quarters
     rule: {op: "<", threshold: 5, unit: "%", consecutive: 4, period: quarter}
-    warn_if: 连续 2 个季度低于 8%
+    warn_if: Below 8% for 2 consecutive quarters
     warn_rule: {op: "<", threshold: 8, unit: "%", consecutive: 2, period: quarter}
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline: {value: 10, unit: "%", period: FY2025, as_of: 2025-12-31, source: AXP-RPT1-2026-09-17#p8}
-    note: 对应模板 stalwart 的 Q-growth，门槛沿用模板默认值。运通的收入口径是扣除利息支出后的总收入，登记表 revenue_yoy 的候选概念可能先取到只含客户合同收入、不含净利息收入的口径，所以用 metric_def 就地定义。指标含义仍是收入增速，只换了收入口径，所以 origin 记 template:stalwart；AXP-Q2、AXP-Q4 换成了另一种指标，记 manual。
+    note: Corresponds to Q-growth in the stalwart template, with the template's default thresholds. Amex's revenue basis is total revenues net of interest expense; the candidate concepts for revenue_yoy in the registry might first pick up a basis with only revenue from contracts with customers and no net interest income, so the metric is defined in place with metric_def. The metric still means revenue growth, with only the revenue basis changed, so origin is template:stalwart; AXP-Q2 and AXP-Q4 switched to different metrics and are recorded as manual.
 
   - id: AXP-Q2
     type: quantitative
-    claim: 资本回报守在优秀企业的水平
+    claim: Returns on capital stay at the level of an excellent business
     origin: manual
     severity: watch
     covers: [returns_on_capital, moat]
     pillar: P1
     metric: roe
-    fail_if: 连续 2 年低于 12%
+    fail_if: Below 12% for 2 consecutive years
     rule: {op: "<", threshold: 12, unit: "%", consecutive: 2, period: year}
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2027-02
-    note: "替代模板 stalwart 的 Q-returns（roic）：对发卡机构而言新增债务对应新增卡余额，是资产扩张的配套 [src:AXP-RPT1-2026-09-17#p10]，把有息负债算进“投入资本”没有意义，所以改用净资产收益率。门槛借自模板给投入资本回报的默认值，含义并不相同；报告没有给 ROE 读数，基线待从 FY2025 年报回填。回填后、FY2026 年报发布之前复核这个门槛是否适合净资产收益率，复核结论与日期写进本条 note，保持事先登记（见 todo）。"
+    note: "Replaces Q-returns (roic) in the stalwart template: for a card issuer, new debt funds new card balances and goes with the expansion of assets [src:AXP-RPT1-2026-09-17#p10], so counting interest-bearing debt as \"invested capital\" makes no sense, and return on equity is used instead. The threshold is borrowed from the template's default for return on invested capital and does not mean the same thing; the report gives no ROE reading, and the baseline is to be backfilled from the FY2025 annual report. After backfilling and before the FY2026 annual report is published, review whether this threshold suits return on equity, and write the conclusion and date into this note so that it stays registered in advance (see todo)."
 
   - id: AXP-Q3
     type: quantitative
-    claim: 回购在真正缩减股本，而不是抵消股权激励
+    claim: Buybacks are really shrinking the share count, not just offsetting stock-based compensation
     origin: template:stalwart
     severity: watch
     covers: [capital_allocation]
     pillar: P6
     metric: diluted_shares_yoy
-    fail_if: 连续 2 年大于 0
+    fail_if: Above 0 for 2 consecutive years
     rule: {op: ">", threshold: 0, unit: "%", consecutive: 2, period: year}
     data: xbrl
     effective_from: FY2026Q3
@@ -241,24 +241,24 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p6
-      note: "二季度平均摊薄股数同比；股数从 FY2023 约 7.36 亿股降到 FY2025 约 6.96 亿股，净减 5.4% [src:AXP-RPT1-2026-09-17#p10]。"
+      note: "Q2 average diluted shares, year on year; the share count fell from about 736 million in FY2023 to about 696 million in FY2025, a net reduction of 5.4% [src:AXP-RPT1-2026-09-17#p10]."
 
   - id: AXP-Q4
     type: quantitative
-    claim: 利润能变成真正分给股东的钱
+    claim: Profit turns into money actually paid out to shareholders
     origin: manual
     severity: watch
     covers: [capital_allocation, free_cash_flow]
     pillar: P6
     metric_def:
       id: capital_return_to_common_ni_3y
-      description: 近三年滚动（普通股回购 + 普通股分红）÷ 归属普通股股东净利润
+      description: Rolling three years of (common stock buybacks + common dividends) ÷ net income attributable to common shareholders
       unit: "%"
       frequency: year
       data: xbrl
       xbrl: [us-gaap:PaymentsForRepurchaseOfCommonStock, us-gaap:PaymentsOfDividendsCommonStock, us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic]
       formula: sum_3y(buybacks + common_dividends) / sum_3y(net_income_to_common)
-    fail_if: 连续 2 年低于 70%
+    fail_if: Below 70% for 2 consecutive years
     rule: {op: "<", threshold: 70, unit: "%", consecutive: 2, period: year}
     data: xbrl
     effective_from: FY2026Q3
@@ -266,76 +266,76 @@ tests:
     baseline:
       value: 76
       unit: "%"
-      period: 近三年（公司披露口径）
+      period: Last three years (company-disclosed basis)
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p6
-    note: "替代模板 stalwart 的 Q-fcf（fcf_conversion）：这是受资本充足率约束的银行控股公司，能返还多少由监管资本决定，信贷周期一转向、拨备由净释放转为净计提，回购会先停 [src:AXP-RPT1-2026-09-17#p6]。“经营现金流减资本开支”随卡余额与其他负债波动，不代表能分给股东的钱，所以改用报告所说的“近三年返还的普通股净利润比例”。这条主要检验资本配置：它测返还比例，不测可分配盈利是否在增长，后者由 AXP-Q15 跟踪。门槛借用模板 Q-fcf 的默认值，但这里是另一个量，相当于报告所记近三年返还比例 76% 下方六个百分点的缓冲 [src:AXP-RPT1-2026-09-17#p6]，是本档案事先写下的判定标准。信贷下行期回购暂停造成的失败在预期之内，要与 AXP-Q7、AXP-Q12 一起读。"
+    note: "Replaces Q-fcf (fcf_conversion) in the stalwart template: this is a bank holding company bound by capital requirements, so how much it can return is set by regulatory capital, and once the credit cycle turns and provisions swing from net releases to net builds, buybacks stop first [src:AXP-RPT1-2026-09-17#p6]. \"Operating cash flow less capital expenditure\" moves with card balances and other liabilities and does not represent money that can be paid out to shareholders, so the test uses what the report calls \"the share of common net income returned over the last three years\" instead. It mainly tests capital allocation: it measures the payout share, not whether distributable earnings are growing, which AXP-Q15 tracks. The threshold borrows the default of the template's Q-fcf, but this is a different quantity; it amounts to a buffer of six percentage points below the 76% three-year payout the report records [src:AXP-RPT1-2026-09-17#p6], a judgment criterion this archive wrote down in advance. A failure caused by buybacks paused in a credit downturn is expected and has to be read together with AXP-Q7 and AXP-Q12."
 
   - id: AXP-L1
     type: qualitative
-    claim: 管理层没有下调已公布的财务目标
+    claim: Management has not cut its published financial targets
     origin: template:stalwart
     severity: watch
     covers: [management]
     pillar: P6
-    question: 本期文件中，管理层是否下调或撤回了此前公布的财务目标（全年收入与每股盈利指引，以及任何中期目标；现行目标逐条登记在 ledger.yml）？
-    fail_if: 是，且没有同时给出可检验的新目标
+    question: In this period's filings, did management cut or withdraw previously published financial targets (full-year revenue and EPS guidance, and any medium-term targets; current targets are recorded item by item in ledger.yml)?
+    fail_if: Yes, without giving new, testable targets at the same time
     judge: independent_model
     evidence: required
-    where: 业绩 8-K 附件 99.1 新闻稿、电话会材料、10-Q 与 10-K 的 MD&A
+    where: Earnings 8-K Exhibit 99.1 press release, call materials, the MD&A of the 10-Q and 10-K
     lookback: 4
     judge_notes:
-      - 判定“下调”时，以言行账本（AXP-M-2026-01、AXP-M-2026-02）中最近一次公布的数值为准。
-      - 全年每股盈利指引是区间：公司此后的表态（8-K、10-Q 或业绩电话会）给出的全年每股盈利区间，中点低于最近一次公布区间的中点，才算“下调”；围绕同一中点收窄区间或上调，都不算下调。
+      - When judging a "cut", use the most recently published figures in the say-do ledger (AXP-M-2026-01, AXP-M-2026-02).
+      - "Full-year EPS guidance is a range: it counts as a \"cut\" only if a full-year EPS range the company gives later (8-K, 10-Q or earnings call) has a midpoint below the midpoint of the most recently published range; narrowing the range around the same midpoint, or raising it, is not a cut."
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: 2026 年 7 月上调全年收入指引至 +10%、维持每股盈利指引不变，理由是把超额收入再投资
+      value: In July 2026, full-year revenue guidance raised to +10% and EPS guidance kept unchanged, with the stated reason of reinvesting the excess revenue
       as_of: 2026-09-17
       source: AXP-RPT1-2026-09-17#p9
-      note: "报告第一节写作把超额收入投回技术与权益 [src:AXP-RPT1-2026-09-17#p3]；每股盈利指引维持不变，报告所用的是指引区间 $17.30–$17.90 的中点 $17.60 [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-RPT1-2026-09-17#p12]。"
-    note: "对应模板 stalwart 的 L-guidance。报告没有记载运通现行的中期财务目标，只记载了 2026 年的全年指引：收入增长上调到 +10%、每股盈利指引维持不变 [src:AXP-RPT1-2026-09-17#p9]，报告所用的是指引区间 $17.30–$17.90 的中点 $17.60 [src:AXP-RPT1-2026-09-17#p12] [src:AXP-8K-2026-07-24#EX-99.1]。所以问题把全年指引一并纳入，两项已登记在言行账本（AXP-M-2026-01、AXP-M-2026-02）。每股盈利区间按中点判定“下调”的规则（见 judge_notes）与 where 里补上的 10-Q MD&A，都是迁移到规范 0.2 时写明的，在本条第一次判定（FY2026Q3）之前。"
+      note: "Section one of the report describes it as putting the excess revenue back into technology and benefits [src:AXP-RPT1-2026-09-17#p3]; EPS guidance was kept unchanged, and the report uses the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-RPT1-2026-09-17#p12]."
+    note: "Corresponds to L-guidance in the stalwart template. The report records no current medium-term financial targets for Amex, only the full-year 2026 guidance: revenue growth raised to +10% and EPS guidance unchanged [src:AXP-RPT1-2026-09-17#p9], with the report using the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-RPT1-2026-09-17#p12] [src:AXP-8K-2026-07-24#EX-99.1]. So the question also covers the full-year guidance, and both items are recorded in the say-do ledger (AXP-M-2026-01, AXP-M-2026-02). The rule of judging a \"cut\" in the EPS range by its midpoint (see judge_notes) and the 10-Q MD&A added to where were both written out during the migration to spec 0.2, before the first judgment under this test (FY2026Q3)."
 
   - id: AXP-L7
     type: qualitative
-    claim: 周期高点没有追加昂贵的回购或收购
+    claim: No expensive buybacks or acquisitions added at the cycle peak
     origin: template:cyclical
     severity: watch
     covers: [capital_allocation]
     pillar: P6
-    question: 本期是否在利润创新高的同时大幅提高回购或资本开支（含收购）？“大幅”指回购金额比上年同期增加一半以上，或宣布一笔并非小型、或不贴近支付与会员主业的收购。
-    fail_if: 是，且管理层没有说明周期假设
+    question: In this period, while profits hit a record, were buybacks or capital expenditure (including acquisitions) raised sharply? "Sharply" means buybacks up by half or more on the same period a year earlier, or an announced acquisition that is not small or not close to the core payments and membership business.
+    fail_if: Yes, and management did not state its assumption about the cycle
     judge: independent_model
     evidence: required
-    where: 业绩 8-K 附件 99.1 与 99.2、10-Q/10-K 的资本与股东权益一节、收购公告
+    where: Earnings 8-K Exhibits 99.1 and 99.2, the capital and shareholders' equity section of the 10-Q/10-K, acquisition announcements
     lookback: 4
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: 回购以每年约 3% 的股数进行、价格在内在价值附近；并购全部小型且贴近主业；没有一次可以证明择时能力的大额回购
+      value: Buybacks run at about 3% of shares a year, at prices near intrinsic value; acquisitions are all small and close to the core business; there has been no large buyback that would prove an ability to time the market
       as_of: 2026-09-17
       source: AXP-RPT1-2026-09-17#p3
-    note: "套用次类 cyclical 模板的 L-cycle-capalloc；“大幅”的界定是本档案事先写下的操作化。报告给资本配置评 B [src:AXP-RPT1-2026-09-17#p3]；当期利润里含准备金净释放，二季度报表口径的增速 +15% 含准备金释放，剔除拨备变动后只有 +4.0% [src:AXP-RPT1-2026-09-17#p15]，利润“创新高”里有周期给的一份，周期高点加码回购正是这里要防的错误。"
+    note: "Applies L-cycle-capalloc from the secondary cyclical template; the definition of \"sharply\" is an operationalization this archive wrote down in advance. The report rates capital allocation B [src:AXP-RPT1-2026-09-17#p3]; current profits include net reserve releases: Q2 growth on the reported basis, +15%, includes reserve releases, and excluding the change in provisions it is only +4.0% [src:AXP-RPT1-2026-09-17#p15]; part of a \"record\" profit is the cycle's gift, and stepping up buybacks at the cycle peak is exactly the mistake this test guards against."
 
-  # ---------- 报告第十节：论点破坏信号（任何一条成立，需要重新写这份判断） ----------
+  # ---------- Section ten of the report: thesis breakers (if any one holds, this judgment has to be rewritten) ----------
   - id: AXP-Q5
     type: quantitative
-    claim: 联名酬金的增长不会持续跑赢运通自己的收入
+    claim: Growth in co-brand remuneration will not persistently outrun Amex's own revenue
     origin: report:breaker
     severity: breaker
     covers: [customer_concentration, moat, unit_economics]
     pillar: P3
     metric_def:
       id: delta_remuneration_growth_minus_revenue_growth
-      description: 达美公开披露的来自美国运通的联名酬金同比增速，减去运通扣除利息支出后总收入的同比增速
+      description: Year-on-year growth in the co-brand remuneration from American Express that Delta publicly discloses, minus year-on-year growth in Amex's total revenues net of interest expense
       unit: pp
       frequency: year
       data: filing_text
-      where: 达美 10-K 中与美国运通协议相关的酬金披露（DAL-10K-FY2025 起逐年）；运通 10-K 合并损益表
+      where: The remuneration disclosure related to the American Express agreements in Delta's 10-K (each year from DAL-10K-FY2025); Amex's 10-K consolidated income statement
       formula: yoy(delta_amex_remuneration) - yoy(axp_revenue_net_of_interest_expense)
-    fail_if: 公开的酬金增速连续两年高于运通收入增速；连续计数从 FY2026 起算，FY2025 只作基线；两项同比都用披露的金额计算（不用取整后的百分比），差值保留一位小数，不大于零记为通过
+    fail_if: Disclosed remuneration growth above Amex's revenue growth for two consecutive years; the consecutive count starts from FY2026, with FY2025 only as the baseline; both year-on-year figures are computed from the disclosed amounts (not rounded percentages), the difference is kept to one decimal place, and a difference not above zero counts as a pass
     rule: {op: ">", threshold: 0, unit: pp, consecutive: 2, period: year, evaluate_from: FY2026}
-    warn_if: 单一年度的酬金增速高于运通收入增速
+    warn_if: Remuneration growth above Amex's revenue growth in a single year
     warn_rule: {op: ">", threshold: 0, unit: pp, consecutive: 1, period: year}
     data: filing_text
     effective_from: FY2026Q3
@@ -346,63 +346,63 @@ tests:
       period: FY2025
       as_of: 2025-12-31
       source: AXP-RPT1-2026-09-17#p8
-      note: "达美 2025 年从运通收到的联名酬金 82 亿美元、同比 +11%，同期运通收入增速 10% [src:AXP-RPT1-2026-09-17#p8]；差值由两项取整后的读数相减，只作基线，不计入连续两年。前瞻读数：达美给 2026 年的酬金指引是 90 亿美元，对 82 亿约 +9.8%（本档案计算）[src:AXP-RPT1-2026-09-17#p8]，运通 2026 年收入指引上调到 +10% [src:AXP-RPT1-2026-09-17#p9]，两项指引之差约 −0.2 个百分点，落在取整误差之内 [src:AXP-RPT1-2026-09-17#p8] [src:AXP-RPT1-2026-09-17#p9]。"
-    note: "报告第十节破坏信号 #1 的酬金增速一支；另外两个事件条件（2028 年底前是否公布续约、续约后是否保住独家）在定性测试 AXP-L6，两条为“或”关系，任何一条失败即破坏信号 #1 成立。报告给这条破坏信号的最早可读时点是“2027 下半年起，决定性时点 2028 年底” [src:AXP-RPT1-2026-09-17#p14]，没有说 FY2025 计入“连续两年”；若把 FY2025 计入，单凭 FY2026 一年的读数就会在 2027 年初触发，早于报告的时点，所以连续计数从 FY2026 起算，这一选择在两家 FY2026 数字公布之前写下。按两家的 2026 年指引，FY2026 的差值落在零附近（见基线），单年读数只记警告；first_readable 取两家 FY2026 年报发布的 2027-02，最早能失败的是 2028 年初两家发布 FY2027 年报时，仍早于报告的决定性时点。现行协议 2019 年续签、2029 年底到期 [src:AXP-RPT1-2026-09-17#p8]。"
+      note: "Delta received $8.2 billion of co-brand remuneration from Amex in 2025, +11% year on year, while Amex's revenue grew 10% [src:AXP-RPT1-2026-09-17#p8]; the difference subtracts the two rounded readings, serves only as the baseline and does not count toward the two consecutive years. Forward readings: Delta's remuneration guidance for 2026 is $9 billion, about +9.8% on $8.2 billion (this archive's calculation) [src:AXP-RPT1-2026-09-17#p8], and Amex's 2026 revenue guidance was raised to +10% [src:AXP-RPT1-2026-09-17#p9]; the difference between the two guidance figures is about −0.2 percentage points, within rounding error [src:AXP-RPT1-2026-09-17#p8] [src:AXP-RPT1-2026-09-17#p9]."
+    note: "The remuneration-growth leg of breaker #1 in section ten of the report; the other two event conditions (whether a renewal is announced before the end of 2028, and whether exclusivity is kept after renewal) are in the qualitative test AXP-L6; the two tests are joined by \"or\", and a failure of either means breaker #1 holds. The earliest readable point the report gives for this breaker is \"from the second half of 2027, decisive point end of 2028\" [src:AXP-RPT1-2026-09-17#p14], and it does not say that FY2025 counts toward \"two consecutive years\"; if FY2025 counted, a single FY2026 reading would trigger it in early 2027, earlier than the report's timing, so the consecutive count starts from FY2026, a choice written down before either company publishes its FY2026 figures. On both companies' 2026 guidance, the FY2026 difference falls near zero (see the baseline), so a single-year reading only records a warning; first_readable is 2027-02, when both companies publish their FY2026 annual reports, and the earliest possible failure is in early 2028, when both publish their FY2027 annual reports, still earlier than the report's decisive point. The current agreement was renewed in 2019 and expires at the end of 2029 [src:AXP-RPT1-2026-09-17#p8]."
 
   - id: AXP-L6
     type: qualitative
-    claim: 达美会在 2029 年底协议到期前续约，且运通保持独家发卡方
+    claim: Delta will renew before the agreement expires at the end of 2029, and Amex stays the exclusive issuer
     origin: report:breaker
     severity: breaker
     covers: [customer_concentration, moat]
     pillar: P3
-    question: 截至本期，是否出现以下任一情况：（a）日期已晚于 2028-12-31，而运通与达美仍未公布联名协议续约；（b）已公布的续约显示运通不再是达美联名卡的独家发卡方？
-    fail_if: 是（(a) 或 (b) 任一成立）
+    question: "As of this period, has either of the following occurred: (a) the date is later than 2028-12-31 and Amex and Delta have still not announced a renewal of the co-brand agreement; (b) an announced renewal shows that Amex is no longer the exclusive issuer of Delta co-brand cards?"
+    fail_if: Yes ((a) or (b) holds)
     judge: independent_model
     evidence: required
-    where: 运通与达美的新闻稿与 8-K；两家 10-K 中关于联名协议的披露；两家业绩电话会材料
+    where: Amex's and Delta's press releases and 8-Ks; the disclosures about the co-brand agreements in both companies' 10-Ks; both companies' earnings call materials
     lookback: 4
     effective_from: FY2026Q3
     first_readable: 2027-07
     baseline:
-      value: 现行协议 2019 年续签、2029 年底到期
+      value: The current agreement was renewed in 2019 and expires at the end of 2029
       as_of: 2026-09-17
       source: AXP-RPT1-2026-09-17#p8
-    note: "报告第十节破坏信号 #1 的两个事件条件；酬金增速一支在 AXP-Q5，两条为“或”关系，任何一条失败即破坏信号 #1 成立。报告给的最早可读时点是“2027 下半年起，决定性时点 2028 年底” [src:AXP-RPT1-2026-09-17#p14]，所以 first_readable 取 2027-07；(a) 要到 2029 年 1 月才可能成立，(b) 在续约公告发布时即可判定。这两个条件是文字事件，按定性测试由独立模型对照原文判定并附出处。"
+    note: "The two event conditions of breaker #1 in section ten of the report; the remuneration-growth leg is in AXP-Q5; the two tests are joined by \"or\", and a failure of either means breaker #1 holds. The earliest readable point the report gives is \"from the second half of 2027, decisive point end of 2028\" [src:AXP-RPT1-2026-09-17#p14], so first_readable is 2027-07; (a) cannot hold before January 2029, and (b) can be judged as soon as a renewal is announced. Both conditions are textual events, judged as a qualitative test by an independent model against the original text, with sources cited."
 
   - id: AXP-Q6
     type: quantitative
-    claim: 年费提价之后，权益成本最终会被费收追上，会员制的单位经济没有结构性恶化
+    claim: After the annual-fee increases, fee income eventually catches up with benefit costs, and membership unit economics have not deteriorated structurally
     origin: report:breaker
     severity: breaker
     covers: [pricing_power, unit_economics, moat]
     pillar: P1
     metric: net_card_fees_yoy
     metric_def:
-      description: 净卡费（Net card fees）同比增速，与同一季度的会员服务成本同比增速一起判定
+      description: Year-on-year growth in Net card fees, judged together with year-on-year growth in Card Member services expense in the same quarter
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 业绩 8-K 附件 99.2 统计表或 10-Q 合并损益表的 Net card fees 与 Card Member services 两行
+      where: The Net card fees and Card Member services lines of the statistical tables in earnings 8-K Exhibit 99.2 or of the 10-Q consolidated income statement
       components:
         card_member_services_expense_yoy:
-          description: 会员服务成本（Card Member services 费用，涵盖全部产品的权益支出）同比增速，即 cm_services_t / cm_services_{t-4q} - 1
+          description: Year-on-year growth in Card Member services expense (benefit spending across all products), i.e. cm_services_t / cm_services_{t-4q} - 1
           unit: "%"
-          where: 业绩 8-K 附件 99.2 统计表或 10-Q 合并损益表的 Card Member services 一行
-    fail_if: 提价周期走完后的第一个完整季度（2027 年二季度）里，净卡费增速掉到个位数，同时会员服务成本增速仍在 30% 以上
+          where: The Card Member services line of the statistical tables in earnings 8-K Exhibit 99.2 or of the 10-Q consolidated income statement
+    fail_if: In the first full quarter after the price-increase cycle is complete (Q2 2027), net card fee growth drops to single digits while Card Member services expense growth is still 30% or more
     rule:
       all_of:
         - {metric: net_card_fees_yoy, op: "<", threshold: 10, unit: "%", consecutive: 1, period: quarter}
         - {metric: net_card_fees_yoy.card_member_services_expense_yoy, op: ">=", threshold: 30, unit: "%", consecutive: 1, period: quarter}
       evaluate_on: [FY2027Q2]
-      note: 两项须在同一季度同时成立；只在 evaluate_on 那一季（提价周期走完后的第一个完整季度）判定一次，其他季度不适用本规则，由 AXP-Q9 跟踪；判定之后本条退役，或按新的判定季重新登记。
-    warn_if: 判定季里净卡费增速低于 10%，或会员服务成本增速不低于 15%（即反方论点没有被削弱）
+      note: Both must hold in the same quarter; judged once, only in the evaluate_on quarter (the first full quarter after the price-increase cycle is complete); the rule does not apply in other quarters, which AXP-Q9 tracks; after the judgment this test is retired, or registered again for a new judgment quarter.
+    warn_if: In the judgment quarter, net card fee growth below 10%, or Card Member services expense growth not below 15% (i.e. the bear case has not been weakened)
     warn_rule:
       any_of:
         - {metric: net_card_fees_yoy, op: "<", threshold: 10, unit: "%", consecutive: 1, period: quarter}
         - {metric: net_card_fees_yoy.card_member_services_expense_yoy, op: ">=", threshold: 15, unit: "%", consecutive: 1, period: quarter}
       evaluate_on: [FY2027Q2]
-      note: 同样只在 evaluate_on 那一季判定。
+      note: Likewise judged only in the evaluate_on quarter.
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2027-07
@@ -412,34 +412,34 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p4
-      note: "净卡费同比；同季会员服务成本同比 +50%、上半年 +49% [src:AXP-RPT1-2026-09-17#p10]。"
-    note: "报告第十节破坏信号 #2。提价周期走完后的第一个完整季度，报告正文定为 2027 年二季度 [src:AXP-RPT1-2026-09-17#p6]，监测表写作“2027 年 4–7 月”可读 [src:AXP-RPT1-2026-09-17#p14]；二季度业绩 8-K 在 7 月下旬发布（2026 年二季度为 2026-07-24 [src:AXP-RPT1-2026-09-17#p17]），所以 first_readable 取 2027-07，此前各季由 AXP-Q9 跟踪。warn_rule 取自报告第七节：届时净卡费增速仍在 10% 以上而会员服务成本增速回落到 15% 以下，反方论点才削弱 [src:AXP-RPT1-2026-09-17#p10]，介于两者之间记警告。"
+      note: "Net card fees year on year; in the same quarter Card Member services expense was +50% year on year, and +49% in the first half [src:AXP-RPT1-2026-09-17#p10]."
+    note: "Breaker #2 in section ten of the report. The body of the report sets the first full quarter after the price-increase cycle is complete as Q2 2027 [src:AXP-RPT1-2026-09-17#p6], and the monitoring table says it is readable in \"April–July 2027\" [src:AXP-RPT1-2026-09-17#p14]; the Q2 earnings 8-K comes out in late July (2026-07-24 for Q2 2026 [src:AXP-RPT1-2026-09-17#p17]), so first_readable is 2027-07, and AXP-Q9 tracks the quarters before that. warn_rule comes from section seven of the report: the bear case weakens only if by then net card fee growth is still 10% or more while Card Member services expense growth has fallen below 15% [src:AXP-RPT1-2026-09-17#p10]; anything in between records a warning."
 
   - id: AXP-Q7
     type: quantitative
-    claim: 客群信用优势能扛过信贷周期，准备金释放期不会转成与行业恶化同步的持续计提
+    claim: "The customer base's credit advantage can get through a credit cycle: the period of reserve releases does not turn into sustained reserve builds in step with deterioration across the industry"
     origin: report:breaker
     severity: breaker
     covers: [balance_sheet]
     pillar: P5
     metric: reserve_build_release
     metric_def:
-      description: 信用损失准备金的净计提（为正）或净释放（为负），即信用损失拨备减去净核销；与同一观察季度的行业卡类净核销率一起判定
+      description: Net build (positive) or net release (negative) of the reserve for credit losses, i.e. provisions for credit losses less net write-offs; judged together with the industry card net charge-off rate for the same observation quarter
       unit: USD
       frequency: quarter
       data: mixed
-      where: 运通一侧为业绩 8-K 附件 99.2 统计表中的拨备构成（净核销与准备金计提/释放）；行业一侧为 FRED 序列 CORCCACBN（来源标签 FRED-CORCCACBN）
+      where: "Amex side: the breakdown of provisions (net write-offs and reserve build/release) in the statistical tables of earnings 8-K Exhibit 99.2; industry side: FRED series CORCCACBN (source tag FRED-CORCCACBN)"
       components:
         industry_card_nco_rate:
-          description: 行业卡类净核销率（商业银行信用卡贷款，非季调，季度）
+          description: Industry card net charge-off rate (credit card loans at commercial banks, not seasonally adjusted, quarterly)
           unit: "%"
-          where: FRED 序列 CORCCACBN（来源标签 FRED-CORCCACBN），约在季末两个月后更新
-    fail_if: 行业卡类净核销率回到 2024 年 4.73% 的峰值以上，同时运通连续两个季度净计提准备金
+          where: FRED series CORCCACBN (source tag FRED-CORCCACBN), updated about two months after quarter end
+    fail_if: The industry card net charge-off rate back at or above its 2024 peak of 4.73%, while Amex has made net reserve builds for two consecutive quarters
     rule:
       all_of:
         - {metric: reserve_build_release.industry_card_nco_rate, op: ">=", threshold: 4.73, unit: "%", consecutive: 1, period: quarter}
         - {metric: reserve_build_release, op: ">", threshold: 0, unit: USD, consecutive: 2, period: quarter}
-      note: 两项须在同一观察季度同时成立；行业一支取同一季度的 FRED 读数，等该季读数发布后再判定，不用上一季的读数代替。
+      note: Both must hold in the same observation quarter; the industry leg takes the FRED reading for the same quarter, and the judgment waits until that quarter's reading is published instead of using the previous quarter's reading.
     data: mixed
     effective_from: FY2026Q3
     first_readable: 2027-03
@@ -449,64 +449,64 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p11
-      note: "负值表示净释放：二季度拨备含 1.91 亿美元净释放 [src:AXP-RPT1-2026-09-17#p11]。同季行业卡类净核销率 3.92%（非季调），2024 年二季度峰值 4.73% [src:AXP-RPT1-2026-09-17#p11]。"
-    note: "报告第十节破坏信号 #3，报告写作“2027 年 1 月的四季度财报起”可读 [src:AXP-RPT1-2026-09-17#p14]。运通一支在 2027 年 1 月可读，但同季的行业读数约在季末两个月后才更新（报告所用的 2026 年二季度读数来自 2026-08-25 更新的序列 [src:AXP-RPT1-2026-09-17#p17]），所以两支同季判定最早在 2027 年 3 月，first_readable 取 2027-03。门槛按报告原文保留；但卡余额在增长（2026 年上半年同比 +8% [src:AXP-RPT1-2026-09-17#p5]），准备金率不变时准备金也要随贷款增加，运通一支在贷款增长期几乎自动成立，这条破坏信号实际主要由行业核销率一支决定（见 AXP-Q12 与 todo）。"
+      note: "A negative value is a net release: Q2 provisions include a net release of $191 million [src:AXP-RPT1-2026-09-17#p11]. The industry card net charge-off rate in the same quarter was 3.92% (not seasonally adjusted), against a peak of 4.73% in Q2 2024 [src:AXP-RPT1-2026-09-17#p11]."
+    note: "Breaker #3 in section ten of the report, which says it is readable \"from the Q4 results in January 2027\" [src:AXP-RPT1-2026-09-17#p14]. The Amex leg is readable in January 2027, but the industry reading for the same quarter is updated only about two months after quarter end (the Q2 2026 reading the report uses comes from the series as updated on 2026-08-25 [src:AXP-RPT1-2026-09-17#p17]), so the earliest same-quarter judgment of both legs is in March 2027, and first_readable is 2027-03. The threshold is kept as the report wrote it; but card balances are growing (+8% year on year in the first half of 2026 [src:AXP-RPT1-2026-09-17#p5]), and with an unchanged reserve rate the reserve must grow with loans, so the Amex leg holds almost automatically while loans grow, and in practice this breaker is decided mainly by the industry charge-off leg (see AXP-Q12 and todo)."
 
   - id: AXP-L2
     type: qualitative
-    claim: 由人挑选支付工具的前提仍然成立，代理商务没有把选卡变成按总成本排序的默认值
+    claim: "The premise that people choose their payment instrument still holds: agentic commerce has not turned card choice into a default ranked by total cost"
     origin: report:breaker
     severity: breaker
     covers: [moat, competition, pricing_power]
     pillar: P4
-    question: 截至本期，是否有任何一家主要 AI 平台公布了默认的代理支付规则，按总成本为用户选择支付卡，且不允许用户锁定指定卡？“主要 AI 平台”指面向消费者、以 AI 代理代为完成购买的通用平台的运营方，至少包括行业模块路标 PAY-SP6 所列代理人支付协议的平台运营方（如 Google、OpenAI）；只适用于单一商户或单一发卡行的试点不算。
-    fail_if: 是（按总成本选卡与不允许锁定指定卡两个条件同时成立）
+    question: As of this period, has any major AI platform published default agentic payment rules that choose the payment card for users by total cost and do not let users lock in a chosen card? A "major AI platform" means the operator of a general-purpose, consumer-facing platform on which AI agents complete purchases on users' behalf, including at least the platform operators of the agent payment protocols listed in industry-module signpost PAY-SP6 (such as Google and OpenAI); pilots limited to a single merchant or a single issuer do not count.
+    fail_if: "Yes (both conditions hold: cards chosen by total cost, and no locking in of a chosen card)"
     judge: independent_model
     evidence: required
-    where: 主要 AI 平台公布的代理支付规则与开发者文档（在 EDGAR 之外，判定时登记为 web 或 press_release 来源）；运通 10-K/10-Q 的风险因素与 MD&A；运通关于代理商务的公告
+    where: Agentic payment rules and developer documentation published by major AI platforms (outside EDGAR; registered as web or press_release sources when judged); risk factors and MD&A in Amex's 10-K/10-Q; Amex's announcements on agentic commerce
     lookback: 4
     effective_from: FY2026Q3
     baseline:
-      value: 万事达 Agent Pay 于 2025 年 4 月发布，Visa Trusted Agent Protocol 于 2025 年 10 月发布，运通 2026-04-14 发布 ACE 开发者工具包并推出注册代理购买赔付保障；报告写作时尚无主要平台公布默认支付规则
+      value: Mastercard Agent Pay launched in April 2025 and the Visa Trusted Agent Protocol in October 2025; on 2026-04-14 Amex released the ACE developer kit and launched purchase protection for purchases by registered agents; when the report was written, no major platform had published default payment rules
       as_of: 2026-09-17
       source: AXP-RPT1-2026-09-17#p8
-    note: "报告第十节破坏信号 #4，时间不定（2027–2029）。这条路径没有当期读数：第一个硬读数要么是运通披露注册代理交易的占比，要么是某个平台公布默认支付规则 [src:AXP-RPT1-2026-09-17#p8]。平台规则不在 EDGAR 申报文件里，EDGAR 触发的流水线看不到，所以每季更新时由公司经理检索一次平台公告；行业模块 payments-card-networks 的路标 PAY-SP6（代理人发起的购买与卡组织令牌）越线时，本条随之复核。“主要 AI 平台”的认定标准是本档案事先写下的操作化，报告没有列名。"
+    note: "Breaker #4 in section ten of the report, timing uncertain (2027–2029). This path has no current reading: the first hard reading will be either Amex disclosing the share of transactions by registered agents, or some platform publishing default payment rules [src:AXP-RPT1-2026-09-17#p8]. Platform rules are not in EDGAR filings, and the EDGAR-triggered pipeline cannot see them, so at each quarterly update the company manager searches platform announcements once; when signpost PAY-SP6 (agent-initiated purchases and network tokens) in the payments-card-networks industry module crosses its line, this test is reviewed with it. The criterion for a \"major AI platform\" is an operationalization this archive wrote down in advance; the report names none."
 
   - id: AXP-Q8
     type: quantitative
-    claim: 商户费率的下滑仍是缓慢的、可由联名占比上升解释的结构变化，而不是商户议价力的断崖
+    claim: The decline in the merchant rate is still a slow structural change that the rising co-brand share can explain, not a cliff in merchant bargaining power
     origin: report:breaker
     severity: breaker
     covers: [pricing_power, moat]
     pillar: P2
     metric: discount_revenue_to_billed_business
     metric_def:
-      description: 商户费率代理值 = 折扣收入 ÷ 账单业务（报告口径，与公司披露的平均折扣率不同），按年度读数判定；与同期联名卡占账单业务的比例一起判定
+      description: Merchant rate proxy = discount revenue ÷ billed business (the report's basis, which differs from the average discount rate the company discloses), judged on annual readings; judged together with the co-brand share of billed business in the same period
       unit: "%"
       frequency: year
       data: filing_text
-      where: 10-K 合并损益表的 Discount revenue 与 MD&A 的账单业务（billed business）；10-K MD&A 中联名伙伴的披露
+      where: Discount revenue in the 10-K consolidated income statement and billed business in the MD&A; the disclosure of co-brand partners in the 10-K MD&A
       components:
         cobrand_share_of_billed_business:
-          description: 联名卡占账单业务的比例（采信 2022 年起的年报口径）
+          description: Co-brand share of billed business (on the annual-report basis used from 2022)
           unit: "%"
-          where: 10-K MD&A 中联名伙伴的披露
+          where: The disclosure of co-brand partners in the 10-K MD&A
         merchant_rate_unexplained_decline_bp:
-          description: 代理值下滑中联名占比上升解释不了的部分：代理值下降的基点数，减去同期联名占比上升的百分点数乘以每个百分点最多解释的基点数；系数 1.16 取自报告算式四的上限 [src:AXP-RPT1-2026-09-17#p7]；为正即联名占比没有相应上升。公式：-(discount_revenue_to_billed_business_t1 - discount_revenue_to_billed_business_t0) * 100 - 1.16 * (cobrand_share_of_billed_business_t1 - cobrand_share_of_billed_business_t0)
+          description: "The part of the proxy's decline that the rising co-brand share cannot explain: the decline of the proxy in basis points, minus the rise in the co-brand share over the same period in percentage points times the maximum number of basis points each percentage point can explain; the coefficient 1.16 is the upper bound from the report's formula four [src:AXP-RPT1-2026-09-17#p7]; a positive value means the co-brand share did not rise correspondingly. Formula: -(discount_revenue_to_billed_business_t1 - discount_revenue_to_billed_business_t0) * 100 - 1.16 * (cobrand_share_of_billed_business_t1 - cobrand_share_of_billed_business_t0)"
           unit: bp
-          where: 由 discount_revenue_to_billed_business 与 cobrand_share_of_billed_business 两项计算
-    fail_if: 商户费率代理值连续两个年度下降超过 5 个基点，或跌破 2.15%——且同期联名占账单业务的比例没有相应上升（否则下滑属于结构，见第四节的分解）
+          where: Computed from discount_revenue_to_billed_business and cobrand_share_of_billed_business
+    fail_if: The merchant rate proxy falls by more than 5 basis points a year for two consecutive years, or drops below 2.15%, and the co-brand share of billed business did not rise correspondingly over the same period (otherwise the decline is structural; see the decomposition in section four)
     rule:
       all_of:
         - any_of:
-            - {metric: discount_revenue_to_billed_business, op: decrease, threshold: 0.05, unit: pp, consecutive: 2, period: year, note: 与上一年度相比的下降幅度超过这个值，即 fail_if 中的五个基点。}
+            - {metric: discount_revenue_to_billed_business, op: decrease, threshold: 0.05, unit: pp, consecutive: 2, period: year, note: "The decline from the previous year exceeds this value, i.e. the five basis points in fail_if."}
             - {metric: discount_revenue_to_billed_business, op: "<", threshold: 2.15, unit: "%", consecutive: 1, period: year}
         - metric: discount_revenue_to_billed_business.merchant_rate_unexplained_decline_bp
           op: ">"
           threshold: 0
           unit: bp
           period: year
-          note: 与第一支同一判定期：第一支为连续两个年度下降时，按这两个年度的累计变化计算；第一支为跌破门槛时，按 FY2025 基线到跌破当年的累计变化计算。
+          note: "Same judgment period as the first leg: when the first leg is a decline in two consecutive years, compute the cumulative change over those two years; when the first leg is a drop below the threshold, compute the cumulative change from the FY2025 baseline to the year of the drop."
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2027-02
@@ -516,93 +516,93 @@ tests:
       period: 1H26
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p7
-      note: "FY2024 为 2.269%、FY2025 为 2.240% [src:AXP-RPT1-2026-09-17#p7]；联名占账单业务 2022 年 18%、2023 年 21%、2025 年 26% [src:AXP-RPT1-2026-09-17#p7]。"
-    note: "报告第十节破坏信号 #5，按每年的年度报告判定。费率代理值是报告自己算的口径，公司披露的平均折扣率是另一个口径 [src:AXP-RPT1-2026-09-17#p17]。“相应”按第四节算式四判断：在下滑全部归因于结构的极端假设下，2.9 基点 ÷ 2.5 个百分点 = 1.16 个百分点是联名与自有净费率差的上限，即联名占比每上升 1 个百分点，结构最多解释约 1.16 个基点的代理值下滑 [src:AXP-RPT1-2026-09-17#p7]；超出这一上限的部分为正，才视为联名占比没有相应上升。报告说明结构的真实贡献只落在零到这个上限之间 [src:AXP-RPT1-2026-09-17#p7]，取上限等于把尽可能多的下滑归给结构，是最宽松的判法；本档案有意这样取，因为只有超出上限的下滑才能确定不是结构。"
+      note: "FY2024 was 2.269% and FY2025 2.240% [src:AXP-RPT1-2026-09-17#p7]; the co-brand share of billed business was 18% in 2022, 21% in 2023 and 26% in 2025 [src:AXP-RPT1-2026-09-17#p7]."
+    note: "Breaker #5 in section ten of the report, judged on each year's annual report. The rate proxy is the report's own calculation; the average discount rate the company discloses is a different basis [src:AXP-RPT1-2026-09-17#p17]. \"Correspondingly\" is judged by formula four in section four: under the extreme assumption that the whole decline is structural, 2.9 basis points ÷ 2.5 percentage points = 1.16 percentage points is the upper bound on the net rate gap between co-brand and proprietary, i.e. each 1 percentage point rise in the co-brand share explains at most about 1.16 basis points of decline in the proxy [src:AXP-RPT1-2026-09-17#p7]; only when the part above this bound is positive is the co-brand share treated as not having risen correspondingly. The report explains that the true structural contribution lies somewhere between zero and this bound [src:AXP-RPT1-2026-09-17#p7]; taking the bound attributes as much of the decline as possible to structure and is the most lenient reading; this archive chooses it on purpose, because only a decline above the bound can be known not to be structural."
 
   - id: AXP-L3
     type: qualitative
-    claim: 监管没有拆掉三方网络的法律豁免与联邦先占保护
+    claim: Regulation has not removed the three-party network's legal exemption or its federal preemption protection
     origin: report:breaker
     severity: breaker
     covers: [regulation, pricing_power]
     pillar: P2
-    question: 截至本期，是否出现以下任一情况：（a）《信用卡竞争法案》已签署成为法律，且最终文本删除了对三方支付网络的豁免；（b）第七巡回上诉法院推翻了联邦法对伊利诺伊州《互换费禁止法》的先占认定，且含伊利诺伊州在内已有五个以上（含本数）州的同类互换费立法成为法律？
-    fail_if: 是（(a) 或 (b) 任一成立；(b) 中的两个条件须同时成立）
+    question: "As of this period, has either of the following occurred: (a) the Credit Card Competition Act has been signed into law, and the final text removes the exemption for three-party payment networks; (b) the Seventh Circuit Court of Appeals has reversed the finding that federal law preempts Illinois's Interchange Fee Prohibition Act, and similar interchange legislation has become law in five or more states (five included), Illinois among them?"
+    fail_if: Yes ((a) or (b) holds; the two conditions in (b) must both hold)
     judge: independent_model
     evidence: required
-    where: 国会立法记录与法案最终文本；第七巡回上诉法院判决；各州立法记录；运通 10-K/10-Q 的法律与监管一节
+    where: Congressional legislative records and the final text of the bill; Seventh Circuit decisions; state legislative records; the legal and regulatory section of Amex's 10-K/10-Q
     lookback: 4
-    judge_notes: （a）是否删除三方网络豁免，以最终法律文本为准。
+    judge_notes: (a) Whether the three-party network exemption is removed is decided by the final text of the law.
     effective_from: FY2026Q3
     first_readable: 2027-01
     baseline:
-      value: 北伊利诺伊联邦地区法院 2026-06-01 对国民银行、联邦储蓄机构、外州州立银行与支付卡网络永久禁止执行伊利诺伊州的互换费限制，州法生效日推迟到 2027-07-01，案件在第七巡回上诉；运通的发卡主体是国民银行、本身又是支付卡网络，两个身份都在豁免范围内
+      value: On 2026-06-01 the U.S. District Court for the Northern District of Illinois permanently enjoined enforcement of Illinois's interchange fee limits against national banks, federal savings associations, out-of-state state banks and payment card networks; the state law's effective date was pushed back to 2027-07-01, and the case is on appeal in the Seventh Circuit; Amex's issuing entity is a national bank and Amex is itself a payment card network, so both of its roles fall within the exemption
       as_of: 2026-09-17
       source: AXP-RPT1-2026-09-17#p8
-      note: "裁决日期与货币监理署 2026 年 4 月的先占认定见 [src:AXP-RPT1-2026-09-17#p7]；报告附录把这一裁决与货币监理署的先占规则列为一手来源 [src:AXP-RPT1-2026-09-17#p17]。"
-    note: "报告第十节破坏信号 #6，2027 年起可读 [src:AXP-RPT1-2026-09-17#p14]。“通过”按签署成为法律判定，因为法案只有成为法律才改变运通的处境；“五个以上州”含伊利诺伊州、含本数，这是两种读法里较严的一种，会更早触发复核。这两处都是本档案事先写下的操作化。报告对法案适用范围条款的解读没有逐条核对全文 [src:AXP-RPT1-2026-09-17#p13]。法院判决与州立法记录不在 EDGAR 申报文件里，判定时登记为外部来源；行业模块 payments-card-networks 的路标 PAY-SP1（信用卡路由强制与 CCCA）越线时，本条随之复核。"
+      note: "For the ruling date and the April 2026 preemption determination of the Office of the Comptroller of the Currency (OCC) see [src:AXP-RPT1-2026-09-17#p7]; the report's appendix lists this ruling and the OCC's preemption rule as primary sources [src:AXP-RPT1-2026-09-17#p17]."
+    note: "Breaker #6 in section ten of the report, readable from 2027 [src:AXP-RPT1-2026-09-17#p14]. \"Passes\" is judged as signed into law, because the bill changes Amex's position only once it is law; \"five or more states\" includes Illinois and counts five itself, the stricter of the two readings, which triggers a review sooner. Both points are operationalizations this archive wrote down in advance. The report's reading of the bill's scope provisions was not checked clause by clause against the full text [src:AXP-RPT1-2026-09-17#p13]. Court decisions and state legislative records are not in EDGAR filings and are registered as external sources when judged; when signpost PAY-SP1 (credit card routing mandates and the CCCA) in the payments-card-networks industry module crosses its line, this test is reviewed with it."
 
   - id: AXP-L4
     type: qualitative
-    claim: "净利息收入线没有被联邦利率上限重新定价，这条线约占收入 24% [src:AXP-RPT1-2026-09-17#p3]"
+    claim: "The net interest income line, about 24% of revenue, has not been repriced by a federal rate cap [src:AXP-RPT1-2026-09-17#p3]"
     origin: report:breaker
     severity: breaker
     covers: [regulation]
     pillar: P2
-    question: 截至本期，是否已有任何形式的联邦信用卡利率上限落地：签署成为法律、以最终规则发布、以行政命令或其他对发卡行有约束力的联邦措施实施，或运通在联邦政府要求下公开承诺并实际执行的利率上限？
-    fail_if: 是
+    question: "As of this period, has a federal credit card interest rate cap in any form taken effect: signed into law, issued as a final rule, implemented by executive order or another federal measure binding on issuers, or a rate cap that Amex has publicly committed to and actually applies at the federal government's request?"
+    fail_if: "Yes"
     judge: independent_model
     evidence: required
-    where: 联邦法律、行政命令与监管机构的最终规则；运通 10-K/10-Q 的监管一节与风险因素；运通的新闻稿与 8-K
+    where: Federal laws, executive orders and regulators' final rules; the regulation section and risk factors of Amex's 10-K/10-Q; Amex's press releases and 8-Ks
     lookback: 4
-    judge_notes: 只停在提案、听证或法案审议阶段的不算落地。
+    judge_notes: Anything still only at the proposal, hearing or bill-review stage does not count as having taken effect.
     effective_from: FY2026Q3
-    note: "报告第十节破坏信号 #7，时间不定。它打的是占收入约 24% 的利息线（第一节的口径是净利息收入），而非商户费率 [src:AXP-RPT1-2026-09-17#p14] [src:AXP-RPT1-2026-09-17#p3]。报告写作“任何形式”，所以问题不限于法律与最终规则。"
+    note: "Breaker #7 in section ten of the report, timing uncertain. It hits the interest line, about 24% of revenue (net interest income on section one's basis), not the merchant rate [src:AXP-RPT1-2026-09-17#p14] [src:AXP-RPT1-2026-09-17#p3]. The report says \"in any form\", so the question is not limited to laws and final rules."
 
   - id: AXP-L5
     type: qualitative
-    claim: 管理层的质量得以延续，接班不以外部空降或明显的战略转向发生
+    claim: Management quality continues, and succession does not come through an outside parachute hire or a clear strategic turn
     origin: report:breaker
     severity: breaker
     covers: [management, governance, culture]
     pillar: P6
-    question: 本期文件是否披露了 CEO 接班，且（a）新任 CEO 来自外部，即接任前不在运通任职、或在运通任职不满三年；或（b）接班伴随明显的战略转向，即出售或退出任一经营分部、宣布收购支付与发卡及会员服务以外的业务、撤回已公布的财务目标，或放弃发卡行、网络与收单一体的模式？
-    fail_if: 是
+    question: Do this period's filings disclose a CEO succession where (a) the new CEO comes from outside, i.e. was not working at Amex before taking over, or had worked at Amex for less than three years; or (b) the succession comes with a clear strategic turn, i.e. selling or exiting any operating segment, announcing an acquisition outside payments, card issuing and membership services, withdrawing published financial targets, or abandoning the integrated issuer, network and acquirer model?
+    fail_if: "Yes"
     judge: independent_model
     evidence: required
-    where: 委托书（DEF 14A）、8-K 第 5.02 项、公司新闻稿与投资者日材料
+    where: Proxy statement (DEF 14A), 8-K Item 5.02, company press releases and investor day materials
     lookback: 4
     effective_from: FY2026Q3
     first_readable: 2027-01
     baseline:
-      value: CEO 斯蒂芬·斯奎里 2018-02-01 上任，1985 年入职、整个职业生涯在运通；CFO 1997 年入职；内部人管理的组织
+      value: CEO Stephen Squeri took office on 2018-02-01; he joined in 1985 and has spent his whole career at Amex; the CFO joined in 1997; an organization run by insiders
       as_of: 2026-09-17
       source: AXP-RPT1-2026-09-17#p9
-    note: "报告第十节破坏信号 #8，最早可读时点为 2027–2030 年的委托书 [src:AXP-RPT1-2026-09-17#p14]。报告第六节说明，“优秀管理层”的判定挂在具体的人和年份上，同一家公司在 1981–1993 年做错过决定 [src:AXP-RPT1-2026-09-17#p10]：那十二年把一家旅行支票和签账卡公司买成了金融超市，所以“支付与会员服务以外的收购”列为战略转向的标志之一。“外部”与“明显的战略转向”的判定标准是本档案事先写下的操作化，报告没有细化。"
+    note: "Breaker #8 in section ten of the report; the earliest readable point is the 2027–2030 proxy statements [src:AXP-RPT1-2026-09-17#p14]. Section six of the report explains that the \"excellent management\" verdict is tied to specific people and years, and that the same company made wrong decisions in 1981–1993 [src:AXP-RPT1-2026-09-17#p10]: in those twelve years acquisitions turned a traveler's cheque and charge card company into a financial supermarket, so \"acquisitions outside payments and membership services\" is listed as one of the signs of a strategic turn. The criteria for \"outside\" and \"a clear strategic turn\" are operationalizations this archive wrote down in advance; the report does not spell them out."
 
-  # ---------- 报告第十节：每季度看的前瞻指标 ----------
+  # ---------- Section ten of the report: quarterly watch indicators ----------
   - id: AXP-Q9
     type: quantitative
-    claim: 会员制的单位经济在改善，续卡按新价滚动期间，净卡费的增量在追上会员服务成本的增量
+    claim: "Membership unit economics are improving: while renewals roll onto the new prices, the increase in net card fees is catching up with the increase in Card Member services expense"
     origin: report:watch
     severity: watch
     covers: [unit_economics, pricing_power]
     pillar: P1
     metric_def:
       id: net_card_fee_to_cm_services_increment
-      description: 净卡费同比增量 ÷ 会员服务成本同比增量
+      description: Year-on-year increase in net card fees ÷ year-on-year increase in Card Member services expense
       unit: x
       frequency: quarter
       data: filing_text
-      where: 业绩 8-K 附件 99.2 统计表或 10-Q 合并损益表的 Net card fees 与 Card Member services 两行
+      where: The Net card fees and Card Member services lines of the statistical tables in earnings 8-K Exhibit 99.2 or of the 10-Q consolidated income statement
       formula: (net_card_fees_t - net_card_fees_{t-4q}) / (cm_services_t - cm_services_{t-4q})
       components:
         qoq_change:
-          description: 上面这个比值的环比变化（本季比值减上一季比值），即 net_card_fee_to_cm_services_increment_t - net_card_fee_to_cm_services_increment_{t-1q}
+          description: Quarter-on-quarter change in the ratio above (this quarter's ratio minus last quarter's), i.e. net_card_fee_to_cm_services_increment_t - net_card_fee_to_cm_services_increment_{t-1q}
           unit: x
-    fail_if: 比值连续两个季度环比下降（续卡按新价滚动期间，提价错配若在消化，比值应逐季回升）
-    rule: {metric: net_card_fee_to_cm_services_increment.qoq_change, op: "<", threshold: 0, unit: x, consecutive: 2, period: quarter, note: 与上一季度的比值比较，不与上年同季比较，因为上年同季多在提价之前；会员服务成本增量不为正的季度记为通过。}
-    warn_if: 比值低于 1.0×，即每多收一块年费要多花一块以上买权益（提价周期走完之前出现这一警告在预期之内，不单独构成信号）
+    fail_if: The ratio falls quarter on quarter for two consecutive quarters (while renewals roll onto the new prices, the ratio should recover quarter by quarter if the pricing mismatch is being absorbed)
+    rule: {metric: net_card_fee_to_cm_services_increment.qoq_change, op: "<", threshold: 0, unit: x, consecutive: 2, period: quarter, note: "Compared with the previous quarter's ratio, not the same quarter a year earlier, because the year-earlier quarters mostly predate the price increases; a quarter in which the increase in Card Member services expense is not positive counts as a pass."}
+    warn_if: The ratio below 1.0×, i.e. each extra dollar of annual fees costs more than a dollar in benefits (this warning is expected before the price-increase cycle is complete and is not a signal on its own)
     warn_rule: {op: "<", threshold: 1.0, unit: x, consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
@@ -613,18 +613,18 @@ tests:
       period: 1H26
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p15
-      note: "按增速则为 17% ÷ 49% ≈ 0.35× [src:AXP-RPT1-2026-09-17#p15]。"
-    note: "报告第十节前瞻指标 #1 只给读数、不给门槛 [src:AXP-RPT1-2026-09-17#p15]，判定标准是本档案在首次读数之前写下的。报告认为 2027 年二季度之前无法区分提价错配与结构性恶化：成本先发生，存量持卡人自 2026 年 1 月 2 日起才按各自的续卡日陆续付新价 [src:AXP-RPT1-2026-09-17#p10]。错配若在消化，续卡滚动期间比值应逐季回升，所以失败看连续两季的环比下降。警告线放在增量相等处（比值等于一），对应第三节“每多收一块年费要多花多少钱买权益”的分界，提价前后分别是八毛四和一块六 [src:AXP-RPT1-2026-09-17#p6]。报告所说反方论点削弱的情形是净卡费增速 10% 以上、会员服务成本增速低于 15% [src:AXP-RPT1-2026-09-17#p10]，而净卡费的基数大于会员服务成本（本档案由报告的增量与增速推算），这一情形下比值仍可能低于一，所以比值低于一只记警告，一次性的判定交给 AXP-Q6。"
+      note: "On growth rates it would be 17% ÷ 49% ≈ 0.35× [src:AXP-RPT1-2026-09-17#p15]."
+    note: "Watch indicator #1 in section ten of the report gives only a reading, no threshold [src:AXP-RPT1-2026-09-17#p15]; the criteria were written by this archive before the first reading. The report holds that a pricing mismatch cannot be told apart from structural deterioration before Q2 2027: the costs come first, and existing card members start paying the new prices only from January 2, 2026, each on their own renewal date [src:AXP-RPT1-2026-09-17#p10]. If the mismatch is being absorbed, the ratio should recover quarter by quarter while renewals roll over, so failure looks at quarter-on-quarter declines in two consecutive quarters. The warning line is set where the two increases are equal (a ratio of one), the dividing line of section three's \"how much more is spent on benefits for each extra dollar of annual fees\", which was eighty-four cents before the price increases and a dollar sixty after [src:AXP-RPT1-2026-09-17#p6]. The case in which the report says the bear case weakens is net card fee growth of 10% or more with Card Member services expense growth below 15% [src:AXP-RPT1-2026-09-17#p10]; since the net card fee base is larger than Card Member services expense (this archive's inference from the report's increments and growth rates), the ratio can still be below one in that case, so a ratio below one only records a warning, and the one-off judgment is left to AXP-Q6."
 
   - id: AXP-Q10
     type: quantitative
-    claim: 负债端没有承压，先收后付的资金成本随市价重定价，但不持续快于资产端收益
+    claim: "The liability side is not under strain: the cost of collect-first, pay-later funding reprices with the market but does not persistently outpace asset-side yields"
     origin: report:watch
     severity: watch
     covers: [balance_sheet, unit_economics]
     pillar: P5
     metric: interest_expense_minus_income_growth
-    fail_if: 利息支出增速持续高于利息收入增速（按连续两个季度计）
+    fail_if: Interest expense growth persistently above interest income growth (counted as two consecutive quarters)
     rule: {op: ">", threshold: 0, unit: pp, consecutive: 2, period: quarter}
     data: xbrl
     effective_from: FY2026Q3
@@ -635,34 +635,34 @@ tests:
       period: 1H26
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p15
-      note: "利息支出同比 −3%、利息收入同比 +7% [src:AXP-RPT1-2026-09-17#p15]；差值由两项读数相减。"
-    note: "报告第十节前瞻指标 #2：两条同向上行是正常重定价，单看利息支出转正不构成警报，只有支出增速持续高于收入增速才说明负债端承压 [src:AXP-RPT1-2026-09-17#p15]。报告没有给“持续”的期数，这里按连续两个季度计，取前瞻指标 #5 “连续两到三个季度才构成趋势”的下限。"
+      note: "Interest expense −3% and interest income +7% year on year [src:AXP-RPT1-2026-09-17#p15]; the difference subtracts the two readings."
+    note: "Watch indicator #2 in section ten of the report: both lines rising together is normal repricing, and interest expense turning to growth is not an alarm on its own; only expense growth persistently above income growth shows strain on the liability side [src:AXP-RPT1-2026-09-17#p15]. The report gives no number of periods for \"persistently\"; this test counts two consecutive quarters, the lower end of watch indicator #5's \"two to three consecutive quarters make a trend\"."
 
   - id: AXP-Q11
     type: quantitative
-    claim: 运通客群相对行业的信用优势没有被侵蚀
+    claim: The credit advantage of Amex's customer base over the industry has not been eroded
     origin: report:watch
     severity: watch
     covers: [moat, balance_sheet]
     pillar: P5
     metric_def:
       id: nco_spread_industry_minus_axp
-      description: 行业卡类净核销率（非季调）减去运通卡贷款的主要净核销率（报告所称“主要净核销率”，对应公司哪一个口径待核，见 todo）
+      description: Industry card net charge-off rate (not seasonally adjusted) minus the main net write-off rate on Amex card loans (what the report calls the "main net write-off rate"; which company basis it corresponds to is to be checked, see todo)
       unit: pp
       frequency: quarter
       data: mixed
-      where: 行业一侧为 FRED 序列 CORCCACBN（来源标签 FRED-CORCCACBN）；运通一侧为业绩 8-K 附件 99.2 的卡贷款净核销率
+      where: "Industry side: FRED series CORCCACBN (source tag FRED-CORCCACBN); Amex side: the net write-off rate on card loans in earnings 8-K Exhibit 99.2"
       formula: industry_card_nco_rate - net_write_off_rate
       components:
         industry_card_nco_rate:
-          description: 行业卡类净核销率（商业银行信用卡贷款，非季调，季度）
+          description: Industry card net charge-off rate (credit card loans at commercial banks, not seasonally adjusted, quarterly)
           unit: "%"
-          where: FRED 序列 CORCCACBN（来源标签 FRED-CORCCACBN），约在季末两个月后更新
+          where: FRED series CORCCACBN (source tag FRED-CORCCACBN), updated about two months after quarter end
         nco_spread_yoy_change:
-          description: 上面这个差相对上年同季的变化，即 nco_spread_industry_minus_axp_t - nco_spread_industry_minus_axp_{t-4q}；为负表示差在收窄
+          description: Change in the spread above against the same quarter a year earlier, i.e. nco_spread_industry_minus_axp_t - nco_spread_industry_minus_axp_{t-4q}; negative means the spread is narrowing
           unit: pp
-    fail_if: 行业与运通净核销率之差连续两个季度同比收窄
-    rule: {metric: nco_spread_industry_minus_axp.nco_spread_yoy_change, op: "<", threshold: 0, unit: pp, consecutive: 2, period: quarter, note: 只和上年同季比较，因为行业序列为非季调。}
+    fail_if: The spread between the industry's and Amex's net write-off rates narrows year on year for two consecutive quarters
+    rule: {metric: nco_spread_industry_minus_axp.nco_spread_yoy_change, op: "<", threshold: 0, unit: pp, consecutive: 2, period: quarter, note: "Compared only with the same quarter a year earlier, because the industry series is not seasonally adjusted."}
     data: mixed
     effective_from: FY2026Q3
     first_readable: 2026-11
@@ -672,37 +672,37 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p15
-      note: "行业 3.92% 对运通 2.0% [src:AXP-RPT1-2026-09-17#p15]。"
-    note: "报告第十节前瞻指标 #3：这个差收窄，比运通自己的核销率上升更早说明客群优势在被侵蚀 [src:AXP-RPT1-2026-09-17#p15]。报告没有给收窄的幅度与期数，这里按连续两个季度同比收窄计。行业序列约在季末两个月后更新，所以 first_readable 晚于运通财报。"
+      note: "Industry 3.92% against Amex 2.0% [src:AXP-RPT1-2026-09-17#p15]."
+    note: "Watch indicator #3 in section ten of the report: a narrowing of this spread shows the erosion of the customer advantage earlier than a rise in Amex's own write-off rate [src:AXP-RPT1-2026-09-17#p15]. The report gives neither the size nor the number of periods of narrowing; this test counts two consecutive quarters of year-on-year narrowing. The industry series is updated about two months after quarter end, so first_readable is later than Amex's earnings release."
 
   - id: AXP-Q12
     type: quantitative
-    claim: 当期盈利里周期给的那一份没有反转：准备金没有在准备金率上升的同时由释放转为计提
+    claim: "The cycle's share of current earnings has not reversed: reserves have not swung from releases to builds while the reserve rate rises"
     origin: report:watch
     severity: watch
     covers: [balance_sheet]
     pillar: P5
     metric: reserve_build_release
     metric_def:
-      description: 信用损失准备金的净计提（为正）或净释放（为负），即信用损失拨备减去净核销；与同一季度卡贷款准备金率的同比变化一起判定
+      description: Net build (positive) or net release (negative) of the reserve for credit losses, i.e. provisions for credit losses less net write-offs; judged together with the year-on-year change in the reserve rate on card loans in the same quarter
       unit: USD
       frequency: quarter
       data: filing_text
-      where: 业绩 8-K 附件 99.2 统计表中的拨备构成（净核销与准备金计提/释放）、信用损失准备金与卡贷款
+      where: The breakdown of provisions (net write-offs and reserve build/release), the reserve for credit losses and card loans in the statistical tables of earnings 8-K Exhibit 99.2
       components:
         reserve_rate_yoy_change:
-          description: 卡贷款信用损失准备金率（公司在业绩统计表中披露的准备金占卡贷款的比例）相对上年同季的变化，即 reserve_rate_t - reserve_rate_{t-4q}
+          description: Change in the reserve rate for credit losses on card loans (the reserve as a share of card loans, as disclosed in the company's earnings statistics) against the same quarter a year earlier, i.e. reserve_rate_t - reserve_rate_{t-4q}
           unit: pp
-          where: 业绩 8-K 附件 99.2 统计表的信用损失准备金与卡贷款
-    fail_if: 同一季度里准备金为净计提（单季净计提为正），且准备金率同比上升
+          where: The reserve for credit losses and card loans in the statistical tables of earnings 8-K Exhibit 99.2
+    fail_if: In the same quarter, reserves are a net build (quarterly net build positive) and the reserve rate is up year on year
     rule:
       all_of:
         - {metric: reserve_build_release, op: ">", threshold: 0, unit: USD}
         - {metric: reserve_build_release.reserve_rate_yoy_change, op: ">", threshold: 0, unit: pp}
       consecutive: 1
       period: quarter
-      note: 两项须在同一季度同时成立。
-    warn_if: 单季净计提为正，但准备金率同比没有上升
+      note: Both must hold in the same quarter.
+    warn_if: Quarterly net build positive, but the reserve rate not up year on year
     warn_rule: {op: ">", threshold: 0, unit: USD, consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
@@ -713,38 +713,38 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p15
-      note: "负值表示净释放：二季度含 1.91 亿美元净释放 [src:AXP-RPT1-2026-09-17#p15]。准备金率 2.7%，为三年低点，此前为 3.0% [src:AXP-RPT1-2026-09-17#p11]。"
-    note: "报告第十节前瞻指标 #4 看的是“准备金率与拨备的净方向”：当期盈利里含着周期给的那一份，释放转计提是信贷路径的第一个信号 [src:AXP-RPT1-2026-09-17#p15]。卡余额在增长（2026 年上半年同比 +8% [src:AXP-RPT1-2026-09-17#p5]），准备金率不变时准备金也要随贷款增加，单看净计提为正会把增长误读为恶化；所以失败要求准备金率同比同时上升，单独的净计提只记警告。报告没有给这一指标的门槛，这是本档案在首次读数之前写下的判定标准。连续两个季度净计提、且行业核销率回到峰值以上，即触发破坏信号 AXP-Q7。"
+      note: "A negative value is a net release: Q2 includes a net release of $191 million [src:AXP-RPT1-2026-09-17#p15]. The reserve rate is 2.7%, a three-year low, down from 3.0% [src:AXP-RPT1-2026-09-17#p11]."
+    note: "Watch indicator #4 in section ten of the report looks at \"the reserve rate and the net direction of provisions\": current earnings include the cycle's share, and a swing from releases to builds is the first signal on the credit path [src:AXP-RPT1-2026-09-17#p15]. Card balances are growing (+8% year on year in the first half of 2026 [src:AXP-RPT1-2026-09-17#p5]), and with an unchanged reserve rate the reserve must grow with loans, so a positive net build on its own would misread growth as deterioration; failure therefore also requires the reserve rate to be up year on year, and a net build alone records only a warning. The report gives no threshold for this indicator; this is a criterion this archive wrote down before the first reading. Net builds in two consecutive quarters with the industry charge-off rate back at or above its peak trigger breaker AXP-Q7."
 
   - id: AXP-Q13
     type: quantitative
-    claim: 提价没有在获客端付出越来越高的代价
+    claim: The price increases are not costing more and more at the acquisition end
     origin: report:watch
     severity: watch
     covers: [unit_economics, growth]
     pillar: P1
     metric_def:
       id: proprietary_new_cards_yoy
-      description: 自有新开卡数量（Proprietary new cards acquired）同比
+      description: Proprietary new cards acquired, year on year
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 业绩 8-K 附件 99.1 新闻稿或 99.2 统计表的新开卡统计
+      where: New card statistics in the earnings 8-K Exhibit 99.1 press release or the Exhibit 99.2 statistical tables
       formula: new_cards_t / new_cards_{t-4q} - 1
       components:
         marketing_expense_yoy:
-          description: 营销费用（Marketing）同比，即 marketing_t / marketing_{t-4q} - 1
+          description: Marketing expense (Marketing) year on year, i.e. marketing_t / marketing_{t-4q} - 1
           unit: "%"
-          where: 业绩 8-K 附件 99.2 统计表或 10-Q 合并损益表的 Marketing 一行
-    fail_if: 同一季度里自有新开卡同比下降、同时营销费用同比上升，连续 3 个季度
+          where: The Marketing line of the statistical tables in earnings 8-K Exhibit 99.2 or of the 10-Q consolidated income statement
+    fail_if: Proprietary new cards down year on year while marketing expense is up year on year in the same quarter, for 3 consecutive quarters
     rule:
       all_of:
         - {metric: proprietary_new_cards_yoy, op: "<", threshold: 0, unit: "%"}
         - {metric: proprietary_new_cards_yoy.marketing_expense_yoy, op: ">", threshold: 0, unit: "%"}
       consecutive: 3
       period: quarter
-      note: 两项须在同一季度同时成立，并且连续三个季度。
-    warn_if: 同样的组合连续 2 个季度
+      note: Both must hold in the same quarter, for three consecutive quarters.
+    warn_if: The same combination for 2 consecutive quarters
     warn_rule:
       all_of:
         - {metric: proprietary_new_cards_yoy, op: "<", threshold: 0, unit: "%"}
@@ -760,26 +760,26 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p15
-      note: "依次为自有新开卡同比、营销费用同比；上半年为 −5% 对 +3% [src:AXP-RPT1-2026-09-17#p15]，二季度自有新开卡 300 万张 [src:AXP-RPT1-2026-09-17#p7]。"
-    note: "报告第十节前瞻指标 #5：提价之后获客端的代价，连续两到三个季度同向才构成趋势 [src:AXP-RPT1-2026-09-17#p15]，据此连续两个季度记警告、连续三个季度记失败。2026 年二季度是提价之后第一个干净季度，方向不利但一个季度不构成趋势 [src:AXP-RPT1-2026-09-17#p7]；2026 年一季度的单季读数待回填，以确定连续计数从哪一季开始。"
+      note: "In order: proprietary new cards YoY, marketing expense YoY; −5% against +3% in the first half [src:AXP-RPT1-2026-09-17#p15]; 3 million proprietary new cards in Q2 [src:AXP-RPT1-2026-09-17#p7]."
+    note: "Watch indicator #5 in section ten of the report: the cost of the price increases at the acquisition end, where two to three consecutive quarters in the same direction make a trend [src:AXP-RPT1-2026-09-17#p15]; accordingly two consecutive quarters record a warning and three consecutive quarters a failure. Q2 2026 is the first clean quarter after the price increases; the direction is unfavorable, but one quarter is not a trend [src:AXP-RPT1-2026-09-17#p7]; the single-quarter reading for Q1 2026 is still to be backfilled, to settle from which quarter the consecutive count starts."
 
   - id: AXP-Q14
     type: quantitative
-    claim: 剔除准备金释放之后的经营性盈利增长，追得上报告基准情形的第一年增长假设
+    claim: Operating earnings growth excluding reserve releases keeps up with the first-year growth assumption of the report's base case
     origin: report:watch
     severity: watch
     covers: [growth, unit_economics]
     pillar: P1
     metric_def:
       id: pre_provision_pretax_income_yoy
-      description: 拨备前税前利润（税前利润加回信用损失拨备）同比增速
+      description: Year-on-year growth in pre-provision pretax income (pretax income plus provisions for credit losses)
       unit: "%"
       frequency: quarter
       data: xbrl
       xbrl: [us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest, us-gaap:ProvisionForLoanLeaseAndOtherLosses, us-gaap:ProvisionForLoanAndLeaseLosses]
       formula: (pretax_income + provisions)_t / (pretax_income + provisions)_{t-4q} - 1
-    fail_if: 2027 年上半年拨备前税前利润同比仍低于 8.5%（与第一年增长假设没有收敛）
-    rule: {op: "<", threshold: 8.5, unit: "%", consecutive: 1, period: half, evaluate_on: [FY2027Q2], note: 只对 evaluate_on 那一期（截至 FY2027Q2 的 2027 年上半年）判定一次，其他期间只记录读数。}
+    fail_if: Pre-provision pretax income growth in the first half of 2027 still below 8.5% year on year (not converged with the first-year growth assumption)
+    rule: {op: "<", threshold: 8.5, unit: "%", consecutive: 1, period: half, evaluate_on: [FY2027Q2], note: "Judged once, only for the evaluate_on period (the first half of 2027, ending FY2027Q2); other periods only record the reading."}
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2027-07
@@ -789,44 +789,44 @@ tests:
       period: 1H26
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p15
-      note: "二季度单季 +4.0%，报表口径 +15% 含准备金释放 [src:AXP-RPT1-2026-09-17#p15]。"
-    note: "报告第十节前瞻指标 #6：报告基准情形的第一年增长假设是 8.5%，而剔除拨备变动后的经营性增速只有 4.0% [src:AXP-RPT1-2026-09-17#p15]；两者之差要么在 2027 年上半年收敛，要么第一年假设需要重估 [src:AXP-RPT1-2026-09-17#p15]。“收敛”按 2027 年上半年同比不低于该假设判定；这个假设只属于第一年，所以本条只判定一次（rule.evaluate_on），之后退役，或按下一年的假设重新登记，季度读数照常记录。"
+      note: "Q2 alone +4.0%, against +15% on the reported basis, which includes reserve releases [src:AXP-RPT1-2026-09-17#p15]."
+    note: "Watch indicator #6 in section ten of the report: the first-year growth assumption of the report's base case is 8.5%, while operating growth excluding the change in provisions is only 4.0% [src:AXP-RPT1-2026-09-17#p15]; either the gap closes in the first half of 2027 or the first-year assumption has to be re-estimated [src:AXP-RPT1-2026-09-17#p15]. \"Converged\" is judged as first-half 2027 growth year on year not below that assumption; the assumption belongs to the first year only, so this test is judged only once (rule.evaluate_on) and then retired, or registered again with the next year's assumption; quarterly readings are recorded as usual."
 
-  # ---------- 本档案补充的 watch 测试（报告第十节没有列入，审计后补） ----------
+  # ---------- Watch tests added by this archive (not in section ten of the report; added after the audit) ----------
   - id: AXP-Q15
     type: quantitative
-    claim: 每股可分配盈利在增长，而不只是被高比例地分掉
+    claim: Distributable earnings per share are growing, not just being paid out at a high rate
     origin: manual
     severity: watch
     covers: [free_cash_flow, growth]
     pillar: P6
     metric_def:
       id: diluted_eps_yoy
-      description: 摊薄每股收益（归属普通股股东）同比
+      description: Diluted earnings per share (attributable to common shareholders), year on year
       unit: "%"
       frequency: year
       data: xbrl
       xbrl: [us-gaap:EarningsPerShareDiluted]
       formula: eps_diluted_t / eps_diluted_{t-1y} - 1
-    fail_if: 连续 2 年同比下降
+    fail_if: Down year on year for 2 consecutive years
     rule: {op: "<", threshold: 0, unit: "%", consecutive: 2, period: year}
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2027-02
-    note: "宪法第 2 条的试金石是不断增长的自由现金流。对受资本充足率约束的银行控股公司，经营现金流减资本开支不代表可分配的钱（见 AXP-Q4），这里用摊薄每股收益的增长代表每股可分配盈利的增长，与 AXP-Q4 的返还比例互补：返还比例守住了而盈利连续两年下降，试金石同样在变弱。门槛沿用模板一贯的两年窗口，是本档案事先写下的标准。信贷衰退里运通的每股收益历史上会跌一半 [src:AXP-RPT1-2026-09-17#p12]，一年的下降不单独构成信号。FY2025 的每股收益报告没有给，基线待回填；公司 2026 年每股盈利指引是区间，报告所用的是指引区间 $17.30–$17.90 的中点 $17.60 [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-RPT1-2026-09-17#p12]。"
+    note: "The touchstone in constitution rule 2 is growing free cash flow. For a bank holding company bound by capital requirements, operating cash flow less capital expenditure does not represent money that can be distributed (see AXP-Q4), so growth in diluted EPS stands in here for growth in distributable earnings per share; it complements the payout share in AXP-Q4: if the payout share holds while earnings fall for two consecutive years, the touchstone is weakening all the same. The threshold keeps the templates' usual two-year window and is a standard this archive wrote down in advance. In credit recessions Amex's EPS has historically fallen by half [src:AXP-RPT1-2026-09-17#p12], so a one-year decline is not a signal on its own. The report does not give FY2025 EPS, and the baseline is to be backfilled; the company's 2026 EPS guidance is a range, and the report uses the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-RPT1-2026-09-17#p12]."
 
   - id: AXP-Q16
     type: quantitative
-    claim: 再投资跑道在兑现：国际卡分部的利润率没有离美国消费者分部越来越远
+    claim: "The reinvestment runway is paying off: the International Card Services margin is not drifting ever further from that of U.S. Consumer Services"
     origin: manual
     severity: watch
     covers: [growth]
     metric: segment_operating_margin
     params:
-      segment: 国际卡服务（International Card Services）
-      basis: 分部税前利润 ÷ 分部扣除利息支出后的总收入（公司的分部口径）
-    fail_if: 国际卡分部税前利润率连续 2 个年度同比下降
-    rule: {op: decrease, threshold: 0, unit: pp, consecutive: 2, period: year, note: 与上一年度的年度利润率比较。}
+      segment: International Card Services
+      basis: Segment pretax income ÷ segment total revenues net of interest expense (the company's segment basis)
+    fail_if: The International Card Services pretax margin down year on year for 2 consecutive years
+    rule: {op: decrease, threshold: 0, unit: pp, consecutive: 2, period: year, note: "Compared with the previous year's annual margin."}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2027-02
@@ -836,34 +836,34 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: AXP-RPT1-2026-09-17#p6
-      note: "报告写作利润率约 13%，二季度税前利润 4.77 亿美元，美国消费者分部约 22% [src:AXP-RPT1-2026-09-17#p6]；这是单季读数，年度基线待从年报分部附注回填。"
-    note: "报告第三节要求把再投资跑道单独写出来：国际卡分部是唯一同时有增速和利润率空间的跑道，利润率若向美国消费者分部靠拢，同样的收入能多出接近一倍的税前利润 [src:AXP-RPT1-2026-09-17#p6]。报告没有把它列进第十节，也没有给门槛；本条是本档案补的 watch 测试，“连续两个年度下降”是事先写下的标准，意思是跑道在朝反方向走。它不对应四条承重机制中的任何一条，所以不挂 pillar。"
+      note: "The report gives a margin of about 13% and Q2 pretax income of $477 million, against about 22% for U.S. Consumer Services [src:AXP-RPT1-2026-09-17#p6]; this is a single-quarter reading, and the annual baseline is to be backfilled from the segment note of the annual report."
+    note: "Section three of the report asks for the reinvestment runway to be written out separately: International Card Services is the only runway with room for both growth and margin, and if its margin moved toward that of U.S. Consumer Services, the same revenue would yield nearly twice the pretax income [src:AXP-RPT1-2026-09-17#p6]. The report does not list it in section ten and gives no threshold; this is a watch test added by this archive, and \"down in two consecutive years\" is a standard written down in advance, meaning the runway is heading the wrong way. It does not correspond to any of the four load-bearing mechanisms, so it has no pillar."
 
   - id: AXP-L8
     type: qualitative
-    claim: 获客端没有出现新的销售行为违规，信任没有在销售端被消耗
+    claim: No new sales-practice violations at the acquisition end; trust is not being used up on the sales side
     origin: manual
     severity: watch
     covers: [culture, governance]
     pillar: P6
-    question: 本期文件是否披露了新的、针对运通销售或营销行为（开户、获客、营销与披露）的监管处罚、和解或同意令？
-    fail_if: 是
+    question: Do this period's filings disclose a new regulatory penalty, settlement or consent order concerning Amex's sales or marketing practices (account opening, customer acquisition, marketing and disclosure)?
+    fail_if: "Yes"
     judge: independent_model
     evidence: required
-    where: 10-K/10-Q 的法律诉讼与或有事项附注、8-K、相关监管机构（司法部、消费者金融保护局、货币监理署等）的公告
+    where: The legal proceedings and contingencies notes of the 10-K/10-Q, 8-Ks, and announcements by the relevant regulators (the Department of Justice, the Consumer Financial Protection Bureau, the Office of the Comptroller of the Currency, and others)
     lookback: 4
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: 最近一次为 2025 年 1 月与司法部约 2.3 亿美元和解（1.387 亿不起诉协议加 1.087 亿民事罚款），针对 2014–2017 年对小企业的欺骗性信用卡营销；此前有 1989 年萨夫拉事件与 2012 年消费者金融保护局约 8,500 万美元退款
+      value: The most recent was the settlement of about $230 million with the Department of Justice in January 2025 ($138.7 million under a non-prosecution agreement plus a $108.7 million civil penalty), over deceptive credit card marketing to small businesses in 2014–2017; earlier there were the 1989 Safra affair and the 2012 Consumer Financial Protection Bureau refunds of about $85 million
       as_of: 2026-09-17
       source: AXP-RPT1-2026-09-17#p9
-    note: "报告第五节：赔付端的文化与销售端的行为不是同一件事，运通的信任风险出在获客端，这也是反方论点的起点之一 [src:AXP-RPT1-2026-09-17#p9]；企业文化评 B+ 正因为销售端有一条方向相反的序列 [src:AXP-RPT1-2026-09-17#p3]。报告第十节没有把它列为破坏信号，这里按 watch 处理，是本档案补的测试。"
+    note: "Section five of the report: culture at the servicing end and conduct at the sales end are not the same thing; Amex's trust risk lies at the acquisition end, which is also one of the starting points of the bear case [src:AXP-RPT1-2026-09-17#p9]; culture is rated B+ precisely because the sales side has a record pointing the other way [src:AXP-RPT1-2026-09-17#p3]. Section ten of the report does not list this as a breaker; it is handled here as a watch test added by this archive."
 
-  # ---------- _common：时效测试 ----------
+  # ---------- _common: staleness tests ----------
   - id: AXP-S1
     type: staleness
-    claim: 护城河判断不超过四个季度未复核
+    claim: The moat judgment goes no more than four quarters without review
     origin: template:stalwart
     severity: watch
     covers: [moat]
@@ -874,7 +874,7 @@ tests:
 
   - id: AXP-S2
     type: staleness
-    claim: 管理层判断不超过四个季度未复核
+    claim: The management judgment goes no more than four quarters without review
     origin: template:stalwart
     severity: watch
     covers: [management]
@@ -885,7 +885,7 @@ tests:
 
   - id: AXP-S3
     type: staleness
-    claim: "“最可能错在哪”每两个季度重新审视"
+    claim: "\"Where am I most likely wrong\" is re-examined every two quarters"
     origin: template:stalwart
     severity: watch
     covers: [other]
@@ -893,20 +893,20 @@ tests:
     section: bear_case
     max_age_quarters: 2
     effective_from: FY2026Q3
-    note: 报告第十二节认为最薄弱的证据是留存（公司不披露续卡率与流失率），其次是服务（没有可核对的服务指标）。
+    note: Section twelve of the report holds that the weakest evidence is retention (the company does not disclose renewal or attrition rates), followed by service (there are no checkable service metrics).
 
 todo:
-  - AXP 已转为候选（decisions/0008）：候选只跑定量测试与公司经理草稿、不做盲推，定性的破坏信号 AXP-L2 至 AXP-L6 就不再由独立模型逐季判定。建议每份 10-K 入库或年度刷新时由公司经理草稿逐条回答这五个问题；0008 没有写到这一点，待总部定下后写进决策记录。
-  - AXP-Q2（ROE）没有报告读数：FY2026 年报发布（约 2027-02）之前，从 FY2025 年报的 XBRL 回填基线，并复核借自模板的门槛是否适合净资产收益率；结论与日期写进该测试 note。
-  - AXP-Q15 的 FY2025 摊薄每股收益、AXP-Q16 的 FY2024 与 FY2025 国际卡分部年度税前利润率，报告都没有给，待从年报回填基线。
-  - AXP-Q13 需要 2026 年一季度单季的自有新开卡与营销费用同比（报告只给了二季度与上半年），用来确定连续计数的起点；待登记并读取一季度业绩 8-K。
-  - "AXP-Q9 需要 2026 年二季度单季的净卡费增量与会员服务成本增量，作为第一次环比比较的起点（报告只给了上半年 0.62× [src:AXP-RPT1-2026-09-17#p15]）；待从二季度业绩 8-K 回填。"
-  - "AXP-Q12 需要 2025 年同期各季的准备金率，用于准备金率同比一支（报告只给了当前 2.7% 与此前的 3.0% [src:AXP-RPT1-2026-09-17#p11]）；同时核对报告的准备金率是准备金占卡贷款的哪一个口径。"
-  - "AXP-Q11 的运通一侧采用报告所称的“主要净核销率”（2.0% [src:AXP-RPT1-2026-09-17#p11]）；待与二季度业绩 8-K 附件 99.2 核对它对应公司的哪一个口径（仅本金，或含利息与费用），此后固定同一口径。"
-  - "AXP-Q8 需要 2024 年联名卡占账单业务的比例（报告只给了 2022、2023、2025 年 [src:AXP-RPT1-2026-09-17#p7]）；待从 FY2024 年报回填。"
-  - 核实运通在 XBRL 中实际使用的收入、利息收入与利息支出、税前利润、信用损失拨备、摊薄每股收益概念（AXP-Q1、AXP-Q10、AXP-Q14、AXP-Q15）；取不到时把对应测试的 data 改为 filing_text。
-  - AXP-Q7 的运通一支在贷款增长期几乎自动成立（见该测试 note）；门槛按报告原文保留。若要改成“净计提且准备金率同比上升”，须在 2027-01（第一个相关读数）之前作为操作化写下并注明理由。
-  - AXP-L2、AXP-L3 的判定证据多在 EDGAR 之外（平台规则与开发者文档、法院判决、州立法记录），EDGAR 触发的流水线看不到；判定时把用到的外部来源登记进 sources.yml（kind 为 web 或 press_release），每季更新时由公司经理检索一次。建议行业研究员在 payments-card-networks 模块补一个中立路标：主要平台公布按总成本排序、且不许用户锁卡的默认支付规则。
-  - 公司不披露续卡率、流失率与服务指标（报告第十二节）：会员留存目前只能从净卡费增速间接读出；公司一旦披露，就补一条留存测试。
-  - "评级表中单列的“内部晋升与人才留存”一维报告留空，不评分，也不按中性处理 [src:AXP-RPT1-2026-09-17#p3]。"
-  - "报告对《信用卡竞争法案》适用范围的读数依据条款标题与多家分析机构的解读，没有逐条核对法案全文 [src:AXP-RPT1-2026-09-17#p13]，待补法案文本的一手来源标签。伊利诺伊州互换费案的 2026-06-01 裁决与货币监理署 2026 年 4 月的先占规则，报告附录列为一手来源 [src:AXP-RPT1-2026-09-17#p17]，待为两者登记来源标签。"
+  - "AXP has become a candidate (decisions/0008): for a candidate only the quantitative tests and the company manager's draft run, with no blind read, so the qualitative breakers AXP-L2 to AXP-L6 are no longer judged each quarter by an independent model. Suggestion: whenever a 10-K is filed into the archive, or at the annual refresh, the company manager's draft answers these five questions one by one; 0008 does not cover this, and it goes into a decision record once HQ has settled it."
+  - "AXP-Q2 (ROE) has no reading from the report: before the FY2026 annual report is published (around 2027-02), backfill the baseline from the XBRL of the FY2025 annual report and review whether the threshold borrowed from the template suits return on equity; write the conclusion and date into that test's note."
+  - The report gives neither FY2025 diluted EPS for AXP-Q15 nor the FY2024 and FY2025 annual pretax margins of International Card Services for AXP-Q16; backfill the baselines from the annual reports.
+  - AXP-Q13 needs the single-quarter Q1 2026 year-on-year figures for proprietary new cards and marketing expense (the report gives only Q2 and the first half) to fix the start of the consecutive count; register and read the Q1 earnings 8-K.
+  - "AXP-Q9 needs the single-quarter Q2 2026 increases in net card fees and Card Member services expense as the starting point of the first quarter-on-quarter comparison (the report gives only the first-half 0.62× [src:AXP-RPT1-2026-09-17#p15]); backfill from the Q2 earnings 8-K."
+  - "AXP-Q12 needs the reserve rates for the same quarters of 2025 for the year-on-year reserve-rate leg (the report gives only the current 2.7% and the earlier 3.0% [src:AXP-RPT1-2026-09-17#p11]); also check which basis of reserves over card loans the report's reserve rate uses."
+  - "The Amex side of AXP-Q11 uses what the report calls the \"main net write-off rate\" (2.0% [src:AXP-RPT1-2026-09-17#p11]); check against Exhibit 99.2 of the Q2 earnings 8-K which company basis it corresponds to (principal only, or including interest and fees), and keep that basis from then on."
+  - "AXP-Q8 needs the 2024 co-brand share of billed business (the report gives only 2022, 2023 and 2025 [src:AXP-RPT1-2026-09-17#p7]); backfill from the FY2024 annual report."
+  - Verify the XBRL concepts Amex actually uses for revenue, interest income and interest expense, pretax income, provisions for credit losses and diluted EPS (AXP-Q1, AXP-Q10, AXP-Q14, AXP-Q15); where they cannot be obtained, change data for the corresponding test to filing_text.
+  - The Amex leg of AXP-Q7 holds almost automatically while loans grow (see that test's note); the threshold is kept as the report wrote it. To change it to "a net build with the reserve rate up year on year", write that down as an operationalization, with the reason, before 2027-01 (the first relevant reading).
+  - "Most of the evidence for AXP-L2 and AXP-L3 is outside EDGAR (platform rules and developer documentation, court decisions, state legislative records), where the EDGAR-triggered pipeline cannot see it; when judging, register the external sources used in sources.yml (kind web or press_release), and have the company manager search once at each quarterly update. Suggestion for the industry researcher: add a neutral signpost to the payments-card-networks module: a major platform publishes default payment rules that rank by total cost and do not let users lock in a card."
+  - "The company does not disclose renewal rates, attrition rates or service metrics (section twelve of the report): member retention can for now be read only indirectly from net card fee growth; once the company discloses them, add a retention test."
+  - "The separate \"internal promotion and talent retention\" dimension in the rating table is left blank by the report; it is not scored and not treated as neutral [src:AXP-RPT1-2026-09-17#p3]."
+  - "The report's reading of the scope of the Credit Card Competition Act rests on the section headings and the interpretations of several analysts and was not checked clause by clause against the full text of the bill [src:AXP-RPT1-2026-09-17#p13]; a primary source tag for the bill's text is still to be added. The 2026-06-01 ruling in the Illinois interchange case and the OCC's April 2026 preemption rule are listed as primary sources in the report's appendix [src:AXP-RPT1-2026-09-17#p17]; source tags are still to be registered for both."

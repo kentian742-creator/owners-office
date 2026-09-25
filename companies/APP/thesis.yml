@@ -1,6 +1,6 @@
-# AppLovin（APP）论点文件（公开）。
-# 事实来源见同目录 sources.yml；报告 locator 写作 APP-RPT1-2026-09-23#pN（N = PDF 页码）。
-# 门槛是事先写下的判定标准；baseline 是报告日的读数，必须带出处。
+# AppLovin (APP) thesis file (public).
+# Fact sources are in sources.yml in the same directory; report locators are written APP-RPT1-2026-09-23#pN (N = PDF page number).
+# Thresholds are judgment criteria written down in advance; a baseline is the reading on the report date and must cite its source.
 schema_version: "0.2"
 company: APP
 name: AppLovin Corporation
@@ -13,7 +13,7 @@ filer:
   earnings_form: 8-K
   annual_form: 10-K
 category: fast_grower
-category_rationale: "FY2026Q2 收入同比 +53%，FY2026Q3 收入指引中值 20.70 亿美元对 FY2025Q3 的 14.05 亿约 +47.3%，增速远在林奇快速增长型的区间之上[src:APP-8K-2026-08-05#EX-99.1][src:APP-8K-2025-11-05#EX-99.1]；次类记为周期型：上市后第一次加息周期里的 2022 年，公司总收入只增 0.9%、FY2022Q3 与 FY2022Q4 同比 −2% 与 −11%，拖累来自当时约占收入 63% 的游戏业务（全年 −17%），今天仅存的广告业务（当时的软件平台分部）全年仍增长 55.7%[src:APP-10K-FY2022#Item7][src:APP-10Q-FY2022Q3#note-3]；今天多出的变量是更顺周期、还没被加息检验过的电商广告主[src:APP-RPT1-2026-09-23#p14]，而联储已在 2026-09-16 再次加息[src:FED-FOMC-2026-09-16]。"
+category_rationale: "FY2026Q2 revenue was up 53% year on year, and the FY2026Q3 revenue guidance midpoint of $2.070 billion is about +47.3% on FY2025Q3's $1.405 billion, growth far above Lynch's fast-grower range [src:APP-8K-2026-08-05#EX-99.1][src:APP-8K-2025-11-05#EX-99.1]. The secondary category is cyclical: in 2022, during the first rate-hiking cycle after the IPO, total revenue grew only 0.9%, and FY2022Q3 and FY2022Q4 were −2% and −11% year on year, with the drag coming from the games business, then about 63% of revenue (−17% for the year), while the advertising business that alone remains today (then the Software Platform segment) still grew 55.7% for the year [src:APP-10K-FY2022#Item7][src:APP-10Q-FY2022Q3#note-3]. The new variable today is e-commerce advertisers, which are more procyclical and not yet tested by rate hikes [src:APP-RPT1-2026-09-23#p14], and the Fed raised rates again on 2026-09-16 [src:FED-FOMC-2026-09-16]."
 category_secondary: cyclical
 domain: digital_advertising
 depends_on: []
@@ -35,7 +35,7 @@ reviewed:
   breakers: 2026-09-23
   munger: 2026-09-23
 
-# 企业文化评级按报告留空（见 todo）。
+# The culture rating is left blank as in the report (see todo).
 ratings:
   business: "B+"
   management: "B+"
@@ -43,85 +43,85 @@ ratings:
   source: APP-RPT1-2026-09-23#p1
 
 thesis:
-  summary: "AppLovin 同时经营手游广告的拍卖行 MAX 和替广告主出价的 Axon 模型，2025 年卖掉游戏工作室后只剩广告业务，FY2026Q2 收入 19.24 亿美元、同比 +53%，营业利润率 77.7%[src:APP-8K-2026-08-05#EX-99.1]。它几乎不需要资本，投入资本回报约 124%–135%（TTM 至 2026-06-30）[src:APP-RPT1-2026-09-23#p6]；但领先是处理优势而不是结构优势，要靠模型每个季度跑赢对手重新挣回。单价（每次安装净收入）同比增速从 FY2026Q1 的 +93% 放缓到 FY2026Q2 的 +58%[src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]；同季 Unity 的 Vector 环比 +23%（Unity 电话会口径，申报文件未披露）[src:U-CALL-FY2026Q2]。报告把它放在“普通生意 × 优秀管理层”（生意、管理层均为 B+），能否升格要看新 CTO 在任的 FY2026Q3、FY2026Q4 能否兑现指引、让单价或安装量站稳[src:APP-RPT1-2026-09-23#p10]。"
+  summary: "AppLovin runs both MAX, the auction house for mobile-game ads, and Axon, the model that bids for advertisers; after it sold its game studios in 2025, only the advertising business is left. FY2026Q2 revenue was $1.924 billion, +53% year on year, with a 77.7% operating margin [src:APP-8K-2026-08-05#EX-99.1]. It needs almost no capital: return on invested capital is about 124%–135% (TTM to 2026-06-30) [src:APP-RPT1-2026-09-23#p6]. But its lead is a processing advantage, not a structural one, and has to be re-earned every quarter by the model beating rivals. Year-on-year growth in price per install (net revenue per install) slowed from +93% in FY2026Q1 to +58% in FY2026Q2 [src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]; in the same quarter Unity's Vector grew +23% quarter on quarter (per Unity's earnings call, not disclosed in filings) [src:U-CALL-FY2026Q2]. The report places it at \"ordinary business × excellent management\" (business and management both B+); whether it moves up depends on whether, in FY2026Q3 and FY2026Q4 with the new CTO in office, it delivers on guidance and steadies price per install or installs [src:APP-RPT1-2026-09-23#p10]."
   pillars:
     - id: P1
-      claim: "几乎不需要资本的高利润生意：FY2026Q2 营业利润率 77.7%[src:APP-8K-2026-08-05#EX-99.1]，投入资本回报约 124%–135%（TTM 至 2026-06-30）[src:APP-RPT1-2026-09-23#p6]；2025 年购置物业设备只有 47 万美元，连同融资租赁本金也只有约 0.19 亿美元[src:APP-8K-2026-02-11#EX-99.1]；2025 年自由现金流 39.5 亿美元（公司口径，含上半年已终止经营的应用业务）[src:APP-8K-2026-02-11#EX-99.1]，TTM（至 2026-06-30）所有者自由现金流约占收入的 62%[src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]。"
+      claim: "A high-margin business that needs almost no capital: FY2026Q2 operating margin 77.7% [src:APP-8K-2026-08-05#EX-99.1], return on invested capital about 124%–135% (TTM to 2026-06-30) [src:APP-RPT1-2026-09-23#p6]; purchases of property and equipment in 2025 were only $470,000, and only about $19 million including finance-lease principal [src:APP-8K-2026-02-11#EX-99.1]; 2025 free cash flow was $3.95 billion (company definition, including the Apps business discontinued in the first half) [src:APP-8K-2026-02-11#EX-99.1]; TTM (to 2026-06-30) owner free cash flow was about 62% of revenue [src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]."
       source: APP-8K-2026-08-05#EX-99.1
     - id: P2
-      claim: "领先是处理优势：供给与训练数据都是买来的，只有模型是自建的，领先要靠 Axon 每个季度跑赢对手重新挣回[src:APP-RPT1-2026-09-23#p6]；卖掉游戏、失去自有内容数据之后，广告收入同比依次为 +68%（FY2025Q3）、+66%（FY2025Q4）、+59%（FY2026Q1）、+53%（FY2026Q2），增速逐季走低[src:APP-8K-2025-11-05#EX-99.1][src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]。"
+      claim: "The lead is a processing advantage: supply and training data are both bought and only the model is built in-house, so the lead has to be re-earned every quarter by Axon beating rivals [src:APP-RPT1-2026-09-23#p6]; since the games were sold and the first-party content data lost, advertising revenue growth year on year has been +68% (FY2025Q3), +66% (FY2025Q4), +59% (FY2026Q1) and +53% (FY2026Q2), lower each quarter [src:APP-8K-2025-11-05#EX-99.1][src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]."
       source: APP-RPT1-2026-09-23#p6
     - id: P3
-      claim: "供给侧的聚合层 MAX 稳住：公司称 FY2026Q2 MAX 上发布商收入环比两位数增长、在竞价瀑布中的份额稳定（公司电话会口径，申报文件未披露）[src:APP-CALL-FY2026Q2#CEO]；外部买家在 MAX 中标时 APP 向中标方收取 5%[src:APP-RPT1-2026-09-23#p6]。"
+      claim: "MAX, the supply-side aggregation layer, holds: the company says publisher revenue on MAX grew by double digits quarter on quarter in FY2026Q2 and its share of the bidding waterfall was stable (per the company's earnings call, not disclosed in filings) [src:APP-CALL-FY2026Q2#CEO]; when an outside buyer wins on MAX, APP charges the winner 5% [src:APP-RPT1-2026-09-23#p6]."
       source: APP-CALL-FY2026Q2#CEO
     - id: P4
-      claim: "电商等非游戏广告主长成第二条增长曲线：消费类广告主支出 FY2026Q2 比 FY2025Q4 高 28%（公司电话会口径，申报文件未披露）[src:APP-CALL-FY2026Q2#CEO]；报告测算，要走完基准增长路径，非游戏收入到 2031 年需占约 20%–30%，第一次读数在 2027 年上半年[src:APP-RPT1-2026-09-23#p14]。"
+      claim: "E-commerce and other non-gaming advertisers grow into a second growth curve: consumer advertiser spend in FY2026Q2 was 28% higher than in FY2025Q4 (per the company's earnings call, not disclosed in filings) [src:APP-CALL-FY2026Q2#CEO]; the report estimates that to complete the base-case growth path, non-gaming revenue needs to reach about 20%–30% of revenue by 2031, with the first reading in the first half of 2027 [src:APP-RPT1-2026-09-23#p14]."
       source: APP-RPT1-2026-09-23#p14
     - id: P5
-      claim: "管理层像所有者、资本配置可以核对：按最新重述口径，2021–2025 年的非核心损失（2023–2025 年终止经营亏损 2.10 亿美元，至多再加 2022 年应用业务的减值与处置损失 1.28 亿）约占同期税后营业利润（营业利润 69.38 亿 × 85%）的 3.6%–5.7%[src:APP-10K-FY2025#Item8][src:APP-10K-FY2022#Item7]；按原始披露口径，分子只有 2025 年的终止经营亏损 0.99 亿、营业利润为 67.76 亿，约 1.7%–3.9%[src:APP-10K-FY2024#Item7][src:APP-10K-FY2025#Item8]；2021–2022 年游戏业务的亏损没有单列，两种口径都只是下限。2022–2025 年 64.8 亿美元股东回报中新增融资约占 6%[src:APP-RPT1-2026-09-23#p1]；以约 10.3 亿美元（经审计的收购对价，公告约 10.5 亿）把 MoPub 并入 MAX[src:APP-10K-FY2022#Note6][src:APP-8K-2022-01-05#Item2.01]，并把游戏业务整体卖出。扣分在 CEO 61.6% 的投票权（截至 2026-03-31，投票协议合计 66.9%）[src:APP-DEF14A-2026-04-21#p58]、只看股价与时间的激励、FY2026Q2 收入低于指引中值，以及 2026 年年中的 CTO 与首席法务官交接[src:APP-RPT1-2026-09-23#p1]。"
+      claim: "Management acts like owners, and its capital allocation can be checked: on the latest restated basis, non-core losses in 2021–2025 (discontinued-operations losses of $210 million in 2023–2025, plus at most the 2022 impairment and disposal losses of $128 million on the Apps business) are about 3.6%–5.7% of after-tax operating income over the same period (operating income of $6.938 billion × 85%) [src:APP-10K-FY2025#Item8][src:APP-10K-FY2022#Item7]; on the originally reported basis, the numerator is only the 2025 discontinued-operations loss of $99 million and operating income is $6.776 billion, about 1.7%–3.9% [src:APP-10K-FY2024#Item7][src:APP-10K-FY2025#Item8]; the games business's losses in 2021–2022 were not reported separately, so both bases are only lower bounds. New financing was about 6% of the $6.48 billion returned to shareholders in 2022–2025 [src:APP-RPT1-2026-09-23#p1]; MoPub was folded into MAX for about $1.03 billion (the audited purchase consideration, about $1.05 billion as announced) [src:APP-10K-FY2022#Note6][src:APP-8K-2022-01-05#Item2.01], and the games business was sold as a whole. Marked down for the CEO's 61.6% of the voting power (as of 2026-03-31, 66.9% in total under the voting agreement) [src:APP-DEF14A-2026-04-21#p58], incentives tied only to share price and time, FY2026Q2 revenue below the guidance midpoint, and the CTO and Chief Legal Officer transitions in the middle of 2026 [src:APP-RPT1-2026-09-23#p1]."
       source: APP-RPT1-2026-09-23#p1
     - id: P6
-      claim: "结构风险没有兑现：拍卖行（MAX）与自营买家（Axon）同属一家、建在苹果与谷歌的规则之上，这个结构没有被监管、法院或平台规则拆开[src:APP-RPT1-2026-09-23#p11]；CFO 在 FY2026Q2 电话会上说 SEC 已告知公司调查结束、未建议执法（公司电话会口径，申报文件未披露该调查）[src:APP-CALL-FY2026Q2#CFO]。"
+      claim: "The structural risk has not materialized: the auction house (MAX) and the in-house buyer (Axon) belong to one company and are built on Apple's and Google's rules, and this structure has not been broken up by regulators, courts or platform rules [src:APP-RPT1-2026-09-23#p11]; on the FY2026Q2 call the CFO said the SEC had told the company that its investigation was closed with no enforcement action recommended (per the company's earnings call, the filings do not disclose the investigation) [src:APP-CALL-FY2026Q2#CFO]."
       source: APP-RPT1-2026-09-23#p11
   permanent_loss_paths:
-    - "引擎失速且停不下来：若 CTO 交接后模型节奏断档，Vector、CloudX 同时加速，Meta、谷歌又把预算回流应用内竞价，单价增速跌破 30% 而安装量不回正，最终广告收入同比连续两季低于 15% 且安装量为负[src:APP-RPT1-2026-09-23#p11][src:APP-RPT1-2026-09-23#p12]。"
-    - "结构被一次拿走：监管机构或法院要求 MAX 与 Axon 结构性分离，或苹果、谷歌把设备信号与应用内上下文收进系统级接口；报告认为这种损失不是任何折现率能覆盖的[src:APP-RPT1-2026-09-23#p12]。"
-    - "信任与数据合规：报告记下十五年里三次争议（2019、2021、2025）都由外部先发现，其中只有 2025 年一次有一手记录，即 2025 年 3 月起的证券集体诉讼与股东派生诉讼[src:APP-10Q-FY2026Q2#PartII-Item1]，其余与“由外部先发现”仅 L2，未见一手数据[src:APP-RPT1-2026-09-23#p11]；若政府机构或法院认定数据收集违规并要求更改 Axon 的数据输入，模型的原料会被改写。"
-    - "单价上涨其实是抽成而不是模型：若 MAX 发布商收入的增速持续落后于 APP 收入，领先只是从发布商那里多拿了一块[src:APP-RPT1-2026-09-23#p17]，CloudX 这类聚合层就有机会绕过它；CloudX 由 MoPub 与 MAX 的创始人带两家原团队的核心成员组建，2025-11-13 宣布上线[src:APP-WEB-2025-11-13-1]。"
-    - "人与资本一起出错：以股权为主的薪酬缩水抬高核心工程师的留任成本、拖慢模型迭代，形成反身性回路[src:APP-RPT1-2026-09-23#p10]；或关键人离场而没有内部接替，或为找增长做超大并购（2025 年 4 月曾向美国总统提交收购 TikTok 中国以外全部业务的初步意向）[src:APP-8K-2025-04-03#Item8.01]。"
+    - "An engine stall that does not stop: if the model cadence breaks after the CTO transition while Vector and CloudX accelerate together and Meta and Google pull budgets back into in-app bidding, growth in price per install falls below 30% without installs turning positive, and in the end advertising revenue grows less than 15% year on year for two consecutive quarters with installs negative [src:APP-RPT1-2026-09-23#p11][src:APP-RPT1-2026-09-23#p12]."
+    - "The structure is taken away in one stroke: a regulator or court requires the structural separation of MAX and Axon, or Apple and Google pull device signals and in-app context into system-level interfaces; the report holds that no discount rate can cover such a loss [src:APP-RPT1-2026-09-23#p12]."
+    - "Trust and data compliance: the report records three controversies in fifteen years (2019, 2021, 2025), all first discovered by outsiders; only the 2025 one has a primary record, the securities class action and shareholder derivative suits since March 2025 [src:APP-10Q-FY2026Q2#PartII-Item1], while the others, and the claim that outsiders found them first, are L2 only, no primary data seen [src:APP-RPT1-2026-09-23#p11]; if a government agency or court finds the data collection unlawful and requires changes to Axon's data inputs, the model's raw material will be rewritten."
+    - "The rise in price per install is really take rate, not the model: if MAX publisher revenue keeps growing more slowly than APP's revenue, the lead is only a bigger cut taken from publishers [src:APP-RPT1-2026-09-23#p17], and aggregation layers such as CloudX get a chance to route around it; CloudX was formed by the founders of MoPub and MAX with core members of both original teams, and announced its launch on 2025-11-13 [src:APP-WEB-2025-11-13-1]."
+    - "People and capital go wrong together: shrinking equity-heavy pay raises the cost of retaining core engineers and slows model iteration, a reflexive loop [src:APP-RPT1-2026-09-23#p10]; or key people leave without internal successors; or an outsized acquisition is made in search of growth (in April 2025 the company submitted to the President of the United States a preliminary proposal to acquire all of TikTok's business outside China) [src:APP-8K-2025-04-03#Item8.01]."
 
 baseline_facts:
-  - {id: F1, label: 二季度收入, value: 19.24, unit: 亿美元, period: 2026Q2, as_of: 2026-06-30, source: APP-8K-2026-08-05#EX-99.1}
-  - {id: F2, label: 二季度收入同比, value: 53, unit: "%", period: 2026Q2, as_of: 2026-06-30, source: APP-8K-2026-08-05#EX-99.1}
-  - {id: F3, label: 二季度营业利润率, value: 77.7, unit: "%", period: 2026Q2, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p1}
-  - {id: F4, label: 每次安装净收入同比（2026Q1、2026Q2）, value: [93, 58], unit: "%", as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p5}
-  - {id: F5, label: 安装量同比（2026Q1、2026Q2）, value: [-18, -2], unit: "%", as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p5}
-  - {id: F6, label: TTM 所有者自由现金流占收入, value: 62, unit: "%", period: TTM, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p6}
-  - {id: F7, label: 2025 年自由现金流, value: 39.5, unit: 亿美元, period: FY2025, source: APP-8K-2026-02-11#EX-99.1, note: "公司口径（经营现金流减购置物业设备与融资租赁本金），含 2025 年上半年已终止经营的应用业务的现金流，与 FY2025 持续经营的收入、利润口径不同；公司没有披露其中终止经营的部分"}
-  - {id: F8, label: 投入资本回报（两个税率口径）, value: [124, 135], unit: "%", period: TTM, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p6, note: "报告的读数，按一手输入可重算：TTM（FY2025Q3–FY2026Q2）营业利润 52.88 亿美元按 22% 与 15% 两个税率得税后 41.3 与 45.0 亿，除以 2026-06-30 的投入资本 33.35 亿[src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]；报告没有写税率与投入资本的定义"}
-  - {id: F9, label: 股本, value: 3.353, unit: 亿股, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p9}
-  - {id: F10, label: 净负债, value: 4.97, unit: 亿美元, as_of: 2026-06-30, source: APP-10K-FY2025#Note9, note: "优先票据本金 35.50 亿（2026 年上半年无借款、无还本）减现金及现金等价物 30.53 亿[src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1A][src:APP-10Q-FY2026Q2#Item1]；按账面长期债务 35.15 亿计为 4.62 亿[src:APP-10Q-FY2026Q2#Item1]；报告写的 6.47 亿（债务本金约 37 亿）与一手不符[src:APP-RPT1-2026-09-23#p13]"}
-  - {id: F11, label: CEO 个人投票权, value: 61.6, unit: "%", as_of: 2026-03-31, source: APP-DEF14A-2026-04-21#p58}
-  - {id: F12, label: 2025 年末员工人数, value: 898, unit: 人, period: FY2025, source: APP-RPT1-2026-09-23#p10}
-  - {id: F13, label: 三季度收入指引, value: [20.55, 20.85], unit: 亿美元, period: 2026Q3, source: APP-RPT1-2026-09-23#p15}
+  - {id: F1, label: Q2 revenue, value: 19.24, unit: USD 100 million, period: 2026Q2, as_of: 2026-06-30, source: APP-8K-2026-08-05#EX-99.1}
+  - {id: F2, label: Q2 revenue YoY, value: 53, unit: "%", period: 2026Q2, as_of: 2026-06-30, source: APP-8K-2026-08-05#EX-99.1}
+  - {id: F3, label: Q2 operating margin, value: 77.7, unit: "%", period: 2026Q2, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p1}
+  - {id: F4, label: "Net revenue per install YoY (2026Q1, 2026Q2)", value: [93, 58], unit: "%", as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p5}
+  - {id: F5, label: "Installs YoY (2026Q1, 2026Q2)", value: [-18, -2], unit: "%", as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p5}
+  - {id: F6, label: TTM owner free cash flow as a share of revenue, value: 62, unit: "%", period: TTM, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p6}
+  - {id: F7, label: 2025 free cash flow, value: 39.5, unit: USD 100 million, period: FY2025, source: APP-8K-2026-02-11#EX-99.1, note: "Company definition (operating cash flow less purchases of property and equipment and finance-lease principal); includes the cash flow of the Apps business discontinued in the first half of 2025, so its basis differs from FY2025 continuing-operations revenue and profit; the company did not disclose the discontinued part"}
+  - {id: F8, label: Return on invested capital (two tax-rate bases), value: [124, 135], unit: "%", period: TTM, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p6, note: "The report's reading, which can be recomputed from primary inputs: TTM (FY2025Q3–FY2026Q2) operating income of $5.288 billion at tax rates of 22% and 15% gives $4.13 billion and $4.50 billion after tax, divided by invested capital of $3.335 billion at 2026-06-30 [src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]; the report does not define the tax rates or invested capital"}
+  - {id: F9, label: Shares outstanding, value: 3.353, unit: 100 million shares, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p9}
+  - {id: F10, label: Net debt, value: 4.97, unit: USD 100 million, as_of: 2026-06-30, source: APP-10K-FY2025#Note9, note: "Senior notes principal of $3.550 billion (no borrowing and no principal repayment in the first half of 2026) less cash and cash equivalents of $3.053 billion [src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1A][src:APP-10Q-FY2026Q2#Item1]; $462 million using the carrying amount of long-term debt, $3.515 billion [src:APP-10Q-FY2026Q2#Item1]; the report's $647 million (debt principal of about $3.7 billion) does not match the primary sources [src:APP-RPT1-2026-09-23#p13]"}
+  - {id: F11, label: CEO's personal voting power, value: 61.6, unit: "%", as_of: 2026-03-31, source: APP-DEF14A-2026-04-21#p58}
+  - {id: F12, label: Employees at the end of 2025, value: 898, unit: people, period: FY2025, source: APP-RPT1-2026-09-23#p10}
+  - {id: F13, label: Q3 revenue guidance, value: [20.55, 20.85], unit: USD 100 million, period: 2026Q3, source: APP-RPT1-2026-09-23#p15}
 
 tests:
-  # ── 林奇快速增长型模板（spec/templates/lynch/fast_grower.yml）──
+  # ── Lynch fast-grower template (spec/templates/lynch/fast_grower.yml) ──
   - id: APP-Q1
     type: quantitative
-    claim: 增长仍在快速增长型的区间
+    claim: Growth is still in the fast-grower range
     origin: template:fast_grower
     severity: watch
     covers: [growth]
     pillar: P2
     effective_from: FY2026Q3
     metric: revenue_yoy
-    fail_if: 连续 2 个季度低于 15%
+    fail_if: Below 15% for 2 consecutive quarters
     rule: {op: "<", threshold: 15, unit: "%", consecutive: 2, period: quarter}
     data: xbrl
     first_readable: 2026-11
     baseline: {value: 53, unit: "%", period: 2026Q2, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p3}
-    note: "失败时复核林奇分类（可能转为稳定增长型）。同比用最新文件里的持续经营口径：出售应用业务后，2025 年各季收入已按持续经营重述。"
+    note: "On failure, review the Lynch category (it may become a stalwart). Year-on-year growth uses the continuing-operations basis of the latest filing: after the sale of the Apps business, revenue for each quarter of 2025 was restated to continuing operations."
 
   - id: APP-Q2
     type: quantitative
-    claim: 扩张没有吃掉单位经济
+    claim: Expansion has not eaten into unit economics
     origin: template:fast_grower
     severity: watch
     covers: [unit_economics, pricing_power]
     pillar: P1
     effective_from: FY2026Q3
     metric: operating_margin
-    fail_if: 同比下降超过 5 个百分点，连续 2 个季度
+    fail_if: Down more than 5 percentage points year on year, for 2 consecutive quarters
     rule: {op: "decrease", threshold: 5, unit: pp, consecutive: 2, period: quarter}
     data: xbrl
     first_readable: 2026-11
     baseline: {value: 77.7, unit: "%", period: 2026Q2, as_of: 2026-06-30, source: APP-RPT1-2026-09-23#p1}
-    note: "二季度环比的增量利润率只有 67%，低于 77.7% 的平均，环比多出的成本八成是网络基础设施与算力[src:APP-RPT1-2026-09-23#p5]。"
+    note: "The incremental margin on Q2's quarter-on-quarter change was only 67%, below the 77.7% average, and eighty percent of the added cost quarter on quarter was network infrastructure and compute [src:APP-RPT1-2026-09-23#p5]."
 
   - id: APP-Q3
     type: quantitative
-    claim: 资产负债表撑得住扩张
+    claim: The balance sheet can carry the expansion
     origin: template:fast_grower
     severity: watch
     covers: [balance_sheet]
@@ -129,13 +129,13 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: net_debt_to_fcf_ttm
-      description: "净负债 ÷ 过去四个季度自由现金流；净负债 = 有息负债 − 现金、现金等价物与短期投资"
+      description: "Net debt ÷ free cash flow over the past four quarters; net debt = interest-bearing debt − cash, cash equivalents and short-term investments"
       unit: x
       frequency: quarter
       data: xbrl
       xbrl: [us-gaap:LongTermDebt, us-gaap:LongTermDebtNoncurrent, us-gaap:CashAndCashEquivalentsAtCarryingValue, us-gaap:ShortTermInvestments, us-gaap:NetCashProvidedByUsedInOperatingActivities, us-gaap:PaymentsToAcquirePropertyPlantAndEquipment]
       formula: "(debt - cash - short_term_investments) / sum_4q(operating_cash_flow - capex)"
-    fail_if: 净负债超过过去四个季度的自由现金流（大于 1 倍）
+    fail_if: Net debt exceeds free cash flow over the past four quarters (more than 1x)
     rule: {op: ">", threshold: 1, unit: x, consecutive: 1, period: quarter}
     data: xbrl
     first_readable: 2026-11
@@ -145,37 +145,37 @@ tests:
       period: TTM
       as_of: 2026-06-30
       source: APP-10K-FY2025#Note9
-      note: "净负债约 4.97 亿美元：优先票据本金 35.50 亿（2029、2031、2034 年到期各 10 亿，2054 年到期 5.5 亿，2026 年上半年无借款、无还本，循环信贷无余额）减现金及现金等价物 30.53 亿[src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1A][src:APP-10Q-FY2026Q2#Item1]；按账面长期债务 35.15 亿计为 4.62 亿[src:APP-10Q-FY2026Q2#Item1]。TTM（FY2025Q3–FY2026Q2）自由现金流 45.08 亿（公司口径：FY2025 39.52 亿 − 2025 年上半年 15.94 亿 + 2026 年上半年 21.50 亿），净负债 ÷ TTM 自由现金流约 0.11 倍[src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]。报告写的净负债约 6.47 亿（债务本金约 37 亿）与一手不符[src:APP-RPT1-2026-09-23#p13]；CFO 在电话会上说的总债务约 37 亿也与申报文件不一致（公司电话会口径）[src:APP-CALL-FY2026Q2#CFO]。"
-    note: "模板默认门槛是“由净现金转为净负债”；截至 2026-06-30 公司已有约 4.97 亿美元净负债[src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1]，默认门槛当下即失败、没有区分力，所以改为净负债与一年自由现金流之比，守的仍是模板的论点。"
+      note: "Net debt about $497 million: senior notes principal of $3.550 billion ($1 billion each due 2029, 2031 and 2034 and $550 million due 2054, with no borrowing and no principal repayment in the first half of 2026 and nothing drawn on the revolving credit facility) less cash and cash equivalents of $3.053 billion [src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1A][src:APP-10Q-FY2026Q2#Item1]; $462 million using the carrying amount of long-term debt, $3.515 billion [src:APP-10Q-FY2026Q2#Item1]. TTM (FY2025Q3–FY2026Q2) free cash flow was $4.508 billion (company definition: FY2025 $3.952 billion − first half of 2025 $1.594 billion + first half of 2026 $2.150 billion), so net debt ÷ TTM free cash flow is about 0.11x [src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]. The report's net debt of about $647 million (debt principal of about $3.7 billion) does not match the primary sources [src:APP-RPT1-2026-09-23#p13]; the total debt of about $3.7 billion the CFO gave on the call does not match the filings either (per the company's earnings call) [src:APP-CALL-FY2026Q2#CFO]."
+    note: "The template's default threshold is \"from net cash to net debt\"; as of 2026-06-30 the company already had net debt of about $497 million [src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1], so the default threshold would fail at once and has no discriminating power; it is replaced by net debt relative to one year of free cash flow, which still guards the template's thesis."
 
   - id: APP-L1
     type: qualitative
-    claim: 新的扩张方向仍在公司的能力范围内
+    claim: New directions of expansion stay within the company's competence
     origin: template:fast_grower
     severity: watch
     covers: [capital_allocation]
     pillar: P5
     effective_from: FY2026Q3
-    question: 本期文件是否披露了进入与现有业务无关的新领域的重大投资或收购？
-    fail_if: 是，且金额超过上一财年自由现金流的 25%
+    question: Do this period's filings disclose a major investment in, or acquisition of, a new field unrelated to the existing business?
+    fail_if: Yes, and the amount exceeds 25% of the previous fiscal year's free cash flow
     judge: independent_model
     evidence: required
-    where: "8-K（Item 1.01、2.01、7.01、8.01）、并购新闻稿、10-Q 与 10-K 的 MD&A 和后续事项附注"
+    where: "8-K (Items 1.01, 2.01, 7.01, 8.01), M&A press releases, the MD&A and subsequent-events notes of the 10-Q and 10-K"
     lookback: 5
-    judge_notes: 只看本期文件披露的投资或收购；更早各期的文件只用来读上一财年的自由现金流（上一份 10-K）。
+    judge_notes: Consider only investments or acquisitions disclosed in this period's filings; earlier periods' filings are used only to read the previous fiscal year's free cash flow (the latest prior 10-K).
     first_readable: 2026-10
     baseline:
       value: 39.5
-      unit: 亿美元
+      unit: USD 100 million
       period: FY2025
       source: APP-8K-2026-02-11#EX-99.1
-      note: 上一财年（2025）自由现金流，即门槛的基数；公司口径，含 2025 年上半年已终止经营的应用业务的现金流，公司没有披露其中终止经营的部分；2026 年起的自由现金流只含持续经营。
-    note: "先例：2025 年 4 月，公司曾向美国总统提交收购 TikTok 中国以外全部业务的初步意向[src:APP-8K-2025-04-03#Item8.01]。"
+      note: Free cash flow of the previous fiscal year (2025), the base of the threshold; company definition, including the cash flow of the Apps business discontinued in the first half of 2025, of which the company did not disclose the discontinued part; free cash flow from 2026 on includes continuing operations only.
+    note: "Precedent: in April 2025, the company submitted to the President of the United States a preliminary proposal to acquire all of TikTok's business outside China [src:APP-8K-2025-04-03#Item8.01]."
 
-  # 所有类别共用的时效测试（spec/templates/lynch/_common.yml）
+  # Staleness tests shared by all categories (spec/templates/lynch/_common.yml)
   - id: APP-S1
     type: staleness
-    claim: 护城河判断不超过四个季度未复核
+    claim: The moat judgment goes no more than four quarters without review
     origin: template:fast_grower
     severity: watch
     covers: [moat]
@@ -183,11 +183,11 @@ tests:
     effective_from: FY2026Q3
     section: moat
     max_age_quarters: 4
-    note: 来自 _common.yml。
+    note: From _common.yml.
 
   - id: APP-S2
     type: staleness
-    claim: 管理层判断不超过四个季度未复核
+    claim: The management judgment goes no more than four quarters without review
     origin: template:fast_grower
     severity: watch
     covers: [management]
@@ -195,11 +195,11 @@ tests:
     effective_from: FY2026Q3
     section: management
     max_age_quarters: 4
-    note: 来自 _common.yml。
+    note: From _common.yml.
 
   - id: APP-S3
     type: staleness
-    claim: "“最可能错在哪”每两个季度重新审视"
+    claim: "\"Where am I most likely wrong\" is re-examined every two quarters"
     origin: template:fast_grower
     severity: watch
     covers: [other]
@@ -207,19 +207,19 @@ tests:
     effective_from: FY2026Q3
     section: bear_case
     max_age_quarters: 2
-    note: 来自 _common.yml；报告第 11 节的核心是单价为什么上涨，这一节过期就等于没人在看这个问题。
+    note: From _common.yml; the core of section 11 of the report is why price per install has risen, and letting this section go stale means nobody is watching that question.
 
-  # ── 覆盖补充（宪法第 2 条要求覆盖资本回报；快速增长型模板没有这一条）──
+  # ── Coverage supplement (constitution rule 2 requires covering returns on capital; the fast-grower template has no such test) ──
   - id: APP-Q4
     type: quantitative
-    claim: 几乎不需要资本：投入资本回报守在优秀企业的水平
+    claim: "Needs almost no capital: return on invested capital stays at the level of an excellent business"
     origin: manual
     severity: watch
     covers: [returns_on_capital]
     pillar: P1
     effective_from: FY2026Q3
     metric: roic
-    fail_if: 连续 2 年低于 12%
+    fail_if: Below 12% for 2 consecutive years
     rule: {op: "<", threshold: 12, unit: "%", consecutive: 2, period: year}
     data: xbrl
     first_readable: 2027-02
@@ -229,13 +229,13 @@ tests:
       period: TTM
       as_of: 2026-06-30
       source: APP-8K-2026-08-05#EX-99.1
-      note: "报告的读数，按一手输入可以重算：TTM（FY2025Q3–FY2026Q2）持续经营营业利润 52.88 亿美元，按 22% 与 15% 两个税率得税后 41.3 与 45.0 亿，除以 2026-06-30 的投入资本 33.35 亿（股东权益 31.63 亿 + 长期债务 35.15 亿 − 现金 30.53 亿 − 权益法投资 2.90 亿）[src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]；报告没有写两个税率与投入资本的定义[src:APP-RPT1-2026-09-23#p6]。"
-    note: "快速增长型模板没有资本回报测试，这里借用稳定增长型模板的默认门槛。2025 年购置物业设备 47 万美元，另付融资租赁本金 1,867 万美元（公司把两者都算作物业设备需求），合计约 1,914 万美元、约占收入的 0.35%[src:APP-8K-2026-02-11#EX-99.1]；这条测试防的是超大并购或自建算力把投入资本做大。"
+      note: "The report's reading, which can be recomputed from primary inputs: TTM (FY2025Q3–FY2026Q2) continuing-operations operating income of $5.288 billion at tax rates of 22% and 15% gives $4.13 billion and $4.50 billion after tax, divided by invested capital of $3.335 billion at 2026-06-30 (stockholders' equity $3.163 billion + long-term debt $3.515 billion − cash $3.053 billion − equity-method investments $290 million) [src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]; the report defines neither the two tax rates nor invested capital [src:APP-RPT1-2026-09-23#p6]."
+    note: "The fast-grower template has no return-on-capital test, so this borrows the stalwart template's default threshold. In 2025, purchases of property and equipment were $470,000, plus $18.67 million of finance-lease principal (the company counts both as property and equipment needs), about $19.14 million in total, about 0.35% of revenue [src:APP-8K-2026-02-11#EX-99.1]; this test guards against an outsized acquisition or self-built compute inflating invested capital."
 
-  # ── 论点破坏信号（报告第 09 节，发生即作废）──
+  # ── Thesis breakers (section 09 of the report; the thesis is void once one occurs) ──
   - id: APP-Q5
     type: quantitative
-    claim: 减速没有变成停不下来的失速
+    claim: The slowdown has not turned into a stall that cannot be stopped
     origin: report:breaker
     severity: breaker
     covers: [growth, moat]
@@ -243,20 +243,20 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: axon_unit_drivers_yoy
-      description: "公司披露的两个收入驱动量（安装量、每次安装净收入）的同比，只描述需求侧的 AppLovin Ads（原 Axon Ads Manager）这一条产品线。归属名称：2025 年二季度 10-Q 仍为 AppDiscovery，三季度 10-Q 为 Axon Advertising，FY2025 10-K 与 2026 年一季度 10-Q 为 Axon Ads Manager，2026 年二季度 10-Q 起为 AppLovin Ads；申报文件没有另作改名说明，两个驱动量的披露方式没有变[src:APP-10Q-FY2025Q2#Item2][src:APP-10Q-FY2025Q3#Item2][src:APP-10K-FY2025#Item7][src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]。四季度不单列，年报只给全年[src:APP-10K-FY2025#Item7]。"
+      description: "Year-on-year change in the two revenue drivers the company discloses (installs, net revenue per install), which describe only one product line, the demand-side AppLovin Ads (formerly Axon Ads Manager). Name under which they are reported: still AppDiscovery in the Q2 2025 10-Q, Axon Advertising in the Q3 10-Q, Axon Ads Manager in the FY2025 10-K and the Q1 2026 10-Q, and AppLovin Ads from the Q2 2026 10-Q on; the filings give no separate explanation of the renaming, and the way the two drivers are disclosed has not changed [src:APP-10Q-FY2025Q2#Item2][src:APP-10Q-FY2025Q3#Item2][src:APP-10K-FY2025#Item7][src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]. Q4 is not reported separately; the annual report gives only the full year [src:APP-10K-FY2025#Item7]."
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 10-Q MD&A 的关键指标；全年数在 10-K
+      where: Key metrics in the 10-Q MD&A; full-year figures are in the 10-K
       components:
-        installs: {description: 广告带来的安装量（同比）, unit: "%"}
-        net_revenue_per_install: {description: 每次安装净收入（单价，同比）, unit: "%"}
-    fail_if: 任意连续两个季度，广告收入同比低于 15%，且同期安装量同比为负
+        installs: {description: Installs driven by ads (YoY), unit: "%"}
+        net_revenue_per_install: {description: "Net revenue per install (price per install, YoY)", unit: "%"}
+    fail_if: In any two consecutive quarters, advertising revenue growth below 15% year on year, and installs negative year on year in the same quarters
     rule:
       all_of:
         - {metric: revenue_yoy, op: "<", threshold: 15, unit: "%", consecutive: 2, period: quarter}
         - {metric: axon_unit_drivers_yoy.installs, op: "<", threshold: 0, unit: "%", consecutive: 2, period: quarter}
-      note: 两个条件须在同样的连续两个季度里同时成立；出售游戏后持续经营收入全部来自广告，广告收入同比即总收入同比。
+      note: Both conditions must hold together in the same two consecutive quarters; since the games were sold, all continuing-operations revenue comes from advertising, so advertising revenue growth is total revenue growth.
     data: filing_text
     first_readable: 2026-11
     baseline:
@@ -265,12 +265,12 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: APP-RPT1-2026-09-23#p5
-      note: 依次为广告收入同比、安装量同比。
-    note: 报告第 09 节破坏信号 1（增长断层）。
+      note: "In order: advertising revenue YoY, installs YoY."
+    note: Breaker 1 in section 09 of the report (growth break).
 
   - id: APP-Q6
     type: quantitative
-    claim: 利润仍能变成所有者的现金
+    claim: Profit still turns into cash for the owners
     origin: report:breaker
     severity: breaker
     covers: [free_cash_flow]
@@ -278,13 +278,13 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: owner_fcf_margin_ttm
-      description: 过去四个季度的所有者自由现金流（自由现金流减股权激励）÷ 同期收入；自由现金流按公司业绩新闻稿的口径
+      description: Owner free cash flow over the past four quarters (free cash flow less stock-based compensation) ÷ revenue over the same period; free cash flow as defined in the company's earnings press releases
       unit: "%"
       frequency: quarter
       data: xbrl
       xbrl: [us-gaap:NetCashProvidedByUsedInOperatingActivities, us-gaap:PaymentsToAcquirePropertyPlantAndEquipment, us-gaap:ShareBasedCompensation, us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax, us-gaap:Revenues]
       formula: "sum_4q(operating_cash_flow - capex - stock_based_compensation) / sum_4q(revenue)"
-    fail_if: TTM 所有者自由现金流（自由现金流减股权激励）占收入连续两个季度低于 45%
+    fail_if: TTM owner free cash flow (free cash flow less stock-based compensation) below 45% of revenue for two consecutive quarters
     rule: {op: "<", threshold: 45, unit: "%", consecutive: 2, period: quarter}
     data: xbrl
     first_readable: 2026-11
@@ -294,12 +294,12 @@ tests:
       period: TTM
       as_of: 2026-06-30
       source: APP-8K-2026-08-05#EX-99.1
-      note: "报告写“约 62%”[src:APP-RPT1-2026-09-23#p6]，按一手输入重算为 61.9%，算式见 APP-Q11 的基准[src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]。FY2026Q2 单季约 40%（自由现金流 8.63 亿减股权激励 0.86 亿，除以收入 19.24 亿）[src:APP-8K-2026-08-05#EX-99.1]：CFO 在电话会上把它归于国际税款与利息的支付时点（公司电话会口径，申报文件未披露）[src:APP-CALL-FY2026Q2#CFO]；一手读数是二季度所得税现金支付约 5.33 亿美元、利息现金支付约 0.98 亿，优先票据每年 6 月 1 日与 12 月 1 日付息[src:APP-10Q-FY2026Q2#Item1-cash-flows][src:APP-10Q-FY2026Q1#Item1-cash-flows][src:APP-10K-FY2025#Note9]。"
-    note: "报告第 09 节破坏信号 2（现金塌陷）。报告熊市情景的终点就是 45%[src:APP-RPT1-2026-09-23#p15]。"
+      note: "The report says \"about 62%\" [src:APP-RPT1-2026-09-23#p6]; recomputed from primary inputs it is 61.9%, with the arithmetic in the APP-Q11 baseline [src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]. FY2026Q2 alone was about 40% (free cash flow of $863 million less stock-based compensation of $86 million, divided by revenue of $1.924 billion) [src:APP-8K-2026-08-05#EX-99.1]: on the call the CFO attributed this to the timing of international tax and interest payments (per the company's earnings call, not disclosed in filings) [src:APP-CALL-FY2026Q2#CFO]; the primary readings are Q2 cash income tax payments of about $533 million and cash interest payments of about $98 million, with interest on the senior notes paid on June 1 and December 1 each year [src:APP-10Q-FY2026Q2#Item1-cash-flows][src:APP-10Q-FY2026Q1#Item1-cash-flows][src:APP-10K-FY2025#Note9]."
+    note: "Breaker 2 in section 09 of the report (cash collapse). The end point of the report's bear case is exactly 45% [src:APP-RPT1-2026-09-23#p15]."
 
   - id: APP-Q7
     type: quantitative
-    claim: 增长的两个驱动量没有一起塌下去
+    claim: The two growth drivers have not collapsed together
     origin: report:breaker
     severity: breaker
     covers: [unit_economics, pricing_power, moat]
@@ -307,20 +307,20 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: axon_unit_drivers_yoy
-      description: "公司披露的两个收入驱动量（安装量、每次安装净收入）的同比，只描述需求侧的 AppLovin Ads（原 Axon Ads Manager）这一条产品线。归属名称：2025 年二季度 10-Q 仍为 AppDiscovery，三季度 10-Q 为 Axon Advertising，FY2025 10-K 与 2026 年一季度 10-Q 为 Axon Ads Manager，2026 年二季度 10-Q 起为 AppLovin Ads；申报文件没有另作改名说明，两个驱动量的披露方式没有变[src:APP-10Q-FY2025Q2#Item2][src:APP-10Q-FY2025Q3#Item2][src:APP-10K-FY2025#Item7][src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]。四季度不单列，年报只给全年[src:APP-10K-FY2025#Item7]。"
+      description: "Year-on-year change in the two revenue drivers the company discloses (installs, net revenue per install), which describe only one product line, the demand-side AppLovin Ads (formerly Axon Ads Manager). Name under which they are reported: still AppDiscovery in the Q2 2025 10-Q, Axon Advertising in the Q3 10-Q, Axon Ads Manager in the FY2025 10-K and the Q1 2026 10-Q, and AppLovin Ads from the Q2 2026 10-Q on; the filings give no separate explanation of the renaming, and the way the two drivers are disclosed has not changed [src:APP-10Q-FY2025Q2#Item2][src:APP-10Q-FY2025Q3#Item2][src:APP-10K-FY2025#Item7][src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]. Q4 is not reported separately; the annual report gives only the full year [src:APP-10K-FY2025#Item7]."
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 10-Q MD&A 的关键指标；全年数在 10-K
+      where: Key metrics in the 10-Q MD&A; full-year figures are in the 10-K
       components:
-        installs: {description: 广告带来的安装量（同比）, unit: "%"}
-        net_revenue_per_install: {description: 每次安装净收入（单价，同比）, unit: "%"}
-    fail_if: 安装量连续三个季度同比下降超过 15%，同时每次安装净收入增速低于 10%
+        installs: {description: Installs driven by ads (YoY), unit: "%"}
+        net_revenue_per_install: {description: "Net revenue per install (price per install, YoY)", unit: "%"}
+    fail_if: Installs down more than 15% year on year for three consecutive quarters, and at the same time growth in net revenue per install below 10%
     rule:
       all_of:
         - {metric: axon_unit_drivers_yoy.installs, op: "<", threshold: -15, unit: "%", consecutive: 3, period: quarter}
         - {metric: axon_unit_drivers_yoy.net_revenue_per_install, op: "<", threshold: 10, unit: "%", consecutive: 3, period: quarter}
-      note: “同时”按同样的连续三个季度理解。
+      note: "\"At the same time\" means in the same three consecutive quarters."
     data: filing_text
     first_readable: 2026-11
     baseline:
@@ -329,54 +329,54 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: APP-RPT1-2026-09-23#p5
-      note: "依次为安装量同比、每次安装净收入同比。一季度两者为 −18% 与 +93%[src:APP-RPT1-2026-09-23#p5]。"
-    note: 报告第 09 节破坏信号 3（量价齐跌）。
+      note: "In order: installs YoY, net revenue per install YoY. In Q1 the two were −18% and +93% [src:APP-RPT1-2026-09-23#p5]."
+    note: Breaker 3 in section 09 of the report (volume and price falling together).
 
   - id: APP-L2
     type: qualitative
-    claim: 拍卖行与自营买家同属一家的结构，没有被监管拆开，也没有被平台规则拿走
+    claim: The structure in which the auction house and the in-house buyer belong to one company has not been broken up by regulators or taken away by platform rules
     origin: report:breaker
     severity: breaker
     covers: [regulation, moat]
     pillar: P6
     effective_from: FY2026Q3
-    question: 本期是否出现以下任一情形：监管机构或法院要求 MAX 与公司的需求侧（Axon）结构性分离；公司在 8-K 或 10-Q 中披露苹果、谷歌的政策变更对 Axon 造成重大不利影响？
-    fail_if: 是（任一情形）
+    question: "In this period, did either of the following occur: a regulator or court required the structural separation of MAX from the company's demand side (Axon); or the company disclosed in an 8-K or 10-Q that a policy change by Apple or Google had a material adverse effect on Axon?"
+    fail_if: Yes (any of the cases)
     judge: independent_model
     evidence: required
-    where: 8-K、10-Q 与 10-K 的风险因素、法律诉讼与 MD&A；监管机构与法院的公告
+    where: The risk factors, legal proceedings and MD&A of the 8-K, 10-Q and 10-K; announcements by regulators and courts
     lookback: 1
     first_readable: 2026-10
     baseline:
-      value: 截至 2026-09-23 未见此类事件：10-Q 第二部分第 1 项只列证券集体诉讼与股东派生诉讼，2026-08-05 之后公司没有提交 8-K；报告把结构论列为存在但非基准情形的尾部风险
+      value: "No such event as of 2026-09-23: Part II, Item 1 of the 10-Q lists only the securities class action and the shareholder derivative suits, and the company has filed no 8-K since 2026-08-05; the report lists the structural argument as a tail risk that is possible but not the base case"
       source: APP-10Q-FY2026Q2#PartII-Item1
-      note: "其后没有 8-K，按 EDGAR 的申报列表核对至 2026-09-25；尾部风险的定性见报告[src:APP-RPT1-2026-09-23#p12]。"
-    note: 报告第 09 节破坏信号 4（结构或平台打击）。
+      note: "No 8-K since then, checked against EDGAR's filing list through 2026-09-25; for the tail-risk characterization see the report [src:APP-RPT1-2026-09-23#p12]."
+    note: Breaker 4 in section 09 of the report (a blow to the structure or from the platforms).
 
   - id: APP-L3
     type: qualitative
-    claim: Axon 的数据输入没有被认定违法或违反平台条款
+    claim: Axon's data inputs have not been found unlawful or in breach of platform terms
     origin: report:breaker
     severity: breaker
     covers: [regulation, moat]
     pillar: P6
     effective_from: FY2026Q3
-    question: 本期是否有任何政府机构或法院认定公司的数据收集违反隐私法或平台条款，并要求更改 Axon 的数据输入？
-    fail_if: 是
+    question: In this period, did any government agency or court find that the company's data collection violates privacy law or platform terms, and require changes to Axon's data inputs?
+    fail_if: "Yes"
     judge: independent_model
     evidence: required
-    where: 8-K、10-Q 与 10-K 的法律诉讼与风险因素；政府机构与法院的公告
+    where: The legal proceedings and risk factors of the 8-K, 10-Q and 10-K; announcements by government agencies and courts
     lookback: 1
-    judge_notes: 证券集体诉讼本身不等于数据违规认定。
+    judge_notes: A securities class action by itself is not a finding of a data violation.
     first_readable: 2026-10
     baseline:
-      value: SEC 的调查已结束且未建议执法（CFO 的电话会表述，申报文件未披露该调查）；州检察长的询问只见于媒体报道（仅 L2，未见一手数据）
+      value: The SEC investigation has closed with no enforcement action recommended (the CFO's statement on the call, the filings do not disclose the investigation); inquiries by state attorneys general appear only in media reports (L2 only, no primary data seen)
       source: APP-CALL-FY2026Q2#CFO
-    note: "报告第 09 节破坏信号 5（数据违规认定）。2025 年 3 月起的证券集体诉讼仍在进行[src:APP-10Q-FY2026Q2#PartII-Item1]；2026 年二季报后又有一宗（加州北区，案号 26-cv-10584，集体期 2026-02-12 至 2026-08-05，首席原告申请截止 2026-11-16），见原告律所依 PSLRA 发布的公告[src:APP-WEB-2026-09-22-1]，公司的申报文件还没有提到它。"
+    note: "Breaker 5 in section 09 of the report (finding of a data violation). The securities class action pending since March 2025 is still ongoing [src:APP-10Q-FY2026Q2#PartII-Item1]; another was filed after the Q2 2026 report (Northern District of California, case no. 26-cv-10584, class period 2026-02-12 to 2026-08-05, lead-plaintiff deadline 2026-11-16), per the notice a plaintiffs' law firm published under the PSLRA [src:APP-WEB-2026-09-22-1]; the company's filings do not mention it yet."
 
   - id: APP-Q8
     type: quantitative
-    claim: 资本配置没有失控：不做超大并购，也不为并购大幅稀释股东
+    claim: "Capital allocation has not gone out of control: no outsized acquisitions, and no heavy dilution of shareholders for acquisitions"
     origin: report:breaker
     severity: breaker
     covers: [capital_allocation]
@@ -384,83 +384,83 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: acquisition_event
-      description: "本期宣布的收购。"
-      unit: "亿美元 / %（按分量）"
+      description: "Acquisitions announced in the period."
+      unit: "USD 100 million / % (by component)"
       frequency: event
       data: filing_text
-      where: "8-K（Item 1.01、2.01、3.02、8.01）、并购新闻稿、S-4 或合并委托书"
+      where: "8-K (Items 1.01, 2.01, 3.02, 8.01), M&A press releases, S-4 or merger proxy statement"
       components:
-        consideration: {description: 对价, unit: 亿美元}
-        new_shares_pct: {description: 为该并购新发的股份 ÷ 发行前总股本, unit: "%"}
-    fail_if: 宣布对价超过 100 亿美元的收购，或为并购发行超过总股本 5% 的新股
+        consideration: {description: Consideration, unit: USD 100 million}
+        new_shares_pct: {description: New shares issued for the acquisition ÷ total shares outstanding before issuance, unit: "%"}
+    fail_if: An acquisition announced with consideration above $10 billion, or new shares issued for an acquisition exceeding 5% of total shares outstanding
     rule:
       any_of:
-        - {metric: acquisition_event.consideration, op: ">", threshold: 100, unit: 亿美元, period: event}
+        - {metric: acquisition_event.consideration, op: ">", threshold: 100, unit: USD 100 million, period: event}
         - {metric: acquisition_event.new_shares_pct, op: ">", threshold: 5, unit: "%", period: event}
     data: filing_text
     first_readable: 2026-10
     baseline:
       value: 14.6
-      unit: 亿美元
+      unit: USD 100 million
       period: 2022–2026H1
       source: APP-RPT1-2026-09-23#p9
-      note: "2022 年至 2026 年上半年，并购与无形资产购置合计 14.6 亿美元[src:APP-RPT1-2026-09-23#p9]；同期股本从 3.751 亿股（2021-12-31）降到 3.353 亿股（2026-06-30），−10.6%[src:APP-10K-FY2022#Item8][src:APP-10Q-FY2026Q2#Item1]。"
-    note: "报告第 09 节破坏信号 6（资本配置失控）。参照：2022 年 1 月以约 10.3 亿美元（经审计的收购对价，公告约 10.5 亿）收购的 MoPub 并入 MAX[src:APP-10K-FY2022#Note6][src:APP-8K-2022-01-05#Item2.01]。"
+      note: "From 2022 through the first half of 2026, acquisitions and purchases of intangible assets totaled $1.46 billion [src:APP-RPT1-2026-09-23#p9]; over the same period, shares outstanding fell from 375.1 million (2021-12-31) to 335.3 million (2026-06-30), −10.6% [src:APP-10K-FY2022#Item8][src:APP-10Q-FY2026Q2#Item1]."
+    note: "Breaker 6 in section 09 of the report (capital allocation out of control). Reference: MoPub, acquired in January 2022 for about $1.03 billion (the audited purchase consideration, about $1.05 billion as announced), was folded into MAX [src:APP-10K-FY2022#Note6][src:APP-8K-2022-01-05#Item2.01]."
 
   - id: APP-L4
     type: qualitative
-    claim: 定方向和做模型的关键人仍在，交接有内部接替
+    claim: The key people who set direction and build the model are still there, and handovers go to internal successors
     origin: report:breaker
     severity: breaker
     covers: [management, governance]
     pillar: P5
     effective_from: FY2026Q3
-    question: 本期文件是否显示以下任一情形：（a）Foroughi 不再担任 CEO 且没有公开的内部接班安排；（b）截至本期末，Foroughi 实益持有的 A 类与 B 类普通股合计少于 15,178,601.5 股，即 2026 年代理声明持股表所载 30,357,203 股（截至 2026-03-31）的一半[src:APP-DEF14A-2026-04-21#p58]；（c）现任 CTO 离任且没有内部接替？
-    fail_if: 是（任一情形）
+    question: "Do this period's filings show any of the following: (a) Foroughi is no longer CEO and there is no public internal succession arrangement; (b) as of the end of the period, Foroughi beneficially owns fewer than 15,178,601.5 shares of Class A and Class B common stock combined, half of the 30,357,203 shares in the beneficial ownership table of the 2026 proxy statement (as of 2026-03-31) [src:APP-DEF14A-2026-04-21#p58]; (c) the current CTO leaves with no internal successor?"
+    fail_if: Yes (any of the cases)
     judge: independent_model
     evidence: required
-    where: 8-K Item 5.02、Form 4、Schedule 13D/G、DEF 14A
+    where: 8-K Item 5.02, Form 4, Schedule 13D/G, DEF 14A
     lookback: 4
     judge_notes:
-      - （a）（c）只看本期发生的变动；（b）看截至本期末的持有数。
-      - （b）按 SEC 实益持有口径，A 类与 B 类按股数直接相加，B 类不按投票权折算；直接与间接持有都算，投票协议其他当事方的股份不算。
-      - （b）持有数取截至本期末最近一次披露：Form 4 的交易后持有数（各行相加）、Schedule 13D/G，或新一份代理声明的持股表；某一类在所读各期都没有新披露时，沿用 2026 年代理声明所载截至 2026-03-31 的数：A 类 2,420,296 股（含 60 日内归属的 5,059 股 RSU）、B 类 27,936,907 股[src:APP-DEF14A-2026-04-21#p58]。
+      - (a) and (c) consider only changes that occur in the period; (b) looks at holdings as of the end of the period.
+      - "(b) uses the SEC beneficial-ownership basis: Class A and Class B shares are added by share count, with Class B not converted by voting power; direct and indirect holdings both count, shares of the other parties to the voting agreement do not."
+      - "(b) takes holdings from the latest disclosure as of the end of the period: holdings after the transaction on Form 4 (summing the rows), Schedule 13D/G, or the ownership table of a new proxy statement; when a class has no new disclosure in any period read, use the figures as of 2026-03-31 in the 2026 proxy statement: Class A 2,420,296 shares (including 5,059 RSUs vesting within 60 days), Class B 27,936,907 shares [src:APP-DEF14A-2026-04-21#p58]."
     first_readable: 2026-10
     baseline:
-      value: Giovanni Ge 2022 年 11 月入职，2026-07-01 起任首席技术官；Foroughi 个人投票权 61.6%（截至 2026-03-31）；公司为纳斯达克规则下的受控公司，但公司称不援用相关豁免
+      value: Giovanni Ge joined in November 2022 and has been Chief Technology Officer since 2026-07-01; Foroughi's personal voting power is 61.6% (as of 2026-03-31); the company is a controlled company under Nasdaq rules but says it does not rely on the related exemptions
       source: APP-DEF14A-2026-04-21#p58
-      note: "Ge 的入职时间与接任见交接公告[src:APP-8K-2026-04-07#EX-99.1]，接任日以 Form 3 为准[src:APP-FORM3-2026-07-02]；受控公司与不援用豁免见委托书[src:APP-DEF14A-2026-04-21#p17][src:APP-DEF14A-2026-04-21#p55]。"
-    note: "报告第 09 节破坏信号 7（关键人离场）。公司在交接公告里称 Ge 主导了 Axon 2.0 的开发[src:APP-8K-2026-04-07#EX-99.1]。2026-09-24 改写（b）：报告原文“持股降至 2026 年代理声明所载的一半以下”没有写明基数，现按该代理声明的持股表写明：截至 2026-03-31，Foroughi 实益持有 A 类 2,420,296 股、B 类 27,936,907 股，合计 30,357,203 股，门槛为其一半[src:APP-DEF14A-2026-04-21#p58]。本条自 FY2026Q3 起生效，改写时还没有任何一期按它判定过。"
+      note: "Ge's start date and appointment are in the transition announcement [src:APP-8K-2026-04-07#EX-99.1], with the Form 3 governing the date he took office [src:APP-FORM3-2026-07-02]; the controlled-company status and the non-reliance on the exemptions are in the proxy statement [src:APP-DEF14A-2026-04-21#p17][src:APP-DEF14A-2026-04-21#p55]."
+    note: "Breaker 7 in section 09 of the report (key people leaving). In the transition announcement the company says Ge led the development of Axon 2.0 [src:APP-8K-2026-04-07#EX-99.1]. (b) was rewritten on 2026-09-24: the report's original wording, \"holdings fall below half of those in the 2026 proxy statement\", did not state the base, which is now written out from that proxy statement's ownership table: as of 2026-03-31, Foroughi beneficially owned 2,420,296 Class A shares and 27,936,907 Class B shares, 30,357,203 in total, and the threshold is half of that [src:APP-DEF14A-2026-04-21#p58]. This test is in effect from FY2026Q3; no period had been judged under it when it was rewritten."
 
   - id: APP-L5
     type: qualitative
-    claim: 供给侧的聚合层没有流失
+    claim: There is no attrition at the supply-side aggregation layer
     origin: report:breaker
     severity: breaker
     covers: [moat, competition]
     pillar: P3
     effective_from: FY2026Q3
-    question: （a）最近两个季度，公司披露的 MAX 发布商收入是否都是环比下降；或者（b）最近四个季度内，是否已有三家以上头部发行商（Sensor Tower 最近一期年度游戏报告所列上一年全球手游发行商收入前 10 名或下载量前 10 名）公开表示已把旗下游戏的广告聚合从 MAX 换到其他平台？
-    fail_if: 是（任一情形）
+    question: (a) In each of the last two quarters, did MAX publisher revenue as disclosed by the company fall quarter on quarter; or (b) within the last four quarters, have three or more top publishers (the top 10 global mobile game publishers by revenue or the top 10 by downloads for the previous year, as listed in Sensor Tower's latest annual gaming report) publicly said they have moved the ad mediation of their games from MAX to another platform?
+    fail_if: Yes (any of the cases)
     judge: independent_model
     evidence: required
-    where: 业绩新闻稿（8-K Item 2.02 附件 99.1）、10-Q MD&A、业绩电话会逐字稿；头部发行商及其母公司的新闻稿、官方博客、年报与交易所公告；Sensor Tower 最近一期年度游戏报告（2026 年版为《State of Gaming 2026》）的全球手游发行商排行
+    where: Earnings press releases (8-K Item 2.02, Exhibit 99.1), 10-Q MD&A, earnings call transcripts; press releases, official blogs, annual reports and exchange announcements of the top publishers and their parent companies; the global mobile game publisher rankings in Sensor Tower's latest annual gaming report (the 2026 edition is State of Gaming 2026)
     lookback: 4
     judge_notes:
-      - （a）只认公司自己的表述；公司只给方向性描述、不给数值时按方向判定；公司不再描述、无从判断方向时，（a）记为 undetermined。
-      - （b）头部发行商按集团计：旗下工作室并入集团，同一集团只算一家；取不到所述排行时，（b）记为 undetermined，并写明缺什么。
-      - （b）只认发行商本人或其母公司的公开表述（新闻稿、官方博客、年报或交易所公告、高管的公开发言）；只有媒体报道或其他第三方说法的不计。
-      - “三家以上”含三家。
+      - (a) counts only the company's own statements; when the company gives only a directional description without numbers, judge by direction; when the company stops describing it and the direction cannot be judged, record (a) as undetermined.
+      - "(b) counts top publishers by group: studios are counted with their group, and one group counts once; when the ranking described cannot be obtained, record (b) as undetermined and state what is missing."
+      - (b) counts only public statements by the publisher itself or its parent company (press releases, official blogs, annual reports or exchange announcements, public remarks by executives); media reports or other third-party claims alone do not count.
+      - "\"Three or more\" includes three."
     first_readable: 2026-11
     baseline:
-      value: 公司称 FY2026Q2 MAX 发布商收入环比两位数增长、在竞价瀑布中的份额稳定（公司电话会口径，申报文件未披露）
+      value: The company says MAX publisher revenue grew by double digits quarter on quarter in FY2026Q2 and its share of the bidding waterfall was stable (per the company's earnings call, not disclosed in filings)
       source: APP-CALL-FY2026Q2#CEO
-    note: "报告第 09 节破坏信号 8（聚合层流失）。CloudX 由 MoPub 与 MAX 的创始人（Jim Payne、Dan Sack）带两家原团队的核心成员组建，2025-11-13 宣布上线，Meta 是首发接入方之一（另有 Liftoff、Magnite）[src:APP-WEB-2025-11-13-1]。2026-09-24 改写（b）：报告原文“三家以上头部发行商公开改用其他聚合平台”没有定义头部发行商，也没有时间窗，照原写法每季都无法判定；现以 Sensor Tower 年度游戏报告的发行商收入前 10 名与下载量前 10 名界定头部，时间窗取最近四个季度，只认发行商本人或其母公司的公开表述。本条自 FY2026Q3 起生效，改写时还没有任何一期按它判定过。登记时找不到可以引用、可以冻结的头部发行商名单：报告没有列出；Sensor Tower 的公开网页（H1 2026 游戏市场指数、State of Gaming 2026 与 State of Mobile 2026 的介绍页、每月全球手游前十榜）只有游戏榜和 PC／主机发行商榜，手游发行商排行只在要申请下载的完整报告里，判定员每季打不开。所以（b）保留上面的写法，取不到排行即记为 undetermined；拿到可引用的名单后，另写一条列明名单的新测试并 supersedes 本条。"
+    note: "Breaker 8 in section 09 of the report (attrition at the aggregation layer). CloudX was formed by the founders of MoPub and MAX (Jim Payne, Dan Sack) with core members of both original teams and announced its launch on 2025-11-13; Meta is one of its launch partners (along with Liftoff and Magnite) [src:APP-WEB-2025-11-13-1]. (b) was rewritten on 2026-09-24: the report's original wording, \"three or more top publishers publicly switch to other aggregation platforms\", defined neither top publishers nor a time window, so as written it could not be judged in any quarter; top publishers are now defined by the top 10 publishers by revenue and the top 10 by downloads in Sensor Tower's annual gaming report, the time window is the last four quarters, and only public statements by the publisher itself or its parent company count. This test is in effect from FY2026Q3; no period had been judged under it when it was rewritten. At registration no citable list of top publishers that could be frozen was found: the report lists none; Sensor Tower's public web pages (the H1 2026 games market index, the landing pages of State of Gaming 2026 and State of Mobile 2026, the monthly global top-ten mobile games charts) have only game charts and PC/console publisher rankings, and the mobile game publisher rankings are only in the full reports, which require a download request and which the judge cannot open each quarter. So (b) keeps the wording above and is recorded as undetermined when the ranking cannot be obtained; once a citable list is available, write a new test that names the list and supersedes this one."
 
-  # ── 每季的五个指标（报告第 09 节；fail = 警戒线，warn = 未达健康线）──
+  # ── The five quarterly indicators (section 09 of the report; fail = alert line, warn = healthy line not met) ──
   - id: APP-Q9
     type: quantitative
-    claim: 模型节奏还在：收入兑现自己给的指引
+    claim: "The model cadence holds: revenue delivers on the company's own guidance"
     origin: report:watch
     severity: watch
     covers: [growth, management]
@@ -468,20 +468,20 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: guidance_delivery
-      description: "收入对指引的兑现。"
-      unit: "% / pp（按分量）"
+      description: "Delivery of revenue against guidance."
+      unit: "% / pp (by component)"
       frequency: quarter
       data: filing_text
-      where: 本季与上一季的业绩新闻稿（8-K Item 2.02 附件 99.1）；四季度收入由 10-K 全年数减前三季
+      where: This quarter's and the previous quarter's earnings press releases (8-K Item 2.02, Exhibit 99.1); Q4 revenue is the 10-K full-year figure less the first three quarters
       components:
-        vs_mid: {description: 当季收入 ÷ 上一季业绩新闻稿给出的本季收入指引区间中值 − 1, unit: "%"}
-        q4_qoq_accel: {description: 四季度收入环比增速减三季度收入环比增速（只在四季度读）, unit: pp}
-    fail_if: 连续两季低于指引中值，或同比跌破 20%
+        vs_mid: {description: Quarterly revenue ÷ the midpoint of the revenue guidance range for the quarter given in the previous quarter's earnings press release − 1, unit: "%"}
+        q4_qoq_accel: {description: Q4 revenue growth quarter on quarter minus Q3 revenue growth quarter on quarter (read in Q4 only), unit: pp}
+    fail_if: Below the guidance midpoint for two consecutive quarters, or year-on-year growth below 20%
     rule:
       any_of:
         - {metric: guidance_delivery.vs_mid, op: "<", threshold: 0, unit: "%", consecutive: 2, period: quarter}
         - {metric: revenue_yoy, op: "<", threshold: 20, unit: "%", consecutive: 1, period: quarter}
-    warn_if: "单季收入低于指引中值；或四季度旺季收入环比没有比三季度再加速（健康线：三季度落在 20.55–20.85 亿美元、不低于中值，四季度旺季环比再加速[src:APP-RPT1-2026-09-23#p15]）"
+    warn_if: "Revenue in a single quarter below the guidance midpoint; or Q4 peak-season revenue growth quarter on quarter not re-accelerating from Q3 (healthy line: Q3 within $2.055–2.085 billion and not below the midpoint, and Q4 peak-season quarter-on-quarter growth re-accelerating [src:APP-RPT1-2026-09-23#p15])"
     warn_rule:
       any_of:
         - {metric: guidance_delivery.vs_mid, op: "<", threshold: 0, unit: "%", consecutive: 1, period: quarter}
@@ -490,16 +490,16 @@ tests:
     first_readable: 2026-11
     baseline:
       value: [19.24, 19.15, 19.45]
-      unit: 亿美元
+      unit: USD 100 million
       period: 2026Q2
       as_of: 2026-06-30
       source: APP-8K-2026-08-05#EX-99.1
-      note: "依次为 FY2026Q2 实际收入、指引下限、指引上限；指引见上一季的业绩新闻稿[src:APP-8K-2026-05-06#EX-99.1]；实际低于中值。"
-    note: "报告第 09 节每季指标 1（收入与指引兑现）。二季度调整后 EBITDA 16.14 亿美元，也低于指引下限 16.15 亿美元，这是 2022 年改为只给季度指引以来的第一次[src:APP-RPT1-2026-09-23#p9]。"
+      note: "In order: FY2026Q2 actual revenue, low end of guidance, high end of guidance; the guidance is in the previous quarter's earnings press release [src:APP-8K-2026-05-06#EX-99.1]; actual revenue was below the midpoint."
+    note: "Quarterly indicator 1 in section 09 of the report (revenue and delivery on guidance). Q2 adjusted EBITDA of $1.614 billion was also below the low end of guidance, $1.615 billion, the first time since the company moved to quarterly-only guidance in 2022 [src:APP-RPT1-2026-09-23#p9]."
 
   - id: APP-Q10
     type: quantitative
-    claim: 单价与安装量至少有一个站得住
+    claim: At least one of price per install and installs is holding up
     origin: report:watch
     severity: watch
     covers: [pricing_power, unit_economics]
@@ -507,21 +507,21 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: axon_unit_drivers_yoy
-      description: "公司披露的两个收入驱动量（安装量、每次安装净收入）的同比，只描述需求侧的 AppLovin Ads（原 Axon Ads Manager）这一条产品线。归属名称：2025 年二季度 10-Q 仍为 AppDiscovery，三季度 10-Q 为 Axon Advertising，FY2025 10-K 与 2026 年一季度 10-Q 为 Axon Ads Manager，2026 年二季度 10-Q 起为 AppLovin Ads；申报文件没有另作改名说明，两个驱动量的披露方式没有变[src:APP-10Q-FY2025Q2#Item2][src:APP-10Q-FY2025Q3#Item2][src:APP-10K-FY2025#Item7][src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]。四季度不单列，年报只给全年[src:APP-10K-FY2025#Item7]。"
+      description: "Year-on-year change in the two revenue drivers the company discloses (installs, net revenue per install), which describe only one product line, the demand-side AppLovin Ads (formerly Axon Ads Manager). Name under which they are reported: still AppDiscovery in the Q2 2025 10-Q, Axon Advertising in the Q3 10-Q, Axon Ads Manager in the FY2025 10-K and the Q1 2026 10-Q, and AppLovin Ads from the Q2 2026 10-Q on; the filings give no separate explanation of the renaming, and the way the two drivers are disclosed has not changed [src:APP-10Q-FY2025Q2#Item2][src:APP-10Q-FY2025Q3#Item2][src:APP-10K-FY2025#Item7][src:APP-10Q-FY2026Q1#Item2][src:APP-10Q-FY2026Q2#Item2]. Q4 is not reported separately; the annual report gives only the full year [src:APP-10K-FY2025#Item7]."
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 10-Q MD&A 的关键指标；全年数在 10-K
+      where: Key metrics in the 10-Q MD&A; full-year figures are in the 10-K
       components:
-        installs: {description: 广告带来的安装量（同比）, unit: "%"}
-        net_revenue_per_install: {description: 每次安装净收入（单价，同比）, unit: "%"}
-    fail_if: 安装量连续两季低于 −10%，同时单价增速 < 20%
+        installs: {description: Installs driven by ads (YoY), unit: "%"}
+        net_revenue_per_install: {description: "Net revenue per install (price per install, YoY)", unit: "%"}
+    fail_if: Installs below −10% for two consecutive quarters, and at the same time growth in price per install < 20%
     rule:
       all_of:
         - {metric: axon_unit_drivers_yoy.installs, op: "<", threshold: -10, unit: "%", consecutive: 2, period: quarter}
         - {metric: axon_unit_drivers_yoy.net_revenue_per_install, op: "<", threshold: 20, unit: "%", consecutive: 2, period: quarter}
-      note: “同时”按同样的连续两个季度理解。
-    warn_if: 单价增速低于 30%，且安装量没有回到正增长（健康线：单价增速 ≥ 30%，或安装量回到正增长）
+      note: "\"At the same time\" means in the same two consecutive quarters."
+    warn_if: "Growth in price per install below 30%, and installs not back to positive growth (healthy line: growth in price per install ≥ 30%, or installs back to positive growth)"
     warn_rule:
       all_of:
         - {metric: axon_unit_drivers_yoy.net_revenue_per_install, op: "<", threshold: 30, unit: "%", consecutive: 1, period: quarter}
@@ -534,12 +534,12 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: APP-10Q-FY2026Q2#Item2
-      note: "依次为安装量同比、单价同比。三季度指引隐含的单价增速约 46%–52%，条件是安装量在 −2% 至 0%、恒等式偏差维持上半年水平[src:APP-RPT1-2026-09-23#p5]。"
-    note: "报告第 09 节每季指标 2（单价与安装量）。四季度的安装量与单价不单列[src:APP-RPT1-2026-09-23#p5]，含四季度的窗口按 10-K 全年数推算，推算不出记为 undetermined。"
+      note: "In order: installs YoY, price per install YoY. The Q3 guidance implies growth in price per install of about 46%–52%, assuming installs at −2% to 0% and the gap in the identity staying at its first-half level [src:APP-RPT1-2026-09-23#p5]."
+    note: "Quarterly indicator 2 in section 09 of the report (price per install and installs). Q4 installs and price per install are not reported separately [src:APP-RPT1-2026-09-23#p5]; windows that include Q4 are derived from the 10-K full-year figures and recorded as undetermined when they cannot be derived."
 
   - id: APP-Q11
     type: quantitative
-    claim: 现金转换守在报告基准情景假设的水平上
+    claim: Cash conversion holds at the level assumed in the report's base case
     origin: report:watch
     severity: watch
     covers: [free_cash_flow]
@@ -547,15 +547,15 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: owner_fcf_margin_ttm
-      description: 过去四个季度的所有者自由现金流（自由现金流减股权激励）÷ 同期收入；自由现金流按公司业绩新闻稿的口径
+      description: Owner free cash flow over the past four quarters (free cash flow less stock-based compensation) ÷ revenue over the same period; free cash flow as defined in the company's earnings press releases
       unit: "%"
       frequency: quarter
       data: xbrl
       xbrl: [us-gaap:NetCashProvidedByUsedInOperatingActivities, us-gaap:PaymentsToAcquirePropertyPlantAndEquipment, us-gaap:ShareBasedCompensation, us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax, us-gaap:Revenues]
       formula: "sum_4q(operating_cash_flow - capex - stock_based_compensation) / sum_4q(revenue)"
-    fail_if: TTM 低于 55%
+    fail_if: TTM below 55%
     rule: {op: "<", threshold: 55, unit: "%", consecutive: 1, period: quarter}
-    warn_if: "全年（四季度末的 TTM）低于 58%（健康线：全年不低于报告基准情景的起点 58%，即下半年所有者自由现金流约 27.7 亿美元、占下半年收入约 63%[src:APP-RPT1-2026-09-23#p15]）"
+    warn_if: "Full year (TTM at the end of Q4) below 58% (healthy line: the full year not below 58%, the starting point of the report's base case, i.e. second-half owner free cash flow of about $2.77 billion, about 63% of second-half revenue [src:APP-RPT1-2026-09-23#p15])"
     warn_rule: {op: "<", threshold: 58, unit: "%", consecutive: 1, period: year, evaluate_on: [FY2026]}
     data: xbrl
     first_readable: 2026-11
@@ -565,12 +565,12 @@ tests:
       period: TTM
       as_of: 2026-06-30
       source: APP-8K-2026-08-05#EX-99.1
-      note: "自算，与报告的约 62% 一致[src:APP-RPT1-2026-09-23#p15]：TTM（FY2025Q3–FY2026Q2）自由现金流 45.08 亿美元减股权激励 2.84 亿，除以收入 68.29 亿，得 61.9%；三项都按 FY2025 全年减 2025 年上半年、加 2026 年上半年计算[src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]。"
-    note: "报告第 09 节每季指标 3（所有者自由现金流率）。管理层的全年自由现金流指引约为调整后 EBITDA 的 75%（公司电话会口径）[src:APP-CALL-FY2026Q2#CFO]，报告按全年估计约 51 亿美元[src:APP-RPT1-2026-09-23#p6]，上半年已有约 21.5 亿美元[src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]。"
+      note: "Own calculation, consistent with the report's about 62% [src:APP-RPT1-2026-09-23#p15]: TTM (FY2025Q3–FY2026Q2) free cash flow of $4.508 billion less stock-based compensation of $284 million, divided by revenue of $6.829 billion, gives 61.9%; all three are computed as FY2025 full year minus the first half of 2025 plus the first half of 2026 [src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]."
+    note: "Quarterly indicator 3 in section 09 of the report (owner free cash flow margin). Management's full-year free cash flow guidance is about 75% of adjusted EBITDA (per the company's earnings call) [src:APP-CALL-FY2026Q2#CFO]; the report estimates about $5.1 billion for the full year [src:APP-RPT1-2026-09-23#p6], of which about $2.15 billion came in the first half [src:APP-8K-2026-05-06#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]."
 
   - id: APP-Q12
     type: quantitative
-    claim: 对手的加速没有持续压过 APP 自己的节奏
+    claim: Rivals' acceleration is not persistently outpacing APP's own cadence
     origin: report:watch
     severity: watch
     covers: [competition, moat]
@@ -578,22 +578,22 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: vector_speed_gap
-      description: "APP 与 Unity Vector 的速度差。"
-      unit: "% / pp（按分量）"
+      description: "The speed gap between APP and Unity's Vector."
+      unit: "% / pp (by component)"
       frequency: quarter
       data: mixed
-      where: Unity 季度业绩新闻稿与电话会；APP 本季与上一季的业绩新闻稿
+      where: Unity's quarterly earnings press releases and calls; APP's earnings press releases for this quarter and the previous one
       components:
-        vector_qoq: {description: Vector 收入环比（Unity 口径）, unit: "%", where: Unity 季度业绩电话会与新闻稿（电话会不是 SEC 文件）}
-        app_vs_mid: {description: APP 当季收入 ÷ 上一季给出的指引中值 − 1, unit: "%", where: APP 本季与上一季的业绩新闻稿（8-K Item 2.02 附件 99.1）}
-        gap_change: {description: 本季速度差（Vector 环比 − APP 收入环比）减上季速度差, unit: pp}
-    fail_if: Vector 环比保持两位数，同时 APP 收入环比连续两季低于指引中值
+        vector_qoq: {description: Vector revenue quarter on quarter (Unity's figures), unit: "%", where: Unity's quarterly earnings calls and press releases (calls are not SEC filings)}
+        app_vs_mid: {description: APP's quarterly revenue ÷ the guidance midpoint given in the previous quarter − 1, unit: "%", where: "APP's earnings press releases for this quarter and the previous one (8-K Item 2.02, Exhibit 99.1)"}
+        gap_change: {description: This quarter's speed gap (Vector QoQ − APP revenue QoQ) minus last quarter's speed gap, unit: pp}
+    fail_if: Vector's quarter-on-quarter growth stays in double digits, and at the same time APP's quarter-on-quarter revenue falls short of the guidance midpoint for two consecutive quarters
     rule:
       all_of:
         - {metric: vector_speed_gap.vector_qoq, op: ">=", threshold: 10, unit: "%", consecutive: 2, period: quarter}
         - {metric: vector_speed_gap.app_vs_mid, op: "<", threshold: 0, unit: "%", consecutive: 2, period: quarter}
-      note: “保持两位数”按同样的连续两个季度都达到两位数理解。
-    warn_if: 速度差没有收窄，或 APP 收入环比低于指引中值（健康线：速度差收窄；APP 收入环比不低于指引中值）
+      note: "\"Stays in double digits\" means double digits in each of the same two consecutive quarters."
+    warn_if: "The speed gap does not narrow, or APP's quarter-on-quarter revenue is below the guidance midpoint (healthy line: the speed gap narrows; APP's quarter-on-quarter revenue is not below the guidance midpoint)"
     warn_rule:
       any_of:
         - {metric: vector_speed_gap.gap_change, op: ">=", threshold: 0, unit: pp, consecutive: 1, period: quarter}
@@ -606,35 +606,35 @@ tests:
       period: 2026Q2
       as_of: 2026-06-30
       source: APP-8K-2026-08-05#EX-99.1
-      note: "依次为 APP 收入环比（1,923,686 ÷ 1,842,449 千美元 − 1）、Vector 环比；APP 三季度指引中值对应环比 +7.6%（20.70 ÷ 19.24 − 1）[src:APP-8K-2026-08-05#EX-99.1]。Vector 的 +23% 与三季度 +19%–21% 只在 Unity 二季度电话会上口头给出，不是书面指引（Unity 电话会口径，申报文件未披露）[src:U-CALL-FY2026Q2]；Unity 申报的战略增长收入二季度 3.290 亿美元、环比 +18.0%，三季度指引 3.80–3.85 亿、环比 +15.5%–17.0%[src:U-8K-2026-08-06#EX-99.1][src:U-8K-2026-05-07#EX-99.1]，与 Vector 环比不是同一口径。"
-    note: "报告第 09 节每季指标 4（与 Vector 的速度差）。公司不拆分游戏与非游戏收入，这一行用总收入代替[src:APP-RPT1-2026-09-23#p15]。Vector 的增量里有多少来自 ironSource 迁移、多少从 APP 或其他渠道抢来，现有数据无法区分[src:APP-RPT1-2026-09-23#p7]。"
+      note: "In order: APP revenue quarter on quarter (1,923,686 ÷ 1,842,449 thousand USD − 1), Vector quarter on quarter, and APP's Q3 guidance midpoint implies +7.6% quarter on quarter (20.70 ÷ 19.24 − 1) [src:APP-8K-2026-08-05#EX-99.1]. Vector's +23% and the Q3 +19%–21% were given only orally on Unity's Q2 call and are not written guidance (per Unity's earnings call, not disclosed in filings) [src:U-CALL-FY2026Q2]; Unity's reported strategic growth revenue was $329.0 million in Q2, +18.0% quarter on quarter, with Q3 guidance of $380–385 million, +15.5%–17.0% quarter on quarter [src:U-8K-2026-08-06#EX-99.1][src:U-8K-2026-05-07#EX-99.1], which is not the same basis as Vector's quarter-on-quarter growth."
+    note: "Quarterly indicator 4 in section 09 of the report (the speed gap with Vector). The company does not split gaming and non-gaming revenue, so this line uses total revenue instead [src:APP-RPT1-2026-09-23#p15]. How much of Vector's increase comes from the ironSource migration and how much is taken from APP or other channels cannot be told apart with the data available [src:APP-RPT1-2026-09-23#p7]."
 
   - id: APP-L6
     type: qualitative
-    claim: 电商（非游戏广告主）在变成可以量化的第二条曲线
+    claim: E-commerce (non-gaming advertisers) is becoming a second curve that can be quantified
     origin: report:watch
     severity: watch
     covers: [growth]
     pillar: P4
     effective_from: FY2026Q3
-    question: 最近两个季度的业绩新闻稿、10-Q 与业绩电话会中，公司是否都没有给出电商（消费类广告主）业务的任何量化读数？
-    fail_if: 是（连续两季不再量化）；或 Haus 跑赢当季中位效率的比例连续两季低于 50%、且测过的品牌不再加投
-    warn_if: 公司仍未披露消费类占比，或四季度旺季环比没有加速（健康线：公司开始披露消费类占比；四季度旺季环比加速）
+    question: In the earnings press releases, 10-Qs and earnings calls of each of the last two quarters, did the company give no quantified reading at all on the e-commerce (consumer advertiser) business?
+    fail_if: Yes (no longer quantified for two consecutive quarters); or the share of Haus tests beating the quarter's median efficiency below 50% for two consecutive quarters, and brands that have tested it no longer increasing spend
+    warn_if: "The company still does not disclose the consumer share, or Q4 peak-season growth quarter on quarter does not accelerate (healthy line: the company starts disclosing the consumer share; Q4 peak-season quarter-on-quarter growth accelerates)"
     judge: independent_model
     evidence: required
-    where: 业绩新闻稿（8-K Item 2.02 附件 99.1）、10-Q MD&A、业绩电话会逐字稿；Haus 分支读 Haus 公开的季度数据（二手、利益相关方，只作旁证）
+    where: Earnings press releases (8-K Item 2.02, Exhibit 99.1), 10-Q MD&A, earnings call transcripts; the Haus branch reads Haus's published quarterly data (secondary, an interested party, corroboration only)
     lookback: 2
-    judge_notes: Haus 分支要两个条件同时成立：跑赢当季中位效率的比例连续两季低于 50%，且测过的品牌不再加投。
+    judge_notes: "The Haus branch requires both conditions at once: the share of tests beating the quarter's median efficiency below 50% for two consecutive quarters, and brands that have tested it no longer increasing spend."
     first_readable: 2026-11
     baseline:
-      value: FY2026Q2 消费类广告主支出较 FY2025Q4 +28%（公司电话会口径，申报文件未披露）
+      value: FY2026Q2 consumer advertiser spend +28% versus FY2025Q4 (per the company's earnings call, not disclosed in filings)
       source: APP-CALL-FY2026Q2#CEO
-    note: "报告第 09 节每季指标 5（电商的量化进展）。Haus 统计的 AppLovin 测试跑赢当季中位效率的比例，2026 年一、二季度为 53% 与 50%[src:APP-WEB-2026-06-18-1]；这篇博文发表于 2026-06-18，二季度尚未结束，文中写的数据窗口是 2025 年 1 月至 2026 年 3 月——仅 L2，未见一手数据，只作旁证。Haus 同时是公司官网案例的合作测量方，属利益相关方[src:APP-RPT1-2026-09-23#p11]。"
+    note: "Quarterly indicator 5 in section 09 of the report (quantified progress in e-commerce). By Haus's count, the share of AppLovin tests beating the quarter's median efficiency was 53% and 50% in Q1 and Q2 2026 [src:APP-WEB-2026-06-18-1]; the blog post was published on 2026-06-18, before Q2 had ended, and the data window it states is January 2025 to March 2026, so this is L2 only, no primary data seen, and serves as corroboration only. Haus is also the measurement partner in the case studies on the company's website, so it is an interested party [src:APP-RPT1-2026-09-23#p11]."
 
-  # ── 升回条件（报告第 05 节：生意从 B+ 回到 A− 的条件）──
+  # ── Conditions for upgrading back (section 05 of the report: conditions for the business to return from B+ to A−) ──
   - id: APP-Q13
     type: quantitative
-    claim: 模型节奏是制度性的、不依赖特定的人
+    claim: The model cadence is institutional and does not depend on particular people
     origin: report:watch
     severity: watch
     covers: [moat, management]
@@ -642,17 +642,17 @@ tests:
     effective_from: FY2026Q3
     metric_def:
       id: upgrade_check
-      description: "报告第 05 节的升回条件。"
-      unit: "% / pp（按分量）"
+      description: "The conditions for upgrading back in section 05 of the report."
+      unit: "% / pp (by component)"
       frequency: quarter
       data: filing_text
-      where: 2026 年三、四季度的业绩新闻稿与 10-Q、FY2026 10-K；CTO 是否在任以 8-K Item 5.02 为准
+      where: Earnings press releases and 10-Qs for Q3 and Q4 2026, and the FY2026 10-K; whether the CTO is in office is governed by 8-K Item 5.02
       components:
-        vs_mid: {description: 当季收入 ÷ 上一季给出的指引中值 − 1（读 2026 年三、四季度）, unit: "%"}
-        q4_qoq_accel: {description: 四季度收入环比增速减三季度收入环比增速, unit: pp}
-        installs: {description: 安装量同比（读三季度 10-Q，四季度不单列）, unit: "%"}
-        net_revenue_per_install: {description: 每次安装净收入（单价）同比（读三季度 10-Q，四季度不单列）, unit: "%"}
-    fail_if: 新 CTO 在任的 2026 年三、四季度中任一季收入低于指引中值；或四季度旺季收入环比没有比三季度再加速；或安装量同比低于零且单价增速低于 30%
+        vs_mid: {description: Quarterly revenue ÷ the guidance midpoint given in the previous quarter − 1 (read for Q3 and Q4 2026), unit: "%"}
+        q4_qoq_accel: {description: Q4 revenue growth quarter on quarter minus Q3 revenue growth quarter on quarter, unit: pp}
+        installs: {description: "Installs YoY (read from the Q3 10-Q; Q4 is not reported separately)", unit: "%"}
+        net_revenue_per_install: {description: "Net revenue per install (price per install) YoY (read from the Q3 10-Q; Q4 is not reported separately)", unit: "%"}
+    fail_if: Revenue below the guidance midpoint in either Q3 or Q4 2026 with the new CTO in office; or Q4 peak-season revenue growth quarter on quarter not re-accelerating from Q3; or installs below zero year on year with growth in price per install below 30%
     rule:
       any_of:
         - {metric: upgrade_check.vs_mid, op: "<", threshold: 0, unit: "%", consecutive: 1, period: quarter}
@@ -662,26 +662,26 @@ tests:
             - {metric: upgrade_check.net_revenue_per_install, op: "<", threshold: 30, unit: "%", consecutive: 1, period: quarter}
           evaluate_on: [FY2026Q3]
       evaluate_on: [FY2026Q3, FY2026Q4]
-      note: 只读 2026 年三、四季度（新 CTO Giovanni Ge 自 2026-07-01 在任[src:APP-8K-2026-04-07#EX-99.1][src:APP-FORM3-2026-07-02]）；安装量与单价一支读三季度 10-Q，FY2026 10-K 的全年数只作参照。
+      note: Read only Q3 and Q4 2026 (the new CTO, Giovanni Ge, in office since 2026-07-01 [src:APP-8K-2026-04-07#EX-99.1][src:APP-FORM3-2026-07-02]); the installs and price-per-install branch reads the Q3 10-Q, with the FY2026 10-K full-year figures for reference only.
     data: filing_text
     first_readable: 2026-11
     baseline:
-      value: FY2026Q2（新 CTO 上任前）收入 19.24 亿美元，低于指引中值；安装量同比 −2%，单价同比 +58%
+      value: FY2026Q2 (before the new CTO took office) revenue $1.924 billion, below the guidance midpoint; installs −2% year on year, price per install +58% year on year
       source: APP-8K-2026-08-05#EX-99.1
-      note: "指引见上一季的业绩新闻稿[src:APP-8K-2026-05-06#EX-99.1]；安装量与单价见 10-Q 的 MD&A[src:APP-10Q-FY2026Q2#Item2]。"
-    note: "来自报告第 05 节的升回条件，不是第 09 节的五个指标之一：通过即提交生意评级复核（B+ 到 A−），失败只表示生意维持 B+。报告第 11 节补充：模型读法占上风（单价稳住而消费类占比没有跳升、发布商收入增速不低于 APP）时才按这一条升格[src:APP-RPT1-2026-09-23#p17]。"
+      note: "Guidance is in the previous quarter's earnings press release [src:APP-8K-2026-05-06#EX-99.1]; installs and price per install are in the 10-Q MD&A [src:APP-10Q-FY2026Q2#Item2]."
+    note: "From the conditions for upgrading back in section 05 of the report, not one of the five indicators of section 09: a pass sends the business rating for review (B+ to A−); a fail only means the business stays at B+. Section 11 of the report adds that the upgrade under this test applies only when the model reading prevails (price per install holds while the consumer share does not jump, and publisher revenue grows no slower than APP) [src:APP-RPT1-2026-09-23#p17]."
 
 todo:
-  - "企业文化评级按报告留空，不作中性处理：报告写明可核对的只有人效（2025 年末 898 人，人均收入约 610 万美元）与费用结构，员工评价近一年只有约 7 条，内部留存与晋升不披露[src:APP-RPT1-2026-09-23#p1]；等有一手证据（委托书、10-K 人力资本一节的新披露）再评。"
-  - "四季度的安装量与每次安装净收入不单独披露[src:APP-RPT1-2026-09-23#p5]：APP-Q5、APP-Q7、APP-Q10 在含四季度的窗口里需用 10-K 全年数与前三季推算，推算不出记为 undetermined；首次读 FY2026 10-K 时确认披露口径。"
-  - "APP-Q3 的基准读数已按一手补上：净负债约 4.97 亿美元（优先票据本金 35.50 亿 − 现金 30.53 亿；按账面长期债务 35.15 亿计为 4.62 亿）÷ TTM 自由现金流 45.08 亿 ≈ 0.11 倍[src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1][src:APP-8K-2026-08-05#EX-99.1]；报告写的净负债约 6.47 亿（债务本金约 37 亿）有误，不再引用[src:APP-RPT1-2026-09-23#p13]。首次按指标定义（经营现金流减资本开支，XBRL）计算时，记录与公司口径（另扣融资租赁本金）的差异。"
-  - "APP-Q6、APP-Q11 的所有者自由现金流 = 公司口径自由现金流减股权激励。公司口径是经营现金流减购置物业设备与融资租赁本金[src:APP-8K-2026-02-11#EX-99.1]；FY2025 的公司口径自由现金流含 2025 年上半年已终止经营的应用业务，公司没有披露其中终止经营的部分（未知：含 2025 年上半年的窗口口径不纯）。首次计算时核对与 XBRL 重算的差异，并确认股权激励取哪个 XBRL 概念（现金流量表与调整后 EBITDA 调节表的数不同）。"
-  - "APP-Q4 用 spec 的 roic 口径（权益 + 有息负债 − 现金），与报告口径可能不同：报告是截至 2026-06-30 的 TTM 税后营业利润 41.3–45.0 亿美元（TTM 营业利润 52.88 亿，按约 22% 与 15% 两个税率）÷ 截至 2026-06-30 的投入资本 33.4 亿美元，报告没有写税率与投入资本的定义[src:APP-RPT1-2026-09-23#p6][src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]；首次计算时记录差异。"
-  - "MAX 发布商收入公司只给方向性描述（FY2026Q2 环比两位数增长），没有数值（公司电话会口径）[src:APP-CALL-FY2026Q2#CEO]；APP-L5 与报告第 11 节的“抽成”读法都依赖公司继续描述，停止描述时记为 undetermined。"
-  - "APP-L6 的 Haus 分支依赖利益相关方的二手数据[src:APP-RPT1-2026-09-23#p11]，不在公司文件里；需要定下每季读取 Haus 数据的途径，读不到时该分支记为 undetermined。"
-  - "APP-Q12 的 Vector 读数：环比增速、年化规模与指引只在 Unity 的业绩电话会上口头披露[src:U-CALL-FY2026Q2]，业绩新闻稿只有战略增长收入，可作替代读数[src:U-8K-2026-08-06#EX-99.1]；这一支能否读到取决于 Unity 是否继续口头披露，读不到时记为 undetermined。"
-  - "2026 年三季度预注册候选（报告第 04 节）：回购纪律的第一次读数是三季度纯回购不少于二季度。三季度的比较和预注册都取现金流量表的纯回购，即 Repurchases of common stock 一行、不含代扣税，与报告的口径相同[src:APP-RPT1-2026-09-23#p9]：二季度为 5.512 亿美元（上半年 1,532,952 千美元减一季度 981,723 千美元），另付的代扣税 0.196 亿不计入[src:APP-10Q-FY2026Q2#Item1-cash-flows][src:APP-10Q-FY2026Q1#Item1-cash-flows]；三季度用前三季度的这一行减上半年的 1,532,952 千美元。股东权益变动表记的二季度回购是 5.317 亿（110.5 万股）、代扣税 0.196 亿[src:APP-10Q-FY2026Q2#Item1-equity]；业绩新闻稿的“回购与代扣合计 5.513 亿”是这两项之和[src:APP-8K-2026-08-05#EX-99.1]，这两个数都不是本条的口径。这是一次性检验，放进预注册，不写成长期测试。"
-  - "报告第 04 节的二季度回购“均价约 484 美元”不能引用[src:APP-RPT1-2026-09-23#p9]：报告自己说明它按新闻稿的股数推算、股数含代扣，即用现金流量表的回购额除以含代扣股的股数，两种口径混在一起。10-Q 的逐月回购表给出二季度回购 110.5 万股，按各月股数加权的均价约 476.8 美元（含佣金与费用）[src:APP-10Q-FY2026Q2#PartII-Item2]。APP 的任何文件都不引用 484。"
-  - "报告第 09 节的按年跟踪项尚未写成测试：年报的安装量与单价年度同比、员工人数与人均收入、两宗证券集体诉讼的进程[src:APP-RPT1-2026-09-23#p15]。2026 年那宗（加州北区 26-cv-10584）的首席原告申请截止 2026-11-16[src:APP-WEB-2026-09-22-1]；公司的申报文件还没有提到它，2026 年 11 月的三季度 10-Q 第二部分第 1 项出来后核对法院、案号与集体期。"
-  - "单价为什么上涨是证据最薄的一处：模型、电商结构、抽成三种读法要把单价增速、消费类支出、MAX 发布商收入相对 APP 收入的增速合起来看[src:APP-RPT1-2026-09-23#p17]；2026 年 11 月与 2027 年 2 月两份季报之后，在更新里写明哪种读法占上风。"
-  - "depends_on 为空：现有三个行业模块（支付与卡组织、非酒精即饮饮料、半导体代工）都不驱动 APP 的经济性；将来若建立数字广告或移动应用广告的行业模块，再补依赖。"
+  - "The culture rating is left blank as in the report and is not treated as neutral: the report says the only checkable items are productivity (898 employees at the end of 2025, revenue per employee about $6.1 million) and the cost structure; there were only about 7 employee reviews in the past year, and internal retention and promotion are not disclosed [src:APP-RPT1-2026-09-23#p1]; rate it once there is primary evidence (new disclosures in the proxy statement or the human capital section of the 10-K)."
+  - "Q4 installs and net revenue per install are not disclosed separately [src:APP-RPT1-2026-09-23#p5]: in windows that include Q4, APP-Q5, APP-Q7 and APP-Q10 have to derive them from the 10-K full-year figures and the first three quarters, and record undetermined when they cannot be derived; confirm the disclosure basis when the FY2026 10-K is first read."
+  - "The APP-Q3 baseline reading has been filled in from primary sources: net debt of about $497 million (senior notes principal $3.550 billion − cash $3.053 billion; $462 million using the carrying amount of long-term debt, $3.515 billion) ÷ TTM free cash flow of $4.508 billion ≈ 0.11x [src:APP-10K-FY2025#Note9][src:APP-10Q-FY2026Q2#Item1][src:APP-8K-2026-08-05#EX-99.1]; the report's net debt of about $647 million (debt principal of about $3.7 billion) is wrong and is no longer cited [src:APP-RPT1-2026-09-23#p13]. When it is first computed under the metric definition (operating cash flow less capital expenditure, XBRL), record the difference from the company definition (which also deducts finance-lease principal)."
+  - "Owner free cash flow in APP-Q6 and APP-Q11 = free cash flow on the company definition, less stock-based compensation. The company definition is operating cash flow less purchases of property and equipment and finance-lease principal [src:APP-8K-2026-02-11#EX-99.1]; FY2025 free cash flow on the company definition includes the Apps business discontinued in the first half of 2025, and the company did not disclose the discontinued part (unknown: windows that include the first half of 2025 are not on a clean basis). At the first calculation, check the difference from an XBRL recomputation and confirm which XBRL concept to use for stock-based compensation (the cash flow statement and the adjusted EBITDA reconciliation give different numbers)."
+  - "APP-Q4 uses the spec's roic basis (equity + interest-bearing debt − cash), which may differ from the report's: the report divides TTM after-tax operating income to 2026-06-30 of $4.13–4.50 billion (TTM operating income of $5.288 billion at tax rates of about 22% and 15%) by invested capital of $3.34 billion at 2026-06-30, and does not define the tax rates or invested capital [src:APP-RPT1-2026-09-23#p6][src:APP-8K-2026-02-11#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]; record the difference at the first calculation."
+  - "For MAX publisher revenue the company gives only a directional description (double-digit quarter-on-quarter growth in FY2026Q2), with no figures (per the company's earnings call) [src:APP-CALL-FY2026Q2#CEO]; APP-L5 and the \"take rate\" reading in section 11 of the report both depend on the company continuing to describe it, and are recorded as undetermined when it stops."
+  - "The Haus branch of APP-L6 depends on secondary data from an interested party [src:APP-RPT1-2026-09-23#p11] that is not in the company's filings; a way to read the Haus data each quarter has to be settled, and the branch is recorded as undetermined when the data cannot be read."
+  - "The Vector reading for APP-Q12: quarter-on-quarter growth, annualized size and guidance are disclosed only orally on Unity's earnings calls [src:U-CALL-FY2026Q2]; the earnings press releases have only strategic growth revenue, which can serve as a substitute reading [src:U-8K-2026-08-06#EX-99.1]; whether this branch can be read depends on Unity continuing to disclose orally, and it is recorded as undetermined when it cannot."
+  - "Pre-registration candidate for Q3 2026 (section 04 of the report): the first reading on buyback discipline is that Q3 pure buybacks are no smaller than Q2's. Both the Q3 comparison and the pre-registration use pure buybacks from the cash flow statement, i.e. the Repurchases of common stock line, excluding withholding taxes, the same basis as the report [src:APP-RPT1-2026-09-23#p9]: Q2 was $551.2 million (first half 1,532,952 thousand USD less Q1 981,723 thousand USD), with the $19.6 million of withholding taxes paid on top not included [src:APP-10Q-FY2026Q2#Item1-cash-flows][src:APP-10Q-FY2026Q1#Item1-cash-flows]; Q3 is this line for the first three quarters less the first half's 1,532,952 thousand USD. The statement of stockholders' equity records Q2 buybacks of $531.7 million (1.105 million shares) and withholding taxes of $19.6 million [src:APP-10Q-FY2026Q2#Item1-equity]; the earnings press release's \"$551.3 million for buybacks and withholding combined\" is the sum of these two [src:APP-8K-2026-08-05#EX-99.1], and neither figure is the basis of this item. This is a one-off check; it goes into the pre-registration and is not written as a standing test."
+  - "The Q2 buyback \"average price of about $484\" in section 04 of the report cannot be cited [src:APP-RPT1-2026-09-23#p9]: the report itself explains that it was derived from the press release's share count, which includes withheld shares, i.e. the cash flow statement's buyback amount divided by a share count that includes withheld shares, mixing two bases. The 10-Q's monthly repurchase table gives Q2 repurchases of 1.105 million shares at an average price, weighted by each month's shares, of about $476.8 (including commissions and fees) [src:APP-10Q-FY2026Q2#PartII-Item2]. No APP file cites 484."
+  - "The annual tracking items in section 09 of the report are not yet written as tests: the annual year-on-year installs and price per install in the annual report, headcount and revenue per employee, and the progress of the two securities class actions [src:APP-RPT1-2026-09-23#p15]. The lead-plaintiff deadline in the 2026 case (N.D. Cal. 26-cv-10584) is 2026-11-16 [src:APP-WEB-2026-09-22-1]; the company's filings do not mention it yet; check the court, case number and class period once Part II, Item 1 of the Q3 10-Q comes out in November 2026."
+  - "Why price per install has risen is where the evidence is thinnest: the three readings (the model, the e-commerce mix, the take rate) need growth in price per install, consumer spend, and MAX publisher revenue growth relative to APP revenue growth to be read together [src:APP-RPT1-2026-09-23#p17]; after the two quarterly reports of November 2026 and February 2027, state in an update which reading prevails."
+  - "depends_on is empty: none of the three existing industry modules (payments and card networks, non-alcoholic ready-to-drink beverages, semiconductor foundry) drives APP's economics; if an industry module for digital advertising or mobile app advertising is built later, add the dependency then."

@@ -1,72 +1,74 @@
-# 半导体代工 · 行业模块
+# Semiconductor Foundry · Industry module
 
-Semiconductor Foundry · 模块 id：`semiconductor-foundry` · 数据截至 2026-09-16 · 最近复核 2026-09-24
+A Chinese version is in [zh-CN/industries/semiconductor-foundry/README.md](../../zh-CN/industries/semiconductor-foundry/README.md).
 
-本模块把 Business Library 的行业研究《Semiconductor Foundry》（2026 年 9 月，原文存于私有仓库）整理成可被引用、可被机器检查的形式 [src:IND-FOUNDRY-2026-09#p1]。
-它只描述行业本身，不评价任何公司，也不构成投资建议。
-机器可读的完整版本见同目录的 `industry.yml`，来源标签见 `sources.yml`，页码 #pN 为 PDF 页码（与印刷页码一致）。
-标“研究计算”的数字是研究作者在公开数字上的算术，标“本模块推论”的内容是本模块的推断，不是研究原话。
+Semiconductor Foundry · module id: `semiconductor-foundry` · data as of 2026-09-16 · last reviewed 2026-09-24
 
-## 一段话结论
+This module turns the Business Library industry study *Semiconductor Foundry* (September 2026; the original is kept in the private repository) into a form that can be cited and checked by machine [src:IND-FOUNDRY-2026-09#p1].
+It describes the industry only, does not assess any company and is not investment advice.
+The complete machine-readable version is `industry.yml` in the same directory, the source tags are in `sources.yml`, and page locators #pN are PDF page numbers (the same as the printed page numbers).
+Numbers marked “the study's calculation” are the study authors' arithmetic on published figures, and content marked “this module's inference” is this module's inference, not the study's words.
 
-代工是一门学习曲线生意：每代制程的固定成本增长快于市场，能负担新节点的厂商越来越少，按 2020 年的统计，在 180nm 生产的芯片制造商有 94 家，在 5nm 只有 3 家 [src:IND-FOUNDRY-2026-09#p9]。
-在最新节点上量产最多的厂商学得最快、赚得最多、再为下一个节点出资，加上不与客户竞争的承诺，TSMC 占前十大代工收入的份额从 2021 年第一季度的 55% 升至 2026 年第二季度的 72.5% [src:IND-FOUNDRY-2026-09#p3]。
-代工层的其余厂商回报普通且随周期波动 [src:IND-FOUNDRY-2026-09#p3]，研究的一句话概括是 “Profit follows scarcity, not activity.” [src:IND-FOUNDRY-2026-09#p9]
-研究认为，补贴更容易改变晶圆厂建在哪里，而不是谁赢 [src:IND-FOUNDRY-2026-09#p3]。
+## Conclusion in one paragraph
 
-## 研究的四条核心论点
+Foundry is a learning-curve business: the fixed cost of each process generation grows faster than the market, so fewer and fewer firms can afford a new node, and by a 2020 count 94 chipmakers produced at 180nm but only 3 at 5nm [src:IND-FOUNDRY-2026-09#p9].
+The firm with the most volume on the newest node learns fastest, earns most and funds the next node, and together with its commitment not to compete with its customers, this lifted TSMC's share of top-10 foundry revenue from 55% in Q1 2021 to 72.5% in Q2 2026 [src:IND-FOUNDRY-2026-09#p3].
+Returns for the rest of the foundry layer are ordinary and cyclical [src:IND-FOUNDRY-2026-09#p3]; the study sums it up in one sentence: “Profit follows scarcity, not activity.” [src:IND-FOUNDRY-2026-09#p9]
+The study holds that subsidies change where fabs are built more easily than who wins [src:IND-FOUNDRY-2026-09#p3].
 
-| 核心论点 | 研究所说的推翻条件 | 本模块的对应路标 |
+## The study's four core theses
+
+| Core thesis | What the study says would overturn it | Matching signpost in this module |
 | --- | --- | --- |
-| 一、规模加学习是真实但会移动的护城河：领先制程上量产最多的厂商赢下每个节点，差距还在扩大 | 挑战者在 2nm 级工艺上以有竞争力的良率为旗舰客户量产高量产品 [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP1 |
-| 二、代工已成为能赚到设计级利润的关口 | TSMC 毛利率在需求没有崩塌时连续数个季度低于公司自定的 56% 下限 [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP2 |
-| 三、没有量产规模，钱买不到领先制程，补贴更容易改变工厂位置而不是赢家 | 受补贴的进入者靠外部客户在领先制程上实现持续盈利 [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP4、FOUNDRY-SP5 |
-| 四、成熟制程是另一门周期性生意，价格将越来越多地由中国的扩产决定 | 中国继续扩产的同时，中国以外成熟制程利用率到 2028 年一直高于 90% [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP6 |
+| First: scale plus learning is a real but movable moat; the firm with the most volume on the leading process wins each node, and the gap is widening | A challenger producing a high-volume product in volume for a flagship customer on a 2nm-class process, with competitive yields [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP1 |
+| Second: foundry has become a toll gate that earns design-level margins | TSMC's gross margin below its self-set floor of 56% for several quarters in a row without a collapse in demand [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP2 |
+| Third: without volume, money cannot buy the leading process, and subsidies change the location of fabs more easily than the winners | A subsidised entrant earning sustained profits on the leading process with external customers [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP4, FOUNDRY-SP5 |
+| Fourth: mature nodes are a separate, cyclical business whose prices will increasingly be set by China's capacity expansion | Mature-node utilisation outside China staying above 90% through 2028 while China keeps expanding [src:IND-FOUNDRY-2026-09#p3] | FOUNDRY-SP6 |
 
-FOUNDRY-SP3 对应研究在 10–20 年视野下讨论的价值向封装与系统设计转移 [src:IND-FOUNDRY-2026-09#p16]，以及“新封装架构由现任者以外的公司从一开始主导”这一推翻情形 [src:IND-FOUNDRY-2026-09#p19]。
+FOUNDRY-SP3 corresponds to the shift of value towards packaging and system design that the study discusses on its 10–20 year horizon [src:IND-FOUNDRY-2026-09#p16], and to the overturning case “a new packaging architecture led from the start by a company other than the incumbents” [src:IND-FOUNDRY-2026-09#p19].
 
-## 行业一览
+## The industry at a glance
 
-| 维度 | 读数 | 出处 |
+| Dimension | Reading | Source |
 | --- | --- | --- |
-| 规模 | 2025 年前十大代工厂收入约 1,700 亿美元，同比增长 26%（TrendForce 汇总公司数据） | [src:IND-FOUNDRY-2026-09#p4] |
-| 宽口径 | TSMC 的 “Foundry 2.0” 口径（加上封装、测试、光罩及整合厂的非存储生产）约 3,050 亿美元，与上一行定义不同，研究只用它比较相对规模 | [src:IND-FOUNDRY-2026-09#p3] [src:IND-FOUNDRY-2026-09#p19] |
-| 集中度 | TSMC 占前十大代工收入的 72.5%，Samsung 占 5.9%（2026 年第二季度） | [src:IND-FOUNDRY-2026-09#p4] |
-| 利润率 | 2025 财年营业利润率：TSMC 50.8%，UMC 18.5%，GlobalFoundries 11.7% | [src:IND-FOUNDRY-2026-09#p4] |
-| 资本强度 | TSMC 2025 财年资本开支占收入的 33%（新台币口径，研究计算），2006–2025 年平均约 37%（研究计算），一座领先制程逻辑晶圆厂的十年拥有成本为 350–430 亿美元（BCG 估计） | [src:IND-FOUNDRY-2026-09#p4] [src:IND-FOUNDRY-2026-09#p11] [src:IND-FOUNDRY-2026-09#p9] |
-| 周期性 | 前十大代工厂季度合计收入从 2022 年第三季度的 352 亿美元降到 2023 年第一季度的 273 亿美元，两个季度下降 22%（研究计算） | [src:IND-FOUNDRY-2026-09#p4] [src:IND-FOUNDRY-2026-09#p15] |
+| Size | Top-10 foundry revenue of about $170 billion in 2025, up 26% year on year (TrendForce compilation of company data) | [src:IND-FOUNDRY-2026-09#p4] |
+| Broad definition | TSMC's “Foundry 2.0” definition (adding packaging, testing, photomasks and integrated device makers' non-memory production), about $305 billion, is defined differently from the row above, and the study uses it only to compare relative size | [src:IND-FOUNDRY-2026-09#p3] [src:IND-FOUNDRY-2026-09#p19] |
+| Concentration | TSMC 72.5% and Samsung 5.9% of top-10 foundry revenue (Q2 2026) | [src:IND-FOUNDRY-2026-09#p4] |
+| Margins | Operating margin in fiscal 2025: TSMC 50.8%, UMC 18.5%, GlobalFoundries 11.7% | [src:IND-FOUNDRY-2026-09#p4] |
+| Capital intensity | TSMC's capital expenditure was 33% of revenue in fiscal 2025 (NT dollar basis, the study's calculation) and averaged about 37% over 2006–2025 (the study's calculation), and the ten-year cost of ownership of a leading-edge logic fab is $35–43 billion (BCG estimate) | [src:IND-FOUNDRY-2026-09#p4] [src:IND-FOUNDRY-2026-09#p11] [src:IND-FOUNDRY-2026-09#p9] |
+| Cyclicality | Combined quarterly revenue of the top-10 foundries fell from $35.2 billion in Q3 2022 to $27.3 billion in Q1 2023, down 22% in two quarters (the study's calculation) | [src:IND-FOUNDRY-2026-09#p4] [src:IND-FOUNDRY-2026-09#p15] |
 
-## 价值怎样流动
+## How value flows
 
-- 代工厂按晶圆、并越来越多地按封装出租制造能力，价格由制程节点和该节点产能的稀缺程度决定，成本大部分固定，利润取决于制程结构、利用率，以及是否拥有客户在别处买不到的产能 [src:IND-FOUNDRY-2026-09#p6]。
-- 代工在终端价值中的份额很小：按 Epoch AI 对 Nvidia B200 的成本模型推算（研究计算），TSMC 的逻辑裸片加 CoWoS 封装约 1,850 美元，约占售价的 5–6%，10% 的晶圆涨价只让一颗 3 万美元以上的芯片多出约 85 美元 [src:IND-FOUNDRY-2026-09#p7]。
-- 利润按稀缺程度分配：成熟制程代工厂的营业利润率为 12–19%，独立封测厂只有 7–8%，因为最稀缺的封装形式 CoWoS 在代工厂内部完成 [src:IND-FOUNDRY-2026-09#p8]。
-- 护城河必须在每个节点重新赢得 [src:IND-FOUNDRY-2026-09#p9]，TSMC 2025 年资本开支 409 亿美元，超过 UMC、GlobalFoundries 和 SMIC 的收入之和 237 亿美元（研究计算）[src:IND-FOUNDRY-2026-09#p10]。
-- 国家成为所有者和守门人 [src:IND-FOUNDRY-2026-09#p19]，中国以受保护需求和国家资金支撑 SMIC，其 2025 年毛利率为 21%，同年 TSMC 为 59.9% [src:IND-FOUNDRY-2026-09#p13]。
+- Foundries rent out manufacturing capacity by the wafer and, increasingly, by the package; the price is set by the process node and by how scarce capacity at that node is, costs are largely fixed, and profit depends on the process mix, utilisation, and whether the foundry has capacity that customers cannot buy elsewhere [src:IND-FOUNDRY-2026-09#p6].
+- Foundry's share of end value is small: by Epoch AI's cost model of the Nvidia B200 (the study's calculation), TSMC's logic dies plus CoWoS packaging cost about $1,850, about 5–6% of the selling price, and a 10% wafer price rise adds only about $85 to a chip that sells for more than $30,000 [src:IND-FOUNDRY-2026-09#p7].
+- Profit is allocated by scarcity: mature-node foundries earn operating margins of 12–19% and independent packaging and test houses only 7–8%, because CoWoS, the scarcest form of packaging, is done inside the foundry [src:IND-FOUNDRY-2026-09#p8].
+- The moat has to be won again at every node [src:IND-FOUNDRY-2026-09#p9]; TSMC's capital expenditure of $40.9 billion in 2025 exceeded the combined revenue of UMC, GlobalFoundries and SMIC, $23.7 billion (the study's calculation) [src:IND-FOUNDRY-2026-09#p10].
+- States have become owners and gatekeepers [src:IND-FOUNDRY-2026-09#p19]; China supports SMIC with protected demand and state money, and SMIC's gross margin in 2025 was 21%, against 59.9% at TSMC in the same year [src:IND-FOUNDRY-2026-09#p13].
 
-## 路标
+## Signposts
 
-研究第 19 页列出了六个路标，本模块逐一编成 FOUNDRY-SP1 至 FOUNDRY-SP6 [src:IND-FOUNDRY-2026-09#p19]。
-门槛是事先写下的判定标准，不需要出处；完整门槛、机器规则、数据来源和触发含义见 `industry.yml`。
+Page 19 of the study lists six signposts, which this module encodes one by one as FOUNDRY-SP1 to FOUNDRY-SP6 [src:IND-FOUNDRY-2026-09#p19].
+Thresholds are criteria written down in advance and need no source; the full thresholds, machine rules, data sources and what a trigger means are in `industry.yml`.
 
-| 编号 | 路标 | 触发门槛（摘要） | 检查频率 | 研究给出的读数 |
+| ID | Signpost | Trigger threshold (summary) | Check frequency | Reading given by the study |
 | --- | --- | --- | --- | --- |
-| FOUNDRY-SP1 | 挑战者在 2nm 级工艺上为具名外部客户量产 | 挑战者或客户正式确认某个具名外部客户的产品在 Intel 18A/14A、Samsung 2nm、Rapidus 2nm 等 2nm 级工艺上量产出货，或 TSMC 占前十大代工收入的份额连续 4 个季度低于上年同季 | 每季 | 未触发，Samsung 2nm 的特斯拉项目据报道于 2027 年下半年在得州爬坡 [src:IND-FOUNDRY-2026-09#p16]，TSMC 份额在 2026 年第二季度为 72.5% [src:IND-FOUNDRY-2026-09#p4] |
-| FOUNDRY-SP2 | 领先代工厂的毛利率下限与 AI 需求 | TSMC 报告的毛利率连续 3 个季度低于公司自定的 56% 下限 [src:IND-FOUNDRY-2026-09#p14]，或同一年度内下调资本开支指引，或 HPC 收入占比连续 2 个季度不高于上年同季 | 每季 | 毛利率 67.7%，HPC 占收入 66%（2026 年第二季度）[src:IND-FOUNDRY-2026-09#p16] |
-| FOUNDRY-SP3 | 先进封装在代工收入中的比重 | TSMC 全年先进封装收入占比达到 15%（事先设定），或当期最新一代数据中心 AI 加速器量产时采用逻辑代工厂以外公司自己的集成封装架构 | 每季（占比按年读取） | 2025 年略高于 10% [src:IND-FOUNDRY-2026-09#p8] |
-| FOUNDRY-SP4 | 中国代工体系的先进制程产出与利润率 | 中国大陆代工厂 5nm 级量产，或 SMIC 毛利率连续 4 个季度不低于 45%（跟随者毛利率区间上沿 [src:IND-FOUNDRY-2026-09#p4]），或中国成熟制程产能份额的实际估计超过 39%（2027 年预测区间上限 [src:IND-FOUNDRY-2026-09#p17]） | 每季 | SMIC 毛利率 25.3%，利用率 93.7%（2026 年第二季度）[src:IND-FOUNDRY-2026-09#p16] |
-| FOUNDRY-SP5 | 关税、产能外迁与台湾生产 | 美国正式实施超出 2026 年 1 月措施的芯片关税，或 TSMC 海外厂毛利率稀释指引上限超过 4 个百分点，或台湾修改 N-2 规则，或台湾生产因冲突、封锁或制裁中断 | 每月 | 第二阶段关税截至 2026 年 9 月仍在考虑中 [src:IND-FOUNDRY-2026-09#p16] |
-| FOUNDRY-SP6 | 中国以外成熟制程的产能利用率 | UMC 利用率连续 4 个季度高于 90% 且中国仍在扩产，或连续 2 个季度低于 80% | 每季 | 研究没有 2026 年读数，最近的是 2023–24 年下行期的 70–80% [src:IND-FOUNDRY-2026-09#p3] |
+| FOUNDRY-SP1 | A challenger producing in volume for a named external customer on a 2nm-class process | The challenger or the customer formally confirms that a named external customer's product is shipping in volume on a 2nm-class process such as Intel 18A/14A, Samsung 2nm or Rapidus 2nm, or TSMC's share of top-10 foundry revenue is below the same quarter a year earlier for 4 consecutive quarters | Quarterly | Not triggered: Samsung's 2nm Tesla project is reportedly ramping in Texas in the second half of 2027 [src:IND-FOUNDRY-2026-09#p16], and TSMC's share was 72.5% in Q2 2026 [src:IND-FOUNDRY-2026-09#p4] |
+| FOUNDRY-SP2 | The leading foundry's gross margin floor and AI demand | TSMC's reported gross margin below its self-set floor of 56% for 3 consecutive quarters [src:IND-FOUNDRY-2026-09#p14], or a cut to capital expenditure guidance within the same year, or the HPC share of revenue no higher than a year earlier for 2 consecutive quarters | Quarterly | Gross margin 67.7%, HPC 66% of revenue (Q2 2026) [src:IND-FOUNDRY-2026-09#p16] |
+| FOUNDRY-SP3 | Advanced packaging's share of foundry revenue | TSMC's full-year advanced packaging share of revenue reaching 15% (set in advance), or the current latest generation of data-centre AI accelerators using, in volume production, an integrated packaging architecture of a company other than the logic foundry | Quarterly (the share is read annually) | Slightly over 10% in 2025 [src:IND-FOUNDRY-2026-09#p8] |
+| FOUNDRY-SP4 | Leading-edge output and margins of China's foundry system | Volume production at 5nm class by a mainland Chinese foundry, or SMIC's gross margin at or above 45% for 4 consecutive quarters (the top of the followers' gross margin range [src:IND-FOUNDRY-2026-09#p4]), or an actual estimate of China's mature-node capacity share above 39% (the top of the projected range for 2027 [src:IND-FOUNDRY-2026-09#p17]) | Quarterly | SMIC gross margin 25.3%, utilisation 93.7% (Q2 2026) [src:IND-FOUNDRY-2026-09#p16] |
+| FOUNDRY-SP5 | Tariffs, relocation of capacity and production in Taiwan | The US formally imposes chip tariffs beyond the January 2026 measures, or the upper end of TSMC's guidance for margin dilution from overseas fabs exceeds 4 percentage points, or Taiwan amends the N-2 rule, or production in Taiwan is interrupted by conflict, blockade or sanctions | Monthly | The second phase of tariffs was still under consideration as of September 2026 [src:IND-FOUNDRY-2026-09#p16] |
+| FOUNDRY-SP6 | Mature-node capacity utilisation outside China | UMC's utilisation above 90% for 4 consecutive quarters while China is still expanding, or below 80% for 2 consecutive quarters | Quarterly | The study has no 2026 reading, and the latest is 70–80% in the 2023–24 downturn [src:IND-FOUNDRY-2026-09#p3] |
 
-可能性用语沿用研究的定义：很可能指高于 80%，可能指 60–80%，不确定指 40–60%，不太可能指 20–40%，很不可能指低于 20% [src:IND-FOUNDRY-2026-09#p3]。
+Probability terms follow the study's definitions: very likely means above 80%, likely 60–80%, uncertain 40–60%, unlikely 20–40%, and very unlikely below 20% [src:IND-FOUNDRY-2026-09#p3].
 
-## 本模块怎样被使用
+## How this module is used
 
-- 公司论点在自己一侧的 thesis.yml 中声明引用哪些行业模块（字段定义见 thesis-ci SPEC 第 4 节）；本模块不记录、也不评价任何引用它的公司。
-- CI 按各路标的检查频率读取数据；某个路标越过门槛时，CI 为每个引用本模块的公司论点开一个复核 issue，并重跑其中覆盖该路标 `tests_to_rerun` 所列维度的测试。
-- 门槛按“先写下，后验证”的原则登记，不需要出处；读数是事实，必须带出处。修改门槛应在下一次读数出来之前单独提交，并写明理由。
+- Company theses declare on their own side, in thesis.yml, which industry modules they reference (the field is defined in section 4 of the thesis-ci SPEC); this module neither records nor assesses any company that references it.
+- CI reads the data at each signpost's check frequency; when a signpost crosses its threshold, CI opens a review issue for each company thesis that references this module and re-runs the tests in it that cover the dimensions listed in the signpost's `tests_to_rerun`.
+- Thresholds are registered on the principle “write it down first, verify later” and need no source; readings are facts and must carry a source. A threshold change should be committed separately, with the reason stated, before the next reading comes out.
 
-## English
+## Short summary
 
 This module turns the Business Library study *Semiconductor Foundry* (September 2026) into a citable, machine-checkable industry module [src:IND-FOUNDRY-2026-09#p1].
 It describes the industry only; it does not assess any company and is not investment advice.

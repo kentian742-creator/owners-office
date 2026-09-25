@@ -1,7 +1,7 @@
-# 来源标签表：industries/non-alcoholic-rtd-beverages
-# 定位符约定：#p<N> = 研究 PDF 的第 N 页（与 inputs/text 抽取文本中的 "===== [page N] =====" 标记一致，第 1 页为封面）。
-# 本模块的数字全部经由这份行业研究引用。研究所依据的一手来源（公司年报、6-K、HMRC、WHO 等）列在研究第 27–30 页；
-# 本模块没有直接引用它们，因此不在此单独登记。
+# Source tags: industries/non-alcoholic-rtd-beverages
+# Locator convention: #p<N> = page N of the study PDF (matching the "===== [page N] =====" markers in the text extracted to inputs/text; page 1 is the cover).
+# Every number in this module is cited through this industry study. The primary sources the study relies on (company annual reports, 6-Ks, HMRC, WHO and others) are listed on pages 27–30 of the study;
+# this module does not cite them directly, so they are not registered separately here.
 sources:
   - tag: IND-RTDBEV-2026-09
     kind: industry_report
@@ -10,4 +10,4 @@ sources:
     url: null
     location: private:reports/non-alcoholic-rtd-beverages.pdf
     primary: false
-    note: "非酒精即饮饮料行业研究，封面日期为 2026 年 9 月，具体日期取自 PDF 元数据的创建日期。定位符 #pN 一律为 PDF 页码；研究正文页面不印页码，而目录所列页码比 PDF 页码小 1（目录中第 2 页的执行摘要是 PDF 第 3 页），按目录查找时需加 1。研究对每个数字标注口径：reported 取自公司文件或官方统计，estimate 为数据商或作者推算。"
+    note: "Industry study of non-alcoholic ready-to-drink beverages; the cover date is September 2026, and the exact date is taken from the creation date in the PDF metadata. Locators #pN are always PDF page numbers; the study's body pages carry no page numbers, and the page numbers in its table of contents are 1 lower than the PDF page numbers (the executive summary, page 2 in the table of contents, is PDF page 3), so add 1 when looking a page up from the table of contents. The study labels the basis of every number: reported means taken from company filings or official statistics, and estimate means estimated by a data provider or by the authors."

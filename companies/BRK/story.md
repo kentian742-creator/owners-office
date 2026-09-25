@@ -5,10 +5,12 @@ status: archive
 category: stalwart
 ---
 
-**它做什么**。伯克希尔把保险客户预付的保费和子公司赚的钱集中到奥马哈，由总部决定投向哪里：2026 年 6 月末它有 1,775 亿美元浮存金、3,238 亿美元股票和 3,647 亿美元现金与国库券，旗下还有铁路、电力、制造和零售等 51 家经营业务 [src:BRK-RPT1-2026-09-18#p3]。按林奇的分类它是稳定增长型：2015 到 2025 年，公司口径的税后经营利润从 174 亿美元增到 445 亿美元 [src:BRK-RPT1-2026-09-18#p4]。
+A Chinese version is in [zh-CN/companies/BRK/story.md](../../zh-CN/companies/BRK/story.md).
 
-**为什么是好生意**。只要承保不亏钱，浮存金就是没有到期日、不会被挤兑的负成本资金；过去三年每年承保盈利，2025 年综合成本率 87.1% [src:BRK-RPT1-2026-09-18#p3]。浮存金、51 家经营业务和股票组合是三条互不相关的利润线 [src:BRK-RPT1-2026-09-18#p2]；总部不设目标、不加杠杆，子公司的 CEO 自己管自己的生意 [src:BRK-RPT1-2026-09-18#p9]。
+**What it does.** Berkshire pools the premiums its insurance customers pay in advance and the money its subsidiaries earn in Omaha, where headquarters decides where it goes: at the end of June 2026 it had $177.5 billion of float, $323.8 billion of stocks and $364.7 billion of cash and Treasury bills, and it owns 51 operating businesses in railways, power, manufacturing, retail and more [src:BRK-RPT1-2026-09-18#p3]. In Lynch's categories it is a stalwart: from 2015 to 2025, after-tax operating earnings on the company's own basis grew from $17.4 billion to $44.5 billion [src:BRK-RPT1-2026-09-18#p4].
 
-**什么必须做对**。新任 CEO 要在下跌中把现金换成能赚得更多的生产性资产，而不是让 3,647 亿美元长期只赚国库券利息 [src:BRK-RPT1-2026-09-18#p16]；GEICO 要在保单数同比 +2%、对手 +11% 的差距里稳住留存，又不牺牲承保纪律 [src:BRK-RPT1-2026-09-18#p6]。
+**Why it is a good business.** As long as underwriting does not lose money, float is negative-cost money with no maturity date that cannot be run on; underwriting has been profitable in each of the past three years, and the 2025 combined ratio was 87.1% [src:BRK-RPT1-2026-09-18#p3]. The float, the 51 operating businesses and the equity portfolio are three uncorrelated lines of profit [src:BRK-RPT1-2026-09-18#p2]; headquarters sets no targets and adds no leverage, and subsidiary CEOs run their own businesses [src:BRK-RPT1-2026-09-18#p9].
 
-**什么会证明我错**。GEICO 保单数连续两年负增长且综合成本率高于 100%，集团综合成本率连续两年高于 100%，现金连续两个年末堆在高位、两年投出的钱不到同期经营现金流的一半，或者母公司为 PacifiCorp 担保、出钱 [src:BRK-RPT1-2026-09-18#p14]。
+**What must go right.** In a downturn, the new CEO has to turn cash into productive assets that earn more, rather than leave $364.7 billion earning only Treasury-bill interest for years [src:BRK-RPT1-2026-09-18#p16]; GEICO has to stabilise retention, with policies in force at +2% year on year against a competitor's +11%, without giving up underwriting discipline [src:BRK-RPT1-2026-09-18#p6].
+
+**What would prove me wrong.** GEICO's policies in force shrinking for two years in a row with a combined ratio above 100%, the group combined ratio above 100% for two years in a row, cash piled high at two consecutive year-ends while less than half of the period's operating cash flow was deployed over those two years, or the parent company guaranteeing or putting money into PacifiCorp [src:BRK-RPT1-2026-09-18#p14].

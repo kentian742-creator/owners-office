@@ -1,16 +1,16 @@
-# MSFT 论点文件（公开；thesis-ci spec §4；schema: spec/schemas/thesis.schema.json）
-# 公开的完整示范档案。生成方式：先套林奇 stalwart 模板与 _common 时效测试，
-# 再逐条补入 02 报告第十节的八条论点破坏信号（severity: breaker）与五个每季度前瞻指标（severity: watch）。
-# 门槛按报告原文：同样的数字、同样的连续期数；改写模板门槛或指标的地方在测试 note 里写明理由。
-# 前瞻指标 #3（微软云毛利率）与 #4（现金转换率）的触发线就是破坏信号三、二：
-#   #3 的健康线写成 MSFT-Q7 的 warn_rule；#4 的健康线写进改写后的模板测试 MSFT-Q4，触发线即 MSFT-Q6。
-# 破坏信号四是“或”关系的两个条件，拆成 MSFT-Q8（数字）与 MSFT-L5（承诺被重组或减值，由独立模型附出处判定）。
-# 另有两条本档案自加的 watch 测试（origin: manual），取自报告第七节：MSFT-Q13（资本开支是否回落）、MSFT-Q14（一年内到期的采购承诺）。
-# 报告第十节：自 FY2027 起分部与口径按 2026-09-02 的 8-K 重述，下面的指标全部按新口径判定。
-# 与价格有关的一切（区间、参考价、对价格的评级）只在私有仓库 owners-office-private/companies/MSFT/valuation.yml。
+# MSFT thesis file (public; thesis-ci spec §4; schema: spec/schemas/thesis.schema.json)
+# The public, complete example archive. How it was made: first the Lynch stalwart template and the _common staleness tests,
+# then, one by one, the eight thesis breakers (severity: breaker) and five quarterly watch indicators (severity: watch) from section ten of the 02 report.
+# Thresholds follow the report's text: the same numbers, the same number of consecutive periods; wherever a template threshold or metric is changed, the test's note gives the reason.
+# The trigger lines of watch indicators #3 (Microsoft Cloud gross margin) and #4 (cash conversion) are breakers three and two:
+#   #3's healthy line is written as MSFT-Q7's warn_rule; #4's healthy line goes into the rewritten template test MSFT-Q4, and its trigger line is MSFT-Q6.
+# Breaker four is two conditions joined by "or", split into MSFT-Q8 (the number) and MSFT-L5 (the commitment restructured or impaired, judged by an independent model with sources).
+# Two more watch tests are this archive's own additions (origin: manual), taken from section seven of the report: MSFT-Q13 (whether capex comes down) and MSFT-Q14 (purchase commitments due within a year).
+# Section ten of the report: from FY2027 the segments and definitions are restated per the 8-K of 2026-09-02; every metric below is judged on the new basis.
+# Everything price-related (ranges, reference price, the rating on price) is only in the private repository, owners-office-private/companies/MSFT/valuation.yml.
 schema_version: "0.2"
 company: MSFT
-name: Microsoft Corporation（微软）
+name: Microsoft Corporation
 exchange: NASDAQ
 status: candidate
 filer:
@@ -21,18 +21,18 @@ filer:
   annual_form: 10-K
 category: stalwart
 category_secondary: fast_grower
-category_rationale: "FY2026 收入 3,318 亿美元、营业利润率 46.8% [src:MSFT-RPT1-2026-09-17#p3]，收入一年增长 18% [src:MSFT-RPT1-2026-09-17#p7]，是一家大而稳、靠按席位出租的年金持续赚钱的稳定增长型，而它的风险正落在这个模板盯的“为增长而做的昂贵配置”上——FY2026 现金资本开支 1,159 亿美元、占收入 34.9% [src:MSFT-RPT1-2026-09-17#p5]；次类为快速增长型，因为其中的 Azure 全年增长 41%（旧口径）、收入首次超过 1,000 亿美元 [src:MSFT-RPT1-2026-09-17#p3]。"
+category_rationale: "FY2026 revenue of $331.8 billion and an operating margin of 46.8% [src:MSFT-RPT1-2026-09-17#p3], with revenue up 18% in a year [src:MSFT-RPT1-2026-09-17#p7]: a large, steady stalwart that keeps earning from the annuity of seats it rents out, and its risk falls exactly on what this template watches, “expensive allocation made for growth”: FY2026 cash capex of $115.9 billion, 34.9% of revenue [src:MSFT-RPT1-2026-09-17#p5]. The secondary category is fast grower, because Azure within it grew 41% for the full year (old basis) and passed $100 billion of revenue for the first time [src:MSFT-RPT1-2026-09-17#p3]."
 domain: enterprise_software
-# 依赖半导体代工模块。报告本身没有分析代工行业，这条依赖是本档案加的监控链接（2026-09-24 定下，本人可撤回，见 todo）。
-# 相关的是该模块的两个路标：FOUNDRY-SP2（领先代工厂的毛利率下限与 AI 需求：TSMC 下调资本开支指引、HPC 占比停滞，
-# 其含义一栏写明超大规模云厂商放缓资本开支）对应 MSFT-Q5、MSFT-Q7、MSFT-Q10、MSFT-Q13 与支柱 P3、P4；
-# FOUNDRY-SP5（关税、产能外迁与台湾生产）改变每单位算力的资本开支成本与可得性，对应支柱 P3、P4。
-# 其余路标与本论点关系弱，触发时的复核可以很短。
+# Depends on the semiconductor foundry module. The report itself does not analyze the foundry industry; this dependency is a monitoring link added by this archive (set on 2026-09-24; the owner may withdraw it, see todo).
+# Two of the module's signposts are relevant: FOUNDRY-SP2 (the leading foundry's gross margin floor and AI demand: TSMC cutting its capex guidance, the HPC share stalling;
+# its implication column says hyperscalers slow their capex) maps to MSFT-Q5, MSFT-Q7, MSFT-Q10, MSFT-Q13 and pillars P3 and P4;
+# FOUNDRY-SP5 (tariffs, capacity moving abroad and production in Taiwan) changes the capex cost and the availability of each unit of compute, mapping to pillars P3 and P4.
+# The other signposts relate only weakly to this thesis, so the review when they trigger can be short.
 depends_on: [industries/semiconductor-foundry]
 trust_level: 1
 as_of: 2026-09-24
 
-# 12 个档案维度的最近复核日期 = 02 报告日期（报告十二节齐全）
+# Last review date of the 12 archive dimensions = the 02 report's date (the report has all twelve sections)
 reviewed:
   business: 2026-09-17
   economics: 2026-09-17
@@ -48,7 +48,7 @@ reviewed:
   breakers: 2026-09-17
   munger: 2026-09-17
 
-# 报告第一节的四个质量评级（对价格的那一个只在私有仓库）
+# The four quality ratings from section one of the report (the one on price is only in the private repository)
 ratings:
   business: A−
   management: A−
@@ -57,242 +57,242 @@ ratings:
   source: MSFT-RPT1-2026-09-17#p3
 
 thesis:
-  summary: "微软是两门贴在一起的生意：一门按席位把 Microsoft 365、Windows 商业授权、Dynamics 与 LinkedIn 租给企业，生产力与业务流程分部 FY2026 收入 1,400 亿美元、营业利润率 59.9% [src:MSFT-RPT1-2026-09-17#p3]，另一门是 Azure 算力，全年收入首次超过 1,000 亿美元 [src:MSFT-RPT1-2026-09-17#p3]。把两门粘在一起的是同一个客户目录和同一套身份与合规系统，转换成本存在于文件格式、身份目录（Entra）与合规审计（Purview）这一层，而每席位 30 美元的 Copilot 加购几乎没有自己的转换成本 [src:MSFT-RPT1-2026-09-17#p3]。它第一次把年金的现金大规模投进数据中心：FY2026 现金资本开支 1,159 亿美元、占收入 34.9%，自由现金流对非 GAAP 净利润的转换率从 FY2021 的 91.5% 降到 52.0% [src:MSFT-RPT1-2026-09-17#p5]。论点要成立，需要底座在 agent 时代继续收租、算力的增长有利润且资本开支周期会回落、6,780 亿美元的商业履约余额不只靠 OpenAI 一家（最近一次披露是 FY26 Q2 的 45%，对应当时 6,250 亿美元口径）[src:MSFT-RPT1-2026-09-17#p8]。"
+  summary: "Microsoft is two businesses stuck together. One rents Microsoft 365, Windows commercial licenses, Dynamics and LinkedIn to businesses by the seat; the Productivity and Business Processes segment had FY2026 revenue of $140 billion at an operating margin of 59.9% [src:MSFT-RPT1-2026-09-17#p3]. The other is Azure computing power, whose full-year revenue passed $100 billion for the first time [src:MSFT-RPT1-2026-09-17#p3]. What glues the two together is one customer directory and one identity and compliance system; the switching costs sit in the layer of file formats, the identity directory (Entra) and compliance auditing (Purview), while the $30-per-seat Copilot add-on has almost no switching costs of its own [src:MSFT-RPT1-2026-09-17#p3]. For the first time, it is putting the annuity's cash into data centers on a large scale: FY2026 cash capex was $115.9 billion, 34.9% of revenue, and the conversion of free cash flow to non-GAAP net income fell from 91.5% in FY2021 to 52.0% [src:MSFT-RPT1-2026-09-17#p5]. For the thesis to hold, the base has to keep collecting rent in the agent era, compute growth has to be profitable and the capex cycle has to come down, and the $678 billion of commercial RPO has to rest on more than OpenAI alone (the latest disclosure was 45% in FY26 Q2, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]."
   pillars:
     - id: P1
-      claim: "年金底座仍在变强：转换成本存在于文件格式、身份目录与合规审计这一层，生产力与业务流程分部营业利润率 59.9% [src:MSFT-RPT1-2026-09-17#p3]；M365 商业云 FY2026 收入 1,020 亿美元、增长 16%，商业席位增长 6%（新口径 7%）[src:MSFT-RPT1-2026-09-17#p5]。"
+      claim: "The annuity base is still getting stronger: the switching costs sit in the layer of file formats, the identity directory and compliance auditing, and the Productivity and Business Processes segment's operating margin is 59.9% [src:MSFT-RPT1-2026-09-17#p3]; M365 commercial cloud FY2026 revenue was $102 billion, up 16%, and commercial seats grew 6% (7% on the new basis) [src:MSFT-RPT1-2026-09-17#p5]."
       source: MSFT-RPT1-2026-09-17#p5
     - id: P2
-      claim: "论点需要底座在 agent 时代仍握着定价权，而报告说这正是这门生意今天最大的问题：如果日常工作的入口从打开应用变成对 agent 说话，文件与身份这一层还在，但定价权会流向拥有那个界面的人 [src:MSFT-RPT1-2026-09-17#p4]。加购层本身几乎没有转换成本——三家可选时只有 8% 的人选 Copilot，有权限者的活跃率 35.8% [src:MSFT-RPT1-2026-09-17#p6]；所以要靠底座兜住续约，并在席位见顶之前接上 agent 或用量收入 [src:MSFT-RPT1-2026-09-17#p6]。这一条由 MSFT-Q12（加购层是否续约）与 MSFT-Q9（席位下降时有没有 agent 或用量收入接住）检验。"
+      claim: "The thesis needs the base to keep its pricing power in the agent era, and the report says this is exactly the biggest issue for this business today: if the entry point to daily work shifts from opening an app to talking to an agent, the file and identity layer stays, but pricing power flows to whoever owns that interface [src:MSFT-RPT1-2026-09-17#p4]. The add-on layer itself has almost no switching costs: when three tools are available, only 8% of people choose Copilot, and the active-use rate among those with access is 35.8% [src:MSFT-RPT1-2026-09-17#p6]; so the base has to carry the renewals, and agent or usage revenue has to take over before seats peak [src:MSFT-RPT1-2026-09-17#p6]. This pillar is tested by MSFT-Q12 (whether the add-on layer renews) and MSFT-Q9 (whether agent or usage revenue catches the fall when seats decline)."
       source: MSFT-RPT1-2026-09-17#p4
     - id: P3
-      claim: "算力这门生意的增长有利润：Azure FY2026 收入首次超过 1,000 亿美元、增长 41%（旧口径）[src:MSFT-RPT1-2026-09-17#p3]，微软云毛利率全年 66%、第四季度 65% [src:MSFT-RPT1-2026-09-17#p11]；公司称需求持续超过可得容量 [src:MSFT-RPT1-2026-09-17#p4]。报告正文按全公司税后营业利润增量对三年资本开支的比值，给出税后增量回报 13% 到 39%，公开数据无法收窄 [src:MSFT-RPT1-2026-09-17#p4]；附录说这个区间是按全公司与智能云两种口径算的，两端各取哪种口径没有写明 [src:MSFT-RPT1-2026-09-17#p13]。"
+      claim: "The compute business's growth is profitable: Azure FY2026 revenue passed $100 billion for the first time, up 41% (old basis) [src:MSFT-RPT1-2026-09-17#p3], and Microsoft Cloud gross margin was 66% for the full year and 65% in the fourth quarter [src:MSFT-RPT1-2026-09-17#p11]; the company says demand keeps exceeding available capacity [src:MSFT-RPT1-2026-09-17#p4]. The report's main text, taking the company-wide increase in after-tax operating profit over three years of capex, gives an after-tax incremental return of 13% to 39%, a range public data cannot narrow [src:MSFT-RPT1-2026-09-17#p4]; the appendix says the range was calculated on two bases, the whole company and Intelligent Cloud, without saying which basis gives which end [src:MSFT-RPT1-2026-09-17#p13]."
       source: MSFT-RPT1-2026-09-17#p4
     - id: P4
-      claim: "资本开支周期会回落，利润会重新变成现金：FY2026 现金资本开支占收入 34.9%，自由现金流对非 GAAP 净利润的转换率从 FY2021 的 91.5% 降到 52.0% [src:MSFT-RPT1-2026-09-17#p5]；转换率能不能回升，由资本开支什么时候回落决定 [src:MSFT-RPT1-2026-09-17#p4]。报告第十节写下的健康线是 FY2027 后回升（MSFT-Q4），论点作废线是 FY2028 年报低于 45%（MSFT-Q6）[src:MSFT-RPT1-2026-09-17#p11]；资本开支是否回落，按第七节的分界——FY2028 后回到收入的 20% 以下，还是继续在 30% 以上——由 MSFT-Q13 跟踪 [src:MSFT-RPT1-2026-09-17#p8]。回到哪里是另一个问题：解释 A 说产能满负荷后回到 70% 以上，解释 B 说新常态在 50–65%，两者在 FY2028 之前无法区分 [src:MSFT-RPT1-2026-09-17#p5]；这个差别落在估值上（只在私有仓库），不是论点的作废线。"
+      claim: "The capex cycle will come down and profit will turn back into cash: FY2026 cash capex was 34.9% of revenue, and the conversion of free cash flow to non-GAAP net income fell from 91.5% in FY2021 to 52.0% [src:MSFT-RPT1-2026-09-17#p5]; whether conversion recovers depends on when capex comes down [src:MSFT-RPT1-2026-09-17#p4]. The healthy line written in section ten of the report is a recovery after FY2027 (MSFT-Q4), and the thesis invalidation line is below 45% in the FY2028 annual report (MSFT-Q6) [src:MSFT-RPT1-2026-09-17#p11]; whether capex comes down, by section seven's dividing line (back below 20% of revenue after FY2028, or still above 30%), is tracked by MSFT-Q13 [src:MSFT-RPT1-2026-09-17#p8]. Where conversion settles is a separate question: explanation A says it returns above 70% once capacity runs full, explanation B says the new normal is 50–65%, and the two cannot be told apart before FY2028 [src:MSFT-RPT1-2026-09-17#p5]; this difference falls on the valuation (only in the private repository), not on the thesis invalidation line."
       source: MSFT-RPT1-2026-09-17#p5
     - id: P5
-      claim: "履约余额背后的需求不只来自一个客户：商业履约余额 6,780 亿美元，最近一次披露来自 OpenAI 的比例是 45%（FY26 Q2，对应当时 6,250 亿美元口径）[src:MSFT-RPT1-2026-09-17#p8]；剔除 OpenAI 后仍增长 25%，最近一季的环比增量全部来自前沿模型公司以外的客户 [src:MSFT-RPT1-2026-09-17#p8]。"
+      claim: "The demand behind the RPO comes from more than one customer: commercial RPO is $678 billion, and the latest disclosed share from OpenAI is 45% (FY26 Q2, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]; excluding OpenAI it still grew 25%, and all of the latest quarter's sequential increase came from customers other than frontier-model companies [src:MSFT-RPT1-2026-09-17#p8]."
       source: MSFT-RPT1-2026-09-17#p8
     - id: P6
-      claim: "管理层像所有者一样配置资本：三任 CEO 均为内部人，六名执行官平均司龄 25.0 年 [src:MSFT-RPT1-2026-09-17#p7]；FY2022–FY2026 分红 1,102 亿美元加回购 1,129 亿美元回到股东手里，没有股权发行 [src:MSFT-RPT1-2026-09-17#p8]；短板是长期激励四项里三项是收入、一项是相对股价，没有资本回报项 [src:MSFT-RPT1-2026-09-17#p7]，而数据中心是它历史上最大的一笔资本配置 [src:MSFT-RPT1-2026-09-17#p3]。"
+      claim: "Management allocates capital like owners: all three CEOs have been insiders, and the six executive officers average 25.0 years of tenure [src:MSFT-RPT1-2026-09-17#p7]; in FY2022–FY2026, $110.2 billion of dividends plus $112.9 billion of buybacks went back to shareholders, with no equity issuance [src:MSFT-RPT1-2026-09-17#p8]; the weak spot is that of the four long-term incentive measures, three are revenue and one is relative share price, with no return-on-capital measure [src:MSFT-RPT1-2026-09-17#p7], while the data centers are the largest capital allocation in its history [src:MSFT-RPT1-2026-09-17#p3]."
       source: MSFT-RPT1-2026-09-17#p8
-  # 芒格反向清单：怎样会永久亏损（取自报告第七节反方最强论点、第四节侵蚀路径与第十二节“最可能错在哪”）
+  # Munger inversion list: how a permanent loss could happen (from section seven's strongest bear argument, section four's erosion paths and section twelve's “where this is most likely wrong”)
   permanent_loss_paths:
-    - "算力变成吃掉年金现金的重资产：四家超大规模厂商加 neocloud 的产能同时上线，今天的排队变成明天的折扣 [src:MSFT-RPT1-2026-09-17#p6]；FY2028 的折旧摊销大概率比 FY2026 高出 220 亿美元以上，盖住它需要约 320 亿美元新增收入 [src:MSFT-RPT1-2026-09-17#p4]；若资本开支在 FY2028 之后仍占收入 30% 以上，反方就是对的，年金攒下的现金被永久换成了回报平庸的机器 [src:MSFT-RPT1-2026-09-17#p8]。"
-    - "单一客户的反身性链条断裂：OpenAI 承诺增量采购 2,500 亿美元的 Azure 服务，按五年消耗每年约 500 亿美元，相当于 Azure FY2026 全年收入的一半 [src:MSFT-RPT1-2026-09-17#p8]；微软这一侧不可撤销的租赁与采购承诺合计 6,376 亿美元，相当于 9.5 年的 FY2026 自由现金流 [src:MSFT-RPT1-2026-09-17#p8]；OpenAI 的估值、融资、采购与微软的履约余额、资本开支互相作证，断的时候不会只断一处 [src:MSFT-RPT1-2026-09-17#p9]。"
-    - "年金被自己的 agent 拆掉：日常工作的入口外移到模型公司或手机厂商的界面，Office 退化成文件格式与后端，定价权流向界面所有者 [src:MSFT-RPT1-2026-09-17#p6]；约 108 亿美元年化的 Copilot 加购层里约 69 亿美元是买了没怎么用的席位，靠底座的粘性兜着 [src:MSFT-RPT1-2026-09-17#p6]，一旦席位开始下降而 agent 或用量收入接不上，失血的就是底座本身。"
-    - "现金转换率回不到收租者的水平（报告第十二节认为这份判断最可能错的地方）：FY2021–FY2023 资本开支从未超过收入 14% [src:MSFT-RPT1-2026-09-17#p4]，转换率在 82.2% 到 91.5% 之间 [src:MSFT-RPT1-2026-09-17#p5]；FY2024 资本开支已占收入 18.1%，转换率仍有 84.0% [src:MSFT-RPT1-2026-09-17#p5]，第十二节把 FY2024 也算进资本开支不到收入 14% 的年代，与第三节的正文和表格不一致（见 todo）[src:MSFT-RPT1-2026-09-17#p12]；转换率掉下来的是资本开支超过收入 20% 的两年，FY2025 只有 67.9%、FY2026 只有 52.0% [src:MSFT-RPT1-2026-09-17#p12]。报告说，如果置业者回不到收租者的转换率，年金的粘性、管理层的记录与集中度的算术即便全对也救不回来 [src:MSFT-RPT1-2026-09-17#p13]；这一条首先改写的是估值（只在私有仓库），论点本身的作废线是 FY2028 低于 45%（MSFT-Q6）[src:MSFT-RPT1-2026-09-17#p11]。"
-    - "资本配置失误被规模放大：aQuantive 与 Nokia 两笔收购已确认失败、合计减记约 138 亿美元，Activision 的 754 亿美元仍在观察中，数据中心是第四笔、也是最大的一笔 [src:MSFT-RPT1-2026-09-17#p3]；而衡量它的尺子还没装上——长期激励奖励 Azure 的收入增量，不奖励为此花掉的资本开支 [src:MSFT-RPT1-2026-09-17#p7]。"
+    - "Compute becomes a heavy asset that eats the annuity's cash: capacity from the four hyperscalers plus the neoclouds comes online at the same time, and today's queue becomes tomorrow's discount [src:MSFT-RPT1-2026-09-17#p6]; FY2028 depreciation and amortization will very likely be more than $22 billion above FY2026, and covering it takes about $32 billion of new revenue [src:MSFT-RPT1-2026-09-17#p4]; if capex is still above 30% of revenue after FY2028, the bear case is right, and the cash the annuity piled up has been permanently swapped for machines with mediocre returns [src:MSFT-RPT1-2026-09-17#p8]."
+    - "The reflexive chain around a single customer breaks: OpenAI has committed to buy an incremental $250 billion of Azure services, about $50 billion a year if consumed over five years, half of Azure's full-year FY2026 revenue [src:MSFT-RPT1-2026-09-17#p8]; on Microsoft's side, non-cancelable lease and purchase commitments total $637.6 billion, equal to 9.5 years of FY2026 free cash flow [src:MSFT-RPT1-2026-09-17#p8]; OpenAI's valuation, funding and purchases and Microsoft's RPO and capex vouch for one another, so when the chain breaks, it will not break in just one place [src:MSFT-RPT1-2026-09-17#p9]."
+    - "The annuity is taken apart by its own agents: the entry point to daily work moves out to the interfaces of model companies or phone makers, Office shrinks to a file format and a back end, and pricing power flows to the owners of the interface [src:MSFT-RPT1-2026-09-17#p6]; of the Copilot add-on layer's roughly $10.8 billion annualized, about $6.9 billion is seats bought but little used, held up by the stickiness of the base [src:MSFT-RPT1-2026-09-17#p6]; once seats start to fall and agent or usage revenue fails to take over, it is the base itself that bleeds."
+    - "Cash conversion never gets back to a rent collector's level (where section twelve of the report thinks this judgment is most likely wrong): in FY2021–FY2023 capex never exceeded 14% of revenue [src:MSFT-RPT1-2026-09-17#p4], and conversion was between 82.2% and 91.5% [src:MSFT-RPT1-2026-09-17#p5]; in FY2024 capex was already 18.1% of revenue and conversion was still 84.0% [src:MSFT-RPT1-2026-09-17#p5]; section twelve counts FY2024 among the years when capex was below 14% of revenue, which disagrees with section three's text and table (see todo) [src:MSFT-RPT1-2026-09-17#p12]; conversion fell in the two years when capex exceeded 20% of revenue, to only 67.9% in FY2025 and only 52.0% in FY2026 [src:MSFT-RPT1-2026-09-17#p12]. The report says that if the property buyer cannot get back to the rent collector's conversion rate, the stickiness of the annuity, management's record and the concentration arithmetic cannot save it even if they are all right [src:MSFT-RPT1-2026-09-17#p13]; what this rewrites first is the valuation (only in the private repository); the thesis's own invalidation line is below 45% in FY2028 (MSFT-Q6) [src:MSFT-RPT1-2026-09-17#p11]."
+    - "Capital allocation mistakes magnified by scale: the aQuantive and Nokia acquisitions are confirmed failures, with about $13.8 billion written off between them, the $75.4 billion Activision deal is still under observation, and the data centers are the fourth such bet and the largest [src:MSFT-RPT1-2026-09-17#p3]; and the yardstick to measure it is not yet installed: long-term incentives reward the increase in Azure revenue, not the capex spent to get it [src:MSFT-RPT1-2026-09-17#p7]."
 
-# 报告中的基准事实，供审计与日后 XBRL/申报文件逐条核对（单位“亿美元”沿用报告）
+# Baseline facts from the report, for audits and for later item-by-item checks against XBRL and filings (the unit, USD 100 million, follows the report)
 baseline_facts:
   - id: F1
-    label: 总收入
+    label: Total revenue
     value: 3318
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p3
-    note: "营业利润 1,552 亿美元，营业利润率 46.8%，为十年最高 [src:MSFT-RPT1-2026-09-17#p3]。"
+    note: "Operating profit of $155.2 billion and an operating margin of 46.8%, a ten-year high [src:MSFT-RPT1-2026-09-17#p3]."
   - id: F2
-    label: 营业利润率序列（FY2016 为重述口径）
+    label: Operating margin series (FY2016 on a restated basis)
     value: [28.6, 41.6, 44.6, 45.6, 46.8]
     unit: "%"
     period: FY2016 / FY2021 / FY2024 / FY2025 / FY2026
     source: MSFT-RPT1-2026-09-17#p5
   - id: F3
-    label: 生产力与业务流程分部收入
+    label: Productivity and Business Processes segment revenue
     value: 1400
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p3
-    note: "营业利润率 59.9% [src:MSFT-RPT1-2026-09-17#p3]；分部收入增速第二节写 16%、第三节写 15%，待以 10-K 核对 [src:MSFT-RPT1-2026-09-17#p3] [src:MSFT-RPT1-2026-09-17#p4]。"
+    note: "Operating margin of 59.9% [src:MSFT-RPT1-2026-09-17#p3]; the segment's revenue growth is 16% in section two and 15% in section three, to be checked against the 10-K [src:MSFT-RPT1-2026-09-17#p3] [src:MSFT-RPT1-2026-09-17#p4]."
   - id: F4
-    label: 智能云分部收入（旧分部口径）
+    label: Intelligent Cloud segment revenue (old segment basis)
     value: 1378
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p3
-    note: "营业利润率 41.4% [src:MSFT-RPT1-2026-09-17#p3]。"
+    note: "Operating margin of 41.4% [src:MSFT-RPT1-2026-09-17#p3]."
   - id: F5
-    label: 个人计算分部收入（Windows OEM、Xbox、搜索广告）
+    label: More Personal Computing segment revenue (Windows OEM, Xbox, search advertising)
     value: 541
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p3
-    note: "占收入 16%，报告把这一块当作背景而不是论点 [src:MSFT-RPT1-2026-09-17#p3]。"
+    note: "16% of revenue, a part the report treats as background, not as part of the thesis [src:MSFT-RPT1-2026-09-17#p3]."
   - id: F6
-    label: Azure 全年收入（旧口径）
-    value: 超过 1,000
-    unit: 亿美元
+    label: Azure full-year revenue (old basis)
+    value: more than 1,000
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p3
-    note: "增长 41%（旧口径）[src:MSFT-RPT1-2026-09-17#p3]。"
+    note: "Growth of 41% (old basis) [src:MSFT-RPT1-2026-09-17#p3]."
   - id: F7
-    label: Azure 6 月季收入（FY27 新口径）
+    label: Azure June-quarter revenue (FY27 new basis)
     value: 294.2
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026Q4
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p11
-    note: "同比 +42%（新口径、固定汇率）[src:MSFT-RPT1-2026-09-17#p11]。"
+    note: "Up 42% year on year (new basis, constant currency) [src:MSFT-RPT1-2026-09-17#p11]."
   - id: F8
-    label: M365 商业云收入
+    label: M365 commercial cloud revenue
     value: 1020
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p3
-    note: "增长 16% [src:MSFT-RPT1-2026-09-17#p3]；M365 商业席位增长 6%，按 FY27 新口径（纳入 GitHub 付费席位）重述后为 7% [src:MSFT-RPT1-2026-09-17#p11]。"
+    note: "Growth of 16% [src:MSFT-RPT1-2026-09-17#p3]; M365 commercial seats grew 6%, or 7% as restated on the FY27 new basis (which includes paid GitHub seats) [src:MSFT-RPT1-2026-09-17#p11]."
   - id: F9
-    label: 现金资本开支（不含融资租赁）
+    label: Cash capex (excluding finance leases)
     value: 1159
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p5
-    note: "占收入 34.9% [src:MSFT-RPT1-2026-09-17#p5]；FY2021 为 12.3%、FY2024 为 18.1%、FY2025 为 22.9% [src:MSFT-RPT1-2026-09-17#p5]。"
+    note: "34.9% of revenue [src:MSFT-RPT1-2026-09-17#p5]; 12.3% in FY2021, 18.1% in FY2024 and 22.9% in FY2025 [src:MSFT-RPT1-2026-09-17#p5]."
   - id: F10
-    label: 自由现金流（经营现金流 − 现金资本开支）
+    label: Free cash flow (operating cash flow − cash capex)
     value: [741, 716, 670]
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2024 / FY2025 / FY2026
     source: MSFT-RPT1-2026-09-17#p5
   - id: F11
-    label: 自由现金流 ÷ 非 GAAP 净利润
+    label: Free cash flow ÷ non-GAAP net income
     value: [91.5, 89.6, 82.2, 84.0, 67.9, 52.0]
     unit: "%"
     period: FY2021 / FY2022 / FY2023 / FY2024 / FY2025 / FY2026
     source: MSFT-RPT1-2026-09-17#p5
   - id: F12
-    label: 经营现金流
+    label: Operating cash flow
     value: 1829
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p8
   - id: F13
-    label: 毛利率
+    label: Gross margin
     value: 67.9
     unit: "%"
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p5
   - id: F14
-    label: 微软云毛利率（全年 / 第四季度）
+    label: Microsoft Cloud gross margin (full year / fourth quarter)
     value: [66, 65]
     unit: "%"
     period: FY2026 / FY2026Q4
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p11
   - id: F15
-    label: Agents and Infra 营业利润率（FY2026 按新分部重述）
+    label: Agents and Infra operating margin (FY2026 restated for the new segments)
     value: 50.9
     unit: "%"
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p11
-    note: "FY27 起“智能云利润率”不再存在，以它替代；报告写作“约 50.9%”[src:MSFT-RPT1-2026-09-17#p11]。"
+    note: "From FY27 the “Intelligent Cloud margin” no longer exists and this replaces it; the report writes “about 50.9%” [src:MSFT-RPT1-2026-09-17#p11]."
   - id: F16
-    label: 净固定资产
+    label: Net fixed assets
     value: 3131
-    unit: 亿美元
+    unit: USD 100 million
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p4
-    note: "相当于全年收入的 94%，十年前为 21% [src:MSFT-RPT1-2026-09-17#p4]；约三分之二是服务器与网络设备这类短寿命资产，约 2,090 亿美元 [src:MSFT-RPT1-2026-09-17#p4]。"
+    note: "Equal to 94% of full-year revenue, against 21% ten years earlier [src:MSFT-RPT1-2026-09-17#p4]; about two-thirds is short-lived assets such as servers and network equipment, about $209 billion [src:MSFT-RPT1-2026-09-17#p4]."
   - id: F17
-    label: 折旧摊销
+    label: Depreciation and amortization
     value: 385
-    unit: 亿美元
+    unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p4
-    note: "报告按资产构成推算：FY2028 的折旧摊销大概率超过 600 亿美元，比 FY2026 高出 220 亿美元以上 [src:MSFT-RPT1-2026-09-17#p4]。"
+    note: "The report's estimate from the asset mix: FY2028 depreciation and amortization will very likely exceed $60 billion, more than $22 billion above FY2026 [src:MSFT-RPT1-2026-09-17#p4]."
   - id: F18
-    label: 商业履约余额（commercial RPO）
+    label: Commercial remaining performance obligation (commercial RPO)
     value: 6780
-    unit: 亿美元
+    unit: USD 100 million
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p8
-    note: "公司唯一披露过的客户集中度：45% 来自 OpenAI（FY26 Q2 电话会，对应当时 6,250 亿美元口径）[src:MSFT-RPT1-2026-09-17#p8]。最近一季的环比增量全部来自前沿模型公司以外的客户；12 个月以后才确认的部分同比增长 112%，报告把它和“剔除 OpenAI 后仍增长 25%”写在同一句，没有说明这个读数是否剔除 OpenAI（见 todo）[src:MSFT-RPT1-2026-09-17#p8]。"
+    note: "The only customer concentration the company has ever disclosed: 45% from OpenAI (FY26 Q2 call, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]. All of the latest quarter's sequential increase came from customers other than frontier-model companies; the portion to be recognized beyond 12 months grew 112% year on year, and the report puts this in the same sentence as “still up 25% excluding OpenAI” without saying whether this reading excludes OpenAI (see todo) [src:MSFT-RPT1-2026-09-17#p8]."
   - id: F19
-    label: 剔除 OpenAI 的商业履约余额同比
+    label: Commercial RPO excluding OpenAI, year on year
     value: 25
     unit: "%"
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p8
-    note: "报告提醒：剔除 OpenAI 的余额里分不开 neocloud 与真实企业，所以集中度本身仍在 [src:MSFT-RPT1-2026-09-17#p8]。"
+    note: "The report warns that the balance excluding OpenAI cannot separate neoclouds from real enterprises, so the concentration itself remains [src:MSFT-RPT1-2026-09-17#p8]."
   - id: F20
-    label: 合同义务总额
+    label: Total contractual obligations
     value: 7438
-    unit: 亿美元
+    unit: USD 100 million
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p8
-    note: "采购承诺 1,941 亿美元（其中 1,690 亿在 FY2027 到期）、含推定利息的租赁 4,435 亿、建设承诺 346 亿、债务 717 亿 [src:MSFT-RPT1-2026-09-17#p8]；不可撤销的租赁与采购承诺合计 6,376 亿美元，相当于 9.5 年的 FY2026 自由现金流 [src:MSFT-RPT1-2026-09-17#p8]；FY2027 到期的采购承诺相当于 FY2026 经营现金流的 92% [src:MSFT-RPT1-2026-09-17#p8]。"
+    note: "Purchase commitments of $194.1 billion ($169 billion of it due in FY2027), leases including imputed interest of $443.5 billion, construction commitments of $34.6 billion and debt of $71.7 billion [src:MSFT-RPT1-2026-09-17#p8]; non-cancelable lease and purchase commitments total $637.6 billion, equal to 9.5 years of FY2026 free cash flow [src:MSFT-RPT1-2026-09-17#p8]; the purchase commitments due in FY2027 equal 92% of FY2026 operating cash flow [src:MSFT-RPT1-2026-09-17#p8]."
   - id: F21
-    label: 长期债务本金
+    label: Long-term debt principal
     value: 461
-    unit: 亿美元
+    unit: USD 100 million
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p9
   - id: F22
-    label: 回到股东手里的现金（分红 / 回购）
+    label: Cash returned to shareholders (dividends / buybacks)
     value: [1102, 1129]
-    unit: 亿美元
-    period: FY2022–FY2026 累计
+    unit: USD 100 million
+    period: FY2022–FY2026 cumulative
     source: MSFT-RPT1-2026-09-17#p8
-    note: "合计 2,231 亿美元 [src:MSFT-RPT1-2026-09-17#p8]；同期净偿还债务 232 亿美元，没有股权发行，稀释后股数下降约 2% [src:MSFT-RPT1-2026-09-17#p8]；五年股权激励费用约 522 亿美元，另有 248 亿美元的税务代扣回购 [src:MSFT-RPT1-2026-09-17#p8]。"
+    note: "A total of $223.1 billion [src:MSFT-RPT1-2026-09-17#p8]; over the same period, net debt repayment was $23.2 billion, there was no equity issuance, and the diluted share count fell about 2% [src:MSFT-RPT1-2026-09-17#p8]; five years of stock-based compensation expense came to about $52.2 billion, plus $24.8 billion of repurchases for tax withholding [src:MSFT-RPT1-2026-09-17#p8]."
   - id: F23
-    label: Copilot 付费席位（公司自报）
-    value: 超过 3,000
-    unit: 万
+    label: Copilot paid seats (company-reported)
+    value: more than 3,000
+    unit: "10,000"
     period: FY2026Q4
     source: MSFT-RPT1-2026-09-17#p6
-    note: "一份覆盖超过 15 万名美国企业付费用户的厂商面板显示：有权限者中活跃使用的比例 Copilot 35.8%、ChatGPT 83.1%，三家都能用时只有 8% 选 Copilot，Copilot 是唯一工具时 68% 把它当主力 [src:MSFT-RPT1-2026-09-17#p6]。"
+    note: "A vendor panel covering more than 150,000 paid US enterprise users shows the share of those with access who actively use the tool at 35.8% for Copilot and 83.1% for ChatGPT, only 8% choosing Copilot when all three are available, and 68% using Copilot as their main tool when it is the only one [src:MSFT-RPT1-2026-09-17#p6]."
   - id: F24
-    label: 微软持有 OpenAI 的股权比例（约）
+    label: Microsoft's equity stake in OpenAI (approximate)
     value: 27
     unit: "%"
     source: MSFT-RPT1-2026-09-17#p9
   - id: F25
-    label: 商誉
+    label: Goodwill
     value: 1196.51
-    unit: 亿美元
+    unit: USD 100 million
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p7
-    note: "上年末 1,195.09 亿美元 [src:MSFT-RPT1-2026-09-17#p7]；Activision 带来的 510.01 亿美元一分未减记 [src:MSFT-RPT1-2026-09-17#p7]。"
+    note: "$119.509 billion at the end of the previous year [src:MSFT-RPT1-2026-09-17#p7]; not a cent of the $51.001 billion from Activision has been written down [src:MSFT-RPT1-2026-09-17#p7]."
   - id: F26
-    label: 员工人数
+    label: Employees
     value: 223000
-    unit: 人
+    unit: people
     as_of: 2026-06-30
     source: MSFT-RPT1-2026-09-17#p7
-    note: "比上年少 5,000 人，其中产品研发 77,000 人；人均收入从 124 万美元升到 149 万美元 [src:MSFT-RPT1-2026-09-17#p7]。"
+    note: "5,000 fewer than a year earlier, of whom 77,000 are in product research and development; revenue per employee rose from $1.24 million to $1.49 million [src:MSFT-RPT1-2026-09-17#p7]."
   - id: F27
-    label: 六名执行官平均司龄
+    label: Average tenure of the six executive officers
     value: 25.0
-    unit: 年
-    period: 截至 2026 年
+    unit: years
+    period: as of 2026
     source: MSFT-RPT1-2026-09-17#p7
 
 tests:
-  # ---------- 林奇 stalwart 模板（五条都在；MSFT-Q4 换了指标并改写门槛，MSFT-L1 改写问法，理由见各自的 note） ----------
+  # ---------- Lynch stalwart template (all five kept; MSFT-Q4 changes the metric and rewrites the threshold, MSFT-L1 rewrites the question; reasons in each note) ----------
   - id: MSFT-Q1
     type: quantitative
-    claim: 增长没有滑出稳定增长型的区间
+    claim: Growth has not slipped out of the stalwart range
     origin: template:stalwart
     severity: watch
     covers: [growth]
     pillar: P1
     metric: revenue_yoy
-    fail_if: 连续 4 个季度低于 5%
+    fail_if: Below 5% for 4 consecutive quarters
     rule: {op: "<", threshold: 5, unit: "%", consecutive: 4, period: quarter}
-    warn_if: 连续 2 个季度低于 8%
+    warn_if: Below 8% for 2 consecutive quarters
     warn_rule: {op: "<", threshold: 8, unit: "%", consecutive: 2, period: quarter}
     data: xbrl
     effective_from: FY2027Q1
@@ -303,33 +303,33 @@ tests:
       period: FY2026
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p7
-      note: "收入从 FY2025 的 2,817 亿美元增至 FY2026 的 3,318 亿美元 [src:MSFT-RPT1-2026-09-17#p5]。"
-    note: "门槛沿用模板默认值。它们离 FY2026 的增速很远，所以这条只是底线：增速放慢的早期信号在分部测试里——Azure 增速（MSFT-Q10 的警告线与 MSFT-Q5）、M365 商业云与席位增速（MSFT-Q12 的警告线）、席位是否下降（MSFT-Q9）。个人计算这一块（Windows OEM、Xbox、搜索广告）报告当作背景而不是论点，公司对 FY2027 的指引是 Windows OEM 与设备下滑 high teens [src:MSFT-RPT1-2026-09-17#p3]；全公司增速放慢时，先对照上面几条，看放慢的是哪一门。"
+      note: "Revenue rose from $281.7 billion in FY2025 to $331.8 billion in FY2026 [src:MSFT-RPT1-2026-09-17#p5]."
+    note: "The thresholds are the template defaults. They are far from FY2026's growth rate, so this test is only a floor: the early signals of slowing growth are in the segment tests, namely Azure growth (MSFT-Q10's warning line and MSFT-Q5), M365 commercial cloud and seat growth (MSFT-Q12's warning line), and whether seats are falling (MSFT-Q9). The report treats the More Personal Computing business (Windows OEM, Xbox, search advertising) as background, not as part of the thesis, and the company's FY2027 guidance is for Windows OEM and Devices to decline in the high teens [src:MSFT-RPT1-2026-09-17#p3]; when company-wide growth slows, check the tests above first to see which business is slowing."
 
   - id: MSFT-Q2
     type: quantitative
-    claim: 投入资本回报守在优秀企业的水平
+    claim: Return on invested capital holds at the level of an excellent business
     origin: template:stalwart
     severity: watch
     covers: [returns_on_capital, moat]
     pillar: P3
     metric: roic
-    fail_if: 连续 2 年低于 12%
+    fail_if: Below 12% for 2 consecutive years
     rule: {op: "<", threshold: 12, unit: "%", consecutive: 2, period: year}
     data: xbrl
     effective_from: FY2027Q1
     first_readable: 2027-07
-    note: "claim 与门槛都沿用模板默认值。报告没有给全公司投入资本回报的读数，基线待从 FY2026 年报的 XBRL 回填。这条看不见数据中心对回报的拖累：登记表 roic 的投入资本是权益加有息负债减现金，不含租赁负债，而数据中心大量靠租赁取得——FY2026 年末含推定利息的租赁义务 4,435 亿美元 [src:MSFT-RPT1-2026-09-17#p8]，长期债务本金只有 461 亿美元 [src:MSFT-RPT1-2026-09-17#p9]，FY2027 起数据中心租赁多以经营租赁入账 [src:MSFT-RPT1-2026-09-17#p4]。年金的高回报也会在很多年里盖住新投入的回报，所以这条是底线而不是早期信号，早期信号看 MSFT-Q5 与 MSFT-Q7。报告给的是增量口径：正文按全公司税后营业利润增量对三年资本开支的比值，税后增量回报在 13% 到 39% 之间，公开数据无法收窄 [src:MSFT-RPT1-2026-09-17#p4]，附录说区间是按全公司与智能云两种口径算的 [src:MSFT-RPT1-2026-09-17#p13]；资本配置评级升到 B+ 的条件之一，是三年增量税后回报读数到 20% 以上 [src:MSFT-RPT1-2026-09-17#p3]。"
+    note: "Both the claim and the threshold are the template defaults. The report gives no company-wide return on invested capital, so the baseline is to be backfilled from the XBRL of the FY2026 annual report. This test cannot see the data centers' drag on returns: invested capital in the registry's roic is equity plus interest-bearing debt minus cash, excluding lease liabilities, and the data centers are largely obtained through leases: lease obligations including imputed interest were $443.5 billion at the end of FY2026 [src:MSFT-RPT1-2026-09-17#p8], against long-term debt principal of only $46.1 billion [src:MSFT-RPT1-2026-09-17#p9], and from FY2027 most data center leases are booked as operating leases [src:MSFT-RPT1-2026-09-17#p4]. The annuity's high returns will also mask the returns on new investment for many years, so this test is a floor, not an early signal; for early signals, see MSFT-Q5 and MSFT-Q7. The report gives an incremental measure: its main text takes the company-wide increase in after-tax operating profit over three years of capex, for an after-tax incremental return between 13% and 39% that public data cannot narrow [src:MSFT-RPT1-2026-09-17#p4], and the appendix says the range was calculated on two bases, the whole company and Intelligent Cloud [src:MSFT-RPT1-2026-09-17#p13]; one condition for raising the capital allocation rating to B+ is a three-year incremental after-tax return reading above 20% [src:MSFT-RPT1-2026-09-17#p3]."
 
   - id: MSFT-Q3
     type: quantitative
-    claim: 回购在真正缩减股本，而不是抵消股权激励
+    claim: Buybacks are truly shrinking the share count, not offsetting stock-based compensation
     origin: template:stalwart
     severity: watch
     covers: [capital_allocation]
     pillar: P6
     metric: diluted_shares_yoy
-    fail_if: 连续 2 年大于 0
+    fail_if: Above 0 for 2 consecutive years
     rule: {op: ">", threshold: 0, unit: "%", consecutive: 2, period: year}
     data: xbrl
     effective_from: FY2027Q1
@@ -337,24 +337,24 @@ tests:
     baseline:
       value: null
       unit: "%"
-      period: FY2026（同比）
+      period: FY2026 (year on year)
       as_of: 2026-06-30
       source: MSFT-10K-FY2026
-      note: "同比读数待从 FY2026 年报的 XBRL 回填。报告只给了五年累计：FY2022–FY2026 稀释后股数下降约 2%（见 F22）[src:MSFT-RPT1-2026-09-17#p8]；同期回购 1,129 亿美元，而五年股权激励费用约 522 亿美元、另有 248 亿美元税务代扣回购，回购现金流里约一半的效果被新增股份吃掉 [src:MSFT-RPT1-2026-09-17#p8]。"
-    note: "门槛沿用模板默认值。报告第六节的标准二问的是股东回报有没有被新发债务或股权抵消（答案是没有），没有问回购里有多少是真正的减股（答案是一半）；这条测试盯的是后一个问题。"
+      note: "The year-on-year reading is to be backfilled from the XBRL of the FY2026 annual report. The report gives only the five-year total: the diluted share count fell about 2% over FY2022–FY2026 (see F22) [src:MSFT-RPT1-2026-09-17#p8]; buybacks over the same period were $112.9 billion, while five years of stock-based compensation expense came to about $52.2 billion, plus $24.8 billion of repurchases for tax withholding, so new shares ate about half the effect of the buyback cash [src:MSFT-RPT1-2026-09-17#p8]."
+    note: "The threshold is the template default. Standard two in section six of the report asks whether shareholder returns were offset by new debt or equity (the answer is no), not how much of the buybacks truly reduced the share count (the answer is half); this test watches the second question."
 
   - id: MSFT-Q4
     type: quantitative
-    claim: 利润能重新变成现金：自由现金流对非 GAAP 净利润的转换率从十年低点回升
+    claim: "Profit turns back into cash: the conversion of free cash flow to non-GAAP net income recovers from its ten-year low"
     origin: template:stalwart
     severity: watch
     covers: [free_cash_flow]
     pillar: P4
     metric: fcf_to_non_gaap_net_income
-    fail_if: 从 FY2027 起，连续 2 个财年不高于 FY2026 的 52%
-    rule: {op: "<=", threshold: 52, unit: "%", consecutive: 2, period: year, evaluate_from: FY2027, note: "从 FY2027 年报起算，FY2026 本身不计入连续期数。"}
-    warn_if: 从 FY2027 起，任一财年不高于 52%（没有回升）
-    warn_rule: {op: "<=", threshold: 52, unit: "%", consecutive: 1, period: year, evaluate_from: FY2027, note: "从 FY2027 年报起算，FY2026 本身不计。"}
+    fail_if: From FY2027, not above FY2026's 52% for 2 consecutive fiscal years
+    rule: {op: "<=", threshold: 52, unit: "%", consecutive: 2, period: year, evaluate_from: FY2027, note: "Counted from the FY2027 annual report; FY2026 itself does not count toward the consecutive periods."}
+    warn_if: From FY2027, any fiscal year not above 52% (no recovery)
+    warn_rule: {op: "<=", threshold: 52, unit: "%", consecutive: 1, period: year, evaluate_from: FY2027, note: "Counted from the FY2027 annual report; FY2026 itself does not count."}
     data: filing_text
     effective_from: FY2027Q1
     first_readable: 2027-07
@@ -364,78 +364,78 @@ tests:
       period: FY2026
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p5
-      note: "FY2021 91.5%、FY2022 89.6%、FY2023 82.2%、FY2024 84.0%、FY2025 67.9% [src:MSFT-RPT1-2026-09-17#p5]。"
-    note: "改写模板：不只改了门槛，也换了指标，超出模板 README 只许改门槛的范围，待集成步骤写进决策记录（见 todo）。模板默认用登记表的 fcf_conversion（GAAP 净利润口径、XBRL 可算）、连续 2 年低于常态线即失败；按报告口径，FY2025 的 67.9% 与 FY2026 的 52.0% 已经连续两年低于那条常态线 [src:MSFT-RPT1-2026-09-17#p5]，原样判定建档即失败，不带来新信息。这里改两处，都取自报告：一，指标改为报告全篇使用的自由现金流 ÷ 非 GAAP 净利润（资本开支不含融资租赁），与 MSFT-Q6 读同一个数 [src:MSFT-RPT1-2026-09-17#p4]，代价是分母由公司自己定义、要从新闻稿的调节表里抽取，这份档案里不再有 XBRL 可直接计算的现金转换测试；二，门槛改为第十节前瞻指标 #4 的健康线“FY2027 后回升”，以 FY2026 的 52% 为基准 [src:MSFT-RPT1-2026-09-17#p11]。模板的常态线在报告里有对应物：产能满负荷后转换率回到 70% 以上是解释 A，50–65% 的新常态是解释 B，两者在 FY2028 之前分不开 [src:MSFT-RPT1-2026-09-17#p5]，FY2028 年报出来后复核这条测试。前瞻指标 #4 的触发线就是破坏信号二，见 MSFT-Q6。"
+      note: "FY2021 91.5%, FY2022 89.6%, FY2023 82.2%, FY2024 84.0%, FY2025 67.9% [src:MSFT-RPT1-2026-09-17#p5]."
+    note: "Rewritten template: not only the threshold but also the metric was changed, which goes beyond the template README's permission to change thresholds only; the integration step is to record this in a decision record (see todo). The template's default is the registry's fcf_conversion (GAAP net income basis, computable from XBRL), failing after 2 consecutive years below the normal line; on the report's basis, FY2025's 67.9% and FY2026's 52.0% are already two consecutive years below that normal line [src:MSFT-RPT1-2026-09-17#p5], so judged as written, the test would fail on creation and bring no new information. Two changes are made here, both taken from the report. One: the metric becomes free cash flow ÷ non-GAAP net income as used throughout the report (capex excluding finance leases), the same number MSFT-Q6 reads [src:MSFT-RPT1-2026-09-17#p4]; the cost is that the denominator is defined by the company and has to be extracted from the press release's reconciliation table, so this archive no longer has a cash conversion test computable directly from XBRL. Two: the threshold becomes the healthy line of section ten's watch indicator #4, “recovery after FY2027”, with FY2026's 52% as the base [src:MSFT-RPT1-2026-09-17#p11]. The template's normal line has a counterpart in the report: conversion returning above 70% once capacity runs full is explanation A, a new normal of 50–65% is explanation B, and the two cannot be separated before FY2028 [src:MSFT-RPT1-2026-09-17#p5]; review this test once the FY2028 annual report is out. Watch indicator #4's trigger line is breaker two; see MSFT-Q6."
 
   - id: MSFT-L1
     type: qualitative
-    claim: 管理层没有撤回、也没有朝不利方向改写已经给出且尚未到期的展望
+    claim: Management has not withdrawn, or revised in an unfavorable direction, any outlook it has given that has not yet come due
     origin: template:stalwart
     severity: watch
     covers: [management]
     pillar: P6
-    question: "本期业绩新闻稿、电话会材料或 10-Q/10-K 中，管理层是否撤回了此前给出、尚未到期的展望或指引，或者把同一期间的展望朝不利方向修改——收入、营业利润或分部（Azure、M365 商业云、Windows OEM 与设备、Xbox）的增长预期调低（原本预期下滑的，下滑幅度加大），或营业利润率预期调低？只因会计口径、分部口径或租赁入账方式变化而改写的数字不算；资本开支计划的变化不在本题，由 MSFT-Q5、MSFT-Q13 跟踪。"
-    fail_if: 撤回了尚未到期的展望或指引，且没有同时给出可检验的替代数字
-    warn_if: 同一期间的展望被朝不利方向修改（同时给出了新数字）
+    question: "In this period's earnings press release, call materials or 10-Q/10-K, did management withdraw an outlook or guidance given earlier that has not yet come due, or revise the outlook for the same period in an unfavorable direction, that is, lower the expected growth of revenue, operating profit or a segment (Azure, M365 commercial cloud, Windows OEM and Devices, Xbox) (for a line already expected to decline, a larger expected decline), or lower the expected operating margin? Figures rewritten only because of a change in accounting basis, segment basis or how leases are booked do not count; changes to capex plans are outside this question and are tracked by MSFT-Q5 and MSFT-Q13."
+    fail_if: An outlook or guidance not yet due was withdrawn, and no testable replacement figure was given at the same time
+    warn_if: The outlook for the same period was revised in an unfavorable direction (with new figures given at the same time)
     judge: independent_model
     evidence: required
-    where: 业绩 8-K 的新闻稿、业绩电话会纪要与投资者材料、10-Q/10-K 的 MD&A
+    where: The earnings 8-K's press release, the earnings call transcript and investor materials, the 10-Q/10-K MD&A
     lookback: 4
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: FY27 第一季度指引：Microsoft 365 商业云收入按固定汇率增长约 17%（FY27 新口径，由 2026-07-29 给出的约 15% 按新分部口径机械调整而来）
+      value: "FY27 Q1 guidance: Microsoft 365 commercial cloud revenue growth of about 17% in constant currency (FY27 new basis, mechanically adjusted to the new segment basis from the roughly 15% given on 2026-07-29)"
       source: MSFT-8K-2026-09-02#EX-99.1-slide21
-      note: "另一项已给出的指引：FY2027 Windows OEM 与设备下滑 high teens、Xbox 在重置后预计恢复增长，在 2026-07-29 的 FY26 第四季度业绩电话会上给出 [src:MSFT-CALL-FY2026Q4]；本档案没有电话会纪要全文，措辞取自转述它的报告页 [src:MSFT-RPT1-2026-09-17#p3]。报告在该季指引旁写的“新口径席位增速约 7%”，是 FY2026 按新口径重述后的席位增速 [src:MSFT-RPT1-2026-09-17#p11]，这里不当作指引，除非电话会纪要或 8-K 显示公司确实给了席位增速的指引（见 todo）。日历 2026 年的资本开支口径从约 1,900 亿美元改为约 1,750 亿美元，原因是数据中心租赁自 FY2027 起多以经营租赁而非融资租赁入账，这是入账方式变化，不算改写 [src:MSFT-RPT1-2026-09-17#p4]。"
-    note: "改写模板：模板问的是已公布的中期财务目标；报告没有提到微软公布中期目标，只记录了已给出的指引（见 baseline），所以这里把“目标”读作管理层已给出、尚未到期的展望与指引。“微软只在每季电话会给下一季指引、在第四季度电话会给全年展望”是本档案的工作假设，报告没有写，待以 FY26 Q4 电话会纪要与 8-K 核对（见 todo）。fail_if 沿用模板的语义（撤回且没有可检验的替代数字）；朝不利方向的修改记为警告，这一级是本档案加的。资本开支不放进本题：调高资本开支不是没兑现的承诺而是资本配置，调低正是支柱 P4 希望的方向，两者都由 MSFT-Q5、MSFT-Q13 按占收入的比例跟踪。"
+      note: "Other guidance already given: FY2027 Windows OEM and Devices to decline in the high teens, and Xbox expected to return to growth after its reset, given on the FY26 Q4 earnings call of 2026-07-29 [src:MSFT-CALL-FY2026Q4]; this archive does not have the full call transcript, and the wording is taken from the report page that relays it [src:MSFT-RPT1-2026-09-17#p3]. The “seat growth of about 7% on the new basis” that the report writes next to that quarter's guidance is FY2026 seat growth restated on the new basis [src:MSFT-RPT1-2026-09-17#p11]; it is not treated as guidance here unless the call transcript or an 8-K shows that the company really did guide seat growth (see todo). The calendar 2026 capex figure changed from about $190 billion to about $175 billion because, from FY2027, data center leases are mostly booked as operating rather than finance leases, which is a change in how they are booked, not a revision [src:MSFT-RPT1-2026-09-17#p4]."
+    note: "Rewritten template: the template asks about published medium-term financial targets; the report does not mention Microsoft publishing medium-term targets and records only guidance already given (see baseline), so here “targets” is read as the outlook and guidance management has given that has not yet come due. “Microsoft gives next-quarter guidance only on each quarterly call and its full-year outlook on the fourth-quarter call” is this archive's working assumption, not stated in the report, to be checked against the FY26 Q4 call transcript and the 8-K (see todo). fail_if keeps the template's meaning (withdrawn with no testable replacement figure); an unfavorable revision is recorded as a warning, a level this archive added. Capex is kept out of this question: raising capex is not an unkept promise but capital allocation, and lowering it is exactly the direction pillar P4 wants; both are tracked by MSFT-Q5 and MSFT-Q13 as a share of revenue."
 
-  # ---------- 报告第十节：论点破坏信号（任一条成立，投资论点作废，而不只是评级下调） ----------
+  # ---------- Section ten of the report: thesis breakers (if any one holds, the investment thesis is void, not merely downgraded) ----------
   - id: MSFT-Q5
     type: quantitative
-    claim: 算力投入换来的是增长：资本开支还在高位时，Azure 增速没有掉下来
+    claim: "The compute spending is buying growth: while capex is still high, Azure growth has not dropped"
     origin: report:breaker
     severity: breaker
     covers: [growth, returns_on_capital, capital_allocation]
     pillar: P3
     metric_def:
       id: azure_growth_vs_capex_intensity
-      description: Azure 收入同比增速与同季现金资本开支占收入（两项同季判定）
+      description: Azure revenue growth year on year and cash capex as a share of revenue in the same quarter (both judged in the same quarter)
       unit: "%"
       frequency: quarter
       data: mixed
       components:
-        azure_revenue_yoy: {description: "Azure 收入同比增速（FY27 新口径，2026-09-02 的 8-K 重述；固定汇率），公司口径", unit: "%", where: 分部附注或业绩新闻稿}
-        capex_to_revenue: {description: "现金资本开支 ÷ 收入（不含融资租赁），口径同登记表 capex_to_revenue", unit: "%", xbrl: ["us-gaap:PaymentsToAcquirePropertyPlantAndEquipment"]}
-    fail_if: Azure 固定汇率增速连续两个季度低于 20%，而同期现金资本开支占收入仍高于 25%（资本开支不含融资租赁）
+        azure_revenue_yoy: {description: "Azure revenue growth year on year (FY27 new basis, restated in the 8-K of 2026-09-02; constant currency), as defined by the company", unit: "%", where: segment note or earnings press release}
+        capex_to_revenue: {description: "Cash capex ÷ revenue (excluding finance leases), defined as in the registry's capex_to_revenue", unit: "%", xbrl: ["us-gaap:PaymentsToAcquirePropertyPlantAndEquipment"]}
+    fail_if: Azure constant-currency growth below 20% for two consecutive quarters while cash capex in the same period is still above 25% of revenue (capex excluding finance leases)
     rule:
       all_of:
         - {metric: azure_growth_vs_capex_intensity.azure_revenue_yoy, op: "<", threshold: 20, unit: "%"}
         - {metric: azure_growth_vs_capex_intensity.capex_to_revenue, op: ">", threshold: 25, unit: "%"}
       consecutive: 2
       period: quarter
-      note: 两项须在同一季度同时成立，并且连续两个季度；Azure 按新口径、固定汇率，资本开支取现金流量表的现金资本开支。
+      note: Both must hold in the same quarter, for two consecutive quarters; Azure on the new basis in constant currency, capex taken as cash capex from the cash flow statement.
     data: mixed
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
       value: 42
       unit: "%"
-      period: FY2026Q4（6 月季，新口径、固定汇率）
+      period: FY2026Q4 (June quarter, new basis, constant currency)
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p11
-      note: "6 月季 Azure 收入 294.2 亿美元 [src:MSFT-RPT1-2026-09-17#p11]；FY2026 全年现金资本开支占收入 34.9% [src:MSFT-RPT1-2026-09-17#p5]。"
-    note: "报告第十节破坏信号一。第二个条件按登记表 capex_to_revenue 的口径（xbrl），与报告“现金资本开支均不含融资租赁、第十节阈值按这个口径写”一致 [src:MSFT-RPT1-2026-09-17#p4]。更早一级的警报是前瞻指标 #1 的连续两季低于 25%，见 MSFT-Q10 [src:MSFT-RPT1-2026-09-17#p11]。"
+      note: "June-quarter Azure revenue of $29.42 billion [src:MSFT-RPT1-2026-09-17#p11]; FY2026 full-year cash capex was 34.9% of revenue [src:MSFT-RPT1-2026-09-17#p5]."
+    note: "Breaker one in section ten of the report. The second condition uses the registry's capex_to_revenue definition (xbrl), consistent with the report's “cash capex always excludes finance leases, and section ten's thresholds are written on this basis” [src:MSFT-RPT1-2026-09-17#p4]. An earlier-stage alarm is watch indicator #1, two consecutive quarters below 25% (see MSFT-Q10) [src:MSFT-RPT1-2026-09-17#p11]."
 
   - id: MSFT-Q6
     type: quantitative
-    claim: "资本开支周期没有把利润的现金含量压穿论点作废线：FY2028 年报的自由现金流对非 GAAP 净利润的转换率不低于 45% [src:MSFT-RPT1-2026-09-17#p11]"
+    claim: "The capex cycle has not pushed the cash content of profit through the thesis invalidation line: in the FY2028 annual report, the conversion of free cash flow to non-GAAP net income is not below 45% [src:MSFT-RPT1-2026-09-17#p11]"
     origin: report:breaker
     severity: breaker
     covers: [free_cash_flow, returns_on_capital]
     pillar: P4
     metric: fcf_to_non_gaap_net_income
-    fail_if: FY2028 年报的自由现金流对非 GAAP 净利润的转换率低于 45%
-    rule: {op: "<", threshold: 45, unit: "%", consecutive: 1, period: year, evaluate_on: [FY2028], note: "只按 FY2028 年报判定；FY2027 与 FY2029 及以后的年报不适用。"}
+    fail_if: In the FY2028 annual report, the conversion of free cash flow to non-GAAP net income is below 45%
+    rule: {op: "<", threshold: 45, unit: "%", consecutive: 1, period: year, evaluate_on: [FY2028], note: "Judged on the FY2028 annual report only; the FY2027 annual report and those for FY2029 and later do not apply."}
     data: filing_text
     effective_from: FY2027Q1
     first_readable: 2028-07
@@ -445,25 +445,25 @@ tests:
       period: FY2026
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p5
-    note: "报告第十节破坏信号二，也是前瞻指标 #4 的触发线。这条线比“转换率不再下降”宽：FY2028 只要不低于 45%，即便比 FY2026 的 52.0% 更低也不触发 [src:MSFT-RPT1-2026-09-17#p11] [src:MSFT-RPT1-2026-09-17#p5]；继续下降而没有跌破的情形，由 MSFT-Q4 的警告线与失败线记录。报告把这条线与折旧曲线分开：折旧是非现金费用，压的是利润而不是转换率；真正压转换率的是资本开支这笔现金支出，转换率能不能回升由资本开支什么时候回落决定 [src:MSFT-RPT1-2026-09-17#p4]。两条线都在 2028 年 7 月的年报里第一次能读到答案，但不能互相佐证 [src:MSFT-RPT1-2026-09-17#p4]。FY2028 之后的年份，在届时的更新里重新写门槛。"
+    note: "Breaker two in section ten of the report, and also watch indicator #4's trigger line. This line is looser than “conversion stops falling”: as long as FY2028 is not below 45%, it does not trigger even if it is lower than FY2026's 52.0% [src:MSFT-RPT1-2026-09-17#p11] [src:MSFT-RPT1-2026-09-17#p5]; a continued decline that does not break the line is recorded by MSFT-Q4's warning and failure lines. The report keeps this line separate from the depreciation curve: depreciation is a non-cash charge that weighs on profit, not on conversion; what really weighs on conversion is the cash outlay of capex, and whether conversion recovers depends on when capex comes down [src:MSFT-RPT1-2026-09-17#p4]. Both lines can first be read in the annual report of July 2028, but they cannot corroborate each other [src:MSFT-RPT1-2026-09-17#p4]. For years after FY2028, the threshold will be rewritten in the update at that time."
 
   - id: MSFT-Q7
     type: quantitative
-    claim: 微软云的毛利率守在资本开支周期能回本的水平之上
+    claim: Microsoft Cloud gross margin holds above the level at which the capex cycle can pay back
     origin: report:breaker
     severity: breaker
     covers: [pricing_power, returns_on_capital, competition]
     pillar: P3
     metric_def:
       id: microsoft_cloud_gross_margin
-      description: 微软云（Microsoft Cloud）毛利率，公司口径
+      description: Microsoft Cloud gross margin, as defined by the company
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 10-Q/10-K MD&A 中的 Microsoft Cloud gross margin percentage；业绩新闻稿与电话会材料
-    fail_if: 连续两个季度低于 58%
+      where: Microsoft Cloud gross margin percentage in the 10-Q/10-K MD&A; earnings press releases and call materials
+    fail_if: Below 58% for two consecutive quarters
     rule: {op: "<", threshold: 58, unit: "%", consecutive: 2, period: quarter}
-    warn_if: 单季低于 62%（离开前瞻指标 #3 的健康区间）
+    warn_if: "Below 62% in a single quarter (leaving the healthy range of watch indicator #3)"
     warn_rule: {op: "<", threshold: 62, unit: "%", consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2027Q1
@@ -474,25 +474,25 @@ tests:
       period: FY2026Q4
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p11
-      note: "FY2026 全年 66% [src:MSFT-RPT1-2026-09-17#p11]。"
-    note: "报告第十节破坏信号三。前瞻指标 #3 的健康区间是不低于 62%、触发线就是这条破坏线 [src:MSFT-RPT1-2026-09-17#p11]，所以并入本条：低于 62% 记警告。报告第四节的读法：跌破 64% 是第一个往坏方向的读数，62% 是第二个，连续两季低于 58% 才是论点破坏者 [src:MSFT-RPT1-2026-09-17#p6]；那条 64% 的方向线只在更新里记录，不单独设门槛 [src:MSFT-RPT1-2026-09-17#p6]。这是算力商品化那条侵蚀路径的信号，另一条线是 FY27 起首次按季披露的 Azure 美元收入 [src:MSFT-RPT1-2026-09-17#p6]。"
+      note: "66% for full-year FY2026 [src:MSFT-RPT1-2026-09-17#p11]."
+    note: "Breaker three in section ten of the report. Watch indicator #3's healthy range is not below 62%, and its trigger line is this breaker line [src:MSFT-RPT1-2026-09-17#p11], so it is merged into this test: below 62% is recorded as a warning. Section four of the report reads it this way: a break below 64% is the first reading in the bad direction, 62% is the second, and only two consecutive quarters below 58% is a thesis breaker [src:MSFT-RPT1-2026-09-17#p6]; that 64% directional line is only recorded in updates, with no threshold of its own [src:MSFT-RPT1-2026-09-17#p6]. This is the signal for the compute-commoditization erosion path; the other line is Azure dollar revenue, disclosed quarterly for the first time from FY27 [src:MSFT-RPT1-2026-09-17#p6]."
 
   - id: MSFT-Q8
     type: quantitative
-    claim: 履约余额的增长来自广泛的客户，而不只靠 OpenAI 一家
+    claim: RPO growth comes from a broad set of customers, not from OpenAI alone
     origin: report:breaker
     severity: breaker
     covers: [customer_concentration, growth]
     pillar: P5
     metric_def:
       id: commercial_rpo_ex_openai_yoy
-      description: 商业剩余履约义务（commercial RPO，即商业合同履约余额）剔除 OpenAI 后的同比增速，公司口径
+      description: Year-on-year growth of commercial remaining performance obligation (commercial RPO, the balance of commercial contracts still to be performed) excluding OpenAI, as defined by the company
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 业绩新闻稿与电话会纪要中的商业履约余额披露；10-Q/10-K 收入附注的剩余履约义务
+      where: Commercial RPO disclosures in earnings press releases and call transcripts; remaining performance obligations in the 10-Q/10-K revenue note
       formula: rpo_ex_openai_t / rpo_ex_openai_{t-4q} - 1
-    fail_if: 剔除 OpenAI 的商业履约余额增速低于 5%
+    fail_if: Commercial RPO growth excluding OpenAI below 5%
     rule: {op: "<", threshold: 5, unit: "%", consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2027Q1
@@ -503,141 +503,141 @@ tests:
       period: FY2026Q4
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p11
-      note: "商业履约余额 6,780 亿美元，最近一次披露来自 OpenAI 的比例 45%（FY26 Q2 电话会，对应当时 6,250 亿美元口径）[src:MSFT-RPT1-2026-09-17#p8]。"
-    note: "报告第十节破坏信号四的第一个条件。第二个条件——2,500 亿美元承诺被重组、减值（仅展期而集中度不变的记为久期恶化、单独观察）——要判断文件的措辞，拆到定性测试 MSFT-L5，由独立模型附出处与原文摘录判定 [src:MSFT-RPT1-2026-09-17#p11]；两条是“或”关系，任一失败，破坏信号四即成立。更早一级的警报是前瞻指标 #2 的低于 10%，见 MSFT-Q11 [src:MSFT-RPT1-2026-09-17#p11]。"
+      note: "Commercial RPO of $678 billion, with the latest disclosed share from OpenAI at 45% (FY26 Q2 call, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]."
+    note: "The first condition of breaker four in section ten of the report. The second condition, the $250 billion commitment being restructured or impaired (a mere extension with unchanged concentration is recorded as a worsening of duration and watched separately), requires judging the wording of documents, so it is split out into the qualitative test MSFT-L5, judged by an independent model with sources and verbatim excerpts [src:MSFT-RPT1-2026-09-17#p11]; the two are joined by “or”, and if either fails, breaker four holds. An earlier-stage alarm is watch indicator #2, below 10% (see MSFT-Q11) [src:MSFT-RPT1-2026-09-17#p11]."
 
   - id: MSFT-Q9
     type: quantitative
-    claim: 席位底座在 agent 时代没有萎缩，或者萎缩被正在增长的 agent 与用量收入接住
+    claim: The seat base has not shrunk in the agent era, or the shrinkage is caught by growing agent and usage revenue
     origin: report:breaker
     severity: breaker
     covers: [moat, pricing_power, competition]
     pillar: P1
     metric_def:
       id: m365_commercial_seats_yoy
-      description: Microsoft 365 商业席位同比增速（FY27 新口径，含 GitHub 付费席位），公司口径
+      description: Microsoft 365 commercial seat growth year on year (FY27 new basis, including paid GitHub seats), as defined by the company
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 业绩新闻稿与电话会纪要；10-Q/10-K MD&A 中的 Microsoft 365 commercial seat growth
+      where: Earnings press releases and call transcripts; Microsoft 365 commercial seat growth in the 10-Q/10-K MD&A
       formula: seats_t / seats_{t-4q} - 1
-    fail_if: 新口径下 M365 商业席位同比下降，而公司没有单独披露正在增长的 agent 或用量收入
+    fail_if: M365 commercial seats decline year on year on the new basis, and the company does not separately disclose growing agent or usage revenue
     rule:
       all_of:
         - {metric: m365_commercial_seats_yoy, op: "<", threshold: 0, unit: "%", consecutive: 1, period: quarter}
-        - {op: event, threshold: "公司没有单独披露正在增长的 agent 或用量收入", period: quarter}
-      note: "两项须在同一季度同时成立；第一项不成立时，第二项不必判定。第二项是事件判定：由独立模型对照当季业绩新闻稿、电话会材料与 10-Q/10-K 判定，须附出处和一句以内的原文摘录；“正在增长”指公司在同一期材料中单独披露的 agent 或用量收入（金额或增速）高于上年同期。"
+        - {op: event, threshold: "The company does not separately disclose growing agent or usage revenue", period: quarter}
+      note: "Both must hold in the same quarter; when the first does not hold, the second need not be judged. The second is an event judgment: an independent model judges it against the quarter's earnings press release, call materials and 10-Q/10-K, with sources and a verbatim excerpt of no more than one sentence; “growing” means that the agent or usage revenue (amount or growth rate) the company discloses separately in the same period's materials is higher than a year earlier."
     data: filing_text
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
       value: 7
       unit: "%"
-      period: FY2026（新口径重述）
+      period: FY2026 (restated on the new basis)
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p11
-      note: "旧口径为 6% [src:MSFT-RPT1-2026-09-17#p5]；Agent 365 两个月注册近 4,000 万，为公司自报、没有活跃数 [src:MSFT-RPT1-2026-09-17#p6]。"
-    note: "报告第十节破坏信号五，对应入口外移这条侵蚀路径。支柱挂在 P1：第一项看的是席位底座本身是否萎缩；它同时检验 P2 里“在席位见顶之前接上 agent 或用量收入”那一半。事件一支的出处与摘录要求只写在 rule 的 note 里，schema 不强制，见 todo。主动把 GitHub Copilot 与 Copilot Cowork 改成用量计费，通常意味着看见了席位的天花板 [src:MSFT-RPT1-2026-09-17#p6]；公司是否开始单独披露 agent 或用量收入，是这条路径的另一个信号 [src:MSFT-RPT1-2026-09-17#p6]。"
+      note: "6% on the old basis [src:MSFT-RPT1-2026-09-17#p5]; Agent 365 had nearly 40 million sign-ups in two months, company-reported, with no figure for active users [src:MSFT-RPT1-2026-09-17#p6]."
+    note: "Breaker five in section ten of the report, for the erosion path of the entry point moving elsewhere. The pillar is P1: the first leg looks at whether the seat base itself is shrinking; it also tests the half of P2 about “agent or usage revenue taking over before seats peak”. The source and excerpt requirement for the event leg is written only in the rule's note; the schema does not enforce it (see todo). Deliberately moving GitHub Copilot and Copilot Cowork to usage-based pricing usually means the seat ceiling is in sight [src:MSFT-RPT1-2026-09-17#p6]; whether the company starts disclosing agent or usage revenue separately is another signal on this path [src:MSFT-RPT1-2026-09-17#p6]."
 
   - id: MSFT-L2
     type: qualitative
-    claim: 关键经营者和衡量他们的尺子都在：CEO 交接有安排，资本开支高位时激励里有资本回报
+    claim: "The key operators and the yardstick that measures them are both in place: there is an arrangement for the CEO handover, and while capex is high, incentives include a return on capital"
     origin: report:breaker
     severity: breaker
     covers: [management, governance, capital_allocation]
     pillar: P6
-    question: "截至本期，是否出现以下任一情况：（a）Nadella 已离任，且公司没有披露继任安排；（b）2027 年的委托书（DEF 14A）中，高管长期激励指标里仍没有任何资本回报类指标（如投入资本回报、增量资本回报、自由现金流回报），同时最近一个完整财年（FY2027）的现金资本开支（不含融资租赁）高于 1,500 亿美元？"
-    fail_if: "是（(a) 或 (b) 任一成立；(b) 中的两个条件须同时成立）"
+    question: "As of this period, has either of the following happened: (a) Nadella has left and the company has disclosed no succession arrangement; (b) in the 2027 proxy statement (DEF 14A), the executives' long-term incentive metrics still include no return-on-capital metric (such as return on invested capital, incremental return on capital or free cash flow return), while cash capex (excluding finance leases) for the latest full fiscal year (FY2027) is above $150 billion?"
+    fail_if: "Yes ((a) or (b) holds; the two conditions in (b) must both hold)"
     judge: independent_model
     evidence: required
-    where: 8-K 第 5.02 项、委托书（DEF 14A）的薪酬讨论与分析、10-K 现金流量表、公司新闻稿
+    where: 8-K Item 5.02, the Compensation Discussion and Analysis in the proxy statement (DEF 14A), the 10-K cash flow statement, company press releases
     lookback: 4
     judge_notes:
-      - "只宣布将要离任、尚未离任的，不满足 (a)。"
-      - "(b) 按 2027 年的委托书判定，(a) 随时可读；2026 年 10 月的委托书只作补充观察，不作触发。"
+      - "An announced departure that has not yet taken place does not satisfy (a)."
+      - "(b) is judged on the 2027 proxy statement; (a) can be read at any time; the October 2026 proxy statement is only a supplementary observation, not a trigger."
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: Nadella 1992 年入职、2014 年任 CEO；FY2025 委托书的长期绩效股票指标为激励计划收入 35%、微软云收入 35%、Azure 及其他云收入 15%、三年期相对标普 500 股东总回报 15%，四项里没有资本回报项
+      value: "Nadella joined in 1992 and became CEO in 2014; the long-term performance stock metrics in the FY2025 proxy are incentive-plan revenue 35%, Microsoft Cloud revenue 35%, Azure and other cloud services revenue 15%, and three-year total shareholder return relative to the S&P 500 15%; none of the four is a return-on-capital measure"
       source: MSFT-RPT1-2026-09-17#p7
-    note: "报告第十节破坏信号六。(a) 按报告原文，Nadella 已经离任而没有已披露的继任安排才算；只宣布将要离任的，在当期更新里记录 [src:MSFT-RPT1-2026-09-17#p12]。报告的理由：FY2026 约 290 亿美元的 Azure 增量花掉了 1,159 亿美元的现金资本开支，激励计划奖励的是前者而不是后者 [src:MSFT-RPT1-2026-09-17#p7]。2026 年 10 月的委托书是第一次能看到这把尺子装没装上的时点（补充观察项，不作触发）[src:MSFT-RPT1-2026-09-17#p11]。报告没有写 1,500 亿美元对应哪个期间，这里按委托书发布时最近一个完整财年（FY2027）的现金资本开支判定，口径与第十节一致、不含融资租赁 [src:MSFT-RPT1-2026-09-17#p12] [src:MSFT-RPT1-2026-09-17#p4]；这个读法待本人确认（见 todo）。"
+    note: "Breaker six in section ten of the report. (a) Per the report's text, it counts only if Nadella has already left without a disclosed succession arrangement; an announced departure is recorded in that period's update [src:MSFT-RPT1-2026-09-17#p12]. The report's reasoning: in FY2026, an Azure increase of about $29 billion consumed $115.9 billion of cash capex, and the incentive plan rewards the former, not the latter [src:MSFT-RPT1-2026-09-17#p7]. The October 2026 proxy statement is the first point at which one can see whether this yardstick has been installed (a supplementary observation, not a trigger) [src:MSFT-RPT1-2026-09-17#p11]. The report does not say which period the $150 billion refers to, so here it is judged on cash capex for the latest full fiscal year when the proxy is published (FY2027), on the same basis as section ten, excluding finance leases [src:MSFT-RPT1-2026-09-17#p12] [src:MSFT-RPT1-2026-09-17#p4]; this reading awaits the owner's confirmation (see todo)."
 
   - id: MSFT-L3
     type: qualitative
-    claim: 最大客户 OpenAI 的承诺和微软对它的持股没有变成损失
+    claim: The commitment of its largest customer, OpenAI, and Microsoft's stake in OpenAI have not turned into losses
     origin: report:breaker
     severity: breaker
     covers: [customer_concentration, balance_sheet, capital_allocation]
     pillar: P5
-    question: "截至本期，微软的 10-Q/10-K/8-K、OpenAI 的公开文件（含 S-1）或公告中，是否披露了以下任一情况：（a）微软对 OpenAI 的股权投资计提减值；（b）OpenAI 无法为其算力采购承诺筹到资金，例如付款违约或延期、以资金不足为由要求削减或重组对微软或其他云厂商的承诺，或微软为 OpenAI 相关应收款计提信用损失？"
-    fail_if: "是（(a) 或 (b) 任一成立）"
+    question: "As of this period, has Microsoft's 10-Q/10-K/8-K, or OpenAI's public filings (including the S-1) or announcements, disclosed either of the following: (a) an impairment of Microsoft's equity investment in OpenAI; (b) OpenAI being unable to raise money for its compute purchase commitments, for example a payment default or deferral, a request, citing insufficient funds, to cut or restructure its commitments to Microsoft or other cloud providers, or Microsoft recording credit losses on OpenAI-related receivables?"
+    fail_if: "Yes ((a) or (b) holds)"
     judge: independent_model
     evidence: required
-    where: 微软 10-Q/10-K 的权益法投资与信用损失附注、8-K；OpenAI 的 S-1 与融资公告；Amazon、Oracle 等其他承诺方的 8-K
+    where: Microsoft's 10-Q/10-K notes on equity-method investments and credit losses, and its 8-Ks; OpenAI's S-1 and financing announcements; 8-Ks of other parties to commitments, such as Amazon and Oracle
     lookback: 4
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: OpenAI 承诺增量采购 2,500 亿美元的 Azure 服务；2026 年一季度收入 57 亿美元、现金消耗 37 亿美元，二季度收入 67 亿美元（二手）；2026-06-08 秘密递交 S-1；Amazon 500 亿美元投资中的 350 亿美元条件款已于 2026-07-31 到位
+      value: "OpenAI has committed to buy an incremental $250 billion of Azure services; Q1 2026 revenue $5.7 billion and cash burn $3.7 billion, Q2 revenue $6.7 billion (secondary); S-1 filed confidentially on 2026-06-08; the $35 billion conditional portion of Amazon's $50 billion investment came in on 2026-07-31"
       source: MSFT-RPT1-2026-09-17#p8
-      note: "微软持有 OpenAI 约 27% 的股权，并在报表里确认其估值收益 [src:MSFT-RPT1-2026-09-17#p9]。"
-    note: "报告第十节破坏信号七。反身性链条：OpenAI 的估值支撑它的融资，融资支撑它对微软的采购，采购支撑微软的履约余额与 Azure 增速，增速支撑微软的资本开支，外部资金决定这条链能撑多久 [src:MSFT-RPT1-2026-09-17#p9]。与 MSFT-L5 互补：那一条看承诺本身，这一条看股权与对方的融资能力。"
+      note: "Microsoft holds about 27% of OpenAI's equity and recognizes gains on its valuation in its financial statements [src:MSFT-RPT1-2026-09-17#p9]."
+    note: "Breaker seven in section ten of the report. The reflexive chain: OpenAI's valuation supports its funding, its funding supports its purchases from Microsoft, those purchases support Microsoft's RPO and Azure growth, that growth supports Microsoft's capex, and outside money decides how long the chain can hold [src:MSFT-RPT1-2026-09-17#p9]. Complements MSFT-L5: that test looks at the commitment itself, this one at the equity stake and the counterparty's ability to raise money."
 
   - id: MSFT-L4
     type: qualitative
-    claim: 欧盟的主权框架没有把美国厂商挡在 Level 3 之外
+    claim: The EU's sovereignty framework has not shut US providers out of Level 3
     origin: report:breaker
     severity: breaker
     covers: [regulation, moat]
     pillar: P2
-    question: "欧盟《云与 AI 发展法案》（CADA）是否已经落地（生效并开始适用），并且其 Level 3 的第三国认可通道对美国云厂商实际关闭？下列任一情形算实际关闭：（a）最终文本或实施细则使受美国《云法案》管辖的厂商在法律上无法获得认可；（b）欧盟正式决定不给予美国第三国认可，或以受美国《云法案》管辖为由正式拒绝美国厂商的认可申请（因单个厂商自身的原因被拒不算）；（c）法案落地满 12 个月，仍没有任何受美国管辖的云厂商通过这条通道获得 Level 3 认可，也没有待决的认可申请或认可决定。"
-    fail_if: 是（法案已落地，且 (a)、(b)、(c) 任一成立）
-    warn_if: 法案已落地，还不满足 (a)、(b)、(c)，但截至本期没有任何受美国管辖的云厂商获得 Level 3 认可（通道是否实际开放尚无证据）
+    question: "Has the EU Cloud and AI Development Act (CADA) taken effect (entered into force and begun to apply), and is its Level 3 third-country recognition route closed to US cloud providers in practice? Any of the following counts as closed in practice: (a) the final text or implementing rules make it legally impossible for providers subject to the US CLOUD Act to obtain recognition; (b) the EU formally decides not to grant the US third-country recognition, or formally rejects a US provider's application for recognition on the grounds that it is subject to the US CLOUD Act (a rejection for reasons specific to an individual provider does not count); (c) 12 months after the Act takes effect, no US-jurisdiction cloud provider has obtained Level 3 recognition through this route, and there is no pending application for recognition or recognition decision."
+    fail_if: Yes (the Act has taken effect, and any of (a), (b) or (c) holds)
+    warn_if: The Act has taken effect and (a), (b) and (c) are not yet met, but as of this period no US-jurisdiction cloud provider has obtained Level 3 recognition (no evidence yet on whether the route is open in practice)
     judge: independent_model
     evidence: required
-    where: 欧盟官方公报中的最终法律文本与实施细则、欧盟委员会的认可决定与申请状态、微软 10-K/10-Q 的风险因素与监管一节
+    where: The final legal text and implementing rules in the Official Journal of the EU, the European Commission's recognition decisions and the status of applications, the risk factors and regulation sections of Microsoft's 10-K/10-Q
     lookback: 4
     effective_from: FY2027Q1
     first_readable: 2027-01
     baseline:
-      value: 欧盟委员会 2026-06-03 提出《云与 AI 发展法案》，设四级主权框架，最高一级按字面会排除受美国《云法案》管辖的厂商；委员会说 Level 3 有第三国认可通道，产业界说第 18 条的标准今天没有任何主要技术国家能满足
+      value: "The European Commission proposed the Cloud and AI Development Act on 2026-06-03, setting up a four-level sovereignty framework whose top level, read literally, would exclude providers subject to the US CLOUD Act; the Commission says Level 3 has a third-country recognition route, and industry says no major technology country can meet the Article 18 criteria today"
       source: MSFT-RPT1-2026-09-17#p6
-    note: "报告第十节破坏信号八，对应主权分裂这条侵蚀路径；报告给的信号是 Level 3 的认可通道对美国厂商是否实际开放，2027–2029 年陆续可读 [src:MSFT-RPT1-2026-09-17#p6]。“实际关闭”的三种情形是本档案事先写下的读法：(a)、(b) 是法律上的关闭，(c) 是事实上的关闭——产业界说第 18 条的标准今天没有任何主要技术国家能满足，通道可能只在纸面上存在 [src:MSFT-RPT1-2026-09-17#p6]。(c) 的期限与 warn_if 这一级都不是报告写的，待本人确认（见 todo）。first_readable 取报告 2027–2029 年可读窗口的起点。量级：Level 4（国防）按《金融时报》口径约占公共采购市场的 1%（二手），真正的战场是 Level 3 [src:MSFT-RPT1-2026-09-17#p6]。"
+    note: "Breaker eight in section ten of the report, for the sovereignty-fragmentation erosion path; the signal the report gives is whether Level 3's recognition route is open to US providers in practice, readable progressively over 2027–2029 [src:MSFT-RPT1-2026-09-17#p6]. The three cases of “closed in practice” are this archive's reading, written down in advance: (a) and (b) are closure in law, (c) is closure in fact, since industry says no major technology country can meet the Article 18 criteria today and the route may exist only on paper [src:MSFT-RPT1-2026-09-17#p6]. Neither the time limit in (c) nor the warn_if level comes from the report; both await the owner's confirmation (see todo). first_readable is the start of the report's 2027–2029 readable window. Scale: Level 4 (defense), by the Financial Times' measure, is about 1% of the public procurement market (secondary), and the real battleground is Level 3 [src:MSFT-RPT1-2026-09-17#p6]."
 
   - id: MSFT-L5
     type: qualitative
-    claim: 最大客户 OpenAI 的增量采购承诺没有被重组或减值
+    claim: The incremental purchase commitment of its largest customer, OpenAI, has not been restructured or impaired
     origin: report:breaker
     severity: breaker
     covers: [customer_concentration, growth]
     pillar: P5
-    question: "截至本期，微软的 8-K、10-Q/10-K、业绩电话会材料或 OpenAI 的公开文件（含 S-1）中，是否披露 OpenAI 承诺增量采购 2,500 亿美元 Azure 服务的合同被重组（承诺金额或付款义务被削减，或条款被改写而不只是展期）或减值？只把期限延长、金额与客户集中度不变的，不算重组，按 warn_if 记录。"
-    fail_if: 是（承诺被重组或减值）
-    warn_if: 承诺仅被展期，金额与集中度不变（报告记为久期恶化，单独观察）
+    question: "As of this period, has Microsoft's 8-K, 10-Q/10-K or earnings call materials, or OpenAI's public filings (including the S-1), disclosed that the contract under which OpenAI committed to buy an incremental $250 billion of Azure services has been restructured (the committed amount or payment obligations cut, or terms rewritten beyond a mere extension) or impaired? A mere extension of the term, with the amount and customer concentration unchanged, is not a restructuring and is recorded under warn_if."
+    fail_if: Yes (the commitment was restructured or impaired)
+    warn_if: The commitment was only extended, with the amount and concentration unchanged (the report records this as a worsening of duration, watched separately)
     judge: independent_model
     evidence: required
-    where: 微软 8-K、10-Q/10-K 收入附注中的剩余履约义务与重大合同披露、业绩电话会纪要；OpenAI 的 S-1 与公告
+    where: Microsoft's 8-Ks, the remaining performance obligation and material contract disclosures in the 10-Q/10-K revenue note, earnings call transcripts; OpenAI's S-1 and announcements
     lookback: 4
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: OpenAI 承诺增量采购 2,500 亿美元的 Azure 服务，若按五年消耗每年约 500 亿美元，相当于 Azure FY2026 全年收入的一半
+      value: OpenAI has committed to buy an incremental $250 billion of Azure services, which, consumed over five years, is about $50 billion a year, half of Azure's full-year FY2026 revenue
       source: MSFT-RPT1-2026-09-17#p8
-    note: "报告第十节破坏信号四的第二个条件，从 MSFT-Q8 拆出，与它是“或”关系；展期而集中度不变的情形报告记为久期恶化、单独观察，这里写成 warn_if [src:MSFT-RPT1-2026-09-17#p11]。第一次能读到答案的往往不是财报，是 8-K：OpenAI 的 IPO 定价、承诺的重组或减值都会以 8-K 形式随时出现 [src:MSFT-RPT1-2026-09-17#p8]，所以每出现一份相关 8-K 就判定一次。与 MSFT-L3 互补：这一条看承诺本身，那一条看微软持有的股权与 OpenAI 的融资能力。"
+    note: "The second condition of breaker four in section ten of the report, split out from MSFT-Q8 and joined to it by “or”; the report records an extension with unchanged concentration as a worsening of duration, watched separately, which is written here as warn_if [src:MSFT-RPT1-2026-09-17#p11]. The answer often shows up first not in the financial statements but in an 8-K: OpenAI's IPO pricing and any restructuring or impairment of the commitment can appear as an 8-K at any time [src:MSFT-RPT1-2026-09-17#p8], so the test is judged each time a relevant 8-K appears. Complements MSFT-L3: this test looks at the commitment itself, that one at Microsoft's equity stake and OpenAI's ability to raise money."
 
-  # ---------- 报告第十节：每季度看的前瞻指标（#1、#2、#5；#3、#4 已并入 MSFT-Q7 与 MSFT-Q4/Q6） ----------
+  # ---------- Section ten of the report: watch indicators read every quarter (#1, #2, #5; #3 and #4 are merged into MSFT-Q7 and MSFT-Q4/Q6) ----------
   - id: MSFT-Q10
     type: quantitative
-    claim: Azure 增速留在健康区间
+    claim: Azure growth stays in the healthy range
     origin: report:watch
     severity: watch
     covers: [growth, competition]
     pillar: P3
     metric: segment_revenue_yoy
-    params: {segment: Azure, basis: "FY27 新口径（2026-09-02 的 8-K 重述）", currency: 固定汇率}
-    fail_if: 连续两季低于 25%
+    params: {segment: Azure, basis: "FY27 new basis (restated in the 8-K of 2026-09-02)", currency: constant currency}
+    fail_if: Below 25% for two consecutive quarters
     rule: {op: "<", threshold: 25, unit: "%", consecutive: 2, period: quarter}
-    warn_if: 单季低于 30%（离开健康区间）
+    warn_if: Below 30% in a single quarter (leaving the healthy range)
     warn_rule: {op: "<", threshold: 30, unit: "%", consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2027Q1
@@ -645,30 +645,30 @@ tests:
     baseline:
       value: 42
       unit: "%"
-      period: FY2026Q4（6 月季，新口径、固定汇率）
+      period: FY2026Q4 (June quarter, new basis, constant currency)
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p11
-      note: "6 月季收入 294.2 亿美元 [src:MSFT-RPT1-2026-09-17#p11]；FY2026 全年旧口径增长 41% [src:MSFT-RPT1-2026-09-17#p3]。"
-    note: "报告第十节前瞻指标 #1：健康区间不低于 30%，连续两季低于 25% 触发关注 [src:MSFT-RPT1-2026-09-17#p11]。FY27 第一季度之前，各家云报的增速不是同一个分子（口径与期间都不同），不能拿来推份额 [src:MSFT-RPT1-2026-09-17#p6]。"
+      note: "June-quarter revenue of $29.42 billion [src:MSFT-RPT1-2026-09-17#p11]; full-year FY2026 growth of 41% on the old basis [src:MSFT-RPT1-2026-09-17#p3]."
+    note: "Watch indicator #1 in section ten of the report: the healthy range is not below 30%, and two consecutive quarters below 25% trigger attention [src:MSFT-RPT1-2026-09-17#p11]. Before FY27 Q1, the growth rates the cloud providers report do not share the same numerator (both definitions and periods differ), so they cannot be used to infer market share [src:MSFT-RPT1-2026-09-17#p6]."
 
   - id: MSFT-Q11
     type: quantitative
-    claim: 剔除 OpenAI 之后的需求仍在较快增长
+    claim: Demand excluding OpenAI is still growing fairly fast
     origin: report:watch
     severity: watch
     covers: [customer_concentration, growth]
     pillar: P5
     metric_def:
       id: commercial_rpo_ex_openai_yoy
-      description: 商业剩余履约义务（commercial RPO，即商业合同履约余额）剔除 OpenAI 后的同比增速，公司口径
+      description: Year-on-year growth of commercial remaining performance obligation (commercial RPO, the balance of commercial contracts still to be performed) excluding OpenAI, as defined by the company
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 业绩新闻稿与电话会纪要中的商业履约余额披露；10-Q/10-K 收入附注的剩余履约义务
+      where: Commercial RPO disclosures in earnings press releases and call transcripts; remaining performance obligations in the 10-Q/10-K revenue note
       formula: rpo_ex_openai_t / rpo_ex_openai_{t-4q} - 1
-    fail_if: 低于 10%
+    fail_if: Below 10%
     rule: {op: "<", threshold: 10, unit: "%", consecutive: 1, period: quarter}
-    warn_if: 低于 15%（离开健康区间）
+    warn_if: Below 15% (leaving the healthy range)
     warn_rule: {op: "<", threshold: 15, unit: "%", consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2027Q1
@@ -679,35 +679,35 @@ tests:
       period: FY2026Q4
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p11
-    note: "报告第十节前瞻指标 #2：健康区间不低于 15%，低于 10% 触发关注 [src:MSFT-RPT1-2026-09-17#p11]。报告提醒，剔除 OpenAI 的余额里分不开 neocloud 与真实企业，所以即便这条健康，集中度本身仍在 [src:MSFT-RPT1-2026-09-17#p8]。"
+    note: "Watch indicator #2 in section ten of the report: the healthy range is not below 15%, and below 10% triggers attention [src:MSFT-RPT1-2026-09-17#p11]. The report warns that the balance excluding OpenAI cannot separate neoclouds from real enterprises, so even if this reading is healthy, the concentration itself remains [src:MSFT-RPT1-2026-09-17#p8]."
 
   - id: MSFT-Q12
     type: quantitative
-    claim: Copilot 加购层在续约：M365 商业云增速与席位增速之间的缺口没有收窄
+    claim: "The Copilot add-on layer is renewing: the gap between M365 commercial cloud growth and seat growth has not narrowed"
     origin: report:watch
     severity: watch
     covers: [pricing_power, moat, unit_economics]
     pillar: P2
     metric_def:
       id: m365_cloud_minus_seat_growth
-      description: M365 商业云收入同比增速减去 M365 商业席位同比增速（新口径），即每席位收入的增长
+      description: M365 commercial cloud revenue growth year on year minus M365 commercial seat growth year on year (new basis), that is, the growth in revenue per seat
       unit: pp
       frequency: quarter
       data: filing_text
-      where: 业绩新闻稿与电话会纪要；10-Q/10-K MD&A
+      where: Earnings press releases and call transcripts; 10-Q/10-K MD&A
       formula: m365_commercial_cloud_revenue_yoy - m365_commercial_seats_yoy
       components:
         m365_commercial_cloud_revenue_yoy:
-          description: Microsoft 365 商业云收入同比增速（固定汇率），公司口径
+          description: Microsoft 365 commercial cloud revenue growth year on year (constant currency), as defined by the company
           unit: "%"
-          where: 业绩新闻稿与电话会纪要；10-Q/10-K MD&A
+          where: Earnings press releases and call transcripts; 10-Q/10-K MD&A
         m365_commercial_seats_yoy:
-          description: Microsoft 365 商业席位同比增速（FY27 新口径，含 GitHub 付费席位），公司口径
+          description: Microsoft 365 commercial seat growth year on year (FY27 new basis, including paid GitHub seats), as defined by the company
           unit: "%"
-          where: 业绩新闻稿与电话会纪要；10-Q/10-K MD&A 中的 Microsoft 365 commercial seat growth
-    fail_if: 缺口收窄到 5 个百分点以内
+          where: Earnings press releases and call transcripts; Microsoft 365 commercial seat growth in the 10-Q/10-K MD&A
+    fail_if: The gap narrows to 5 percentage points or less
     rule: {op: "<=", threshold: 5, unit: pp, consecutive: 1, period: quarter}
-    warn_if: M365 商业云增速低于 12%，或席位增速低于 4%（离开健康区间）
+    warn_if: M365 commercial cloud growth below 12%, or seat growth below 4% (leaving the healthy range)
     warn_rule:
       any_of:
         - {metric: m365_cloud_minus_seat_growth.m365_commercial_cloud_revenue_yoy, op: "<", threshold: 12, unit: "%", consecutive: 1, period: quarter}
@@ -718,25 +718,25 @@ tests:
     baseline:
       value: 10
       unit: pp
-      period: FY2026（商业云 16% − 席位 6%，旧口径）
+      period: FY2026 (commercial cloud 16% − seats 6%, old basis)
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p11
-      note: "FY27 第一季度公司给 Microsoft 365 商业云的指引是固定汇率约 17%（FY27 新口径）[src:MSFT-8K-2026-09-02#EX-99.1-slide21]；报告写在它旁边的“新口径席位增速约 7%”，是 FY2026 按新口径重述后的读数 [src:MSFT-RPT1-2026-09-17#p11]，公司是否另给了席位增速的指引待核对（见 todo）。"
-    note: "报告第十节前瞻指标 #5。算式：约 3,000 万付费席位 × 每席位每月 30 美元 × 12 ≈ 每年约 108 亿美元的 Copilot 年化收入，占 M365 商业云 1,020 亿美元的 10.6%，几乎解释了商业云增速与席位增速之间约 10 个百分点的缺口 [src:MSFT-RPT1-2026-09-17#p6]；三个输入都有限定（全球席位、标价而非实收、美国面板的活跃率）[src:MSFT-RPT1-2026-09-17#p6]。若其中约 69 亿美元买了没怎么用的席位在一年内流失，缺口会收窄到约 4 个百分点 [src:MSFT-RPT1-2026-09-17#p6]；缺口仍在 10 个百分点上下说明加购层在续，收窄到 5 个百分点以内说明那 69 亿美元正在流失 [src:MSFT-RPT1-2026-09-17#p6]。健康区间“≥12% / ≥4%”按商业云增速与席位增速分别理解 [src:MSFT-RPT1-2026-09-17#p11]。"
+      note: "The company's FY27 Q1 guidance for Microsoft 365 commercial cloud is about 17% in constant currency (FY27 new basis) [src:MSFT-8K-2026-09-02#EX-99.1-slide21]; the “seat growth of about 7% on the new basis” that the report writes next to it is FY2026's reading restated on the new basis [src:MSFT-RPT1-2026-09-17#p11]; whether the company also guided seat growth is still to be checked (see todo)."
+    note: "Watch indicator #5 in section ten of the report. The arithmetic: about 30 million paid seats × $30 per seat per month × 12 ≈ about $10.8 billion a year of annualized Copilot revenue, 10.6% of M365 commercial cloud's $102 billion, which almost explains the gap of about 10 percentage points between commercial cloud growth and seat growth [src:MSFT-RPT1-2026-09-17#p6]; all three inputs come with caveats (global seats, list price rather than realized price, active-use rates from a US panel) [src:MSFT-RPT1-2026-09-17#p6]. If the roughly $6.9 billion of it that is seats bought but little used churns within a year, the gap narrows to about 4 percentage points [src:MSFT-RPT1-2026-09-17#p6]; a gap still around 10 percentage points means the add-on layer is renewing, and a gap narrowing to within 5 percentage points means that $6.9 billion is churning [src:MSFT-RPT1-2026-09-17#p6]. The healthy range “≥12% / ≥4%” is read as applying to commercial cloud growth and seat growth respectively [src:MSFT-RPT1-2026-09-17#p11]."
 
-  # ---------- 本档案自加（origin: manual）：报告第七节里有分界、但没有列进第十节的两个读数 ----------
+  # ---------- Added by this archive (origin: manual): two readings that have a dividing line in section seven of the report but are not listed in section ten ----------
   - id: MSFT-Q13
     type: quantitative
-    claim: 资本开支周期会回落，而不是停在算力生意的高位上
+    claim: The capex cycle comes down rather than staying at the high level of a compute business
     origin: manual
     severity: watch
     covers: [capital_allocation, free_cash_flow]
     pillar: P4
     metric: capex_to_revenue
-    fail_if: FY2028 之后的财年，现金资本开支占收入仍高于 30%（反方论点一成立）
-    rule: {op: ">", threshold: 30, unit: "%", consecutive: 1, period: year, evaluate_from: FY2029, note: "从 FY2029 年报起按财年判定，FY2028 及以前不计。"}
-    warn_if: FY2028 之后的财年，现金资本开支占收入没有回到 20% 以下
-    warn_rule: {op: ">=", threshold: 20, unit: "%", consecutive: 1, period: year, evaluate_from: FY2029, note: "从 FY2029 年报起按财年判定，FY2028 及以前不计。"}
+    fail_if: In a fiscal year after FY2028, cash capex is still above 30% of revenue (bear argument one holds)
+    rule: {op: ">", threshold: 30, unit: "%", consecutive: 1, period: year, evaluate_from: FY2029, note: "Judged by fiscal year from the FY2029 annual report; FY2028 and earlier do not count."}
+    warn_if: In a fiscal year after FY2028, cash capex has not returned below 20% of revenue
+    warn_rule: {op: ">=", threshold: 20, unit: "%", consecutive: 1, period: year, evaluate_from: FY2029, note: "Judged by fiscal year from the FY2029 annual report; FY2028 and earlier do not count."}
     data: xbrl
     effective_from: FY2027Q1
     first_readable: 2029-07
@@ -746,25 +746,25 @@ tests:
       period: FY2026
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p5
-      note: "FY2021 为 12.3%、FY2024 为 18.1%、FY2025 为 22.9% [src:MSFT-RPT1-2026-09-17#p5]。"
-    note: "报告第七节反方论点一的分界变量：资本开支在 FY2028 后回到收入的 20% 以下，折旧曲线会在 FY2030 前后触顶、转换率回到 70% [src:MSFT-RPT1-2026-09-17#p8]；继续在 30% 以上，反方是对的 [src:MSFT-RPT1-2026-09-17#p8]。报告没有把它列进第十节的论点破坏信号，所以这里只记 watch；门槛取自报告，“FY2028 后”读作从 FY2029 年报起，是本档案的读法（见 todo）。口径同第十节：现金资本开支不含融资租赁 [src:MSFT-RPT1-2026-09-17#p4]。这是支柱 P4 里“资本开支周期会回落”那一半的直接测试，另一半（转换率）由 MSFT-Q4、MSFT-Q6 跟踪。"
+      note: "12.3% in FY2021, 18.1% in FY2024 and 22.9% in FY2025 [src:MSFT-RPT1-2026-09-17#p5]."
+    note: "The dividing variable of bear argument one in section seven of the report: if capex returns below 20% of revenue after FY2028, the depreciation curve peaks around FY2030 and conversion returns to 70% [src:MSFT-RPT1-2026-09-17#p8]; if it stays above 30%, the bear case is right [src:MSFT-RPT1-2026-09-17#p8]. The report does not list it among section ten's thesis breakers, so it is recorded here only as watch; the thresholds come from the report, and reading “after FY2028” as starting from the FY2029 annual report is this archive's reading (see todo). Same basis as section ten: cash capex excluding finance leases [src:MSFT-RPT1-2026-09-17#p4]. This is the direct test of the “capex cycle comes down” half of pillar P4; the other half (conversion) is tracked by MSFT-Q4 and MSFT-Q6."
 
   - id: MSFT-Q14
     type: quantitative
-    claim: 固定承诺没有压过经营现金流：一年内到期的采购承诺不超过最近一年的经营现金流
+    claim: "Fixed commitments have not outweighed operating cash flow: purchase commitments due within a year do not exceed the latest year's operating cash flow"
     origin: manual
     severity: watch
     covers: [balance_sheet, capital_allocation]
     pillar: P4
     metric_def:
       id: purchase_commitments_due_12m_to_ocf
-      description: 未来 12 个月内到期的采购承诺 ÷ 最近四个季度的经营现金流，公司口径
+      description: Purchase commitments due within the next 12 months ÷ operating cash flow over the latest four quarters, as defined by the company
       unit: "%"
       frequency: quarter
       data: filing_text
-      where: 10-K MD&A 的合同义务表（采购承诺按到期年份）与 10-Q 的承诺披露；经营现金流取现金流量表
+      where: The contractual obligations table in the 10-K MD&A (purchase commitments by year due) and the commitments disclosure in the 10-Q; operating cash flow from the cash flow statement
       formula: purchase_commitments_due_within_12m / operating_cash_flow_ttm
-    fail_if: 高于 100%
+    fail_if: Above 100%
     rule: {op: ">", threshold: 100, unit: "%", consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2027Q1
@@ -772,16 +772,16 @@ tests:
     baseline:
       value: 92
       unit: "%"
-      period: FY2026（FY2027 到期的采购承诺 ÷ FY2026 经营现金流）
+      period: FY2026 (purchase commitments due in FY2027 ÷ FY2026 operating cash flow)
       as_of: 2026-06-30
       source: MSFT-RPT1-2026-09-17#p8
-      note: "采购承诺 1,941 亿美元，其中 1,690 亿在 FY2027 到期 [src:MSFT-RPT1-2026-09-17#p8]；FY2026 经营现金流 1,829 亿美元 [src:MSFT-RPT1-2026-09-17#p8]。"
-    note: "报告第七节列出、2028 年之前就能改写判断的三个读数之一：7,438 亿美元合同义务这张会变重的表 [src:MSFT-RPT1-2026-09-17#p8]，是三条利率传导路径里唯一直接落在这家公司身上的一条，在 FY2027 每一季的 10-Q 里都能读到 [src:MSFT-RPT1-2026-09-17#p9]。另外两个读数：利率只进估值（私有仓库），OpenAI 的 8-K 由 MSFT-L3、MSFT-L5 跟踪。门槛（一年内到期的承诺超过一年的经营现金流）是本档案事先写下的，报告没有给，待本人确认（见 todo）；10-Q 若不按到期年份披露采购承诺，这条只能按 10-K 每年读一次。报告同时提醒，2026 年 9 月之后新签的租赁，定价基准已从一年前约 4.2% 的 10 年期变成 5.0% 以上 [src:MSFT-RPT1-2026-09-17#p9]，这一项在更新里记录，不设门槛。"
+      note: "Purchase commitments of $194.1 billion, of which $169 billion are due in FY2027 [src:MSFT-RPT1-2026-09-17#p8]; FY2026 operating cash flow of $182.9 billion [src:MSFT-RPT1-2026-09-17#p8]."
+    note: "One of the three readings listed in section seven of the report that can change the judgment before 2028: the $743.8 billion table of contractual obligations, which will get heavier [src:MSFT-RPT1-2026-09-17#p8], is the only one of the three interest-rate transmission paths that lands directly on this company, and it can be read in every 10-Q of FY2027 [src:MSFT-RPT1-2026-09-17#p9]. The other two readings: interest rates go only into the valuation (private repository), and OpenAI's 8-Ks are tracked by MSFT-L3 and MSFT-L5. The threshold (commitments due within a year exceeding a year's operating cash flow) was written down in advance by this archive; the report gives none, and it awaits the owner's confirmation (see todo); if the 10-Q does not disclose purchase commitments by year due, this test can only be read once a year from the 10-K. The report also notes that for leases signed after September 2026, the pricing benchmark has moved from a 10-year yield of about 4.2% a year earlier to above 5.0% [src:MSFT-RPT1-2026-09-17#p9]; this is recorded in updates, with no threshold."
 
-  # ---------- _common：时效测试 ----------
+  # ---------- _common: staleness tests ----------
   - id: MSFT-S1
     type: staleness
-    claim: 护城河判断不超过四个季度未复核
+    claim: The moat judgment goes no more than four quarters without review
     origin: template:stalwart
     severity: watch
     covers: [moat]
@@ -792,7 +792,7 @@ tests:
 
   - id: MSFT-S2
     type: staleness
-    claim: 管理层判断不超过四个季度未复核
+    claim: The management judgment goes no more than four quarters without review
     origin: template:stalwart
     severity: watch
     covers: [management]
@@ -803,7 +803,7 @@ tests:
 
   - id: MSFT-S3
     type: staleness
-    claim: "“最可能错在哪”每两个季度重新审视"
+    claim: "“Where this is most likely wrong” is re-examined every two quarters"
     origin: template:stalwart
     severity: watch
     covers: [other]
@@ -811,22 +811,22 @@ tests:
     section: bear_case
     max_age_quarters: 2
     effective_from: FY2027Q1
-    note: "报告第十二节认为最薄的证据是资本开支周期之后的现金转换率 [src:MSFT-RPT1-2026-09-17#p12]。高转换率是在资本开支占收入较低的年代做到的：FY2021–FY2023 从未超过 14% [src:MSFT-RPT1-2026-09-17#p4]；FY2024 资本开支占收入 18.1% 时，转换率仍有 84.0% [src:MSFT-RPT1-2026-09-17#p5]，第十二节把 FY2024 也算进不到 14% 的年代，与第三节不一致（见 todo）[src:MSFT-RPT1-2026-09-17#p12]。第一次能检验的时点是 2028 年 7 月的年报 [src:MSFT-RPT1-2026-09-17#p13]。"
+    note: "Section twelve of the report considers cash conversion after the capex cycle to be the thinnest evidence [src:MSFT-RPT1-2026-09-17#p12]. The high conversion was achieved in years when capex was a low share of revenue: it never exceeded 14% in FY2021–FY2023 [src:MSFT-RPT1-2026-09-17#p4]; in FY2024, with capex at 18.1% of revenue, conversion was still 84.0% [src:MSFT-RPT1-2026-09-17#p5], and section twelve counts FY2024 among the years below 14%, which disagrees with section three (see todo) [src:MSFT-RPT1-2026-09-17#p12]. The first point at which it can be tested is the annual report of July 2028 [src:MSFT-RPT1-2026-09-17#p13]."
 
 todo:
-  - FY27 第一季度的 10-Q 与业绩 8-K（约 2026 年 10 月底）、对应 FY2026 的委托书（约 2026 年 10 月）发布后登记。
-  - "新口径历史序列待读：2026-09-02 的 8-K 附件 99.1 重述了 FY2026（Azure 季度美元收入与增速、新口径商业席位、Agents and Infra 营业利润率）。待逐项核对报告的读数，如 Azure 6 月季 294.2 亿美元、+42%，席位 +7% [src:MSFT-RPT1-2026-09-17#p11]，并确认 MSFT-Q5、MSFT-Q9、MSFT-Q10、MSFT-Q12 连续计数的起点，以及微软云毛利率是否按新口径重述。"
-  - MSFT-Q2（投入资本回报）与 MSFT-Q3（稀释后股数同比）没有报告读数，基线待从 FY2026 年报的 XBRL 回填。
-  - "增量资本回报：报告正文说 13% 到 39% 是按全公司税后营业利润增量对三年资本开支算的 [src:MSFT-RPT1-2026-09-17#p4]，附录说这个区间按全公司与智能云两种口径计算 [src:MSFT-RPT1-2026-09-17#p13]，待本人确认两端各取哪种口径。报告只给了上调线，20% 以上可把资本配置升到 B+ [src:MSFT-RPT1-2026-09-17#p3]，没有给下行门槛；是否另设一条增量资本回报测试，下次更新决定。登记表的 roic 与 incremental_roic_3y 的投入资本都不含租赁负债，要看数据中心的回报，需要一个把租赁算进投入资本的 metric_def。"
-  - "核实公司是否每季披露剔除 OpenAI 的商业履约余额增速（MSFT-Q8、MSFT-Q11）；若停止披露，两条测试将无法判定，需要改写为总履约余额增速加集中度披露。同时以电话会纪要核对“12 个月以后才确认的部分同比增长 112%”是否剔除 OpenAI（见 F18）[src:MSFT-RPT1-2026-09-17#p8]。"
-  - 指引待以 FY26 Q4 电话会纪要核对：一，公司是否给过新口径席位增速的指引（报告写在指引旁的那个数是 FY2026 的重述读数；2026-09-02 的 8-K 附件 99.1 的 FY27 第一季度展望里没有这一项）；二，微软是否公布中期目标、全年展望在哪次电话会给出与更新（MSFT-L1 的工作假设）。
-  - "报告内部有三处不一致，待以 10-K 核对：生产力与业务流程分部收入增速第二节写 16%、第三节写 15% [src:MSFT-RPT1-2026-09-17#p3] [src:MSFT-RPT1-2026-09-17#p4]，本档案两个都不采用；FY2016 现金资本开支正文写 89 亿美元、占收入 9.8% [src:MSFT-RPT1-2026-09-17#p4]，表格写 83 亿美元、9.1% [src:MSFT-RPT1-2026-09-17#p5]，本档案两个都不采用；第十二节把 FY2024 算进资本开支不到收入 14% 的年代 [src:MSFT-RPT1-2026-09-17#p12]，而第三节的正文与表格都写 FY2024 为 18.1% [src:MSFT-RPT1-2026-09-17#p4] [src:MSFT-RPT1-2026-09-17#p5]，本档案按 18.1%。"
-  - "以下是本档案对报告措辞的读法或自己加的门槛，结果出来之前待本人确认：MSFT-Q4 的健康线“FY2027 后回升”按“从 FY2027 起不高于 52%”判定，另一种读法是 FY2028 高于 FY2027，FY2027 年报后复核 [src:MSFT-RPT1-2026-09-17#p11]；MSFT-Q12 的健康区间“≥12% / ≥4%”按商业云增速与席位增速分别理解 [src:MSFT-RPT1-2026-09-17#p11]；MSFT-Q9 的“正在增长”按同一期材料披露的同比增长判定；MSFT-L2 (b) 的 1,500 亿美元按 FY2027 的现金资本开支（不含融资租赁）判定 [src:MSFT-RPT1-2026-09-17#p12]；MSFT-L4 的“实际关闭”分三种情形，其中 (c) 的期限与 warn_if 一级是本档案加的；MSFT-L1 的 warn_if 一级是本档案加的；MSFT-Q13 把“FY2028 后”读作从 FY2029 年报起；MSFT-Q14 的门槛（一年内到期的采购承诺超过最近四个季度的经营现金流）是本档案定的。"
-  - MSFT-Q9 的事件一支（op：event）留在定量测试里，独立模型、出处与摘录的要求只写在 rule 的 note 里、schema 不强制——若规范允许在事件子规则上写 judge / evidence，就改过去，否则考虑把 MSFT-Q9 整条改成定性测试。
-  - MSFT-Q4 换了模板的指标（fcf_conversion 换成 fcf_to_non_gaap_net_income），超出模板 README 只许改门槛的范围，待集成步骤写进决策记录；FY2026 的 GAAP 净利润回填后，可以再加一条 XBRL 可算的 fcf_conversion 对照测试，门槛那时再定。
-  - 候选期间的成本规则：DESIGN 与 decisions/0002 规定候选公司只跑定量测试和公司经理草稿，所以 MSFT 仍是候选时，定性测试 MSFT-L1 至 MSFT-L5 都不会运行，其中 MSFT-L2、MSFT-L3、MSFT-L4、MSFT-L5 是论点破坏信号，MSFT-Q9 的事件一支也要模型判定。待总部决定是否把 severity：breaker 的定性测试从候选成本规则里豁免（模型选用属 L2 事项），并记进决策记录；在那之前，由公司经理在每次更新草稿里对照这几条有无新披露。
-  - depends_on 加了 industries/semiconductor-foundry（理由见文件顶部注释）：报告本身没有依赖代工行业的经济性，这是本档案加的监控链接，待本人确认或撤回；集成步骤若认为需要，写一份决策记录。
-  - 言行账本（ledger.yml）已先登记报告里有日期、有出处的五条管理层承诺；第一条（FY27 第一季度的商业云指引）约 2026 年 10 月底结算，所以各条的结算标准（约数的容差、“high teens”的范围、Xbox 的口径）要在第 1 阶段、各自结算之前写下，不能等第 3 阶段的账本规则。
-  - 报告的补充观察项（不作触发，只作背景），第 1 阶段更新时逐项记录：公司是否开始披露 Copilot 的活跃率或续约率（停止披露席位数本身也是信号）；每年一次的经理调查里指导、反馈、激励三项的方向（下一次约 2027 年年中）；FY2026 委托书（2026 年 10 月）的长期激励里有没有资本回报指标。
-  - 文化维度没有可测试的第三方序列：两份内部调查是公司自评、经媒体转述（二手），员工留存率与内部晋升比例公司不披露；外部验证只有 2024 年 CSRB 一次，结论相反。
-  - OpenAI 一侧的读数（收入、现金消耗、长期算力承诺）多为二手，OpenAI 的 S-1 公开后以一手文件替换。
+  - Register the FY27 Q1 10-Q and earnings 8-K (around the end of October 2026) and the proxy statement for FY2026 (around October 2026) once they are published.
+  - "The history on the new basis is still to be read: Exhibit 99.1 of the 8-K of 2026-09-02 restated FY2026 (Azure quarterly dollar revenue and growth, commercial seats on the new basis, Agents and Infra operating margin). Check the report's readings against it item by item, such as Azure's June quarter at $29.42 billion and +42%, and seats at +7% [src:MSFT-RPT1-2026-09-17#p11], and confirm where the consecutive counts of MSFT-Q5, MSFT-Q9, MSFT-Q10 and MSFT-Q12 start, and whether the Microsoft Cloud gross margin is restated on the new basis."
+  - MSFT-Q2 (return on invested capital) and MSFT-Q3 (diluted shares year on year) have no report readings; their baselines are to be backfilled from the XBRL of the FY2026 annual report.
+  - "Incremental return on capital: the report's main text says the 13% to 39% was calculated as the company-wide increase in after-tax operating profit over three years of capex [src:MSFT-RPT1-2026-09-17#p4], while the appendix says the range was calculated on two bases, the whole company and Intelligent Cloud [src:MSFT-RPT1-2026-09-17#p13]; the owner is to confirm which basis gives which end. The report gives only an upgrade line, above 20% lifting capital allocation to B+ [src:MSFT-RPT1-2026-09-17#p3], and no downside threshold; whether to add a separate incremental-return test will be decided at the next update. Invested capital in the registry's roic and incremental_roic_3y excludes lease liabilities in both cases; to see the data centers' returns, a metric_def that counts leases in invested capital is needed."
+  - "Verify whether the company discloses commercial RPO growth excluding OpenAI every quarter (MSFT-Q8, MSFT-Q11); if it stops, the two tests cannot be judged and will need to be rewritten as total RPO growth plus the concentration disclosure. Also check against the call transcript whether “the portion to be recognized beyond 12 months grew 112% year on year” excludes OpenAI (see F18) [src:MSFT-RPT1-2026-09-17#p8]."
+  - "Guidance to be checked against the FY26 Q4 call transcript: one, whether the company ever guided seat growth on the new basis (the number the report writes next to the guidance is FY2026's restated reading; the FY27 Q1 outlook in Exhibit 99.1 of the 8-K of 2026-09-02 has no such item); two, whether Microsoft publishes medium-term targets, and on which calls the full-year outlook is given and updated (MSFT-L1's working assumption)."
+  - "Three inconsistencies inside the report, to be checked against the 10-K: the Productivity and Business Processes segment's revenue growth is 16% in section two and 15% in section three [src:MSFT-RPT1-2026-09-17#p3] [src:MSFT-RPT1-2026-09-17#p4], and this archive uses neither; FY2016 cash capex is $8.9 billion, 9.8% of revenue, in the text [src:MSFT-RPT1-2026-09-17#p4] and $8.3 billion, 9.1%, in the table [src:MSFT-RPT1-2026-09-17#p5], and this archive uses neither; section twelve counts FY2024 among the years when capex was below 14% of revenue [src:MSFT-RPT1-2026-09-17#p12], while section three's text and table both give 18.1% for FY2024 [src:MSFT-RPT1-2026-09-17#p4] [src:MSFT-RPT1-2026-09-17#p5], and this archive uses 18.1%."
+  - "The following are this archive's readings of the report's wording, or thresholds it added itself, awaiting the owner's confirmation before results come in: MSFT-Q4's healthy line “recovery after FY2027” is judged as “not above 52% from FY2027 on”, the other reading being FY2028 above FY2027, to be reviewed after the FY2027 annual report [src:MSFT-RPT1-2026-09-17#p11]; MSFT-Q12's healthy range “≥12% / ≥4%” is read as applying to commercial cloud growth and seat growth respectively [src:MSFT-RPT1-2026-09-17#p11]; MSFT-Q9's “growing” is judged by year-on-year growth disclosed in the same period's materials; the $150 billion in MSFT-L2 (b) is judged against FY2027 cash capex (excluding finance leases) [src:MSFT-RPT1-2026-09-17#p12]; MSFT-L4's “closed in practice” has three cases, of which the time limit in (c) and the warn_if level were added by this archive; MSFT-L1's warn_if level was added by this archive; MSFT-Q13 reads “after FY2028” as starting from the FY2029 annual report; MSFT-Q14's threshold (purchase commitments due within a year exceeding operating cash flow over the latest four quarters) was set by this archive."
+  - "MSFT-Q9's event leg (op: event) stays in a quantitative test, and the requirements for an independent model, sources and excerpts are written only in the rule's note and not enforced by the schema. If the spec allows judge / evidence on an event sub-rule, move them there; otherwise consider turning the whole of MSFT-Q9 into a qualitative test."
+  - MSFT-Q4 changed the template's metric (fcf_conversion replaced by fcf_to_non_gaap_net_income), which goes beyond the template README's permission to change thresholds only; the integration step is to record this in a decision record. Once FY2026 GAAP net income is backfilled, an XBRL-computable fcf_conversion test can be added for comparison, with its threshold set then.
+  - "The cost rule during candidacy: DESIGN and decisions/0002 say candidate companies run only quantitative tests and company manager drafts, so while MSFT is a candidate, none of the qualitative tests MSFT-L1 to MSFT-L5 will run, although MSFT-L2, MSFT-L3, MSFT-L4 and MSFT-L5 are thesis breakers, and MSFT-Q9's event leg also needs a model's judgment. HQ is to decide whether to exempt qualitative tests with severity: breaker from the candidate cost rule (model choice is an L2 matter) and record it in a decision record; until then, the company manager checks these tests for new disclosures in every update draft."
+  - "depends_on has industries/semiconductor-foundry added (reasons in the comment at the top of the file): the report itself does not rely on the economics of the foundry industry; this is a monitoring link added by this archive, for the owner to confirm or withdraw; if the integration step thinks it necessary, it writes a decision record."
+  - "The say-do ledger (ledger.yml) already records the five management commitments in the report that have a date and a source; the first (the FY27 Q1 commercial cloud guidance) settles around the end of October 2026, so each entry's settlement criteria (the tolerance for approximate figures, the range of “high teens”, the Xbox definition) must be written in phase 1, before each entry settles, rather than waiting for the phase 3 ledger rules."
+  - "The report's supplementary observations (not triggers, background only), to be recorded item by item in the phase 1 updates: whether the company starts disclosing Copilot active-use or renewal rates (stopping disclosure of the seat count would itself be a signal); the direction of the three items coaching, feedback and incentives in the annual manager survey (the next one around the middle of 2027); whether the long-term incentives in the FY2026 proxy statement (October 2026) include a return-on-capital metric."
+  - "The culture dimension has no testable third-party series: the two internal surveys are the company's self-assessment, relayed by the media (secondary), and the company does not disclose employee retention or internal promotion rates; the only external check is the CSRB's in 2024, which reached the opposite conclusion."
+  - Most readings on OpenAI's side (revenue, cash burn, long-term compute commitments) are secondary; replace them with primary documents once OpenAI's S-1 is public.

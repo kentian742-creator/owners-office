@@ -1,32 +1,32 @@
-# 行业模块：非酒精即饮饮料
-# 格式：thesis-ci/spec/SPEC.md 第 6 节；schema：thesis-ci/spec/schemas/industry.schema.json。
-# 本模块只描述行业本身，不评价任何公司的股票，不给任何建议；公司与行业模块的对应关系只写在公司一侧。
-# 数字全部取自研究 IND-RTDBEV-2026-09；#pN 为研究 PDF 的页码。
-# 路标门槛是事先写下的判定标准：标“研究原文门槛”的取自研究本身；标“本模块设定”的，是研究只给了方向或措辞不够具体、由本模块补写的数值、判定范围或口径。
-# 2026-09-24 逐条对照研究原文复核过数字、期间和页码；研究内部互相矛盾、本模块因此不引用的数字记在 todo。
+# Industry module: Non-alcoholic Ready-to-Drink Beverages
+# Format: thesis-ci/spec/SPEC.md section 6; schema: thesis-ci/spec/schemas/industry.schema.json.
+# This module describes the industry only; it does not assess any company's stock and gives no advice; the link between companies and industry modules is recorded only on the company side.
+# All numbers are taken from the study IND-RTDBEV-2026-09; #pN is the page number of the study PDF.
+# Signpost thresholds are criteria written down in advance: those marked “study's own threshold” are taken from the study itself; those marked “set by this module” are values, scopes or bases this module supplied where the study gave only a direction or wording that was not specific enough.
+# On 2026-09-24 the numbers, periods and page numbers were checked one by one against the study; numbers that contradict each other within the study, and which this module therefore does not cite, are recorded in todo.
 
 id: non-alcoholic-rtd-beverages
-name: 非酒精即饮饮料
+name: Non-alcoholic Ready-to-Drink Beverages
 name_en: Non-alcoholic Ready-to-Drink Beverages
 as_of: 2026-09-19
 reviewed: 2026-09-24
 source: IND-RTDBEV-2026-09#p3
 
-summary: "本模块覆盖品牌非酒精即饮饮料（碳酸软饮、瓶装水、能量饮料、运动饮料、果汁、即饮茶与即饮咖啡），消费者支付的价格在四层之间分配：品牌与浓缩液、装瓶与分销、包装与原料，以及掌握货架的零售与餐饮渠道 [src:IND-RTDBEV-2026-09#p3]。2025 财年在研究可计量的制造链中，品牌与浓缩液层以 32% 的收入拿走 54% 的经营利润，经营利润率 28.4%，装瓶层为 10.9%，包装与原料约 12% [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p4][src:IND-RTDBEV-2026-09#p8]。研究认为这一分配来自合同而不是品牌：在多数市场采用的 incidence 定价下，品牌方按装瓶商实现的净收入抽取一定比例，分享装瓶商的每一次提价，却不承担铝材、树脂、运费和人工的成本上涨 [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p9]。行业最持久的资产是冷饮直送网络带来的物理可得性，它保护冷藏、单瓶、冲动型的消费，不保护超市货架上的多件装，多数瓶装水也走零售商仓库配送 [src:IND-RTDBEV-2026-09#p11]。挑战者品牌以接近多运一箱的边际成本租用这套系统，在位者收取的是股权和挑战者对其渠道的依附，成功的新品类随后被在位者以不高的价格买下 [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p12][src:IND-RTDBEV-2026-09#p13]。研究预期的主要变化是：销量向单箱收入约为成熟市场一半的新兴市场转移，不区分甜味剂的消费税关上改配方的出口（墨西哥 2026 年起对含非热量甜味剂的饮料每升征收 1.50 比索），包装成为受监管的成本，B2B 订货平台把订货环节从直送中分离，以及挑战者之间的合并 [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p24][src:IND-RTDBEV-2026-09#p25]。"
+summary: "This module covers branded non-alcoholic ready-to-drink beverages (carbonated soft drinks, bottled water, energy drinks, sports drinks, juice, ready-to-drink tea and ready-to-drink coffee), where the price the consumer pays is split among four layers: brands and concentrate, bottling and distribution, packaging and ingredients, and the retail and foodservice channels that control the shelf [src:IND-RTDBEV-2026-09#p3]. In fiscal 2025, in the manufacturing chain the study can measure, the brand and concentrate layer took 54% of operating profit on 32% of revenue, an operating margin of 28.4%, against 10.9% for the bottling layer and about 12% for packaging and ingredients [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p4][src:IND-RTDBEV-2026-09#p8]. The study holds that this split comes from contract, not brand: under the incidence pricing used in most markets, the brand owner takes a share of the bottler's realised net revenue, sharing in every price increase by the bottler while bearing none of the cost increases in aluminium, resin, freight and labour [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p9]. The industry's most durable asset is the physical availability that the chilled direct-store-delivery network provides; it protects chilled, single-serve, impulse consumption, not supermarket multipacks, and most bottled water also moves through retailers' warehouses [src:IND-RTDBEV-2026-09#p11]. Challenger brands rent this system at close to the marginal cost of delivering one more case, the incumbents collect equity and the challengers' dependence on their channel, and successful new categories are later bought by the incumbents at modest prices [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p12][src:IND-RTDBEV-2026-09#p13]. The main changes the study expects are volume shifting to emerging markets, where revenue per case is about half that of established markets, sweetener-agnostic excise taxes closing the reformulation escape (from 2026 Mexico levies 1.50 pesos per litre on drinks containing non-caloric sweeteners), packaging becoming a regulated cost, B2B ordering platforms separating ordering from direct delivery, and consolidation among challengers [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p24][src:IND-RTDBEV-2026-09#p25]."
 
 structure:
-  - "品牌与浓缩液层：在多数市场，可口可乐公司不按成本加成出售浓缩液，而是按装瓶商实现的净收入（毛收入减去客户促销、合作营销和客户专属优惠券支出）抽取一定比例，即 incidence 定价 [src:IND-RTDBEV-2026-09#p9]。研究引用的可口可乐公司与 Coca-Cola Consolidated 的 incidence 协议规定，费率由品牌方自行决定，提前 90 天通知即可调整，只须对所有参与的装瓶商同比例适用，因此品牌方自动分享装瓶商的提价和产品结构改善，又不承担铝材、树脂、运费和人工的上涨 [src:IND-RTDBEV-2026-09#p9]。品牌层还包括 Monster、Celsius 这类不拥有装瓶系统、租用在位者渠道的品牌公司 [src:IND-RTDBEV-2026-09#p12][src:IND-RTDBEV-2026-09#p16]。"
-  - "装瓶与分销层：运营生产线、配送车辆和冷饮设备，承担几乎全部实物资产，2025 年以约一半的收入拿到 33% 的经营利润 [src:IND-RTDBEV-2026-09#p8][src:IND-RTDBEV-2026-09#p11]。研究提醒，各层收入都包含向上一层的采购，收入占比不是同一个池子的份额，利润占比才是 [src:IND-RTDBEV-2026-09#p8]。以 Coca-Cola Consolidated 为例，2025 年付给可口可乐公司的浓缩液、糖浆、甜味剂、成品及相关采购占其净收入 31.3%，以包装为主的其他销售成本占 29.0%，销售、配送与管理费用占 26.6%，剩下 13.2% 为经营利润，扣除可口可乐公司返还的 3.82 亿美元营销资助后，浓缩液成本净额约占收入 26.0% [src:IND-RTDBEV-2026-09#p7]。"
-  - "装瓶商以价格换任期：可口可乐公司在美国的综合饮料协议（Comprehensive Beverage Agreement）为期十年、可由装瓶商选择无限续约，区域排他，这种排他自 1980 年《软饮料品牌间竞争法》起在美国受法律保护，代价是装瓶商对上游没有定价权 [src:IND-RTDBEV-2026-09#p6][src:IND-RTDBEV-2026-09#p9][src:IND-RTDBEV-2026-09#p11]。承接再特许经营区域的装瓶商还要在浓缩液费之外永久按季向可口可乐公司支付分装费，所以 2016–17 年的再特许经营转移了资产和资本负担，却没有转移全部经济利益 [src:IND-RTDBEV-2026-09#p9]。"
-  - "零售与餐饮渠道：零售商的分成由渠道而不是产品决定，2024 年美国便利店的包装饮料占店内销售额 17.9%、店内毛利 21.2%，食杂店全店毛利率约 23%、软饮常作促销引流品类，利润更薄，餐饮现调则靠多年独家合同，谈判围绕设备、资助和返利而不是糖浆价格 [src:IND-RTDBEV-2026-09#p7]。零售商的集中也反过来制约装瓶商，2024 年沃尔玛占 Coca-Cola Consolidated 净销售 17%、克罗格占 12%，区域排他挡得住别的装瓶商，挡不住横跨所有区域、一次谈判的客户 [src:IND-RTDBEV-2026-09#p11]。"
-  - "挑战者与在位者：挑战者品牌租用在位者的直送系统，在位者按接近多运一箱的边际成本给出准入价格，再以股权和挑战者对其渠道的依附取得回报，例如可口可乐公司 2015 年以 21.5 亿美元买下 Monster 16.7% 的股份，Celsius 43.2% 的净收入经由百事公司 [src:IND-RTDBEV-2026-09#p12]。新品类在在位者系统照顾不到的渠道起步，成功后被在位者买下，可口可乐公司和百事公司为 glacéau、BodyArmor、poppi 支付的已披露对价合计 117 亿美元，低于可口可乐公司 2025 年一年的经营利润，这一统计只含披露了对价的交易 [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p13]。"
-  - "包装与原料：2025 财年包装层和原料层的经营利润率分别为 12.2% 和 12.0% [src:IND-RTDBEV-2026-09#p4]，研究把包装归为经营利润率约 12–13% 的竞争性大宗商品生意 [src:IND-RTDBEV-2026-09#p21]。投入成本周期由 incidence 合同推给装瓶商，零售商的促销日历又把一部分推回上游，夹在中间的装瓶层吸收冲击：2025 年 Coca-Cola Consolidated 的毛利率下降约 40 个基点，公司把原因归于铝进口关税上升，同年可口可乐公司的毛利率没有下降 [src:IND-RTDBEV-2026-09#p9][src:IND-RTDBEV-2026-09#p17][src:IND-RTDBEV-2026-09#p18]。"
+  - "Brand and concentrate layer: in most markets the Coca-Cola Company does not sell concentrate at cost plus a margin but takes a share of the bottler's realised net revenue (gross revenue less customer promotions, cooperative marketing and customer-specific coupon spending), which is incidence pricing [src:IND-RTDBEV-2026-09#p9]. The incidence agreement between the Coca-Cola Company and Coca-Cola Consolidated that the study cites lets the brand owner set the rate at its own discretion and change it at 90 days' notice, provided it applies proportionally to all participating bottlers, so the brand owner automatically shares in the bottler's price increases and mix improvements while bearing none of the increases in aluminium, resin, freight and labour [src:IND-RTDBEV-2026-09#p9]. The brand layer also includes brand companies such as Monster and Celsius that own no bottling system and rent the incumbents' channels [src:IND-RTDBEV-2026-09#p12][src:IND-RTDBEV-2026-09#p16]."
+  - "Bottling and distribution layer: it runs the production lines, delivery vehicles and cold-drink equipment and carries almost all the physical assets, and in 2025 it earned 33% of operating profit on about half of the revenue [src:IND-RTDBEV-2026-09#p8][src:IND-RTDBEV-2026-09#p11]. The study cautions that each layer's revenue includes its purchases from the layer above, so revenue shares are not shares of one pool, whereas profit shares are [src:IND-RTDBEV-2026-09#p8]. Take Coca-Cola Consolidated: in 2025 its purchases of concentrate, syrup, sweeteners, finished goods and related items from the Coca-Cola Company were 31.3% of its net revenue, other cost of sales, mostly packaging, 29.0%, and selling, delivery and administrative expenses 26.6%, leaving 13.2% as operating profit, and after deducting the $382 million of marketing funding returned by the Coca-Cola Company, net concentrate cost was about 26.0% of revenue [src:IND-RTDBEV-2026-09#p7]."
+  - "Bottlers trade price for tenure: the Coca-Cola Company's Comprehensive Beverage Agreement in the US runs for ten years, renewable indefinitely at the bottler's option, with territorial exclusivity, which has been protected by law in the US since the Soft Drink Interbrand Competition Act of 1980; the price is that the bottler has no pricing power upstream [src:IND-RTDBEV-2026-09#p6][src:IND-RTDBEV-2026-09#p9][src:IND-RTDBEV-2026-09#p11]. Bottlers that took over refranchised territories also pay the Coca-Cola Company a sub-bottling fee every quarter in perpetuity, on top of the concentrate fee, so the refranchising of 2016–17 transferred assets and the capital burden but not all of the economic benefit [src:IND-RTDBEV-2026-09#p9]."
+  - "Retail and foodservice channels: the retailer's cut is set by the channel, not the product: in 2024 packaged beverages were 17.9% of in-store sales and 21.2% of in-store gross profit at US convenience stores, grocery stores have a store-wide gross margin of about 23% and often use soft drinks as a promotional traffic driver, with thinner margins, and fountain drinks in foodservice depend on multi-year exclusive contracts negotiated around equipment, funding and rebates rather than the price of syrup [src:IND-RTDBEV-2026-09#p7]. Retailer concentration in turn constrains the bottlers: in 2024 Walmart accounted for 17% of Coca-Cola Consolidated's net sales and Kroger for 12%, and territorial exclusivity keeps out other bottlers but not customers that span every territory and negotiate once [src:IND-RTDBEV-2026-09#p11]."
+  - "Challengers and incumbents: challenger brands rent the incumbents' direct-store-delivery systems, the incumbents price access at close to the marginal cost of delivering one more case and earn their return through equity and the challengers' dependence on their channel; for example, the Coca-Cola Company bought 16.7% of Monster for $2.15 billion in 2015, and 43.2% of Celsius's net revenue comes through PepsiCo [src:IND-RTDBEV-2026-09#p12]. New categories start in channels the incumbents' systems do not serve and, once successful, are bought by the incumbents: the disclosed consideration the Coca-Cola Company and PepsiCo paid for glacéau, BodyArmor and poppi totals $11.7 billion, less than the Coca-Cola Company's operating profit for the single year 2025, and this count includes only deals whose consideration was disclosed [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p13]."
+  - "Packaging and ingredients: in fiscal 2025 the operating margins of the packaging and ingredients layers were 12.2% and 12.0% [src:IND-RTDBEV-2026-09#p4], and the study classes packaging as a competitive commodity business with an operating margin of about 12–13% [src:IND-RTDBEV-2026-09#p21]. Input-cost cycles are pushed onto the bottlers by the incidence contracts, while retailers' promotional calendars push part of them back upstream, so the bottling layer in the middle absorbs the shock: in 2025 Coca-Cola Consolidated's gross margin fell by about 40 basis points, which the company attributed to higher tariffs on aluminium imports, while the Coca-Cola Company's gross margin did not fall in the same year [src:IND-RTDBEV-2026-09#p9][src:IND-RTDBEV-2026-09#p17][src:IND-RTDBEV-2026-09#p18]."
 
 signposts:
   - id: RTDBEV-SP1
-    title: "墨西哥装瓶商利润率：不区分甜味剂的消费税是否伤及利润"
-    observable: "Coca-Cola FEMSA 墨西哥和中美洲分部每个季度的经营利润率（以公司季度报告列示的分部经营利润率为准，未直接列示时用分部经营利润除以分部总收入），以及同一季度该分部销量（单位箱）的同比变化。研究把墨西哥装瓶商利润率列为信息价值最高的路标 [src:IND-RTDBEV-2026-09#p25]，并指明读数来自该公司的季度 Form 6-K [src:IND-RTDBEV-2026-09#p19]。"
-    threshold: "研究原文门槛：2027 或 2028 年中连续两个季度经营利润率低于 14%，且这两个季度的销量降幅都小于 5% [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p19]。本模块的解读：连续两季可以跨年（例如 2027 年第四季度与 2028 年第一季度），销量同比上升也算降幅小于 5%。销量没怎么降而利润率降下来，说明新税伤及利润率，而不只是改变产品结构 [src:IND-RTDBEV-2026-09#p19]。"
+    title: "Mexican bottler margin: whether the sweetener-agnostic excise tax hurts profits"
+    observable: "The quarterly operating margin of Coca-Cola FEMSA's Mexico and Central America segment (the segment operating margin shown in the company's quarterly report or, if it is not shown directly, segment operating income divided by total segment revenue), and the year-on-year change in the segment's volume (unit cases) in the same quarter. The study lists the Mexican bottler margin as the signpost with the highest information value [src:IND-RTDBEV-2026-09#p25], and says the reading comes from the company's quarterly Form 6-K [src:IND-RTDBEV-2026-09#p19]."
+    threshold: "Study's own threshold: an operating margin below 14% for two consecutive quarters within 2027 or 2028, with volume declines of less than 5% in both quarters [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p19]. This module's reading: the two consecutive quarters may span a year-end (for example Q4 2027 and Q1 2028), and a year-on-year volume increase also counts as a decline of less than 5%. A falling margin without much fall in volume shows that the new tax hurts margins, not just the product mix [src:IND-RTDBEV-2026-09#p19]."
     rule:
       all_of:
         - metric: segment_operating_margin
@@ -35,49 +35,49 @@ signposts:
           unit: "%"
           consecutive: 2
           period: quarter
-          note: "对象：Coca-Cola FEMSA 墨西哥和中美洲分部"
+          note: "Subject: Coca-Cola FEMSA's Mexico and Central America segment"
         - metric: segment_volume_yoy
           op: ">"
           threshold: -5
           unit: "%"
           consecutive: 2
           period: quarter
-          note: "同一分部、同样两个季度的销量同比变化，高于负门槛值即降幅小于门槛"
-      note: "只用 2027、2028 年的季度数据判定，连续两季可跨年；公司调整分部口径时，按其披露的可比口径判定"
+          note: "Year-on-year volume change of the same segment in the same two quarters; above the negative threshold means a decline smaller than the threshold"
+      note: "Judged only on quarterly data for 2027 and 2028, and the two consecutive quarters may span a year-end; if the company changes its segment definitions, judge on the comparable basis it discloses"
     check_frequency: quarterly
-    data_source: "Coca-Cola FEMSA 季度业绩报告（以 Form 6-K 提交 SEC EDGAR，同时发布于公司投资者关系网站）中墨西哥和中美洲分部的收入、经营利润与销量表；每年用 Form 20-F 的分部披露核对。"
+    data_source: "The revenue, operating income and volume tables for the Mexico and Central America segment in Coca-Cola FEMSA's quarterly results reports (furnished to SEC EDGAR on Form 6-K and published on the company's investor relations website); checked every year against the segment disclosures in Form 20-F."
     current_reading:
       value: 16.0
       unit: "%"
       period: 2025Q3
       source: IND-RTDBEV-2026-09#p19
-      note: "同季销量下降 2.7%，墨西哥 2026 年新税率生效之前 [src:IND-RTDBEV-2026-09#p19]。"
-    implication: "若触发，说明不区分甜味剂的消费税已经从改变产品结构走到压低利润率，靠改配方躲税的出口被关上。按研究的分析，这类税的损失先落在制定货架价格的装瓶商，再经 incidence 以更低的收入基数传到浓缩液层，行业内没有受益方 [src:IND-RTDBEV-2026-09#p24]。若门槛期内利润率守住，与研究的基准情形一致：第二代税温和压低销量、抬高每升价格，头两年利润率大体不变，真正的考验要等几个大市场同时采用这种设计（见 RTDBEV-SP2）[src:IND-RTDBEV-2026-09#p19]。研究对这一基准情形的把握只有 uncertain（40–60%）[src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p19]。"
+      note: "Volume fell 2.7% in the same quarter, before Mexico's new tax rates took effect in 2026 [src:IND-RTDBEV-2026-09#p19]."
+    implication: "If triggered, the sweetener-agnostic excise tax has moved from changing the product mix to depressing margins, and the escape of avoiding the tax by reformulation is closed. On the study's analysis, the loss from such taxes falls first on the bottlers, which set shelf prices, and then passes through incidence to the concentrate layer as a smaller revenue base; no one in the industry benefits [src:IND-RTDBEV-2026-09#p24]. If margins hold through the threshold period, that is consistent with the study's base case: second-generation taxes modestly depress volume and raise the price per litre, margins are broadly unchanged for the first two years, and the real test comes only when several large markets adopt this design at the same time (see RTDBEV-SP2) [src:IND-RTDBEV-2026-09#p19]. The study's confidence in this base case is only uncertain (40–60%) [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p19]."
     tests_to_rerun: [regulation, pricing_power, returns_on_capital]
 
   - id: RTDBEV-SP2
-    title: "不区分甜味剂的饮料消费税扩散到墨西哥以外"
-    observable: "墨西哥以外的国家（或欧盟等超国家层面）是否立法对含非热量甜味剂（零糖、代糖）的饮料征收消费税，也就是不再以含糖量为征税门槛的设计。研究把墨西哥以外是否有司法辖区采用这种设计列为路标 [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p25]。"
-    threshold: "研究原文路标：墨西哥以外任一司法辖区采用不区分甜味剂的消费税 [src:IND-RTDBEV-2026-09#p19]。本模块设定的判定口径：以 2026-09-19 之后正式通过或公布的国家级或欧盟等超国家立法为准，提案、咨询和预算表态不算；州、省、市级立法写进复核记录，不单独触发，因为研究认为对利润率的真正考验是几个大市场同时采用 [src:IND-RTDBEV-2026-09#p19]。只收紧含糖量门槛不算，例如英国自 2028 年 1 月起把低档门槛从每百毫升 5 克降到 4.5 克，研究认为这仍是第一代设计 [src:IND-RTDBEV-2026-09#p19]；本模块同样不把英国把乳饮料纳入征税范围这类扩大含糖量税适用范围的做法算作触发 [src:IND-RTDBEV-2026-09#p24]。"
+    title: "Sweetener-agnostic beverage excise taxes spreading beyond Mexico"
+    observable: "Whether countries outside Mexico (or a supranational level such as the EU) legislate an excise tax on drinks containing non-caloric sweeteners (zero-sugar, sugar substitutes), that is, a design that no longer uses sugar content as the threshold for the tax. The study lists whether any jurisdiction outside Mexico adopts this design as a signpost [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p25]."
+    threshold: "Study's own signpost: any jurisdiction outside Mexico adopting a sweetener-agnostic excise tax [src:IND-RTDBEV-2026-09#p19]. Basis set by this module: national or supranational (such as EU) legislation formally passed or promulgated after 2026-09-19 counts, while proposals, consultations and budget statements do not; state, provincial and municipal legislation is written into the review record but does not trigger on its own, because the study holds that the real test for margins is several large markets adopting at the same time [src:IND-RTDBEV-2026-09#p19]. Merely tightening a sugar threshold does not count, for example the UK lowering its lower-band threshold from 5 grams to 4.5 grams per hundred millilitres from January 2028, which the study regards as still a first-generation design [src:IND-RTDBEV-2026-09#p19]; nor does this module count measures that widen the scope of a sugar tax, such as the UK bringing milk-based drinks into the tax [src:IND-RTDBEV-2026-09#p24]."
     rule:
       op: event
-      threshold: "墨西哥以外的国家级或超国家立法，开始对含非热量甜味剂、不含糖的饮料征收消费税"
+      threshold: "National or supranational legislation outside Mexico that starts levying an excise tax on sugar-free drinks containing non-caloric sweeteners"
       period: event
-      note: "以 2026-09-19 之后立法通过为准，不以提案或咨询为准；只收紧含糖量门槛或扩大含糖量税的适用范围不算；2026-09-19 之前已存在的同类税种不算扩散，基线清单见 todo"
+      note: "Counts on legislation passed after 2026-09-19, not on proposals or consultations; merely tightening a sugar threshold or widening the scope of a sugar tax does not count; taxes of the same kind that existed before 2026-09-19 are not a spread; the baseline list is in todo"
     check_frequency: quarterly
-    data_source: "各国官方公报与财政、税收立法（对照文本：墨西哥《Ley del Impuesto Especial sobre Producción y Servicios》第 2 条，DOF 2025 年 11 月 7 日公布的修正）；世界卫生组织《Global report on the use of sugar-sweetened beverage taxes》（研究引用 2023 年 12 月版和 2026 年 1 月发布的 2025 年版）；英国 HMRC 软饮料行业税政策文件。"
+    data_source: "Official gazettes and fiscal and tax legislation of each country (reference text: Article 2 of Mexico's Ley del Impuesto Especial sobre Producción y Servicios, as amended by the reform published in the DOF on 7 November 2025); the World Health Organization's Global report on the use of sugar-sweetened beverage taxes (the study cites the December 2023 edition and the 2025 edition published in January 2026); HMRC policy papers on the UK Soft Drinks Industry Levy."
     current_reading:
-      value: "墨西哥 2026 年起对含非热量甜味剂的饮料每升征收 1.50 比索"
+      value: "From 2026 Mexico levies 1.50 pesos per litre on drinks containing non-caloric sweeteners"
       period: "2026"
       source: IND-RTDBEV-2026-09#p19
-      note: "这是研究记录的对照设计，同年墨西哥原有饮料消费税从每升 1.64 比索提高到 3.0818 比索 [src:IND-RTDBEV-2026-09#p19]。研究没有列出墨西哥以外已采用这种设计的司法辖区 [src:IND-RTDBEV-2026-09#p19]。"
-    implication: "若扩散，健康税就从行业能用配方绕开的投入税，变成只能提价或自行吸收的消费税 [src:IND-RTDBEV-2026-09#p24]。过去撑起增长的零糖产品本身也会被征税：2025 年可口可乐公司汽水的增长全部来自零糖产品，零糖汽水销量增长 14% [src:IND-RTDBEV-2026-09#p19]。研究预计 2026–2030 年是采用期，影响从 2028 年起可以量化，几个大市场同时采用时才是对利润率的真正考验 [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p24]。"
+      note: "This is the reference design the study records; in the same year Mexico's existing beverage excise tax rose from 1.64 pesos to 3.0818 pesos per litre [src:IND-RTDBEV-2026-09#p19]. The study lists no jurisdiction outside Mexico that has adopted this design [src:IND-RTDBEV-2026-09#p19]."
+    implication: "If it spreads, health taxes turn from an input tax the industry can engineer around by reformulation into an excise tax that can only be passed on in prices or absorbed [src:IND-RTDBEV-2026-09#p24]. The zero-sugar products that have carried growth would themselves be taxed: in 2025 all of the Coca-Cola Company's sparkling growth came from zero-sugar products, with zero-sugar sparkling volume up 14% [src:IND-RTDBEV-2026-09#p19]. The study expects 2026–2030 to be the adoption period, with effects quantifiable from 2028, and the real test for margins only when several large markets adopt at the same time [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p24]."
     tests_to_rerun: [regulation, pricing_power, growth]
 
   - id: RTDBEV-SP3
-    title: "装瓶层利润率向浓缩液层收敛"
-    observable: "判定范围内每家装瓶商的全年经营利润率，按公司报告口径（不用 comparable 或 adjusted 口径）逐家计算。判定范围（本模块设定）：研究按层列示回报的表（Exhibit 12）中标为装瓶商的 Coca-Cola FEMSA、Arca Continental、Coca-Cola Europacific Partners、Coca-Cola HBC 和 Coca-Cola Consolidated，加上研究在同一页作为只拥有渠道、不拥有品牌的例子提到的百事印度主要特许装瓶商 Varun Beverages [src:IND-RTDBEV-2026-09#p16]。"
-    threshold: "研究原文门槛：任一大型上市装瓶商全年经营利润率超过 20%，意味着利润分配开始逆转 [src:IND-RTDBEV-2026-09#p3]。研究同时把装瓶商利润率在任何地方向浓缩液层收敛列为证明其合同解释错误的情形 [src:IND-RTDBEV-2026-09#p25]。判定范围和口径见 observable；名单增减须在读取相关年报之前单独提交并写明理由。"
+    title: "Bottling-layer margins converging on the concentrate layer"
+    observable: "The full-year operating margin of each bottler in scope, computed company by company on the reported basis (not the comparable or adjusted basis). Scope (set by this module): the bottlers in the study's table of returns by layer (Exhibit 12), namely Coca-Cola FEMSA, Arca Continental, Coca-Cola Europacific Partners, Coca-Cola HBC and Coca-Cola Consolidated, plus Varun Beverages, PepsiCo's main franchise bottler in India, which the study mentions on the same page as an example of owning the channel without owning the brand [src:IND-RTDBEV-2026-09#p16]."
+    threshold: "Study's own threshold: any large listed bottler with a full-year operating margin above 20%, which would mean the profit split has started to reverse [src:IND-RTDBEV-2026-09#p3]. The study also lists bottler margins converging on the concentrate layer anywhere as a case that would prove its contract explanation wrong [src:IND-RTDBEV-2026-09#p25]. Scope and basis are in observable; additions to or removals from the list must be committed separately, with the reason stated, before the relevant annual reports are read."
     rule:
       metric: operating_margin
       op: ">"
@@ -85,22 +85,22 @@ signposts:
       unit: "%"
       consecutive: 1
       period: year
-      note: "逐家判定，任一家越线即触发；Varun Beverages 未单列经营利润时，用税前利润加回财务费用、减去其他收入计算，首次读数时把所用口径写进复核记录并保持不变"
+      note: "Judged company by company, and any one crossing the line triggers; if Varun Beverages does not report operating profit separately, compute it as profit before tax plus finance costs minus other income, record the basis used in the review record at the first reading, and keep it unchanged"
     check_frequency: annual
-    data_source: "各装瓶商年报与全年业绩：Coca-Cola Consolidated 的 Form 10-K 与业绩新闻稿，Coca-Cola Europacific Partners 和 Coca-Cola FEMSA 的 Form 20-F 与 Form 6-K，Coca-Cola HBC 与 Arca Continental 的全年业绩报告，Varun Beverages 的年报。经营利润率按公司报告的经营利润除以收入计算。"
+    data_source: "Each bottler's annual report and full-year results: Coca-Cola Consolidated's Form 10-K and earnings press release, the Form 20-F and Form 6-K of Coca-Cola Europacific Partners and of Coca-Cola FEMSA, the full-year results reports of Coca-Cola HBC and Arca Continental, and Varun Beverages' annual report. Operating margin is computed as reported operating profit divided by revenue."
     current_reading:
       value: 15.9
       unit: "%"
       period: FY2025
       source: IND-RTDBEV-2026-09#p16
-      note: "Exhibit 12 的五家装瓶商中最高为 Arca Continental 的 15.9%，其余为 Coca-Cola FEMSA 14.7%、Coca-Cola Europacific Partners 13.4%、Coca-Cola Consolidated 13.2%、Coca-Cola HBC 11.3% [src:IND-RTDBEV-2026-09#p16]。研究只给出 Varun Beverages 的 EBITDA 利润率 23.3%，没有给出经营利润率，两者不可比，首次检查时补上 [src:IND-RTDBEV-2026-09#p16]。研究计算的装瓶层整体利润率为 10.9%，百事北美饮料业务 2025 年的减值拉低了这个数，按其 2024 年利润率计约为 12% [src:IND-RTDBEV-2026-09#p4][src:IND-RTDBEV-2026-09#p8]。"
-    implication: "若触发，说明利润分配开始逆转 [src:IND-RTDBEV-2026-09#p3]，也意味着研究对利润分配的合同解释是错的 [src:IND-RTDBEV-2026-09#p25]。品牌层的定价权、装瓶层的资本回报和区域特许经营的价值都要重新检验。研究的基准看法相反：装瓶的制造规模可以买到，在哪里都只赚 12–16% 的经营利润率，这是竞争性资产的回报 [src:IND-RTDBEV-2026-09#p12]。"
+      note: "Of the five bottlers in Exhibit 12, the highest is Arca Continental at 15.9%, and the others are Coca-Cola FEMSA 14.7%, Coca-Cola Europacific Partners 13.4%, Coca-Cola Consolidated 13.2% and Coca-Cola HBC 11.3% [src:IND-RTDBEV-2026-09#p16]. The study gives only Varun Beverages' EBITDA margin of 23.3%, not its operating margin, and the two are not comparable, so the operating margin is to be added at the first check [src:IND-RTDBEV-2026-09#p16]. The overall margin of the bottling layer as computed by the study is 10.9%, depressed by the 2025 impairment at PepsiCo's North American beverage business, and about 12% at that business's 2024 margin [src:IND-RTDBEV-2026-09#p4][src:IND-RTDBEV-2026-09#p8]."
+    implication: "If triggered, the profit split has started to reverse [src:IND-RTDBEV-2026-09#p3], which would also mean that the study's contract explanation of the split is wrong [src:IND-RTDBEV-2026-09#p25]. The brand layer's pricing power, the bottling layer's return on capital and the value of territorial franchises would all have to be re-tested. The study's base view is the opposite: bottling scale can be bought and earns only a 12–16% operating margin anywhere, the return of a competitive asset [src:IND-RTDBEV-2026-09#p12]."
     tests_to_rerun: [pricing_power, moat, returns_on_capital, unit_economics]
 
   - id: RTDBEV-SP4
-    title: "挑战者品牌经由在位者不控制的渠道做大"
-    observable: "美国三大饮料公司以外、也不经由它们的系统分销的单一碳酸软饮或能量饮料品牌：它占美国全渠道即饮饮料总销量的份额，以及其所有者报告的毛利率。本模块把研究所说的 the three US majors 理解为可口可乐公司、百事公司和 Keurig Dr Pepper（研究未逐一列名），把全渠道销量理解为 Beverage Digest 统计的美国全渠道即饮饮料总销量，研究引用的全渠道数据即来自该机构 [src:IND-RTDBEV-2026-09#p20]。"
-    threshold: "研究原文门槛：任一此类品牌的全渠道销量份额超过 2%，同时其所有者报告的毛利率高于 40%，且分销路线不受三大公司中任何一家控制 [src:IND-RTDBEV-2026-09#p3]。本模块设定的判定口径：份额分母为美国全渠道即饮饮料总销量；不受控制指该品牌在美国的主要分销路线不经由三大公司自有或特许的装瓶与分销系统，也不经由与它们签订的分销协议；所有者不公开毛利率的品牌满足不了第二个条件，不触发，但写进复核记录。"
+    title: "A challenger brand growing through channels the incumbents do not control"
+    observable: "A single carbonated soft drink or energy brand outside the three big US beverage companies and not distributed through their systems: its share of total US all-channel ready-to-drink volume, and the gross margin its owner reports. This module reads the study's “the three US majors” as the Coca-Cola Company, PepsiCo and Keurig Dr Pepper (the study does not name them one by one), and all-channel volume as total US all-channel ready-to-drink volume as compiled by Beverage Digest, the organisation the study's all-channel data come from [src:IND-RTDBEV-2026-09#p20]."
+    threshold: "Study's own threshold: any such brand with an all-channel volume share above 2%, an owner-reported gross margin above 40%, and a distribution route not controlled by any of the three majors [src:IND-RTDBEV-2026-09#p3]. Basis set by this module: the share's denominator is total US all-channel ready-to-drink volume; not controlled means that the brand's main US distribution route goes neither through the bottling and distribution systems owned or franchised by the three majors nor through distribution agreements with them; a brand whose owner does not publish its gross margin cannot meet the second condition and does not trigger, but is written into the review record."
     rule:
       all_of:
         - metric: brand_us_all_channel_volume_share
@@ -108,41 +108,41 @@ signposts:
           threshold: 2
           unit: "%"
           period: year
-          note: "单一品牌占 Beverage Digest 美国全渠道即饮饮料总销量的份额"
+          note: "A single brand's share of total US all-channel ready-to-drink volume as compiled by Beverage Digest"
         - metric: gross_margin
           op: ">"
           threshold: 40
           unit: "%"
           period: year
-          note: "该品牌所有者最近一个完整财年报告的毛利率"
-      note: "三大公司指可口可乐公司、百事公司和 Keurig Dr Pepper；品牌不属于三大公司、分销路线也不受其控制这一条由人工判定"
+          note: "Gross margin reported by the brand's owner for its latest full fiscal year"
+      note: "The three majors are the Coca-Cola Company, PepsiCo and Keurig Dr Pepper; whether the brand is outside the three majors and its distribution route free of their control is judged manually"
     check_frequency: annual
-    data_source: "Beverage Digest 每年发布的美国全渠道结果（研究引用其公开结果及《华尔街日报》等媒体的转述，完整品牌数据需订阅）；Beverage Marketing Corporation 的美国即饮饮料市场新闻稿，用于核对总销量；候选品牌所有者年报中的毛利率、分销协议与重要客户披露。"
+    data_source: "Beverage Digest's annual US all-channel results (the study cites its public results and reports of them in media such as The Wall Street Journal; full brand data require a subscription); Beverage Marketing Corporation's press releases on the US ready-to-drink market, to check total volume; gross margin, distribution agreement and major-customer disclosures in the annual reports of candidate brand owners."
     current_reading: null
-    implication: "若触发，说明有挑战者品牌不租用在位者的系统，也做到了规模和高毛利。研究认为冷饮直送网络这条护城河的作用是阻止一套对手系统出现，而不是向挑战者收租，在位者从挑战者那里收取的是股权和依附 [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p12]。触发意味着这两点都要重估，在位者对渠道准入的议价能力和品牌层的份额也要重新检验。研究的基准判断是挑战者经由在位者不控制的路线做大这件事不会大规模发生，可能性为 unlikely（15–40%）[src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p21]。"
+    implication: "If triggered, a challenger brand has reached scale and high gross margins without renting the incumbents' systems. The study holds that the moat of the chilled direct-store-delivery network works by preventing a rival system from emerging, not by charging challengers rent, and that what the incumbents collect from challengers is equity and dependence [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p12]. A trigger means both points have to be reassessed, and the incumbents' bargaining power over channel access and the brand layer's share have to be re-tested. The study's base judgement is that challengers growing large through routes the incumbents do not control will not happen on a large scale, with a probability of unlikely (15–40%) [src:IND-RTDBEV-2026-09#p3][src:IND-RTDBEV-2026-09#p21]."
     tests_to_rerun: [moat, competition, pricing_power]
 
   - id: RTDBEV-SP5
-    title: "配送或即时零售平台成为大型装瓶商的重要客户"
-    observable: "大型装瓶商年报客户集中度披露中，第三方配送或即时零售平台作为单一客户占该装瓶商收入的比例。范围与 RTDBEV-SP3 的六家装瓶商相同，另看拥有北美装瓶业务的百事公司 [src:IND-RTDBEV-2026-09#p8] 在 Form 10-K 中的客户集中度披露，研究引用过其中沃尔玛的占比 [src:IND-RTDBEV-2026-09#p11]。研究把配送平台是否出现在装瓶商的客户集中度披露中列为路标 [src:IND-RTDBEV-2026-09#p20]。"
-    threshold: "研究原文门槛：任一大型装瓶商披露某个即时零售或配送平台占其收入十分之一或以上 [src:IND-RTDBEV-2026-09#p25]。本模块设定的判定口径：客户须是第三方配送或即时零售平台，零售商自营的线上业务、传统批发商和装瓶商自有的 B2B 订货平台都不算；披露没有写明客户名称、无法确认是否为平台时，记为无法判定并人工核实，不触发。"
+    title: "Delivery or quick-commerce platforms becoming major customers of large bottlers"
+    observable: "In the customer-concentration disclosures of large bottlers' annual reports, the share of the bottler's revenue that a third-party delivery or quick-commerce platform accounts for as a single customer. The scope is the same six bottlers as in RTDBEV-SP3, plus the customer-concentration disclosure in the Form 10-K of PepsiCo, which owns North American bottling operations [src:IND-RTDBEV-2026-09#p8] and whose disclosure of Walmart's share the study has cited [src:IND-RTDBEV-2026-09#p11]. The study lists whether delivery platforms appear in bottlers' customer-concentration disclosures as a signpost [src:IND-RTDBEV-2026-09#p20]."
+    threshold: "Study's own threshold: any large bottler disclosing that a quick-commerce or delivery platform accounts for a tenth or more of its revenue [src:IND-RTDBEV-2026-09#p25]. Basis set by this module: the customer must be a third-party delivery or quick-commerce platform; retailers' own online businesses, traditional wholesalers and bottlers' own B2B ordering platforms do not count; if a disclosure does not name the customer and it cannot be confirmed to be a platform, it is recorded as undeterminable and verified manually, and does not trigger."
     rule:
       metric: customer_concentration
       op: ">="
       threshold: 10
       unit: "%"
       period: year
-      note: "单一客户须为第三方配送或即时零售平台，口径为占该装瓶商收入的比例"
+      note: "The single customer must be a third-party delivery or quick-commerce platform; the basis is its share of the bottler's revenue"
     check_frequency: annual
-    data_source: "各大型装瓶商年报的重要客户披露：Coca-Cola Consolidated 的 Form 10-K（研究引用其沃尔玛、克罗格占比的同一处披露），Coca-Cola Europacific Partners 与 Coca-Cola FEMSA 的 Form 20-F，Coca-Cola HBC、Arca Continental 与 Varun Beverages 的年报；百事公司 Form 10-K 的客户集中度披露。"
+    data_source: "Major-customer disclosures in the annual reports of the large bottlers: Coca-Cola Consolidated's Form 10-K (the same disclosure from which the study cites the shares of Walmart and Kroger), the Form 20-F of Coca-Cola Europacific Partners and of Coca-Cola FEMSA, and the annual reports of Coca-Cola HBC, Arca Continental and Varun Beverages; the customer-concentration disclosure in PepsiCo's Form 10-K."
     current_reading: null
-    implication: "若触发，说明冲动消费第一次有了一条在位者不控制的通路，研究对渠道护城河的判断要重估 [src:IND-RTDBEV-2026-09#p25]。研究预期的是另一种变化：B2B 订货平台拿走的只是直送的订货环节，最昂贵的配送环节仍留在装瓶商手里，那是在位者的成本机会而不是威胁 [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p20]。研究把即时零售在冲动消费中占到可观份额列为挑战者绕开在位者的前提，并判断这不会大规模发生，可能性为 unlikely [src:IND-RTDBEV-2026-09#p21]。"
+    implication: "If triggered, impulse consumption has for the first time a route the incumbents do not control, and the study's judgement on the channel moat must be reassessed [src:IND-RTDBEV-2026-09#p25]. The study expects a different change: B2B ordering platforms take only the ordering step of direct delivery, while the most expensive step, delivery, stays with the bottlers, which is a cost opportunity for the incumbents rather than a threat [src:IND-RTDBEV-2026-09#p19][src:IND-RTDBEV-2026-09#p20]. The study lists quick commerce taking a sizeable share of impulse consumption as a precondition for challengers to bypass the incumbents, and judges that this will not happen on a large scale, with a probability of unlikely [src:IND-RTDBEV-2026-09#p21]."
     tests_to_rerun: [moat, customer_concentration, competition]
 
   - id: RTDBEV-SP6
-    title: "新兴市场单箱收入：销量增长是否继续量多价低"
-    observable: "Coca-Cola HBC 按市场成熟度披露的全年每单位箱收入中，新兴市场与成熟市场之比，辅以新兴市场的销量占比和收入占比；Coca-Cola FEMSA 全公司及各分部的每单位箱收入作为辅助读数，不设门槛。研究把 Coca-Cola HBC 和 Coca-Cola FEMSA 的新兴市场单箱收入列为路标 [src:IND-RTDBEV-2026-09#p20][src:IND-RTDBEV-2026-09#p25]。"
-    threshold: "本模块设定（研究只给出方向、没有给数值门槛）：比值连续两个全年低于 0.45（明显不到一半，差距拉大），或连续两个全年高于 0.60（明显超过一半，开始收敛）。要求连续两年，是为了过滤新兴市场货币单年大幅贬值这类汇率噪音。Coca-Cola HBC 的市场分组或合并范围变化、使前后不可比时，用公司披露的可比口径；没有可比口径的年份记为无法判定，不触发，并复核本路标。"
+    title: "Emerging-market revenue per case: whether volume growth stays high-volume, low-price"
+    observable: "The ratio of emerging to established markets in Coca-Cola HBC's full-year revenue per unit case disclosed by market maturity, supported by the emerging markets' shares of volume and revenue; Coca-Cola FEMSA's revenue per unit case for the whole company and each segment is a supporting reading, with no threshold. The study lists the emerging-market revenue per case of Coca-Cola HBC and Coca-Cola FEMSA as signposts [src:IND-RTDBEV-2026-09#p20][src:IND-RTDBEV-2026-09#p25]."
+    threshold: "Set by this module (the study gives only a direction, not a numeric threshold): the ratio below 0.45 for two consecutive full years (clearly less than half, the gap widening), or above 0.60 for two consecutive full years (clearly more than half, starting to converge). Two consecutive years are required to filter out currency noise such as a sharp one-year devaluation of emerging-market currencies. If changes in Coca-Cola HBC's market groupings or scope of consolidation make years incomparable, the comparable basis the company discloses is used; a year with no comparable basis is recorded as undeterminable, does not trigger, and prompts a review of this signpost."
     rule:
       metric: em_to_established_revenue_per_case_ratio
       op: outside
@@ -150,26 +150,26 @@ signposts:
       unit: ratio
       consecutive: 2
       period: year
-      note: "对象：Coca-Cola HBC，新兴市场每单位箱收入除以成熟市场每单位箱收入，按其报告货币（欧元）计算；连续两年须落在区间的同一侧"
+      note: "Subject: Coca-Cola HBC; emerging-market revenue per unit case divided by established-market revenue per unit case, in its reporting currency (euro); the two consecutive years must fall on the same side of the band"
     check_frequency: annual
-    data_source: "Coca-Cola HBC 全年业绩报告与半年度 factsheet 中按市场成熟度（成熟、发展中、新兴）列示的每单位箱收入、销量与收入；Coca-Cola FEMSA 的 Form 20-F 与季度 6-K 中按分部列示的销量与收入。"
+    data_source: "Revenue per unit case, volume and revenue by market maturity (established, developing, emerging) in Coca-Cola HBC's full-year results reports and half-year factsheets; volume and revenue by segment in Coca-Cola FEMSA's Form 20-F and quarterly 6-Ks."
     current_reading:
       value: [2.90, 5.70]
-      unit: "欧元/单位箱"
+      unit: "EUR per unit case"
       period: FY2025
       source: IND-RTDBEV-2026-09#p24
-      note: "依次为新兴市场和成熟市场的每单位箱收入，比值约 0.51（本模块按这两个数计算）[src:IND-RTDBEV-2026-09#p24]。同年发展中市场为 5.25 欧元，新兴市场占销量 63%、占收入 47% [src:IND-RTDBEV-2026-09#p24]。"
-    implication: "研究的基准判断是地域增长量多利薄：销量流向单箱收入约为一半、资产利用率更低的市场 [src:IND-RTDBEV-2026-09#p5][src:IND-RTDBEV-2026-09#p24]，销量增长会跑在利润增长前面 [src:IND-RTDBEV-2026-09#p21]。比值连续跌破下限，说明同样的销量增长带来的收入更少，行业收入和利润增长会进一步落后于销量增长。比值连续升破上限，说明人均消费的追赶开始带来收入，研究所说人均追赶到来而收入没有跟上的判断需要修正 [src:IND-RTDBEV-2026-09#p20]。"
+      note: "Revenue per unit case in emerging and in established markets, in that order; the ratio is about 0.51 (computed by this module from these two numbers) [src:IND-RTDBEV-2026-09#p24]. In the same year developing markets were at €5.25, and emerging markets accounted for 63% of volume and 47% of revenue [src:IND-RTDBEV-2026-09#p24]."
+    implication: "The study's base judgement is that geographic growth brings much volume but thin profit: volume flows to markets with about half the revenue per case and lower asset utilisation [src:IND-RTDBEV-2026-09#p5][src:IND-RTDBEV-2026-09#p24], and volume growth will run ahead of profit growth [src:IND-RTDBEV-2026-09#p21]. A ratio staying below the lower bound means the same volume growth brings less revenue, and the industry's revenue and profit growth will lag volume growth even further. A ratio staying above the upper bound means per-capita catch-up has begun to bring revenue, and the study's judgement that per-capita catch-up arrives without revenue keeping pace needs revising [src:IND-RTDBEV-2026-09#p20]."
     tests_to_rerun: [growth, unit_economics, returns_on_capital]
 
 todo:
-  - "RTDBEV-SP4：本模块把 the three US majors 理解为可口可乐公司、百事公司和 Keurig Dr Pepper，把份额分母理解为美国全渠道即饮饮料总销量，这是本模块的解读而不是研究原文；若日后查明研究另有所指，改动须单独提交并写明理由。Beverage Digest 的完整品牌数据需订阅，首次检查时确认公开结果能否给出所需份额，不能就记为无法判定。"
-  - "RTDBEV-SP4、RTDBEV-SP5 的当前读数为空（研究未给出），首次检查时分别从 Beverage Digest 全渠道数据和各大型装瓶商年报的客户集中度披露补上基线。"
-  - "RTDBEV-SP3：研究只给出 Varun Beverages 的 EBITDA 利润率，首次检查时从其年报补上 2025 财年经营利润率，口径按 rule.note。"
-  - "RTDBEV-SP2：研究没有列出墨西哥以外已有的同类税种。首次检查前编制 2026-09-19 之前已存在、对不含糖的代糖饮料征税的国家级税种清单作为基线，避免把既有税种误判为扩散。"
-  - "RTDBEV-SP6：从 Coca-Cola FEMSA 的 Form 20-F 或季度 6-K 取得每单位箱收入作为辅助读数（研究未给出该数字）；比值区间和连续两年的要求由本模块设定，积累两年数据后复核是否合适。"
-  - "RTDBEV-SP1：研究的门槛只覆盖 2027、2028 年，2028 年第四季度数据发布后需要重写或退役。"
-  - "研究第 18 页说 2015–2019 年英国软饮按销量加权的含糖量从每百毫升 5.7 克降到 2.2 克，又说降幅为 44%，两组数互相矛盾：5.7 克降到 2.2 克约为 61%（本模块计算）[src:IND-RTDBEV-2026-09#p18]。本模块暂不引用这组数字，改用同页的糖总量下降 35% 和总销量增长 14.9% [src:IND-RTDBEV-2026-09#p18]，待核对研究引用的 Scarborough et al.（PLOS Medicine，2020）等一手来源后再决定。"
-  - "指标登记：segment_volume_yoy、brand_us_all_channel_volume_share、em_to_established_revenue_per_case_ratio 尚未登记在 thesis-ci/spec/metrics.yml；segment_operating_margin、customer_concentration 需要指定对象，而路标 rule 的 schema 没有 params 字段，对象暂写在 rule.note 中。两项留给规范维护者处理。"
-  - "研究列出、本模块暂未编成路标的观察项：百事公司 2026 年底北美供应链与渠道评估后是否再特许经营装瓶业务，大型装瓶商自有 B2B 平台的收入占比，《软饮料品牌间竞争法》或同类法律是否被重新审议，主要饮料公司是否披露量化的 GLP-1 影响，零糖饮料在征税市场的增速，欧盟 2030 年重复使用目标是否转为强制。下次复核时评估是否替换或新增路标。"
-  - "研究依据的一手来源（公司年报与 6-K、HMRC、WHO 等，见研究第 27–30 页）尚未单独登记；若将来直接引用，逐条登记到本目录 sources.yml，SEC 文件在 EDGAR 可用后补 accession。"
+  - "RTDBEV-SP4: this module reads “the three US majors” as the Coca-Cola Company, PepsiCo and Keurig Dr Pepper, and the share's denominator as total US all-channel ready-to-drink volume; this is this module's reading, not the study's words; if it later turns out that the study meant something else, the change must be committed separately, with the reason stated. Full brand data from Beverage Digest require a subscription; at the first check, confirm whether the public results give the share needed, and if not, record it as undeterminable."
+  - "The current readings of RTDBEV-SP4 and RTDBEV-SP5 are empty (the study gives none); at the first check, add baselines from Beverage Digest's all-channel data and from the customer-concentration disclosures in the large bottlers' annual reports, respectively."
+  - "RTDBEV-SP3: the study gives only Varun Beverages' EBITDA margin; at the first check, add its fiscal 2025 operating margin from its annual report, on the basis in rule.note."
+  - "RTDBEV-SP2: the study lists no existing taxes of the same kind outside Mexico. Before the first check, compile as a baseline a list of national taxes that existed before 2026-09-19 and tax sugar-free drinks with sugar substitutes, so that existing taxes are not mistaken for a spread."
+  - "RTDBEV-SP6: obtain revenue per unit case from Coca-Cola FEMSA's Form 20-F or quarterly 6-Ks as a supporting reading (the study does not give this number); the ratio band and the two-consecutive-year requirement are set by this module and are to be reviewed for suitability once two years of data have accumulated."
+  - "RTDBEV-SP1: the study's threshold covers only 2027 and 2028; once data for Q4 2028 are published, the signpost must be rewritten or retired."
+  - "Page 18 of the study says that from 2015 to 2019 the volume-weighted sugar content of UK soft drinks fell from 5.7 grams to 2.2 grams per hundred millilitres, and also says the fall was 44%; the two contradict each other: 5.7 grams down to 2.2 grams is about 61% (this module's calculation) [src:IND-RTDBEV-2026-09#p18]. This module does not cite these figures for now and uses instead the 35% fall in total sugar and the 14.9% growth in total volume from the same page [src:IND-RTDBEV-2026-09#p18]; to be decided after checking the primary sources the study cites, such as Scarborough et al. (PLOS Medicine, 2020)."
+  - "Metric registry: segment_volume_yoy, brand_us_all_channel_volume_share and em_to_established_revenue_per_case_ratio are not yet registered in thesis-ci/spec/metrics.yml; segment_operating_margin and customer_concentration need a subject to be specified, but the schema of a signpost rule has no params field, so the subject is written in rule.note for now. Both items are left to the spec maintainers."
+  - "Items the study lists that this module has not yet turned into signposts: whether PepsiCo refranchises its bottling business after its review of North American supply chain and channels at the end of 2026, the share of large bottlers' revenue through their own B2B platforms, whether the Soft Drink Interbrand Competition Act or similar laws are revisited, whether the major beverage companies disclose a quantified GLP-1 effect, the growth of zero-sugar drinks in taxed markets, and whether the EU's 2030 reuse target becomes mandatory. At the next review, assess whether to replace or add signposts."
+  - "The primary sources the study relies on (company annual reports and 6-Ks, HMRC, WHO and others; see pages 27–30 of the study) are not yet registered separately; if they are ever cited directly, register each in this directory's sources.yml, and add accession numbers for SEC filings once EDGAR is available."

@@ -5,10 +5,12 @@ status: candidate
 category: stalwart
 ---
 
-**它做什么**。美国运通同时是发卡行、清算网络和收单方。持卡人刷卡时商户付折扣费，持卡人每年付年费，没全额还款的余额产生利息：2025 财年持卡人刷了 16,698 亿美元，722.29 亿美元收入里商户折扣占 51.8%、年费（净卡费）占 13.8% [src:AXP-RPT1-2026-09-17#p3]。按林奇的分类它是稳定增长型，2025 财年收入增长 10% [src:AXP-RPT1-2026-09-17#p8]；也带周期性，因为它本质上是带订阅叠加层的利差放贷机构 [src:AXP-RPT1-2026-09-17#p4]。
+A Chinese version is in [zh-CN/companies/AXP/story.md](../../zh-CN/companies/AXP/story.md).
 
-**为什么是好生意**。年费本身的边际成本接近零，但要靠不断加码的权益留住会员 [src:AXP-RPT1-2026-09-17#p5]。净卡费从 2019 年二季度每季约 10 亿美元长到 2026 年二季度的 28.6 亿美元，中间经历了疫情停摆、零利率、加息和降息，这是定价权，不是顺风 [src:AXP-RPT1-2026-09-17#p9]。客群也更靠得住：运通净核销率 2.0%，比行业低 1.92 个百分点 [src:AXP-RPT1-2026-09-17#p11]。
+**What it does.** American Express is card issuer, payment network and merchant acquirer at once. When card members pay with the card, merchants pay a discount fee; card members pay an annual fee; balances not paid in full earn interest. In fiscal 2025 card members spent $1.6698 trillion, and of $72.229 billion in revenue, merchant discount was 51.8% and annual fees (net card fees) 13.8% [src:AXP-RPT1-2026-09-17#p3]. In Lynch's classification it is a stalwart, with fiscal 2025 revenue up 10% [src:AXP-RPT1-2026-09-17#p8]; it is also cyclical, because at bottom it is a spread lender with a subscription layer on top [src:AXP-RPT1-2026-09-17#p4].
 
-**什么必须做对**。提价带来的权益成本要被年费追上，眼下每多收一块年费要多花约一块六买权益 [src:AXP-RPT1-2026-09-17#p6]，第一个干净的读数在 2027 年二季度。达美联名约占账单业务 13%，要在 2029 年底到期前续上 [src:AXP-RPT1-2026-09-17#p8]。
+**Why it is a good business.** The annual fee itself costs almost nothing at the margin, but keeping members takes ever-richer benefits [src:AXP-RPT1-2026-09-17#p5]. Net card fees grew from about $1 billion a quarter in Q2 2019 to $2.86 billion in Q2 2026, through pandemic shutdowns, zero rates, rate hikes and rate cuts — that is pricing power, not a tailwind [src:AXP-RPT1-2026-09-17#p9]. The customer base is also more reliable: Amex's net write-off rate is 2.0%, 1.92 percentage points below the industry [src:AXP-RPT1-2026-09-17#p11].
 
-**什么会证明我错**。提价周期走完后的第一个完整季度里卡费增速掉到个位数而权益成本仍增三成以上，行业核销率回到 2024 年的峰值以上而运通连续两季净计提准备金，AI 平台的默认规则按总成本替用户选卡且不许锁卡，或者 2028 年底前没有公布达美续约、续约丢了独家、酬金增速连续两年跑赢运通收入 [src:AXP-RPT1-2026-09-17#p14]。
+**What has to go right.** Annual fees have to catch up with the benefit costs that came with the price increases: right now each extra dollar of annual fees costs about $1.60 in benefits [src:AXP-RPT1-2026-09-17#p6], and the first clean reading comes in Q2 2027. The Delta co-brand, about 13% of billed business, has to be renewed before it expires at the end of 2029 [src:AXP-RPT1-2026-09-17#p8].
+
+**What would prove me wrong.** Card-fee growth falling to single digits in the first full quarter after the price-increase cycle is complete while benefit costs still grow 30% or more, the industry charge-off rate back at or above its 2024 peak while Amex builds reserves for two straight quarters, AI platforms' default rules choosing cards for users by total cost without letting them lock in a card, or no Delta renewal announced by the end of 2028, a renewal that loses exclusivity, or remuneration growing faster than Amex's revenue for two straight years [src:AXP-RPT1-2026-09-17#p14].

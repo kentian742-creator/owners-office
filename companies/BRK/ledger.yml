@@ -1,45 +1,47 @@
-# BRK 双向言行账本（thesis-ci spec §2；schema: spec/schemas/ledger.schema.json）
-# 建档时先在管理层一侧登记 BRK-L1 判定要对照的两条经营承诺（BRK-M1、BRK-M2），以及现任 CEO 与董事会的两条
-# 股东约束表态（BRK-M3、BRK-M4）；due 的年限凡是原话没有给的，都是本档案事先写下的结算时点，写在各条 note 里。
-# 其余承诺与系统/本人的预期从第 1 阶段起按财报事件逐条登记。
+# BRK two-way say-do ledger (thesis-ci spec §2; schema: spec/schemas/ledger.schema.json)
+# When the archive was set up, the management side first recorded the two operating commitments that BRK-L1 checks against
+# (BRK-M1, BRK-M2), and two statements of shareholder constraints by the current CEO and the board (BRK-M3, BRK-M4);
+# wherever the original words give no time frame, the year in `due` is a settlement point this archive wrote down in
+# advance, explained in each entry's note.
+# Other commitments, and the system's and the owner's expectations, are recorded one by one from phase 1 on, as financial reports come out.
 company: BRK
 entries:
   - id: BRK-M1
     side: management
     kind: other
-    statement: "BNSF 与业内最优者的营业利润率差距仍然过大；若未来几年没有大幅改善，管理层会感到失望（2025 年致股东信）。2025 年 BNSF 营业利润率 34.5%，2024 年为 32.0% [src:BRK-LTR-2025#p12]。"
+    statement: "The gap between BNSF's operating margin and that of the best in the industry is still too wide; management will be disappointed if it does not improve substantially over the next few years (2025 letter to shareholders). BNSF's operating margin was 34.5% in 2025 and 32.0% in 2024 [src:BRK-LTR-2025#p12]."
     made_at: 2026-02-28
     due: "2028"
     source: BRK-LTR-2025#p12
     status: pending
-    note: "“未来几年”没有给年限；本档案按三年、以 FY2028 年报中 BNSF 的营业利润率及其与最优同业的差距结算，是事先写下的操作化。报告估计这一差距约为营运比率的 5.5 个百分点 [src:BRK-RPT1-2026-09-18#p7]。对照题见 thesis.yml 的 BRK-L1。"
+    note: "“The next few years” gives no number of years; this archive settles the commitment over three years, on BNSF's operating margin and its gap to the best peer in the FY2028 annual report, an operationalisation written down in advance. The report estimates the gap at about 5.5 percentage points of operating ratio [src:BRK-RPT1-2026-09-18#p7]. The matching question is BRK-L1 in thesis.yml."
 
   - id: BRK-M2
     side: management
     kind: other
-    statement: "GEICO 近年的普遍提价恢复了利润率，但以客户留存下降为代价；在保持承保纪律的前提下恢复留存需要时间（2025 年致股东信）[src:BRK-LTR-2025#p10]。"
+    statement: "GEICO's broad price increases of recent years restored its margins, at the cost of lower customer retention; restoring retention while keeping underwriting discipline will take time (2025 letter to shareholders) [src:BRK-LTR-2025#p10]."
     made_at: 2026-02-28
     due: "2027"
     source: BRK-LTR-2025#p10
     status: pending
-    note: "信里没有给期限；本档案按两年、以 FY2027 年报中 GEICO 的有效保单数同比与综合成本率结算，是事先写下的操作化，期间由 BRK-Q10 逐季跟踪。2026 年一季度保单数同比 +2%，同期 Progressive +11% [src:BRK-RPT1-2026-09-18#p6]。对照题见 thesis.yml 的 BRK-L1。"
+    note: "The letter gives no deadline; this archive settles the commitment over two years, on GEICO's year-on-year change in policies in force and its combined ratio in the FY2027 annual report, an operationalisation written down in advance; in between, BRK-Q10 tracks it every quarter. In Q1 2026 policies in force were +2% year on year, against +11% at Progressive over the same period [src:BRK-RPT1-2026-09-18#p6]. The matching question is BRK-L1 in thesis.yml."
 
   - id: BRK-M3
     side: management
     kind: other
-    statement: "现任 CEO 承诺任职期间每年把全部税后薪水买成伯克希尔 A 股 [src:BRK-RPT1-2026-09-18#p8]；2026 年 3 月 4 日买入 21 股 A 类股，价格见 Form 4 [src:BRK-4-2026-03-05#TableII]。"
+    statement: "The current CEO has committed to put his entire after-tax salary into Berkshire Class A shares every year while in office [src:BRK-RPT1-2026-09-18#p8]; on 4 March 2026 he bought 21 Class A shares, at the prices shown in the Form 4 [src:BRK-4-2026-03-05#TableII]."
     made_at: 2026-03-13
     due: "2027"
     source: BRK-RPT1-2026-09-18#p8
     status: pending
-    note: "报告注明出处为 2026 年委托书与 Form 4 [src:BRK-RPT1-2026-09-18#p8]；made_at 取委托书日期 [src:BRK-RPT1-2026-09-18#p17]，是本档案的推断，EDGAR 可达后核对。2026 年这一次已经做到；本条以 2027 年的 Form 4 结算，此后每年登记一条。"
+    note: "The report gives the 2026 proxy statement and the Form 4 as its sources [src:BRK-RPT1-2026-09-18#p8]; made_at takes the date of the proxy statement [src:BRK-RPT1-2026-09-18#p17], an inference by this archive, to be checked once EDGAR is reachable. The purchase for 2026 has been made; this entry settles on the 2027 Form 4, and one entry will be recorded for each year after that."
 
   - id: BRK-M4
     side: management
     kind: other
-    statement: "只要每一美元留存收益大概率为股东创造一美元以上的市值，伯克希尔就不派现金股息；董事会每年复核这一政策（2025 年致股东信）[src:BRK-LTR-2025#p7]。"
+    statement: "As long as each dollar of retained earnings is likely to create more than a dollar of market value for shareholders, Berkshire will not pay a cash dividend; the board reviews this policy every year (2025 letter to shareholders) [src:BRK-LTR-2025#p7]."
     made_at: 2026-02-28
     due: "2026"
     source: BRK-LTR-2025#p7
     status: pending
-    note: "长期政策，按年结算：以 FY2026 年报确认当年没有宣布或派发现金股息，此后每年登记一条；逐季由破坏信号 BRK-Q15 判定。1965–2024 年股东只收到过一次现金股息，在 1967-01-03 [src:BRK-LTR-2024#p6]。"
+    note: "A standing policy, settled yearly: the FY2026 annual report confirms that no cash dividend was declared or paid that year, and one entry will be recorded for each year after that; every quarter, breaker BRK-Q15 judges it. In 1965–2024 shareholders received a cash dividend only once, on 1967-01-03 [src:BRK-LTR-2024#p6]."

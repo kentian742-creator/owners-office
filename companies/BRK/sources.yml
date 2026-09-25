@@ -1,18 +1,18 @@
-# BRK 来源标签表（公开；thesis-ci spec §3；schema: spec/schemas/sources.schema.json）
-# 定位符约定：BRK-RPT1-2026-09-18#pN、BRK-LTR-2025#pN、BRK-LTR-2024#pN 中的 N 为 PDF 物理页码，
-# 与文本抽取的 ===== [page N] ===== 标记一致（见 docs/decisions/0006）。
+# BRK source tags (public; thesis-ci spec §3; schema: spec/schemas/sources.schema.json)
+# Locator convention: N in BRK-RPT1-2026-09-18#pN, BRK-LTR-2025#pN and BRK-LTR-2024#pN is the physical PDF page number,
+# matching the ===== [page N] ===== markers of the text extraction (see docs/decisions/0006).
 sources:
   - tag: BRK-RPT1-2026-09-18
     kind: report
-    title: 伯克希尔哈撒韦：一台不能被挤兑的机器，与它找不到去处的钱（企业报告，2026 年 9 月）
+    title: "Berkshire Hathaway: a machine that cannot be run on, and the money it has nowhere to put (company report, September 2026) (in Chinese)"
     date: 2026-09-18
     location: private:reports/BRK.pdf
     primary: false
-    note: 本人的 02 企业报告，十二节加附录。资产负债表数据基准 2026-06-30（2026 年二季度 10-Q），损益与分部数据基准 2025 财年，一线与法律进展读取至 2026-09-18。报告页脚只印“2026 年 9 月”，没有具体日期；这里取封面写明的读取截止日作报告日期。全文只存私有仓库，公开档案只引用页码。
+    note: The owner's 02 research report, twelve sections plus appendices. Balance-sheet data as of 2026-06-30 (the Q2 2026 10-Q), income-statement and segment data for fiscal 2025, front-line readings and legal developments read up to 2026-09-18. The report's footer prints only “September 2026”, with no day; the report date here is the reading cut-off date stated on the cover. The full text is kept only in the private repository; the public archive cites page numbers only.
 
   - tag: BRK-10Q-FY2026Q2
     kind: filing
-    title: Berkshire Hathaway Inc. 2026 年第二季度季报（Form 10-Q，截至 2026-06-30）
+    title: Berkshire Hathaway Inc. quarterly report for Q2 2026 (Form 10-Q, period ended 2026-06-30)
     issuer_cik: "0001067983"
     form: 10-Q
     period: FY2026Q2
@@ -20,11 +20,11 @@ sources:
     filed: 2026-08-10
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526341032/0001193125-26-341032-index.htm
     primary: true
-    note: 报告附录所标的 2026-08-08（周六）是业绩新闻稿的日期，10-Q 的签署日也是这一天；EDGAR 的 filing date 是 2026-08-10。报告用它读资产负债表、分部利润、浮存金、回购、股数与 Taylor Morrison 的时间线。
+    note: The 2026-08-08 (a Saturday) given in the report's appendix is the date of the earnings press release, and the 10-Q was signed on the same day; the EDGAR filing date is 2026-08-10. The report uses it for the balance sheet, segment earnings, float, buybacks, share count and the Taylor Morrison timeline.
 
   - tag: BRK-10Q-FY2026Q1
     kind: filing
-    title: Berkshire Hathaway Inc. 2026 年第一季度季报（Form 10-Q，截至 2026-03-31）
+    title: Berkshire Hathaway Inc. quarterly report for Q1 2026 (Form 10-Q, period ended 2026-03-31)
     issuer_cik: "0001067983"
     form: 10-Q
     period: FY2026Q1
@@ -32,11 +32,11 @@ sources:
     filed: 2026-05-04
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526202243/0001193125-26-202243-index.htm
     primary: true
-    note: 报告用它读保险投资收益的同比变化与 3 月末的现金读数。
+    note: The report uses it for the year-on-year change in insurance investment income and the cash reading at the end of March.
 
   - tag: BRK-10K-FY2025
     kind: filing
-    title: Berkshire Hathaway Inc. 2025 财年年度报告（Form 10-K）
+    title: Berkshire Hathaway Inc. annual report for fiscal 2025 (Form 10-K)
     issuer_cik: "0001067983"
     form: 10-K
     period: FY2025
@@ -44,11 +44,11 @@ sources:
     filed: 2026-03-02
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526083899/0001193125-26-083899-index.htm
     primary: true
-    note: 报告用它读经营利润分拆、分部表、综合成本率，以及母公司不担保 BHE、BNSF 及其子公司借款的表述；年报所附股东信另登记为 BRK-LTR-2025。
+    note: The report uses it for the breakdown of operating earnings, the segment tables, the combined ratio, and the statement that the parent company does not guarantee the borrowings of BHE, BNSF and their subsidiaries; the shareholder letter attached to the annual report is registered separately (BRK-LTR-2025).
 
   - tag: BRK-DEF14A-2026-03-13
     kind: filing
-    title: Berkshire Hathaway Inc. 2026 年委托书（Schedule 14A）
+    title: Berkshire Hathaway Inc. 2026 proxy statement (Schedule 14A)
     issuer_cik: "0001067983"
     form: DEF 14A
     period: "2026"
@@ -57,22 +57,22 @@ sources:
     date: 2026-03-13
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526106253/0001193125-26-106253-index.htm
     primary: true
-    note: 报告用它读 CEO 薪酬结构与持股、董事条款和员工人数。
+    note: The report uses it for the CEO's pay structure and shareholding, the terms of the directors and the employee count.
 
   - tag: BRK-4-2026-03-05
     kind: filing
-    title: Gregory E. Abel 的 Form 4（伯克希尔 A 类股买入，交易日 2026-03-04）
+    title: Form 4 of Gregory E. Abel (purchase of Berkshire Class A shares, trade date 2026-03-04)
     issuer_cik: "0001067983"
     form: "4"
     accession: 0001193125-26-092556
     filed: 2026-03-05
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526092556/0001193125-26-092556-index.htm
     primary: true
-    note: 现任 CEO 经其可撤销信托买入 A 类股；A 类股可转换为 B 类股，所以逐笔列在表二（衍生证券）。账本 BRK-M3 引用它。
+    note: The current CEO bought Class A shares through his revocable trust; Class A shares are convertible into Class B shares, so each purchase is listed in Table II (derivative securities). Ledger entry BRK-M3 cites it.
 
   - tag: BHE-10Q-FY2026Q2
     kind: filing
-    title: Berkshire Hathaway Energy Company 2026 年第二季度季报（Form 10-Q）
+    title: Berkshire Hathaway Energy Company quarterly report for Q2 2026 (Form 10-Q)
     issuer_cik: "0001081316"
     form: 10-Q
     period: FY2026Q2
@@ -80,11 +80,11 @@ sources:
     filed: 2026-08-10
     url: https://www.sec.gov/Archives/edgar/data/1081316/000108131626000017/0001081316-26-000017-index.htm
     primary: true
-    note: BHE 与 PacifiCorp 等七家子公司共用一个登记号的合并申报。报告用它读 PacifiCorp 野火计提与诉讼进度；BRK-L2、BRK-L4 判定时要读它。
+    note: A combined filing by BHE and seven subsidiaries, PacifiCorp among them, under one accession number. The report uses it for PacifiCorp's wildfire loss accruals and the progress of the litigation; judging BRK-L2 and BRK-L4 requires reading it.
 
   - tag: BHE-10Q-FY2026Q1
     kind: filing
-    title: Berkshire Hathaway Energy Company 2026 年第一季度季报（Form 10-Q）
+    title: Berkshire Hathaway Energy Company quarterly report for Q1 2026 (Form 10-Q)
     issuer_cik: "0001081316"
     form: 10-Q
     period: FY2026Q1
@@ -92,11 +92,11 @@ sources:
     filed: 2026-05-04
     url: https://www.sec.gov/Archives/edgar/data/1081316/000108131626000013/0001081316-26-000013-index.htm
     primary: true
-    note: 与 PacifiCorp 等子公司的合并申报。报告用它读 3 月末的野火累计计提。
+    note: A combined filing with PacifiCorp and other subsidiaries. The report uses it for the cumulative wildfire loss accruals at the end of March.
 
   - tag: BHE-10K-FY2025
     kind: filing
-    title: Berkshire Hathaway Energy Company 2025 财年年度报告（Form 10-K）
+    title: Berkshire Hathaway Energy Company annual report for fiscal 2025 (Form 10-K)
     issuer_cik: "0001081316"
     form: 10-K
     period: FY2025
@@ -104,20 +104,20 @@ sources:
     filed: 2026-03-02
     url: https://www.sec.gov/Archives/edgar/data/1081316/000108131626000003/0001081316-26-000003-index.htm
     primary: true
-    note: 与 PacifiCorp 等子公司的合并申报。报告用它读 BHE 的三年资本开支计划；数据中心签约负荷的口径来自 BHE 的投资者材料，未单独登记。
+    note: A combined filing with PacifiCorp and other subsidiaries. The report uses it for BHE's three-year capital expenditure plan; the basis for the contracted data-centre load comes from BHE's investor materials, which are not registered separately.
 
   - tag: BRK-LTR-2025
     kind: letter
-    title: 致伯克希尔股东信（2025 年度，格雷格·阿贝尔署名，2026-02-28）
+    title: Letter to Berkshire shareholders (for 2025, signed by Greg Abel, 2026-02-28)
     date: 2026-02-28
     location: private:reports/2025Greg(read-ed).pdf
     primary: true
-    note: 公司 2025 年报所附的股东信，本人批注版；标签年份是信所讲的财年。
+    note: The shareholder letter attached to the company's 2025 annual report, in the owner's annotated copy; the year in the tag is the fiscal year the letter covers.
 
   - tag: BRK-LTR-2024
     kind: letter
-    title: 致伯克希尔股东信（2024 年度，沃伦·巴菲特署名，2025-02-22）
+    title: Letter to Berkshire shareholders (for 2024, signed by Warren Buffett, 2025-02-22)
     date: 2025-02-22
     location: private:reports/2024Warren.pdf
     primary: true
-    note: 公司 2024 年报所附的股东信；标签年份是信所讲的财年。本档案用它读 2024 年的分部税后经营利润（p5，BRK-Q1 的基线）、1967 年那唯一一次现金股息（p6，P4、BRK-L3、BRK-Q15 与账本 BRK-M4），并核对一处股本发行的表述（p4，见 thesis.yml 的 todo）。
+    note: The shareholder letter attached to the company's 2024 annual report; the year in the tag is the fiscal year the letter covers. This archive uses it for 2024 after-tax operating earnings by segment (p5, the baseline of BRK-Q1), the one and only cash dividend, in 1967 (p6; P4, BRK-L3, BRK-Q15 and ledger entry BRK-M4), and to check a statement about a share issue (p4; see the todo in thesis.yml).

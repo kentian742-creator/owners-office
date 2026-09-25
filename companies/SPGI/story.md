@@ -5,10 +5,12 @@ status: candidate
 category: stalwart
 ---
 
-**它做什么**。标普全球靠三样东西收费：发债时投资人要求出示的信用评级；基金、期货和能源合约拿来计量的标普指数与 Platts 能源价格评估；分析师每天要用的数据库和数据管道，也就是市场情报。前两样向想进入市场的人收费，第三样向已经在市场里干活的人收费。
+A Chinese version is in [zh-CN/companies/SPGI/story.md](../../zh-CN/companies/SPGI/story.md).
 
-**为什么是好生意**。评级和指数用 47% 的收入贡献了 61% 的调整后营业利润 [src:SPGI-RPT1-2026-09-18#p4]。客户付钱，是因为监管规则、投资授权和合约都点名要用它，而不是因为它更好。它几乎不用再投入：2025 财年资本开支只占收入 1.3% [src:SPGI-RPT1-2026-09-18#p4]，调整后自由现金流是调整后净利润的 101% [src:SPGI-RPT1-2026-09-18#p5]。
+**What it does.** S&P Global charges for three things: the credit ratings investors demand to see when debt is issued; the S&P indices and Platts energy price assessments that funds, futures and energy contracts are measured against; and the databases and data feeds analysts use every day, that is, Market Intelligence. The first two charge those who want to enter the market; the third charges those already working in it.
 
-**什么必须做对**。这些引用是监管者和第三方替它写进去的，撤掉也不需要它同意。市场情报占收入 34%、利润率只有 33% [src:SPGI-RPT1-2026-09-18#p4]，它要在 AI 工作流里守住定价权，别让客户把它的数据当成可以比价的普通输入。评级要在私募信贷里继续被监管认可。眼下创纪录的发行量里含着周期，2022 年那次发行荒让评级分部收入降了 26% [src:SPGI-RPT1-2026-09-18#p6]。
+**Why it is a good business.** Ratings and indices bring in 61% of adjusted operating profit on 47% of revenue [src:SPGI-RPT1-2026-09-18#p4]. Customers pay because regulations, investment mandates and contracts name it, not because it is better. It needs almost no further investment: capex was only 1.3% of revenue in fiscal 2025 [src:SPGI-RPT1-2026-09-18#p4], and adjusted free cash flow was 101% of adjusted net income [src:SPGI-RPT1-2026-09-18#p5].
 
-**什么会证明我错**。市场情报的订阅收入绝对额下滑、按用量计费的收入又没补上；NAIC 推翻的私募评级里标普占比显著上升；主要司法辖区立法取消发行人付费；前三大 ETF 发行人把资产超过 1,000 亿美元的旗舰产品换掉标普指数 [src:SPGI-RPT1-2026-09-18#p19]；交易所不再用 Platts 结算；或者调整后自由现金流连续两年低于调整后净利润的 85% [src:SPGI-RPT1-2026-09-18#p19]。
+**What has to go right.** Regulators and third parties wrote these references in for it, and they need no consent from it to take them out. Market Intelligence is 34% of revenue with a margin of only 33% [src:SPGI-RPT1-2026-09-18#p4]; it has to hold its pricing power inside AI workflows and keep customers from treating its data as an ordinary input they can shop around for. Ratings have to stay recognized by regulators in private credit. Today's record issuance contains a cyclical component: the 2022 issuance drought cut ratings segment revenue by 26% [src:SPGI-RPT1-2026-09-18#p6].
+
+**What would prove me wrong.** Market Intelligence subscription revenue falling in absolute terms without usage-based revenue making up for it; S&P's share of the private ratings NAIC overturns rising significantly; a major jurisdiction legislating away issuer-pays; one of the three largest ETF issuers switching a flagship product with more than $100 billion in assets away from an S&P index [src:SPGI-RPT1-2026-09-18#p19]; exchanges no longer settling on Platts; or adjusted free cash flow below 85% of adjusted net income for two years running [src:SPGI-RPT1-2026-09-18#p19].

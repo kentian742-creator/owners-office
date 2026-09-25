@@ -1,23 +1,23 @@
-# AXP 双向言行账本（thesis-ci spec §2；schema: spec/schemas/ledger.schema.json）
-# 管理层一侧先登记 02 报告记载的 2026 年全年指引，作为 AXP-L1 判定“下调”时的参照；
-# 其余承诺与系统/本人的预期从第 1 阶段起按财报事件逐条登记。
+# AXP two-way say-do ledger (thesis-ci spec §2; schema: spec/schemas/ledger.schema.json)
+# The management side starts with the full-year 2026 guidance recorded in the 02 report, the reference for AXP-L1 when it judges a "cut";
+# other commitments, and the system's and the owner's expectations, are recorded one by one from phase 1 onward as earnings events arrive.
 company: AXP
 entries:
   - id: AXP-M-2026-01
     side: management
     kind: numeric_target
-    statement: "2026 财年收入增长指引上调至 +10%，每股盈利指引维持不变，理由是把超额收入再投资 [src:AXP-RPT1-2026-09-17#p9]。"
+    statement: "Fiscal 2026 revenue growth guidance raised to +10% and EPS guidance unchanged, with the stated reason of reinvesting the excess revenue [src:AXP-RPT1-2026-09-17#p9]."
     made_at: 2026-07-24
     due: "2026"
     source: AXP-RPT1-2026-09-17#p9
     status: pending
-    note: "报告写作 2026 年 7 月、在二季度业绩的同一次电话会上；二季度业绩新闻稿（2026-07-24）写明全年收入增长指引上调至 10%、超出预期的部分再投资于增长 [src:AXP-8K-2026-07-24#EX-99.1]，made_at 取这一日期。以 FY2026 年报中扣除利息支出后总收入的同比结算。"
+    note: "The report dates this to July 2026, on the same call as the second-quarter results; the Q2 earnings press release (2026-07-24) states that full-year revenue growth guidance was raised to 10% and that the part above expectations is reinvested in growth [src:AXP-8K-2026-07-24#EX-99.1], so made_at takes this date. Settled on the year-over-year change in total revenues net of interest expense in the FY2026 annual report."
   - id: AXP-M-2026-02
     side: management
     kind: numeric_target
-    statement: "2026 财年每股盈利指引区间 $17.30–$17.90（中点 $17.60），2026 年 7 月维持不变 [src:AXP-8K-2026-07-24#EX-99.1]。"
+    statement: "Fiscal 2026 EPS guidance range $17.30–$17.90 (midpoint $17.60), maintained in July 2026 [src:AXP-8K-2026-07-24#EX-99.1]."
     made_at: 2026-07-24
     due: "2026"
     source: AXP-8K-2026-07-24#EX-99.1
     status: pending
-    note: "报告写的是指引区间 $17.30–$17.90 的中点 $17.60 [src:AXP-RPT1-2026-09-17#p12] [src:AXP-8K-2026-07-24#EX-99.1]，没有给首次公布的日期；这里按 2026 年 7 月维持指引的那次公布登记，made_at 同上一条 [src:AXP-RPT1-2026-09-17#p9]。以 FY2026 年报的摊薄每股收益结算：不低于区间下沿 $17.30 记 kept，低于 $17.30 记 not_kept [src:AXP-8K-2026-07-24#EX-99.1]，settlement_source 填 FY2026 10-K 的来源标签。公司此后若调整区间，本条仍按这里登记的原区间结算，调整写进本条 note。"
+    note: "The report gives the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-RPT1-2026-09-17#p12] [src:AXP-8K-2026-07-24#EX-99.1] but not the date the range was first announced; it is recorded here as of the July 2026 announcement that maintained the guidance, with the same made_at as the previous entry [src:AXP-RPT1-2026-09-17#p9]. Settled on diluted EPS in the FY2026 annual report: at or above the bottom of the range, $17.30, is kept and below $17.30 is not_kept [src:AXP-8K-2026-07-24#EX-99.1]; settlement_source takes the source tag of the FY2026 10-K. If the company later changes the range, this entry is still settled against the original range recorded here, and the change is written into this note."

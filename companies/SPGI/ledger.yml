@@ -1,5 +1,5 @@
-# SPGI 双向言行账本（thesis-ci spec §2；schema: spec/schemas/ledger.schema.json）
-# 建档时为空；管理层承诺与系统/本人的预期从第 1 阶段起按财报事件逐条登记。
-# 候选公司不做预注册（DESIGN.md 的成本规则），账本随每次更新登记管理层的可检验承诺。
+# SPGI two-way say-do ledger (thesis-ci spec §2; schema: spec/schemas/ledger.schema.json)
+# Empty at creation; management commitments and the system's and the owner's expectations are recorded one by one at each earnings event from phase 1 on.
+# Candidate companies do no pre-registration (the cost rule in DESIGN.md); the ledger records management's testable commitments with each update.
 company: SPGI
 entries: []

@@ -1,17 +1,17 @@
-# AppLovin（APP）来源标签表（公开）。
-# 报告页码 locator 写作 TAG#pN（N = PDF 页码）。
+# AppLovin (APP) source tag table (public).
+# Report page locators are written TAG#pN (N = PDF page number).
 sources:
   - tag: APP-RPT1-2026-09-23
     kind: report
-    title: "APP · 完整企业报告"
+    title: "APP · Complete company report (in Chinese)"
     date: 2026-09-23
     location: "private:reports/APP.pdf"
     primary: false
-    note: "自有企业报告；财务数据至 2026-06-30（FY2026 Q2）；locator 为 PDF 页码。"
+    note: "The owner's own company report; financial data through 2026-06-30 (FY2026 Q2); locators are PDF page numbers."
 
   - tag: APP-10K-FY2025
     kind: filing
-    title: "AppLovin 10-K：FY2025 年报"
+    title: "AppLovin 10-K: FY2025 annual report"
     issuer_cik: "0001751008"
     form: 10-K
     period: FY2025
@@ -22,7 +22,7 @@ sources:
 
   - tag: APP-10Q-FY2026Q2
     kind: filing
-    title: "AppLovin 10-Q：截至 2026-06-30 的季度"
+    title: "AppLovin 10-Q: quarter ended 2026-06-30"
     issuer_cik: "0001751008"
     form: 10-Q
     period: FY2026Q2
@@ -33,7 +33,7 @@ sources:
 
   - tag: APP-10Q-FY2026Q1
     kind: filing
-    title: "AppLovin 10-Q：截至 2026-03-31 的季度"
+    title: "AppLovin 10-Q: quarter ended 2026-03-31"
     issuer_cik: "0001751008"
     form: 10-Q
     period: FY2026Q1
@@ -44,7 +44,7 @@ sources:
 
   - tag: APP-10K-FY2022
     kind: filing
-    title: "AppLovin 10-K：FY2022 年报"
+    title: "AppLovin 10-K: FY2022 annual report"
     issuer_cik: "0001751008"
     form: 10-K
     period: FY2022
@@ -52,11 +52,11 @@ sources:
     filed: 2023-02-28
     url: https://www.sec.gov/Archives/edgar/data/1751008/000175100823000006/0001751008-23-000006-index.htm
     primary: true
-    note: "2020–2022 年收入按软件平台与应用两个分部列示（第 7 项 MD&A、附注 14）。"
+    note: "Revenue for 2020–2022 is presented in two segments, Software Platform and Apps (Item 7 MD&A, Note 14)."
 
   - tag: APP-10Q-FY2022Q3
     kind: filing
-    title: "AppLovin 10-Q：截至 2022-09-30 的季度"
+    title: "AppLovin 10-Q: quarter ended 2022-09-30"
     issuer_cik: "0001751008"
     form: 10-Q
     period: FY2022Q3
@@ -64,11 +64,11 @@ sources:
     filed: 2022-11-10
     url: https://www.sec.gov/Archives/edgar/data/1751008/000175100822000020/0001751008-22-000020-index.htm
     primary: true
-    note: "2022 年与 2021 年三季度及前三季度的收入，按分部拆分（附注 3）。"
+    note: "Revenue for the third quarter and the first nine months of 2022 and 2021, by segment (Note 3)."
 
   - tag: APP-8K-2026-08-05
     kind: filing
-    title: "AppLovin 8-K（Item 2.02）：2026 年二季度业绩新闻稿（附件 99.1）"
+    title: "AppLovin 8-K (Item 2.02): Q2 2026 earnings press release (Exhibit 99.1)"
     issuer_cik: "0001751008"
     form: 8-K
     period: FY2026Q2
@@ -80,7 +80,7 @@ sources:
 
   - tag: APP-8K-2026-05-06
     kind: filing
-    title: "AppLovin 8-K（Item 2.02）：2026 年一季度业绩新闻稿"
+    title: "AppLovin 8-K (Item 2.02): Q1 2026 earnings press release"
     issuer_cik: "0001751008"
     form: 8-K
     period: FY2026Q1
@@ -92,7 +92,7 @@ sources:
 
   - tag: APP-8K-2026-02-11
     kind: filing
-    title: "AppLovin 8-K（Item 2.02）：2025 年四季度业绩新闻稿"
+    title: "AppLovin 8-K (Item 2.02): Q4 2025 earnings press release"
     issuer_cik: "0001751008"
     form: 8-K
     period: FY2025Q4
@@ -104,7 +104,7 @@ sources:
 
   - tag: APP-8K-2026-04-07
     kind: filing
-    title: "AppLovin 8-K（附件 99.1）：CTO 与首席法务官交接、独立董事长"
+    title: "AppLovin 8-K (Exhibit 99.1): CTO and Chief Legal Officer transitions, independent chair"
     issuer_cik: "0001751008"
     form: 8-K
     period: null
@@ -116,7 +116,7 @@ sources:
 
   - tag: APP-DEF14A-2026-04-21
     kind: filing
-    title: "AppLovin 2026 年股东大会委托书：投票权、投票协议与高管薪酬"
+    title: "AppLovin proxy statement for the 2026 annual meeting: voting power, voting agreement and executive compensation"
     issuer_cik: "0001751008"
     form: DEF 14A
     period: "2026"
@@ -128,15 +128,15 @@ sources:
 
   - tag: APP-CALL-FY2026Q2
     kind: transcript
-    title: "AppLovin 2026 年二季度业绩电话会逐字稿（2026-08-05）"
+    title: "AppLovin Q2 2026 earnings call transcript (2026-08-05)"
     date: 2026-08-05
     url: https://equibles.com/stocks/app/calls/2026-q2
     primary: false
-    note: "不在 EDGAR；MAX 发布商收入、消费类支出、现金转换与 SEC 调查等表述的出处。公司 IR 网站没有发布逐字稿，挂出的 Q2-2026-AppLovin-Earnings-Presentation.pdf 是业绩演示；按总部裁定 H1，以两份互相独立、原话一致的第三方逐字稿为载体：Equibles（https://equibles.com/stocks/app/calls/2026-q2）与 Gloomberb（https://gloom.sh/stocks/app/transcripts/q2-2026）。locator 写发言人（#CEO、#CFO）；只靠它的读数在档案里注明“公司电话会口径，申报文件未披露”。"
+    note: "Not on EDGAR; the source of the statements on MAX publisher revenue, consumer spend, cash conversion and the SEC investigation. The company's IR website does not publish a transcript; the posted Q2-2026-AppLovin-Earnings-Presentation.pdf is the earnings presentation. Per HQ ruling H1, two independent third-party transcripts with identical wording are the carrier: Equibles (https://equibles.com/stocks/app/calls/2026-q2) and Gloomberb (https://gloom.sh/stocks/app/transcripts/q2-2026). Locators name the speaker (#CEO, #CFO); readings that rest on it alone are marked in the archive \"per the company's earnings call, not disclosed in filings\"."
 
   - tag: APP-10K-FY2024
     kind: filing
-    title: "AppLovin 10-K：FY2024 年报"
+    title: "AppLovin 10-K: FY2024 annual report"
     issuer_cik: "0001751008"
     form: 10-K
     period: FY2024
@@ -144,11 +144,11 @@ sources:
     filed: 2025-02-27
     url: https://www.sec.gov/Archives/edgar/data/1751008/000175100825000018/0001751008-25-000018-index.htm
     primary: true
-    note: "2023、2024 年营业利润的原始披露口径（应用业务转入终止经营之前）。"
+    note: "Operating income for 2023 and 2024 as originally reported (before the Apps business moved to discontinued operations)."
 
   - tag: APP-10Q-FY2025Q2
     kind: filing
-    title: "AppLovin 10-Q：截至 2025-06-30 的季度"
+    title: "AppLovin 10-Q: quarter ended 2025-06-30"
     issuer_cik: "0001751008"
     form: 10-Q
     period: FY2025Q2
@@ -159,7 +159,7 @@ sources:
 
   - tag: APP-10Q-FY2025Q3
     kind: filing
-    title: "AppLovin 10-Q：截至 2025-09-30 的季度"
+    title: "AppLovin 10-Q: quarter ended 2025-09-30"
     issuer_cik: "0001751008"
     form: 10-Q
     period: FY2025Q3
@@ -170,7 +170,7 @@ sources:
 
   - tag: APP-8K-2025-11-05
     kind: filing
-    title: "AppLovin 8-K（Item 2.02）：2025 年三季度业绩新闻稿（附件 99.1）"
+    title: "AppLovin 8-K (Item 2.02): Q3 2025 earnings press release (Exhibit 99.1)"
     issuer_cik: "0001751008"
     form: 8-K
     period: FY2025Q3
@@ -182,7 +182,7 @@ sources:
 
   - tag: APP-8K-2025-04-03
     kind: filing
-    title: "AppLovin 8-K（Item 8.01）：向美国总统提交收购 TikTok 中国以外业务的初步意向"
+    title: "AppLovin 8-K (Item 8.01): preliminary proposal submitted to the President of the United States to acquire TikTok's business outside China"
     issuer_cik: "0001751008"
     form: 8-K
     period: null
@@ -194,7 +194,7 @@ sources:
 
   - tag: APP-8K-2022-01-05
     kind: filing
-    title: "AppLovin 8-K（Item 2.01）：完成对 MoPub 的收购"
+    title: "AppLovin 8-K (Item 2.01): completion of the MoPub acquisition"
     issuer_cik: "0001751008"
     form: 8-K
     period: null
@@ -203,11 +203,11 @@ sources:
     filed: 2022-01-05
     url: https://www.sec.gov/Archives/edgar/data/1751008/000119312522002630/0001193125-22-002630-index.htm
     primary: true
-    note: "EDGAR 的 Period of Report 为 2022-01-01，即交易完成日。"
+    note: "EDGAR's Period of Report is 2022-01-01, the closing date of the transaction."
 
   - tag: APP-FORM3-2026-07-02
     kind: filing
-    title: "Form 3：Ge Xiaochuan（Giovanni Ge）出任 AppLovin 首席技术官后的首次持股申报"
+    title: "Form 3: initial statement of beneficial ownership by Ge Xiaochuan (Giovanni Ge) after becoming AppLovin's Chief Technology Officer"
     issuer_cik: "0001751008"
     form: "3"
     period: null
@@ -216,35 +216,35 @@ sources:
     filed: 2026-07-02
     url: https://www.sec.gov/Archives/edgar/data/1751008/000213394726000005/0002133947-26-000005-index.htm
     primary: true
-    note: "事件日 2026-07-01，职务 CTO；由申报人提交，登记号前缀不是公司的 CIK。"
+    note: "Event date 2026-07-01, title CTO; filed by the reporting person, so the accession number prefix is not the company's CIK."
 
   - tag: APP-WEB-2025-11-13-1
     kind: press_release
-    title: "CloudX 上线公告：MoPub 与 MAX 的创始人推出 CloudX（PR Newswire，2025-11-13）"
+    title: "CloudX launch announcement: the founders of MoPub and MAX launch CloudX (PR Newswire, 2025-11-13)"
     date: 2025-11-13
     url: https://www.prnewswire.com/news-releases/mopub-and-max-founders-launch-cloudx-with-30m-series-a-led-by-addition-to-rebuild-mobile-ad-monetization-for-the-ai-era-302613891.html
     primary: true
-    note: "CloudX 自己的公告，是 CloudX 事实（创始人、上线日期、首发接入方）的一手来源；公告没有写公司的创立日期。"
+    note: "CloudX's own announcement, the primary source for facts about CloudX (founders, launch date, launch partners); the announcement does not give the company's founding date."
 
   - tag: APP-WEB-2026-06-18-1
     kind: web
-    title: "Haus 博文《Is AppLovin More Than a Hype Channel?》（2026-06-18）"
+    title: "Haus blog post \"Is AppLovin More Than a Hype Channel?\" (2026-06-18)"
     date: 2026-06-18
     url: https://www.haus.io/blog/is-applovin-more-than-a-hype-channel
     primary: false
-    note: "第三方增量测试平台的统计；Haus 同时是 AppLovin 官网案例的合作测量方，属利益相关方，只作旁证。"
+    note: "Statistics from a third-party incrementality-testing platform; Haus is also the measurement partner in the case studies on AppLovin's website, so it is an interested party; corroboration only."
 
   - tag: APP-WEB-2026-09-22-1
     kind: press_release
-    title: "Pomerantz LLP 依 PSLRA 发布的证券集体诉讼公告：AppLovin，加州北区 26-cv-10584（GlobeNewswire，2026-09-22）"
+    title: "Pomerantz LLP securities class action notice under the PSLRA: AppLovin, N.D. Cal. 26-cv-10584 (GlobeNewswire, 2026-09-22)"
     date: 2026-09-22
     url: https://www.globenewswire.com/news-release/2026/09/22/3366988/1087/en/pomerantz-law-firm-announces-the-filing-of-a-class-action-against-applovin-corporation-and-certain-officers-app.html
     primary: true
-    note: "按总部裁定 H1 作一手（法院文件的法定公告）；集体期 2026-02-12 至 2026-08-05，首席原告申请截止 2026-11-16；法院卷宗未直接调阅。"
+    note: "Treated as primary per HQ ruling H1 (the statutory notice of a court filing); class period 2026-02-12 to 2026-08-05, lead-plaintiff deadline 2026-11-16; the court docket was not consulted directly."
 
   - tag: U-8K-2026-08-06
     kind: filing
-    title: "Unity Software 8-K（Item 2.02）：2026 年二季度业绩新闻稿（附件 99.1）"
+    title: "Unity Software 8-K (Item 2.02): Q2 2026 earnings press release (Exhibit 99.1)"
     issuer_cik: "0001810806"
     form: 8-K
     period: FY2026Q2
@@ -256,7 +256,7 @@ sources:
 
   - tag: U-8K-2026-05-07
     kind: filing
-    title: "Unity Software 8-K（Item 2.02）：2026 年一季度业绩新闻稿（附件 99.1）"
+    title: "Unity Software 8-K (Item 2.02): Q1 2026 earnings press release (Exhibit 99.1)"
     issuer_cik: "0001810806"
     form: 8-K
     period: FY2026Q1
@@ -268,17 +268,17 @@ sources:
 
   - tag: U-CALL-FY2026Q2
     kind: transcript
-    title: "Unity Software 2026 年二季度业绩电话会逐字稿（2026-08-06）"
+    title: "Unity Software Q2 2026 earnings call transcript (2026-08-06)"
     issuer_cik: "0001810806"
     date: 2026-08-06
     url: https://www.fool.com/earnings/call-transcripts/2026/08/13/unity-u-q2-2026-earnings-call-transcript/
     primary: false
-    note: "Unity 没有在 EDGAR 提交逐字稿；以两份互相独立、原话一致的第三方逐字稿为载体：The Motley Fool（上面的网址）与 MarketBeat（https://www.marketbeat.com/earnings/reports/2026-8-6-unity-software-inc-stock/）。Vector 的环比增速与三季度的环比假设只在电话会上口头给出。"
+    note: "Unity did not file a transcript on EDGAR; two independent third-party transcripts with identical wording are the carrier: The Motley Fool (the URL above) and MarketBeat (https://www.marketbeat.com/earnings/reports/2026-8-6-unity-software-inc-stock/). Vector's quarter-on-quarter growth and the Q3 quarter-on-quarter assumption were given only orally on the call."
 
   - tag: FED-FOMC-2026-09-16
     kind: press_release
-    title: "美国联邦储备委员会：FOMC 声明（2026-09-16）"
+    title: "Board of Governors of the Federal Reserve System: FOMC statement (2026-09-16)"
     date: 2026-09-16
     url: https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm
     primary: true
-    note: "联邦基金利率目标区间上调 1/4 个百分点至 3.75%–4.00%。"
+    note: "The target range for the federal funds rate was raised by 1/4 percentage point to 3.75%–4.00%."
