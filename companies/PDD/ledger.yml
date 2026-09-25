@@ -1,35 +1,35 @@
-# PDD 双向言行账本（thesis-ci spec §2；schema: spec/schemas/ledger.schema.json）
-# 建档时先登记 PDD-L1 判定要对照的管理层表态，以及 2024 年 8 月关于回购分红的表态。三条都是电话会发言：
-# 公司不发布文字实录，电话会网播在投资者关系网站提供回放（source 指向回放页，本轮未转写核对）；三条的原话据第三方整理转述、
-# 申报文件未载，属二手记录，不单独支撑评级。其余承诺与系统／本人的预期从第 1 阶段起按财报事件逐条登记。
+# PDD two-way say-do ledger (thesis-ci spec §2; schema: spec/schemas/ledger.schema.json)
+# At creation, the management statements that PDD-L1 judges against are registered first, together with the August 2024 statement on buybacks and dividends. All three were made on earnings calls:
+# the company publishes no transcripts, and the call webcast is available as a replay on its investor relations website (source points to the replay page, not transcribed or checked in this round); the wording of all three
+# is as reported by third parties and not in the filings, so they are secondary records and do not support a rating on their own. Other commitments and the system's / the owner's expectations are registered one by one from phase 1 on, as earnings events arrive.
 company: PDD
 entries:
   - id: PDD-M1
     side: management
     kind: other
-    statement: 平台对第三方商家开放、公平的底层机制不会改变（2026 年二季度电话会）
+    statement: "The platform's underlying mechanism of openness and fairness to third-party merchants will not change (Q2 2026 earnings call)"
     made_at: 2026-08-24
     due: 2026-Q3
     source: PDD-CALL-FY2026Q2
     status: pending
-    note: "电话会发言，据第三方整理转述，申报文件未载 [src:PDD-RPT1-2026-09-16#p13]：报告的出处 [24] 是电话会的第三方整理与报道，报告列为二手 [src:PDD-RPT1-2026-09-16#p30]。电话会于 2026-08-24 举行，网播与回放在公司投资者关系网站 [src:PDD-6K-2026-08-25#EX-99.1]；同日新闻稿的管理层引语里没有这句话。报告在新拼姆与付费第三方商家竞争的语境下记下这句话，称它可以逐季验证，信号是存货科目、自营毛利率与第三方白牌的曝光变化 [src:PDD-RPT1-2026-09-16#p13]。首个核对点为 2026 年三季报，此后每季复核；对照题见 thesis.yml 的 PDD-L1。"
+    note: "Earnings-call remark as reported by third parties, not in the filings [src:PDD-RPT1-2026-09-16#p13]: the report's source [24] is third-party write-ups and coverage of the call, which the report lists as secondary [src:PDD-RPT1-2026-09-16#p30]. The call was held on 2026-08-24, with the webcast and replay on the company's investor relations website [src:PDD-6K-2026-08-25#EX-99.1]; the management quotes in the same day's press release do not contain this sentence. The report records the sentence in the context of Xinpinmu competing with the third-party merchants who pay for traffic, and says it can be verified quarter by quarter, the signals being the inventory line, the self-operated gross margin and changes in the exposure given to third-party unbranded goods [src:PDD-RPT1-2026-09-16#p13]. The first check is the Q3 2026 results, then every quarter; the matching question is PDD-L1 in thesis.yml."
 
   - id: PDD-M2
     side: management
     kind: other
-    statement: 短期盈利会承压，未来各季利润率的起伏将成常态（2026 年二季度电话会）
+    statement: "Short-term profitability will come under pressure, and quarter-to-quarter swings in margins will become the norm (Q2 2026 earnings call)"
     made_at: 2026-08-24
     due: 2026-Q3
     source: PDD-CALL-FY2026Q2
     status: pending
-    note: "电话会发言，据第三方整理转述，申报文件未载 [src:PDD-RPT1-2026-09-16#p15] [src:PDD-RPT1-2026-09-16#p30]；同日新闻稿里刘珺只说二季度加大了生态投入 [src:PDD-6K-2026-08-25#EX-99.1]。报告把它列为 2026 年 8 月的第二次利润预告，待三季报验证 [src:PDD-RPT1-2026-09-16#p3]，并认为它与 2024 年 8 月那次预告同质 [src:PDD-RPT1-2026-09-16#p15]；书面的利润影响表述见 2024-08-26 与 2026-03-25 的业绩新闻稿 [src:PDD-6K-2024-08-26#EX-99.1] [src:PDD-6K-2026-03-26#EX-99.1]。对照题见 thesis.yml 的 PDD-L1。"
+    note: "Earnings-call remark as reported by third parties, not in the filings [src:PDD-RPT1-2026-09-16#p15] [src:PDD-RPT1-2026-09-16#p30]; in the same day's press release, Jun Liu says only that ecosystem investment was stepped up in the second quarter [src:PDD-6K-2026-08-25#EX-99.1]. The report lists it as the second profit warning, of August 2026, to be verified by the third-quarter results [src:PDD-RPT1-2026-09-16#p3], and considers it of the same kind as the warning of August 2024 [src:PDD-RPT1-2026-09-16#p15]; written statements on the impact on profits are in the earnings press releases of 2024-08-26 and 2026-03-25 [src:PDD-6K-2024-08-26#EX-99.1] [src:PDD-6K-2026-03-26#EX-99.1]. The matching question is PDD-L1 in thesis.yml."
 
   - id: PDD-M3
     side: management
     kind: buyback
-    statement: 当前做回购或分红不合适，在管理层可预见的未来几年也没有这方面的必要（2024 年二季度电话会问答）
+    statement: "Buybacks or dividends are not appropriate now, and there is no need for them in the next few years that management can foresee (Q&A on the Q2 2024 earnings call)"
     made_at: 2024-08-26
     due: "2028"
     source: PDD-CALL-FY2024Q2
     status: pending
-    note: "电话会发言，据第三方整理转述，申报文件未载：报告据当日的全文实录与多家报道记下这句话，列为二手 [src:PDD-RPT1-2026-09-16#p14] [src:PDD-RPT1-2026-09-16#p30]。电话会于 2024-08-26 举行，网播与回放在公司投资者关系网站 [src:PDD-6K-2024-08-26#EX-99.1]。分红的一半有一手表述：20-F 称目前没有在可预见的将来派发现金股利的计划 [src:PDD-20F-FY2025#p126]；回购的一半没有一手表述。报告据此认为返还这一开关在 2028 年之前读不到信息，due 按此登记 [src:PDD-RPT1-2026-09-16#p24]；此后两年零回购、零分红 [src:PDD-20F-FY2025#p140] [src:PDD-20F-FY2025#p157] [src:PDD-6K-2026-08-25#EX-99.1]。首笔返还出现即记为未兑现，同时触发 thesis.yml 的 PDD-Q18（正面触发）。"
+    note: "Earnings-call remark as reported by third parties, not in the filings: the report records the sentence from a full transcript of that day and several press reports, and lists it as secondary [src:PDD-RPT1-2026-09-16#p14] [src:PDD-RPT1-2026-09-16#p30]. The call was held on 2024-08-26, with the webcast and replay on the company's investor relations website [src:PDD-6K-2024-08-26#EX-99.1]. The dividend half has a primary statement: the 20-F says there is no present plan to pay cash dividends in the foreseeable future [src:PDD-20F-FY2025#p126]; the buyback half has none. On this basis the report considers that the returns switch will give no information before 2028, and due is registered accordingly [src:PDD-RPT1-2026-09-16#p24]; in the two years since, there have been zero buybacks and zero dividends [src:PDD-20F-FY2025#p140] [src:PDD-20F-FY2025#p157] [src:PDD-6K-2026-08-25#EX-99.1]. The first return is recorded as not kept, and at the same time triggers PDD-Q18 in thesis.yml (a positive trigger)."

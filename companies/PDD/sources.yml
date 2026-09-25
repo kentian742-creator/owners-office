@@ -1,23 +1,23 @@
-# PDD 来源标签表（公开）
-# 定位符约定：PDD-RPT1-2026-09-16#pN = 报告 PDF 第 N 页（与 inputs/text 的页码标记一致）；
-#             PDD-20F-FY2025#pN = 20-F 本地 PDF 第 N 页；其他 20-F 用 Item 或财务报表页码（如 #Item5.A、#F-9），
-#             6-K 用附件号（如 #EX-99.1）；监管机构文件、新闻稿与网页不加定位符。
-# 6-K 条目按 02 报告附录一预先登记，是有意为之：2026 年的三份是首次读数前补录历史数据的来源（见 thesis.yml 的 todo），
-# 其余三份是报告引用的一手文件（docs/decisions/0006）。首次事实审计（04A）之后，档案的引用已从报告页码改指原件，
-# 审计用到的一手文件一并补登在本表末尾：早年的 20-F 与 6-K、他方对本公司的申报、同业的 6-K、电话会回放页、
-# 监管机构文件、欧盟委员会新闻稿、官方汇率与 EDGAR 内部人申报索引。
+# PDD source tag table (public)
+# Locator conventions: PDD-RPT1-2026-09-16#pN = page N of the report PDF (matching the page markers in inputs/text);
+#             PDD-20F-FY2025#pN = page N of the local 20-F PDF; other 20-Fs use the Item or the financial statement page (e.g. #Item5.A, #F-9),
+#             6-Ks use the exhibit number (e.g. #EX-99.1); regulator documents, press releases and web pages take no locator.
+# The 6-K entries were pre-registered from appendix I of the 02 report on purpose: the three from 2026 are the sources for backfilling historical data before the first reading (see todo in thesis.yml),
+# and the other three are primary filings cited by the report (docs/decisions/0006). After the first fact audit (04A), the archive's citations were repointed from report pages to the originals,
+# and the primary documents the audit used were registered at the end of this table: earlier 20-Fs and 6-Ks, filings by others about the company, peers' 6-Ks, earnings-call replay pages,
+# regulator documents, European Commission press releases, official exchange rates and EDGAR's insider filing index.
 sources:
   - tag: PDD-RPT1-2026-09-16
     kind: report
-    title: 拼多多集团 · 完整企业报告（02 报告，12 维框架）
+    title: "Pinduoduo Group · Complete company report (02 report, 12-dimension framework) (in Chinese)"
     date: 2026-09-16
     location: private:reports/PDD.pdf
     primary: false
-    note: 所有者自有企业报告；数据基准日为 2026-06-30（季报）与 2025-12-31（年报）；估值与价格部分只进私有仓库。
+    note: "The owner's own company report; data as of 2026-06-30 (quarterly) and 2025-12-31 (annual); the valuation and price parts go only into the private repository."
 
   - tag: PDD-20F-FY2025
     kind: filing
-    title: PDD Holdings Inc. 年度报告 Form 20-F（截至 2025-12-31 的财年）
+    title: "PDD Holdings Inc. annual report on Form 20-F (fiscal year ended 2025-12-31)"
     issuer_cik: "0001737806"
     form: 20-F
     period: FY2025
@@ -26,11 +26,11 @@ sources:
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926050727/0001104659-26-050727-index.htm
     location: private:reports/PDD_20-F_FY2025.pdf
     primary: true
-    note: "#pN 为本地 PDF 页码（私有仓库 reports/ 下的副本）。"
+    note: "#pN is the page number of the local PDF (the copy under reports/ in the private repository)."
 
   - tag: PDD-6K-2026-08-25
     kind: filing
-    title: 2026 年第二季度未经审计业绩公告（Form 6-K 附件 99.1）
+    title: "Unaudited results for the second quarter of 2026 (Form 6-K, Exhibit 99.1)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2026Q2
@@ -38,11 +38,11 @@ sources:
     filed: 2026-08-25
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926100534/0001104659-26-100534-index.htm
     primary: true
-    note: 新闻稿落款 2026-08-24，6-K 次日报送 EDGAR；含 2026-06-30 资产负债表、上半年损益与现金流、收入附注（据 02 报告附录一）；报告的季度读数大多出自此件。
+    note: "The press release is dated 2026-08-24, and the 6-K was filed on EDGAR the next day; it contains the 2026-06-30 balance sheet, the first-half income statement and cash flows, and the revenue note (per appendix I of the 02 report); most of the report's quarterly readings come from this filing."
 
   - tag: PDD-6K-2026-05-28
     kind: filing
-    title: 2026 年第一季度未经审计业绩公告（Form 6-K）
+    title: "Unaudited results for the first quarter of 2026 (Form 6-K)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2026Q1
@@ -50,11 +50,11 @@ sources:
     filed: 2026-05-28
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926067186/0001104659-26-067186-index.htm
     primary: true
-    note: 新闻稿落款 2026-05-27，6-K 次日报送 EDGAR。
+    note: "The press release is dated 2026-05-27, and the 6-K was filed on EDGAR the next day."
 
   - tag: PDD-6K-2026-03-26
     kind: filing
-    title: 2025 年第四季度及全年未经审计业绩公告（Form 6-K）
+    title: "Unaudited results for the fourth quarter and full year of 2025 (Form 6-K)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2025Q4
@@ -62,11 +62,11 @@ sources:
     filed: 2026-03-26
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926034813/0001104659-26-034813-index.htm
     primary: true
-    note: 新闻稿落款 2026-03-25，6-K 次日报送 EDGAR；02 报告的 2025 年度利润率序列取自此件。
+    note: "The press release is dated 2026-03-25, and the 6-K was filed on EDGAR the next day; the 02 report's series of 2025 margins is taken from this filing."
 
   - tag: PDD-6K-2025-12-19
     kind: filing
-    title: 联席董事长及新任高管任命（Form 6-K）
+    title: "Appointment of a co-chairman and new senior executives (Form 6-K)"
     issuer_cik: "0001737806"
     form: 6-K
     period: null
@@ -74,11 +74,11 @@ sources:
     filed: 2025-12-19
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465925122766/0001104659-25-122766-index.htm
     primary: true
-    note: 公告正文在 6-K 本体，无附件；同日另一份 6-K（0001104659-25-122765）是 2025 年股东大会结果，不是本件。
+    note: "The announcement text is in the body of the 6-K, with no exhibit; the other 6-K filed the same day (0001104659-25-122765) is the result of the 2025 annual general meeting, not this one."
 
   - tag: PDD-6K-2022-03-22
     kind: filing
-    title: 2021 年第四季度及全年未经审计业绩公告（Form 6-K 附件 99.1，最后一份披露 GMV 与年人均消费的业绩公告）
+    title: "Unaudited results for the fourth quarter and full year of 2021 (Form 6-K, Exhibit 99.1; the last earnings release to disclose GMV and annual spending per active buyer)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2021Q4
@@ -86,11 +86,11 @@ sources:
     filed: 2022-03-22
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465922036291/0001104659-22-036291-index.htm
     primary: true
-    note: 新闻稿落款 2022-03-21，6-K 次日报送 EDGAR；这是最后一份披露 GMV 与年人均消费的业绩公告（2021 年全年 GMV 为 RMB2,441.0 billion，FY2021 20-F 于 2022-04-25 在 Item 4.B 与 Item 5.A 复述）。月活与年活跃买家在 2022 年一季度业绩公告（PDD-6K-2022-05-31）仍有披露，自 2022 年二季度业绩公告（PDD-6K-2022-08-30）起不再披露。
+    note: "The press release is dated 2022-03-21, and the 6-K was filed on EDGAR the next day; this is the last earnings release to disclose GMV and annual spending per active buyer (full-year 2021 GMV of RMB2,441.0 billion, repeated in Item 4.B and Item 5.A of the FY2021 20-F on 2022-04-25). Monthly active users and annual active buyers were still disclosed in the earnings release for the first quarter of 2022 (PDD-6K-2022-05-31), and no longer from the earnings release for the second quarter of 2022 (PDD-6K-2022-08-30) on."
 
   - tag: PDD-6K-2021-03-18
     kind: filing
-    title: 领导层交接公告与 2021 年致股东信（Form 6-K 附件 99.2、99.3）
+    title: "Leadership transition announcement and 2021 letter to shareholders (Form 6-K, Exhibits 99.2 and 99.3)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2020Q4
@@ -98,27 +98,27 @@ sources:
     filed: 2021-03-18
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465921038019/0001104659-21-038019-index.htm
     primary: true
-    note: 附件落款 2021-03-17，6-K 次日报送 EDGAR；创始人辞任董事长、投票权委托董事会行使的原始公告。
+    note: "The exhibits are dated 2021-03-17, and the 6-K was filed on EDGAR the next day; the original announcement of the founder's resignation as chairman and of his voting rights being entrusted to the board."
 
   - tag: PDD-WEB-2026-09-24-1
     kind: web
-    title: EDGAR XBRL 汇总数据（companyfacts），PDD Holdings Inc.，CIK 0001737806
+    title: "EDGAR XBRL summary data (companyfacts), PDD Holdings Inc., CIK 0001737806"
     url: https://data.sec.gov/api/xbrl/companyfacts/CIK0001737806.json
     date: 2026-09-24
     primary: true
-    note: 2026-09-24 读取；只收 us-gaap 等标准概念，不收公司扩展概念。us-gaap:PaymentsToAcquirePropertyPlantAndEquipment 最后一次出现在 FY2020 的 20-F（0001104659-21-058237），FY2021 至 FY2025 的 20-F 都没有用它。
+    note: "Read on 2026-09-24; it contains only standard concepts such as us-gaap, not company extension concepts. us-gaap:PaymentsToAcquirePropertyPlantAndEquipment last appears in the FY2020 20-F (0001104659-21-058237), and none of the 20-Fs for FY2021 to FY2025 uses it."
 
   - tag: PDD-WEB-2026-09-24-2
     kind: web
-    title: EDGAR 申报索引（submissions），PDD Holdings Inc.，CIK 0001737806
+    title: "EDGAR filing index (submissions), PDD Holdings Inc., CIK 0001737806"
     url: https://data.sec.gov/submissions/CIK0001737806.json
     date: 2026-09-24
     primary: true
-    note: 2026-09-24 读取；列出以本公司为申报人或标的公司的全部申报，最近一份为 2026-09-04。表格名含 13D 的申报中，最后一份是腾讯（CIK 0001293451）2021-03-24 提交的 SC 13D/A（0000950103-21-004487）。
+    note: "Read on 2026-09-24; it lists all filings with the company as filer or subject company, the latest dated 2026-09-04. Among the filings whose form name contains 13D, the last is the SC 13D/A (0000950103-21-004487) filed by Tencent (CIK 0001293451) on 2021-03-24."
 
   - tag: PDD-20F-FY2020
     kind: filing
-    title: PDD Holdings Inc.（时名 Pinduoduo Inc.）年度报告 Form 20-F（截至 2020-12-31 的财年）
+    title: "PDD Holdings Inc. (then Pinduoduo Inc.) annual report on Form 20-F (fiscal year ended 2020-12-31)"
     issuer_cik: "0001737806"
     form: 20-F
     period: FY2020
@@ -126,11 +126,11 @@ sources:
     filed: 2021-04-30
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465921058237/0001104659-21-058237-index.htm
     primary: true
-    note: Item 3.A 选定财务数据列有 FY2016–FY2020 各年的经营亏损；Item 6.E 受益所有权表对腾讯一组仍按腾讯 2020 年 11 月的 Schedule 13D/A 列 783,217,772 股；Item 18 合并现金流量表覆盖 2018–2020 年，融资活动没有回购或股利行。
+    note: "The Item 3.A selected financial data list the operating loss for each year FY2016–FY2020; the Item 6.E beneficial ownership table still lists 783,217,772 shares for the Tencent group, per Tencent's Schedule 13D/A of November 2020; the Item 18 consolidated statements of cash flows cover 2018–2020, with no buyback or dividend line in financing activities."
 
   - tag: PDD-20F-FY2022
     kind: filing
-    title: PDD Holdings Inc. 年度报告 Form 20-F（截至 2022-12-31 的财年）
+    title: "PDD Holdings Inc. annual report on Form 20-F (fiscal year ended 2022-12-31)"
     issuer_cik: "0001737806"
     form: 20-F
     period: FY2022
@@ -138,11 +138,11 @@ sources:
     filed: 2023-04-26
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465923049927/0001104659-23-049927-index.htm
     primary: true
-    note: Item 5.A（印刷页 91）写明商品销售收入由 2021 年的 RMB7,246.1 million 降到 2022 年的 RMB209.2 million，as we scaled down this aspect of our business；F-7 为合并综合收益表（2020–2022 年），F-9 为 2021 年的股东权益变动（可转债转股 62,732,708 股），F-11 为合并现金流量表（2020–2022 年）。
+    note: "Item 5.A (printed page 91) states that merchandise sales revenue fell from RMB7,246.1 million in 2021 to RMB209.2 million in 2022, “as we scaled down this aspect of our business”; F-7 is the consolidated statements of comprehensive income (2020–2022), F-9 the 2021 changes in shareholders' equity (62,732,708 shares from conversions of convertible bonds), and F-11 the consolidated statements of cash flows (2020–2022)."
 
   - tag: PDD-20F-FY2023
     kind: filing
-    title: PDD Holdings Inc. 年度报告 Form 20-F（截至 2023-12-31 的财年）
+    title: "PDD Holdings Inc. annual report on Form 20-F (fiscal year ended 2023-12-31)"
     issuer_cik: "0001737806"
     form: 20-F
     period: FY2023
@@ -150,11 +150,11 @@ sources:
     filed: 2024-04-25
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465924051610/0001104659-24-051610-index.htm
     primary: true
-    note: 自本份起收入表不再单列商品销售，并入在线营销服务及其他：Item 5.A 把 2021 年的在线营销服务及其他写作 RMB79,809.5 million（原列 72,563.4 加商品销售 7,246.1），财务报表附注称 Certain prior period amounts have been reclassified。
+    note: "From this filing on, the revenue table no longer shows merchandise sales separately and merges them into online marketing services and others: Item 5.A gives 2021 online marketing services and others as RMB79,809.5 million (originally 72,563.4 plus merchandise sales of 7,246.1), and the notes to the financial statements say “Certain prior period amounts have been reclassified”."
 
   - tag: PDD-6K-2022-05-31
     kind: filing
-    title: 2022 年第一季度未经审计业绩公告（Form 6-K 附件 99.1，最后一份披露月活与年活跃买家的业绩公告）
+    title: "Unaudited results for the first quarter of 2022 (Form 6-K, Exhibit 99.1; the last earnings release to disclose monthly active users and annual active buyers)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2022Q1
@@ -162,11 +162,11 @@ sources:
     filed: 2022-05-31
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465922066095/0001104659-22-066095-index.htm
     primary: true
-    note: 新闻稿落款 2022-05-27，2022-05-31 报送 EDGAR；列有一季度平均月活 751.3 million 与截至 2022-03-31 的十二个月活跃买家 881.9 million，已不再列 GMV 与年人均消费。
+    note: "The press release is dated 2022-05-27 and was filed on EDGAR on 2022-05-31; it gives average monthly active users of 751.3 million in the first quarter and 881.9 million active buyers in the twelve months to 2022-03-31, and no longer gives GMV or annual spending per active buyer."
 
   - tag: PDD-6K-2022-08-30
     kind: filing
-    title: 2022 年第二季度未经审计业绩公告（Form 6-K 附件 99.1）
+    title: "Unaudited results for the second quarter of 2022 (Form 6-K, Exhibit 99.1)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2022Q2
@@ -174,11 +174,11 @@ sources:
     filed: 2022-08-30
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465922095811/0001104659-22-095811-index.htm
     primary: true
-    note: 新闻稿落款 2022-08-29，次日报送 EDGAR；自本份起业绩公告不再列月活、年活跃买家与 GMV。
+    note: "The press release is dated 2022-08-29 and was filed on EDGAR the next day; from this release on, earnings releases no longer give monthly active users, annual active buyers or GMV."
 
   - tag: PDD-6K-2024-08-26
     kind: filing
-    title: 2024 年第二季度未经审计业绩公告（Form 6-K 附件 99.1）
+    title: "Unaudited results for the second quarter of 2024 (Form 6-K, Exhibit 99.1)"
     issuer_cik: "0001737806"
     form: 6-K
     period: FY2024Q2
@@ -186,11 +186,11 @@ sources:
     filed: 2024-08-26
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465924092851/0001104659-24-092851-index.htm
     primary: true
-    note: 新闻稿落款 2024-08-26，同日报送 EDGAR（美东 16:01 接收）；陈磊的引语称 We are prepared to accept short-term sacrifices and potential decline in profitability，刘珺称继续坚定投入、盈利能力也可能受影响；电话会于同日美东 7:30 举行，网播与回放在公司投资者关系网站（见 PDD-CALL-FY2024Q2）。
+    note: "The press release is dated 2024-08-26 and was filed on EDGAR the same day (accepted at 16:01 US Eastern time); Lei Chen is quoted as saying “We are prepared to accept short-term sacrifices and potential decline in profitability”, and Jun Liu says investment will continue firmly and profitability may also be affected; the earnings call was held at 7:30 US Eastern time the same day, with the webcast and replay on the company's investor relations website (see PDD-CALL-FY2024Q2)."
 
   - tag: PDD-SC13GA-2021-03-18
     kind: filing
-    title: 黄峥及其关联实体对本公司的 Schedule 13G/A 第 2 号（事件日 2021-03-17）
+    title: "Schedule 13G/A Amendment No. 2 on the company by Zheng Huang and his affiliated entities (event date 2021-03-17)"
     issuer_cik: "0001737806"
     form: SC 13G/A
     period: null
@@ -198,11 +198,11 @@ sources:
     filed: 2021-03-18
     url: https://www.sec.gov/Archives/edgar/data/1737806/000110465921038029/0001104659-21-038029-index.htm
     primary: true
-    note: 申报人为黄峥（CIK 0001765501）及其关联实体，标的为本公司；实益持有 1,409,744,080 股 A 类普通股。此后黄峥一方没有新的 13D 或 13G 申报（见 PDD-WEB-2026-09-24-2）。
+    note: "Filed by Zheng Huang (CIK 0001765501) and his affiliated entities, with the company as subject; beneficial ownership of 1,409,744,080 Class A ordinary shares. The Zheng Huang side has made no new 13D or 13G filing since (see PDD-WEB-2026-09-24-2)."
 
   - tag: PDD-SC13DA-2021-03-24
     kind: filing
-    title: 腾讯对本公司的 Schedule 13D/A 第 4 号（事件日 2021-03-17）
+    title: "Schedule 13D/A Amendment No. 4 on the company by Tencent (event date 2021-03-17)"
     issuer_cik: "0001737806"
     form: SC 13D/A
     period: null
@@ -210,27 +210,27 @@ sources:
     filed: 2021-03-24
     url: https://www.sec.gov/Archives/edgar/data/1737806/000095010321004487/0000950103-21-004487-index.htm
     primary: true
-    note: 申报人为 Tencent Holdings Limited（CIK 0001293451）与 Tencent Mobility Limited，标的为本公司；实益持有 783,468,116 股 A 类普通股（15.6%）。这是腾讯对本公司的最后一份 13D 修订（见 PDD-WEB-2026-09-24-2）。
+    note: "Filed by Tencent Holdings Limited (CIK 0001293451) and Tencent Mobility Limited, with the company as subject; beneficial ownership of 783,468,116 Class A ordinary shares (15.6%). This is Tencent's last 13D amendment on the company (see PDD-WEB-2026-09-24-2)."
 
   - tag: PDD-CALL-FY2026Q2
     kind: web
-    title: PDD Holdings 2026 年第二季度业绩电话会网播回放（公司投资者关系网站）
+    title: "PDD Holdings earnings call for the second quarter of 2026, webcast replay (company investor relations website)"
     date: 2026-08-24
     url: https://investor.pddholdings.com/investor-events
     primary: true
-    note: 电话会于 2026-08-24 美东 7:30 举行，网播与回放在这一页面（PDD-6K-2026-08-25 附件 99.1 的 Conference Call 一节）。公司只提供音频回放，不发布文字实录；本轮没有转写音频，2026-09-25 从本环境访问该网站未获响应。档案中归于这场电话会的原话都据第三方整理转述，逐处标明「电话会发言，据第三方整理转述，申报文件未载」，不作测试基线。
+    note: "The call was held on 2026-08-24 at 7:30 US Eastern time, with the webcast and replay on this page (the Conference Call section of PDD-6K-2026-08-25 Exhibit 99.1). The company provides only an audio replay and publishes no transcript; the audio was not transcribed in this round, and the website did not respond when accessed from this environment on 2026-09-25. Every quotation from this call in the archive rests on third-party write-ups, is labeled “earnings-call remark as reported by third parties, not in the filings” wherever it appears, and is not used as a test baseline."
 
   - tag: PDD-CALL-FY2024Q2
     kind: web
-    title: PDD Holdings 2024 年第二季度业绩电话会网播回放（公司投资者关系网站）
+    title: "PDD Holdings earnings call for the second quarter of 2024, webcast replay (company investor relations website)"
     date: 2024-08-26
     url: https://investor.pddholdings.com/investor-events
     primary: true
-    note: 电话会于 2024-08-26 美东 7:30 举行（PDD-6K-2024-08-26 附件 99.1）；回放是否仍在线未核实，本轮没有转写音频。档案中归于这场电话会的原话（言行账本 PDD-M3）据第三方整理转述，标明「电话会发言，据第三方整理转述，申报文件未载」。
+    note: "The call was held on 2024-08-26 at 7:30 US Eastern time (PDD-6K-2024-08-26 Exhibit 99.1); whether the replay is still online has not been checked, and the audio was not transcribed in this round. The quotation from this call in the archive (say-do ledger PDD-M3) rests on third-party write-ups and is labeled “earnings-call remark as reported by third parties, not in the filings”."
 
   - tag: BABA-6K-2026-08-20
     kind: filing
-    title: 阿里巴巴集团截至 2026-06-30 的季度业绩公告（Form 6-K 附件 99.1；阿里财年 FY2027 第一季度）
+    title: "Alibaba Group results for the quarter ended 2026-06-30 (Form 6-K, Exhibit 99.1; the first quarter of Alibaba's fiscal FY2027)"
     issuer_cik: "0001577552"
     form: 6-K
     period: FY2027Q1
@@ -238,11 +238,11 @@ sources:
     filed: 2026-08-20
     url: https://www.sec.gov/Archives/edgar/data/1577552/000110465926099220/0001104659-26-099220-index.htm
     primary: true
-    note: 同业读数，与本公司 2026 年二季度同一自然季：客户管理收入同比 −7%，剔除新业务发展计划的收入冲减后同口径 +1%。
+    note: "Peer reading for the same calendar quarter as the company's Q2 2026: customer management revenue −7% year on year, and +1% on a like-for-like basis excluding the revenue offset from new business development programs."
 
   - tag: JD-6K-2026-08-13
     kind: filing
-    title: 京东集团 2026 年第二季度及中期业绩公告（Form 6-K 附件 99.1）
+    title: "JD.com results for the second quarter and interim period of 2026 (Form 6-K, Exhibit 99.1)"
     issuer_cik: "0001549802"
     form: 6-K
     period: FY2026Q2
@@ -250,53 +250,53 @@ sources:
     filed: 2026-08-13
     url: https://www.sec.gov/Archives/edgar/data/1549802/000119312526347753/0001193125-26-347753-index.htm
     primary: true
-    note: 同业读数：2026 年二季度集团营业利润率 1.3%，京东零售经营利润率 4.6%；京东不单独披露自营利润率。
+    note: "Peer reading: in Q2 2026 the group operating margin was 1.3% and JD Retail's operating margin 4.6%; JD does not disclose a separate self-operated margin."
 
   - tag: SAMR-CF-2026-22
     kind: other
-    title: 国家市场监督管理总局行政处罚决定书（国市监处罚〔2026〕22 号，当事人上海寻梦信息技术有限公司，中文原件）
+    title: "State Administration for Market Regulation (SAMR) administrative penalty decision Guo Shi Jian Chu Fa [2026] No. 22, party: Shanghai Xunmeng Information Technology Co., Ltd. (in Chinese)"
     title_original: 国家市场监督管理总局行政处罚决定书-国市监处罚〔2026〕22号
     date: 2026-04-17
     url: https://www.samr.gov.cn/cms_files/filemanager/1647978232/attach/20264/290e3581cfe24f9aba1a9647631d512d.docx
     primary: true
-    note: "市场监管总局 2026-04-17 公告（7 家电商平台「幽灵外卖」系列案行政处罚，https://www.samr.gov.cn/xw/zj/art/2026/art_9714ee2bef9244819134ef4ffdd14017.html）的附件，2026-09-25 读取。当事人为拼多多平台的经营主体；罚没合计 1,521,930,222.91 元（没收违法所得 5,850,222.91 元，罚款 1,514,080,000 元与 2,000,000 元），责令暂停新增蛋糕（预包装除外）店铺 9 个月；决定书记载当事人在调查中多次无正当理由拒绝提供或提供虚假材料、信息，甚至采用暴力、软对抗等手段阻碍监管执法。"
+    note: "An attachment to SAMR's announcement of 2026-04-17 (administrative penalties in the “ghost takeaway” series of cases against 7 e-commerce platforms, https://www.samr.gov.cn/xw/zj/art/2026/art_9714ee2bef9244819134ef4ffdd14017.html), read on 2026-09-25. The party is the operating entity of the Pinduoduo platform; total penalties of RMB 1,521,930,222.91 (confiscated illegal gains of RMB 5,850,222.91, fines of RMB 1,514,080,000 and RMB 2,000,000), and an order to suspend new cake stores (other than prepackaged) for 9 months; the decision records that during the investigation the party repeatedly refused without good reason to provide materials and information, or provided false materials and information, and even used violence, soft resistance and other means to obstruct regulatory enforcement."
 
   - tag: EC-IP-24-5622
     kind: press_release
-    title: 欧盟委员会新闻稿 IP/24/5622：依《数字服务法》对 Temu 启动正式程序
+    title: "European Commission press release IP/24/5622: formal proceedings opened against Temu under the Digital Services Act"
     date: 2024-10-31
     url: https://ec.europa.eu/commission/presscorner/detail/en/ip_24_5622
     primary: true
-    note: 英文原题 Commission opens formal proceedings against Temu under the Digital Services Act；2026-09-25 读取。
+    note: "Original English title: Commission opens formal proceedings against Temu under the Digital Services Act; read on 2026-09-25."
 
   - tag: EC-IP-26-1178
     kind: press_release
-    title: 欧盟委员会新闻稿 IP/26/1178：依《数字服务法》对 Temu 罚款 2 亿欧元
+    title: "European Commission press release IP/26/1178: Temu fined €200 million under the Digital Services Act"
     date: 2026-05-28
     url: https://ec.europa.eu/commission/presscorner/detail/en/ip_26_1178
     primary: true
-    note: 英文原题 Commission fines Temu €200 million for breaching the Digital Services Act；2026-09-25 读取。不合规决定针对 Temu 未能尽职识别、分析和评估其平台上非法产品的系统性风险；Temu 须于 2026-08-28 前按 DSA 第 75 条提交整改方案（action plan），欧洲数字服务委员会在收到方案后一个月内出具意见，欧委会再于一个月内作出最终决定，不遵守可被处以按期罚款。
+    note: "Original English title: Commission fines Temu €200 million for breaching the Digital Services Act; read on 2026-09-25. The non-compliance decision concerns Temu's failure to diligently identify, analyze and assess the systemic risks of illegal products on its platform; Temu must submit an action plan under Article 75 of the DSA by 2026-08-28, the European Board for Digital Services gives its opinion within one month of receiving the plan, and the Commission then takes a final decision within one month; non-compliance can bring periodic penalty payments."
 
   - tag: CFETS-CCPR-2026-05-28
     kind: web
-    title: 中国外汇交易中心受权公布的人民币汇率中间价（EUR/CNY，2026-05-27 至 2026-05-29）
+    title: "RMB central parity rates published by the China Foreign Exchange Trade System (CFETS) as authorized (EUR/CNY, 2026-05-27 to 2026-05-29) (in Chinese)"
     date: 2026-05-28
     url: https://www.chinamoney.com.cn/chinese/bkccpr/
     primary: true
-    note: 官方汇率数据，2026-09-25 读取；2026-05-28 欧元兑人民币中间价为 7.9121（05-27 为 7.9234，05-29 为 7.9160）。PDD-Q14 按处罚决定日的中间价折算外币罚款。
+    note: "Official exchange-rate data, read on 2026-09-25; the EUR/RMB central parity on 2026-05-28 was 7.9121 (7.9234 on 05-27, 7.9160 on 05-29). PDD-Q14 converts foreign-currency fines at the central parity on the decision date."
 
   - tag: STRIPE-NEWS-2025-09-29
     kind: press_release
-    title: Stripe 新闻稿：为 ChatGPT 内的 Instant Checkout 提供支付，并发布与 OpenAI 共同开发的 Agentic Commerce Protocol
+    title: "Stripe press release: powering Instant Checkout in ChatGPT and releasing the Agentic Commerce Protocol co-developed with OpenAI"
     date: 2025-09-29
     url: https://stripe.com/newsroom/news/stripe-openai-instant-checkout
     primary: true
-    note: 英文原题 Stripe powers Instant Checkout in ChatGPT and releases Agentic Commerce Protocol co-developed with OpenAI；发布方一手，2026-09-25 读取。美国的 ChatGPT 用户可在对话中向 Etsy 商家购买（Shopify 商家随后接入），协议为开放标准。OpenAI 自己的页面对本环境返回 403，未能读取。
+    note: "Original English title: Stripe powers Instant Checkout in ChatGPT and releases Agentic Commerce Protocol co-developed with OpenAI; primary from the publisher, read on 2026-09-25. ChatGPT users in the US can buy from Etsy sellers within a conversation (with Shopify merchants joining later), and the protocol is an open standard. OpenAI's own page returned 403 to this environment and could not be read."
 
   - tag: PDD-WEB-2026-09-25-1
     kind: web
-    title: EDGAR 内部人申报索引（ownership reports by issuer），PDD Holdings Inc.，CIK 0001737806
+    title: "EDGAR insider filing index (ownership reports by issuer), PDD Holdings Inc., CIK 0001737806"
     date: 2026-09-25
     url: https://www.sec.gov/cgi-bin/own-disp?action=getissuer&CIK=0001737806
     primary: true
-    note: 2026-09-25 读取；列出以本公司为发行人的 Form 3／4。11 位董事与高管（Liu Jun、Zhao Jiazhen、Kam Anthony Ping Leung、Xiao Junyun、Zheng Zhenwei、Li Jiong、Wang Mi、Yeo George Yong-Boon、Rietjens Ivonne MCM、Lin Haifeng、Chen Lei）于 2026-03-18 报送 Form 3，此后有 2026-04-01（两份）、07-02（两份）、08-04、09-02、09-04 报送的 Form 4；董事另于 2026-03-30（两份）与 2026-09-03 报送 Form 144（见 PDD-WEB-2026-09-24-2）。
+    note: "Read on 2026-09-25; it lists the Forms 3 and 4 with the company as issuer. 11 directors and officers (Liu Jun, Zhao Jiazhen, Kam Anthony Ping Leung, Xiao Junyun, Zheng Zhenwei, Li Jiong, Wang Mi, Yeo George Yong-Boon, Rietjens Ivonne MCM, Lin Haifeng, Chen Lei) filed Form 3 on 2026-03-18, followed by Forms 4 filed on 2026-04-01 (two), 07-02 (two), 08-04, 09-02 and 09-04; directors also filed Form 144 on 2026-03-30 (two) and 2026-09-03 (see PDD-WEB-2026-09-24-2)."

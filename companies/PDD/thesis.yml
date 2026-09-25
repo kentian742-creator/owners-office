@@ -1,16 +1,16 @@
-# PDD 论点文件（公开）。估值与价格相关的内容只放私有仓库。
-# 测试来源：林奇 stalwart 模板（含 _common 时效测试）→ 02 报告第 09 节的每季前瞻指标（watch）与论点破坏者（breaker）→ 审计后补充的手工测试（PDD-Q19、PDD-L9）。
-# 报告的破坏者与前瞻指标里需要判断的事件分支，单独写成定性测试（PDD-L6、PDD-L7、PDD-L8），交独立模型判定并附出处；与原测试任一失败即该条触发。
-# 副类 asset_play 的模板测试逐条不套用：Q-cash-drag 登记时就会因商家浮存与留存现金而失败，测不出新信息；
-# Q-book 的下降最可能来自首笔大额返还（正面事件，见 PDD-Q18）或大额亏损，而侵蚀现金的具体路径已由 PDD-Q13、PDD-Q9、PDD-Q14、PDD-Q16 分别盯住；
-# L-dissipation 大体由 PDD-Q13 覆盖。支柱 P3 的相关测试见各条 note（pillar 字段只能填一个）。
-# 报告为 PDD-RPT1-2026-09-16，#pN 为 PDF 页码；其他来源的定位符见 sources.yml 文件头。
-# 标注约定：「本档案计算」= 按一手文件的原数自算（增速保留一位小数）；「公司取整」= 照录公司新闻稿的取整数；
-# 「电话会发言，据第三方整理转述，申报文件未载」= 只见于第三方对电话会的整理（二手，不进测试基线的读数）；
-# FY2025 的数字以经审计的 20-F 为准，业绩公告口径与之不同时并列写出（2026 年 4 月的境内罚没，见 F9）。
+# PDD thesis file (public). Everything related to valuation and price is only in the private repository.
+# Where the tests come from: the Lynch stalwart template (with the _common staleness tests) → the quarterly watch indicators (watch) and thesis breakers (breaker) in section 09 of the 02 report → manual tests added after the audit (PDD-Q19, PDD-L9).
+# Event branches in the report's breakers and watch indicators that need judgment are written as separate qualitative tests (PDD-L6, PDD-L7, PDD-L8), judged by an independent model with citations; if either the qualitative test or the original test fails, that item is triggered.
+# The template tests of the secondary category asset_play are not applied, item by item: Q-cash-drag would already fail at registration because of the merchant float and retained cash, so it would reveal nothing new;
+# a fall in Q-book would most likely come from a first large return of capital (a positive event, see PDD-Q18) or a large loss, and the specific ways cash could be eroded are already watched by PDD-Q13, PDD-Q9, PDD-Q14 and PDD-Q16;
+# L-dissipation is largely covered by PDD-Q13. For the tests related to pillar P3, see each note (the pillar field takes only one value).
+# The report is PDD-RPT1-2026-09-16, and #pN is its PDF page number; the locators of other sources are explained in the header of sources.yml.
+# Labels: "this archive's calculation" = computed from the original figures of primary filings (growth rates to one decimal); "company's rounding" = the rounded figure as printed in the company's press release;
+# "earnings-call remark as reported by third parties, not in the filings" = found only in third-party write-ups of the earnings call (secondary, not used as a reading in a test baseline);
+# FY2025 figures follow the audited 20-F, and where the earnings-release basis differs, both are given (the April 2026 domestic penalty, see F9).
 schema_version: "0.2"
 company: PDD
-name: PDD Holdings Inc.（拼多多集团）
+name: PDD Holdings Inc. (Pinduoduo Group)
 exchange: NASDAQ
 status: holding
 filer:
@@ -21,7 +21,7 @@ filer:
   annual_form: 20-F
 category: stalwart
 category_secondary: asset_play
-category_rationale: "规模已大，增速已略低于 stalwart 模板所写的稳定增长型典型区间：2025 年收入 4,318 亿元、同比 +9.7% [src:PDD-20F-FY2025#p101] [src:PDD-20F-FY2025#p104]，2026 年二季度收入同比 +8.1%（112,358 ÷ 103,985 百万元，本档案计算，公司新闻稿取整为 8%）[src:PDD-6K-2026-08-25#EX-99.1]，尚未触发 PDD-Q1 的警告与失败门槛。报告本身不做林奇分类，归类是公司经理的判断；副类为资产富裕型，因截至 2026-06-30 净金融资产 739 亿美元（本档案按资产负债表科目计算，见 F3）且零有息负债 [src:PDD-6K-2026-08-25#EX-99.1]，论点很大一部分取决于这笔现金能否到达股东。"
+category_rationale: "Already large, with growth now slightly below the typical stalwart range written in the stalwart template: 2025 revenue was RMB 431.8 billion, up 9.7% year on year [src:PDD-20F-FY2025#p101] [src:PDD-20F-FY2025#p104], and Q2 2026 revenue was up 8.1% year on year (112,358 ÷ 103,985 RMB million, this archive's calculation, rounded to 8% in the company's press release) [src:PDD-6K-2026-08-25#EX-99.1], not yet at the warning or failure thresholds of PDD-Q1. The report itself makes no Lynch classification, and the category is the company manager's judgment; the secondary category is asset play, because net financial assets were $73.9 billion as of 2026-06-30 (this archive's calculation from balance-sheet line items, see F3) with zero interest-bearing debt [src:PDD-6K-2026-08-25#EX-99.1], so a large part of the thesis depends on whether this cash can reach shareholders."
 domain: ecommerce
 depends_on: []
 trust_level: 1
@@ -43,173 +43,173 @@ reviewed:
   munger: 2026-09-16
   unknowns: 2026-09-16
 
-# 资本配置与企业文化：报告因证据缺失不予评级，此处留空（见 todo）。
+# Capital allocation and culture: the report gives no rating for lack of evidence, so they are left blank here (see todo).
 ratings:
   business: A−
   management: A−
   source: PDD-RPT1-2026-09-16#p3
 
 thesis:
-  summary: "拼多多与 Temu 是同一套机制在国内外的两份复制：聚合需求、把大订单交给中国工厂、以低价换规模 [src:PDD-RPT1-2026-09-16#p4]，20-F 称两个平台的价值主张与运营模式相同、目前都主要服务中国商家 [src:PDD-20F-FY2025#p6]。平台不控制商家的商品 [src:PDD-20F-FY2025#p164]，截至 2026-06-30 资产负债表上没有存货科目，靠商家的钱运转：经营性投入资本为负 1,829 亿元（2026-06-30，本档案按资产负债表科目归类计算，公司未披露该口径，算式见 F1），零有息负债 [src:PDD-6K-2026-08-25#EX-99.1]。生意本身的证据充分，决定所有者结果的三个变量却都不在生意里：排序权能否保住、现金能否到达股东、与监管的姿态往哪边走 [src:PDD-RPT1-2026-09-16#p3]。在线营销服务及其他收入（集团口径，公司只有一个分部，不按平台或地区拆分 [src:PDD-20F-FY2025#p167]）2026 年二季度同比只增长 3.5% [src:PDD-6K-2026-08-25#EX-99.1]，报告把这条线读作国内平台的广告变现 [src:PDD-RPT1-2026-09-16#p4]。同季总收入的增长主要来自交易服务（公司口径）[src:PDD-6K-2026-08-25#EX-99.1]，报告据此推断增长主要来自海外，公司未披露地区拆分 [src:PDD-RPT1-2026-09-16#p11]；海外正同时面对关税重置 [src:PDD-20F-FY2025#p52] 与欧盟委员会 2026-05-28 依《数字服务法》对 Temu 开出的 2 亿欧元罚款 [src:EC-IP-26-1178]。上市以来股东返还为零 [src:PDD-20F-FY2025#p17] [src:PDD-20F-FY2025#p140] [src:PDD-WEB-2026-09-24-1] [src:PDD-6K-2026-08-25#EX-99.1]；第一笔回购或分红会上修论点，排序权与制度两条线的恶化会推翻它。"
+  summary: "Pinduoduo and Temu are two copies of the same mechanism, at home and abroad: aggregate demand, hand large orders to Chinese factories, and trade low prices for scale [src:PDD-RPT1-2026-09-16#p4], and the 20-F says the two platforms have the same value proposition and operating model and both currently serve mainly Chinese merchants [src:PDD-20F-FY2025#p6]. The platform does not control merchants' goods [src:PDD-20F-FY2025#p164], and as of 2026-06-30 its balance sheet had no inventory line, so it runs on merchants' money: operating invested capital was negative RMB 182.9 billion (2026-06-30, this archive's calculation by classifying balance-sheet line items, a measure the company does not disclose, formula in F1), with zero interest-bearing debt [src:PDD-6K-2026-08-25#EX-99.1]. The evidence on the business itself is ample, yet the three variables that decide the owner's outcome all lie outside the business: whether ranking power can be kept, whether cash can reach shareholders, and which way its stance toward regulators goes [src:PDD-RPT1-2026-09-16#p3]. Online marketing services and others revenue (group level: the company has only one segment and does not split it by platform or region [src:PDD-20F-FY2025#p167]) grew only 3.5% year on year in Q2 2026 [src:PDD-6K-2026-08-25#EX-99.1], and the report reads this line as the domestic platform's advertising monetization [src:PDD-RPT1-2026-09-16#p4]. In the same quarter, total revenue growth came mainly from transaction services (the company's wording) [src:PDD-6K-2026-08-25#EX-99.1], from which the report infers that growth came mainly from overseas, though the company does not disclose a regional split [src:PDD-RPT1-2026-09-16#p11]; overseas, it faces at the same time a tariff reset [src:PDD-20F-FY2025#p52] and the €200 million fine the European Commission imposed on Temu under the Digital Services Act on 2026-05-28 [src:EC-IP-26-1178]. Shareholder returns since listing have been zero [src:PDD-20F-FY2025#p17] [src:PDD-20F-FY2025#p140] [src:PDD-WEB-2026-09-24-1] [src:PDD-6K-2026-08-25#EX-99.1]; the first buyback or dividend would revise the thesis upward, and deterioration on the ranking-power line or the institutional line would overturn it."
   pillars:
     - id: P1
-      claim: "生意不占股东资本：截至 2026-06-30，应付商家加保证金形成 1,285 亿元浮存，经营性投入资本为负 1,829 亿元（本档案按资产负债表科目归类计算）[src:PDD-6K-2026-08-25#EX-99.1]，增长靠商家的钱而不是股东的钱。"
+      claim: "The business ties up no shareholder capital: as of 2026-06-30, payables to merchants plus merchant deposits formed a float of RMB 128.5 billion, and operating invested capital was negative RMB 182.9 billion (this archive's calculation by classifying balance-sheet line items) [src:PDD-6K-2026-08-25#EX-99.1], so growth runs on merchants' money rather than shareholders'."
       source: PDD-RPT1-2026-09-16#p6
     - id: P2
-      claim: "排序权与定价权仍在：国内的广告变现没有被内容电商和购物代理夺走（公司只披露集团口径的在线营销服务及其他收入）。营业利润率在 2025 年从 27.5% 降到 21.6%（20-F）[src:PDD-20F-FY2025#p103]，2026 年上半年同比略升至 21.7%（上年同期 21.0%，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]，这是让利而不是定价权见顶；当前读数为在线营销服务及其他收入 2026 年二季度同比 +3.5% [src:PDD-6K-2026-08-25#EX-99.1]，营业利润率 TTM（至 2026 年二季度）21.9%（20-F 口径，业绩公告逐季相加为 22.2%，不含 2026 年 4 月的罚没，见 F7）[src:PDD-20F-FY2025#p103] [src:PDD-6K-2026-03-26#EX-99.1]。"
+      claim: "Ranking power and pricing power are intact: domestic advertising monetization has not been taken away by content commerce and shopping agents (the company discloses online marketing services and others revenue only at group level). The operating margin fell from 27.5% to 21.6% in 2025 (20-F) [src:PDD-20F-FY2025#p103] and rose slightly year on year to 21.7% in the first half of 2026 (21.0% a year earlier, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1], which is a margin concession, not a peak in pricing power; the current readings are online marketing services and others revenue +3.5% year on year in Q2 2026 [src:PDD-6K-2026-08-25#EX-99.1], and a TTM operating margin (to Q2 2026) of 21.9% (20-F basis, or 22.2% adding up the earnings releases quarter by quarter, which excludes the April 2026 penalty, see F7) [src:PDD-20F-FY2025#p103] [src:PDD-6K-2026-03-26#EX-99.1]."
       source: PDD-RPT1-2026-09-16#p10
     - id: P3
-      claim: "净金融资产 5,016 亿元（739 亿美元，2026-06-30，本档案按资产负债表科目计算，见 F3）[src:PDD-6K-2026-08-25#EX-99.1] 不会被毁灭，并终将有通道到达外部股东 [src:PDD-RPT1-2026-09-16#p7]；这是证据最弱的一条：2023–2025 年没有任何子公司向上市主体分红或作其他分配，上市主体与子公司之间的资金只以贷款与还款的形式往来（三年里子公司向上市主体还款 105.7 亿、4.7 亿、336.6 亿元，上市主体向子公司放贷 17.5 亿、4.2 亿、284.8 亿元）[src:PDD-20F-FY2025#p16]；截至 2025-12-31，境内子公司、VIE 及其子公司的受限净资产为 1,259 亿元（基准日与上面的 5,016 亿元不同）[src:PDD-20F-FY2025#p16]。论点落在「子公司不分配、股东无返还」，不是「现金上不去」。"
+      claim: "Net financial assets of RMB 501.6 billion ($73.9 billion, 2026-06-30, this archive's calculation from balance-sheet line items, see F3) [src:PDD-6K-2026-08-25#EX-99.1] will not be destroyed and will eventually have a channel to reach outside shareholders [src:PDD-RPT1-2026-09-16#p7]; this is the pillar with the weakest evidence: in 2023–2025 no subsidiary paid dividends or made other distributions to the listed entity, and funds between the listed entity and its subsidiaries moved only as loans and repayments (over the three years, subsidiaries repaid RMB 10.57 billion, RMB 470 million and RMB 33.66 billion to the listed entity, and the listed entity lent RMB 1.75 billion, RMB 420 million and RMB 28.48 billion to subsidiaries) [src:PDD-20F-FY2025#p16]; as of 2025-12-31, the restricted net assets of the PRC subsidiaries, the VIE and its subsidiaries were RMB 125.9 billion (a different reference date from the RMB 501.6 billion above) [src:PDD-20F-FY2025#p16]. The thesis rests on “subsidiaries do not distribute, shareholders get no returns”, not on “cash cannot move up”."
       source: PDD-RPT1-2026-09-16#p18
     - id: P4
-      claim: "经营者能干且与监管的关系不走向二元性失效：2020→2025 年，销售费用率从 69.2% 降到 29.0%，收入同期做到原来的 7.3 倍（本档案计算）[src:PDD-6K-2022-03-22#EX-99.1] [src:PDD-20F-FY2025#p153]；VIE、审计检查与平台规则都没有断裂，执法现场的姿态不再恶化。"
+      claim: "The operators are capable, and the relationship with regulators does not head toward a binary failure: from 2020 to 2025, the sales and marketing expense ratio fell from 69.2% to 29.0% while revenue grew 7.3-fold over the same period (this archive's calculation) [src:PDD-6K-2022-03-22#EX-99.1] [src:PDD-20F-FY2025#p153]; the VIE, audit inspections and platform rules have not broken, and the company's conduct during enforcement does not get worse."
       source: PDD-RPT1-2026-09-16#p3
     - id: P5
-      claim: "第二曲线不毁掉资本回报：Temu 能在关税重置与 DSA 之下自持，新拼姆不把公司拖成低回报的重资产零售商。公司在 2026-05-27 的一季报中称将投入大量资源建设自有品牌（first-party brand）业务 [src:PDD-6K-2026-05-28#EX-99.1]，但没有点名新拼姆，也没有披露金额与会计处理；新拼姆三年计划投入 1,000 亿元只见于媒体报道（仅 L2，未见一手数据）[src:PDD-RPT1-2026-09-16#p5]。新拼姆是否就是这项业务的载体、是否买断持货，报告判为无法区分 [src:PDD-RPT1-2026-09-16#p6]，要看 2026 年三季报起资产负债表是否出现存货科目。"
+      claim: "The second curve does not destroy returns on capital: Temu can sustain itself under the tariff reset and the DSA, and Xinpinmu does not drag the company into becoming a low-return, asset-heavy retailer. In its first-quarter earnings release of 2026-05-27, the company said it would commit significant resources to building a first-party brand business [src:PDD-6K-2026-05-28#EX-99.1], but it did not name Xinpinmu or disclose an amount or the accounting treatment; the three-year RMB 100 billion investment plan for Xinpinmu appears only in media reports (L2 only, no primary data seen) [src:PDD-RPT1-2026-09-16#p5]. Whether Xinpinmu is the vehicle for this business, and whether it buys and holds inventory outright, the report judges impossible to tell [src:PDD-RPT1-2026-09-16#p6], and the test is whether an inventory line appears on the balance sheet from the Q3 2026 results on."
       source: PDD-RPT1-2026-09-16#p5
   permanent_loss_paths:
-    - "现金永远到不了外部股东：截至 2025-12-31，上市主体（PDD Holdings Inc.）自身的现金、现金等价物、受限资金与短期投资只有 4,599 万元 [src:PDD-20F-FY2025#p18]，境内子公司、VIE 及其子公司的受限净资产为 1,259 亿元 [src:PDD-20F-FY2025#p16]；2023–2025 年子公司没有向上市主体分红或作其他分配，资金只以贷款与还款的形式往来（2025 年子公司向上市主体还款 336.6 亿元，上市主体向子公司放贷 284.8 亿元）[src:PDD-20F-FY2025#p16]，上市以来也没有任何股东返还 [src:PDD-20F-FY2025#p17]；若制度或意愿让净金融资产永久留在境内并被低回报地消耗，外部股东拥有的只是一台不向所有者分配的机器。"
-    - "排序权外移：内容电商把发现、购物代理把比价搬出平台，国内在线营销收入由停滞转为持续负增长 [src:PDD-RPT1-2026-09-16#p19]；租金来源离开它的地盘，结局不是倒闭，而是被绕开、变得无关紧要。"
-    - "制度的二元性失效：VIE 被认定无效、审计检查再度中断导致退市，或平台与价格规则被严格执行、营业利润率被压到制度收口路径的终点 13% 左右 [src:PDD-RPT1-2026-09-16#p22]；利润原本由监管许可而非护城河给出。"
-    - "重资产迷失：若新拼姆确为自营，它把高毛利的广告生意换成利润率接近京东的自营线（京东 2026 年二季度集团营业利润率 1.3%、京东零售经营利润率 4.6%，京东不单独披露自营利润率 [src:JD-6K-2026-08-13#EX-99.1]），并与付广告费的第三方商家直接竞争 [src:PDD-RPT1-2026-09-16#p13]，最终以库存减值或无声退出收场，资本被永久消耗；报告判断这条路径只在新拼姆是买断包销的自营时成立 [src:PDD-RPT1-2026-09-16#p6]。"
-    - "执法姿态恶化：市场监管总局 2026-04-17 的处罚决定书（国市监处罚〔2026〕22 号）记载，当事人在调查中多次无正当理由拒绝提供材料、信息或提供虚假材料、信息，甚至采用暴力、软对抗等手段阻碍监管执法 [src:SAMR-CF-2026-22]；若在下一次监管边界移动时重演，代价不再是一张罚单，而是能否以现有形态继续经营。"
+    - "Cash never reaches outside shareholders: as of 2025-12-31, the listed entity (PDD Holdings Inc.) itself held only RMB 45.99 million of cash, cash equivalents, restricted cash and short-term investments [src:PDD-20F-FY2025#p18], and the restricted net assets of the PRC subsidiaries, the VIE and its subsidiaries were RMB 125.9 billion [src:PDD-20F-FY2025#p16]; in 2023–2025 subsidiaries paid no dividends and made no other distributions to the listed entity, and funds moved only as loans and repayments (in 2025 subsidiaries repaid RMB 33.66 billion to the listed entity, and the listed entity lent RMB 28.48 billion to subsidiaries) [src:PDD-20F-FY2025#p16], and there have been no shareholder returns of any kind since listing [src:PDD-20F-FY2025#p17]; if the institutional regime or the company's own choice keeps net financial assets in China permanently, to be consumed at low returns, what outside shareholders own is only a machine that does not distribute to its owners."
+    - "Ranking power moves elsewhere: content commerce takes discovery, and shopping agents take price comparison, off the platform, and domestic online marketing revenue turns from stagnation to sustained decline [src:PDD-RPT1-2026-09-16#p19]; the source of the rent leaves its territory, and the end is not bankruptcy but being bypassed and becoming irrelevant."
+    - "Binary institutional failure: the VIE is ruled invalid, audit inspections break down again and lead to delisting, or platform and pricing rules are strictly enforced and the operating margin is pushed down to about 13%, the end point of the institutional tightening path [src:PDD-RPT1-2026-09-16#p22]; the profits were granted by regulatory permission rather than by a moat in the first place."
+    - "Lost in heavy assets: if Xinpinmu is indeed self-operated, it swaps a high-gross-margin advertising business for a self-operated line with margins close to JD.com's (in Q2 2026 JD's group operating margin was 1.3% and JD Retail's operating margin 4.6%, and JD does not disclose a separate self-operated margin [src:JD-6K-2026-08-13#EX-99.1]), and competes directly with the third-party merchants who pay it advertising fees [src:PDD-RPT1-2026-09-16#p13], ending in inventory write-downs or a silent exit, with capital permanently consumed; the report judges that this path holds only if Xinpinmu is a self-operated business that buys goods outright and bears the sales risk [src:PDD-RPT1-2026-09-16#p6]."
+    - "Enforcement conduct gets worse: the penalty decision of the State Administration for Market Regulation (SAMR) of 2026-04-17 (Guo Shi Jian Chu Fa [2026] No. 22) records that during the investigation the party repeatedly refused without good reason to provide materials and information, or provided false materials and information, and even used violence, soft resistance and other means to obstruct regulatory enforcement [src:SAMR-CF-2026-22]; if this recurs the next time the regulatory boundary moves, the cost will no longer be a fine but whether the company can go on operating in its present form."
 
-# 基线事实：一手文件的原数（PDD-20F-FY2025 以千元或千股列示，季度 6-K 以百万元列示，照录原值）与本档案按一手原数计算的读数；
-# 报告（PDD-RPT1-2026-09-16）的读数只作指路或对照，与一手不同处在 note 中并列。
+# Baseline facts: the original figures of primary filings (PDD-20F-FY2025 reports in RMB thousand or thousand shares, the quarterly 6-Ks in RMB million; values copied as printed) and readings this archive calculated from those figures;
+# the report's (PDD-RPT1-2026-09-16) readings serve only as pointers or for comparison, and where they differ from the primary filings, both are given in the note.
 baseline_facts:
-  - {id: F1, label: 经营性投入资本（本档案按资产负债表科目归类计算，归类沿用报告，公司未披露该口径）, value: -1829, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "算式（百万元）：经营性应收与预付 23,092（网上支付平台应收 6,079＋关联方应收 8,432＋预付及其他流动资产 8,581）＋物业设备及软件净值 4,752＋使用权资产 4,316 − 经营性应付 210,259（关联方应付 1,266＋客户预收及递延收入 3,641＋应付商家 109,924＋应计费用及其他负债 76,883＋商家保证金 18,545）− 租赁负债 4,844（流动 2,455＋非流动 2,389）＝ −182,943 [src:PDD-6K-2026-08-25#EX-99.1]；科目归类见报告附录二 [src:PDD-RPT1-2026-09-16#p30]"}
-  - {id: F2, label: 商家浮存（应付商家＋商家保证金）, value: 1285, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "109,924＋18,545＝128,469 百万元（本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-  - {id: F3, label: 净金融资产（毛金融资产减未被受限资金覆盖的浮存，本档案按资产负债表科目计算，口径沿用报告）, value: 5016, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "算式（百万元）：现金及现金等价物 128,918＋短期投资 327,496＋其他非流动资产 96,383＝552,797，减去未被受限资金覆盖的浮存（128,469 − 受限资金 77,274＝51,195），得 501,602 [src:PDD-6K-2026-08-25#EX-99.1]；其他非流动资产整行计入，新闻稿称其主要是定期存款、持有至到期与可供出售债券 [src:PDD-6K-2026-08-25#EX-99.1]；按公告的便利折算率 6.7851 折合 739 亿美元 [src:PDD-6K-2026-08-25#EX-99.1]"}
-  - {id: F4, label: 2025 年总收入, value: 431845713, unit: 千元, period: FY2025, source: PDD-20F-FY2025#p101}
-  - {id: F5, label: 2025 年在线营销服务及其他收入、交易服务收入, value: [217783028, 214062685], unit: 千元, period: FY2025, source: PDD-20F-FY2025#p101}
-  - {id: F6, label: 在线营销服务及其他收入同比（集团口径）, value: 3.5, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "收入附注 57,637 ÷ 55,703 − 1＝3.47%（百万元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-  - {id: F7, label: 营业利润率（过去四个季度，20-F 口径）, value: 21.9, unit: "%", period: TTM 至 FY2026Q2, source: PDD-20F-FY2025#p103, note: "本档案计算：TTM 营业利润＝FY2025 营业利润 93,102.1（20-F，含 2026 年 4 月的境内罚没）− 2025 年上半年 41,879＋2026 年上半年 47,330＝98,553.1 百万元，TTM 收入＝431,845.7 − 199,657＋218,587＝450,775.7 百万元 [src:PDD-20F-FY2025#p103] [src:PDD-6K-2026-08-25#EX-99.1]；各季口径：2025Q3＋2025Q4 由 20-F 全年数减 2025 年上半年的公告数得出，2026Q1＋2026Q2 取公告数。按业绩公告逐季相加（2025Q4 取 2026-03-25 公告里罚没计入之前的数字）为 100,075.1 ÷ 450,775.7＝22.2% [src:PDD-6K-2026-03-26#EX-99.1] [src:PDD-6K-2026-08-25#EX-99.1]，报告用的是这一口径 [src:PDD-RPT1-2026-09-16#p21]；两者之差 1,521.9 百万元即 F9 所说的罚没 [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]"}
-  - {id: F8, label: 单季营业利润率, value: 24.7, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "27,764 ÷ 112,358（百万元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-  - {id: F9, label: 营业利润（2024、2025 年）, value: [108422862, 93102131], unit: 千元, period: FY2024–FY2025, source: PDD-20F-FY2025#p103, note: "20-F 所列营业利润率为 27.5% 与 21.6% [src:PDD-20F-FY2025#p103]；报告第 8 页写 2025 年为 21.9% [src:PDD-RPT1-2026-09-16#p8]，取自 2025 年四季度业绩公告，公告的 2025 年营业利润为 94,624,061 千元 [src:PDD-6K-2026-03-26#EX-99.1]；两者相差 1,521,930 千元，全部在一般及行政费用（公告 6,635,803 千元，20-F 8,157,733 千元，本档案计算）[src:PDD-6K-2026-03-26#EX-99.1] [src:PDD-20F-FY2025#p153]，2025-12-31 的应计费用及其他负债与留存收益也差同一数额 [src:PDD-20F-FY2025#p151] [src:PDD-6K-2026-08-25#EX-99.1]。这一数额等于市场监管总局 2026-04-17 处罚决定书的罚没合计 1,521,930,222.91 元（罚款 1,514,080,000 元与 2,000,000 元，没收违法所得 5,850,222.91 元）[src:SAMR-CF-2026-22]；20-F 记载 2026 年 4 月对拼多多平台运营方约 15 亿元的罚款，公司已接受处罚 [src:PDD-20F-FY2025#p28] [src:PDD-20F-FY2025#p125]。20-F 没有写明这笔罚没的入账年度，本档案据上述差额推断它已计提在 FY2025 的报表中 [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]"}
-  - {id: F10, label: 2025 年销售与营销费用及其占收入比, value: 1253, unit: 亿元, period: FY2025, source: PDD-20F-FY2025#p153, note: "125,287,932 千元，占收入 431,845,713 千元的 29.0%（本档案计算）[src:PDD-20F-FY2025#p153]"}
-  - {id: F11, label: 经营活动现金流净额（2025 年）, value: 106938690, unit: 千元, period: FY2025, source: PDD-20F-FY2025#p157}
-  - {id: F12, label: 购置物业、设备、软件及无形资产（2025 年）, value: 1145077, unit: 千元, period: FY2025, source: PDD-20F-FY2025#p157}
-  - {id: F13, label: 净利润（2025 年）, value: 97842539, unit: 千元, period: FY2025, source: PDD-20F-FY2025#p157, note: "报告第 8 页的 2025 年经营现金流对净利润为 1.08 倍 [src:PDD-RPT1-2026-09-16#p8]，分母是业绩公告的净利润 99,364,469 千元（106,938,690 ÷ 99,364,469，本档案计算）[src:PDD-6K-2026-03-26#EX-99.1]；按 F11 ÷ F13 计算为 1.09 倍 [src:PDD-20F-FY2025#p157]；两个净利润相差 1,521,930 千元（本档案计算）[src:PDD-6K-2026-03-26#EX-99.1] [src:PDD-20F-FY2025#p157]，即 F9 所说的罚没"}
-  - {id: F14, label: 加权平均摊薄普通股数（2023、2024、2025 年）, value: [5839630, 5916592, 5929576], unit: 千股, period: FY2023–FY2025, source: PDD-20F-FY2025#p183, note: "FY2023、FY2024 另含可转债转股假设 36,300 与 16,273 千股 [src:PDD-20F-FY2025#p183]"}
-  - {id: F15, label: 上市主体（PDD Holdings Inc.）自身的现金、现金等价物、受限现金与短期投资, value: 45987, unit: 千元, as_of: 2025-12-31, source: PDD-20F-FY2025#p18}
-  - {id: F16, label: 境内子公司、VIE 及其子公司的受限净资产, value: 125917402, unit: 千元, as_of: 2025-12-31, source: PDD-20F-FY2025#p183}
-  - {id: F17, label: 2023–2025 年子公司向上市主体的分红或其他分配, value: 无, source: PDD-20F-FY2025#p16}
-  - {id: F18, label: 员工总数, value: 25474, unit: 人, as_of: 2025-12-31, source: PDD-20F-FY2025#p120}
-  - {id: F19, label: 黄峥关联实体、腾讯关联实体实益持有的 A 类普通股, value: [1409744080, 783468116], unit: 股, as_of: 2026-03-18, source: PDD-20F-FY2025#p121, note: "分别占 24.8% 与 13.8% [src:PDD-20F-FY2025#p121]；腾讯一组的股数照录腾讯 2021-03-24 联合提交的 Schedule 13D/A [src:PDD-20F-FY2025#p122]，年报受益所有权表对腾讯不是独立的年度读数"}
-  - {id: F20, label: 物业设备及软件净值（无存货科目）, value: 47.52, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "4,752 百万元，资产负债表的资产方没有存货科目 [src:PDD-6K-2026-08-25#EX-99.1]；2025 年底为 13.06 亿元 [src:PDD-20F-FY2025#p151]"}
-  - {id: F21, label: 2026 年上半年「其他收入／损失净额」（构成未披露）, value: -94.30, unit: 亿元, period: FY2026H1, source: PDD-6K-2026-08-25#EX-99.1, note: "Other income/(loss), net 上半年 (9,430) 百万元，其中二季度 (7,399) 百万元 [src:PDD-6K-2026-08-25#EX-99.1]；附件 99.1 只列金额，没有构成或原因的说明 [src:PDD-6K-2026-08-25#EX-99.1]"}
-  - {id: F22, label: 2026 年两张罚单（境内罚没＋欧盟 DSA 罚款）占 2025 年营业利润的比例, value: 3.3, unit: "%", period: 2026 年 4–5 月, source: SAMR-CF-2026-22, note: "按处罚决定日计入 FY2026，口径见 PDD-Q14：境内罚没合计 1,521,930,222.91 元（2026-04-17）[src:SAMR-CF-2026-22]，欧盟委员会罚款 2 亿欧元（2026-05-28）[src:EC-IP-26-1178]，按决定日的人民币汇率中间价 7.9121 元／欧元折合 15.82 亿元 [src:CFETS-CCPR-2026-05-28]；合计 31.04 亿元，除以 20-F 的 2025 年营业利润 931.02 亿元为 3.33%（本档案计算）[src:PDD-20F-FY2025#p103]，按业绩公告的 946.24 亿元为 3.28% [src:PDD-6K-2026-03-26#EX-99.1]。报告按约 7.9 元／欧元估算，合计约 31 亿元 [src:PDD-RPT1-2026-09-16#p26]"}
+  - {id: F1, label: "Operating invested capital (this archive's calculation by classifying balance-sheet line items, with the classification following the report, a measure the company does not disclose)", value: -1829, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "Formula (RMB million): operating receivables and prepayments 23,092 (receivables from online payment platforms 6,079 + amounts due from related parties 8,432 + prepayments and other current assets 8,581) + property, equipment and software, net 4,752 + right-of-use assets 4,316 − operating payables 210,259 (amounts due to related parties 1,266 + customer advances and deferred revenues 3,641 + payable to merchants 109,924 + accrued expenses and other liabilities 76,883 + merchant deposits 18,545) − lease liabilities 4,844 (current 2,455 + non-current 2,389) = −182,943 [src:PDD-6K-2026-08-25#EX-99.1]; the classification of line items is in appendix II of the report [src:PDD-RPT1-2026-09-16#p30]"}
+  - {id: F2, label: "Merchant float (payable to merchants + merchant deposits)", value: 1285, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "109,924 + 18,545 = RMB 128,469 million (this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+  - {id: F3, label: "Net financial assets (gross financial assets less the float not covered by restricted cash, this archive's calculation from balance-sheet line items, on the report's definition)", value: 5016, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "Formula (RMB million): cash and cash equivalents 128,918 + short-term investments 327,496 + other non-current assets 96,383 = 552,797, less the float not covered by restricted cash (128,469 − restricted cash 77,274 = 51,195), gives 501,602 [src:PDD-6K-2026-08-25#EX-99.1]; other non-current assets are included as a whole line, and the press release says they consist mainly of time deposits and held-to-maturity and available-for-sale debt securities [src:PDD-6K-2026-08-25#EX-99.1]; at the release's convenience translation rate of 6.7851, this is $73.9 billion [src:PDD-6K-2026-08-25#EX-99.1]"}
+  - {id: F4, label: "Total revenues, 2025", value: 431845713, unit: RMB thousand, period: FY2025, source: PDD-20F-FY2025#p101}
+  - {id: F5, label: "Online marketing services and others revenue, and transaction services revenue, 2025", value: [217783028, 214062685], unit: RMB thousand, period: FY2025, source: PDD-20F-FY2025#p101}
+  - {id: F6, label: "Online marketing services and others revenue, year on year (group level)", value: 3.5, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "Revenue note: 57,637 ÷ 55,703 − 1 = 3.47% (RMB million, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+  - {id: F7, label: "Operating margin (trailing four quarters, 20-F basis)", value: 21.9, unit: "%", period: TTM to FY2026Q2, source: PDD-20F-FY2025#p103, note: "This archive's calculation: TTM operating profit = FY2025 operating profit 93,102.1 (20-F, including the April 2026 domestic penalty) − first half of 2025 41,879 + first half of 2026 47,330 = RMB 98,553.1 million, and TTM revenue = 431,845.7 − 199,657 + 218,587 = RMB 450,775.7 million [src:PDD-20F-FY2025#p103] [src:PDD-6K-2026-08-25#EX-99.1]; basis of each quarter: 2025Q3 + 2025Q4 is the 20-F full-year figure less the first half of 2025 as released, and 2026Q1 + 2026Q2 are the released figures. Adding up the earnings releases quarter by quarter (2025Q4 taken from the 2026-03-25 release, before the penalty was booked) gives 100,075.1 ÷ 450,775.7 = 22.2% [src:PDD-6K-2026-03-26#EX-99.1] [src:PDD-6K-2026-08-25#EX-99.1], the basis the report uses [src:PDD-RPT1-2026-09-16#p21]; the difference between the two, RMB 1,521.9 million, is the penalty described in F9 [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]"}
+  - {id: F8, label: "Quarterly operating margin", value: 24.7, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "27,764 ÷ 112,358 (RMB million, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+  - {id: F9, label: "Operating profit (2024, 2025)", value: [108422862, 93102131], unit: RMB thousand, period: FY2024–FY2025, source: PDD-20F-FY2025#p103, note: "The 20-F gives operating margins of 27.5% and 21.6% [src:PDD-20F-FY2025#p103]; page 8 of the report gives 21.9% for 2025 [src:PDD-RPT1-2026-09-16#p8], taken from the Q4 2025 earnings release, which gives 2025 operating profit of RMB 94,624,061 thousand [src:PDD-6K-2026-03-26#EX-99.1]; the two differ by RMB 1,521,930 thousand, all of it in general and administrative expenses (RMB 6,635,803 thousand in the release, RMB 8,157,733 thousand in the 20-F, this archive's calculation) [src:PDD-6K-2026-03-26#EX-99.1] [src:PDD-20F-FY2025#p153], and accrued expenses and other liabilities and retained earnings at 2025-12-31 also differ by the same amount [src:PDD-20F-FY2025#p151] [src:PDD-6K-2026-08-25#EX-99.1]. This amount equals the total penalty of RMB 1,521,930,222.91 in SAMR's penalty decision of 2026-04-17 (fines of RMB 1,514,080,000 and RMB 2,000,000, and confiscated illegal gains of RMB 5,850,222.91) [src:SAMR-CF-2026-22]; the 20-F records a fine of about RMB 1.5 billion imposed in April 2026 on the operator of the Pinduoduo platform, which the company has accepted [src:PDD-20F-FY2025#p28] [src:PDD-20F-FY2025#p125]. The 20-F does not state the year in which the penalty was booked, and from the differences above this archive infers that it was accrued in the FY2025 financial statements [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]"}
+  - {id: F10, label: "Sales and marketing expenses in 2025, and their share of revenue", value: 1253, unit: RMB 100 million, period: FY2025, source: PDD-20F-FY2025#p153, note: "RMB 125,287,932 thousand, 29.0% of revenue of RMB 431,845,713 thousand (this archive's calculation) [src:PDD-20F-FY2025#p153]"}
+  - {id: F11, label: "Net cash from operating activities (2025)", value: 106938690, unit: RMB thousand, period: FY2025, source: PDD-20F-FY2025#p157}
+  - {id: F12, label: "Purchase of property, equipment and software and intangible assets (2025)", value: 1145077, unit: RMB thousand, period: FY2025, source: PDD-20F-FY2025#p157}
+  - {id: F13, label: "Net income (2025)", value: 97842539, unit: RMB thousand, period: FY2025, source: PDD-20F-FY2025#p157, note: "Page 8 of the report gives 2025 operating cash flow at 1.08x net income [src:PDD-RPT1-2026-09-16#p8], with the earnings release's net income of RMB 99,364,469 thousand as the denominator (106,938,690 ÷ 99,364,469, this archive's calculation) [src:PDD-6K-2026-03-26#EX-99.1]; F11 ÷ F13 gives 1.09x [src:PDD-20F-FY2025#p157]; the two net income figures differ by RMB 1,521,930 thousand (this archive's calculation) [src:PDD-6K-2026-03-26#EX-99.1] [src:PDD-20F-FY2025#p157], which is the penalty described in F9"}
+  - {id: F14, label: "Weighted average diluted ordinary shares (2023, 2024, 2025)", value: [5839630, 5916592, 5929576], unit: thousand shares, period: FY2023–FY2025, source: PDD-20F-FY2025#p183, note: "FY2023 and FY2024 also include 36,300 and 16,273 thousand shares from the assumed conversion of convertible bonds [src:PDD-20F-FY2025#p183]"}
+  - {id: F15, label: "Cash, cash equivalents, restricted cash and short-term investments of the listed entity (PDD Holdings Inc.) itself", value: 45987, unit: RMB thousand, as_of: 2025-12-31, source: PDD-20F-FY2025#p18}
+  - {id: F16, label: "Restricted net assets of the PRC subsidiaries, the VIE and its subsidiaries", value: 125917402, unit: RMB thousand, as_of: 2025-12-31, source: PDD-20F-FY2025#p183}
+  - {id: F17, label: "Dividends or other distributions from subsidiaries to the listed entity, 2023–2025", value: none, source: PDD-20F-FY2025#p16}
+  - {id: F18, label: "Total employees", value: 25474, unit: people, as_of: 2025-12-31, source: PDD-20F-FY2025#p120}
+  - {id: F19, label: "Class A ordinary shares beneficially owned by entities affiliated with Zheng Huang and by entities affiliated with Tencent", value: [1409744080, 783468116], unit: shares, as_of: 2026-03-18, source: PDD-20F-FY2025#p121, note: "24.8% and 13.8% respectively [src:PDD-20F-FY2025#p121]; the Tencent figure copies the Schedule 13D/A that Tencent filed jointly on 2021-03-24 [src:PDD-20F-FY2025#p122], so for Tencent the annual report's beneficial ownership table is not an independent annual reading"}
+  - {id: F20, label: "Property, equipment and software, net (no inventory line)", value: 47.52, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "RMB 4,752 million, and the asset side of the balance sheet has no inventory line [src:PDD-6K-2026-08-25#EX-99.1]; RMB 1.306 billion at the end of 2025 [src:PDD-20F-FY2025#p151]"}
+  - {id: F21, label: "“Other income/(loss), net” in the first half of 2026 (composition not disclosed)", value: -94.30, unit: RMB 100 million, period: FY2026H1, source: PDD-6K-2026-08-25#EX-99.1, note: "Other income/(loss), net was (9,430) for the first half, of which (7,399) in the second quarter (RMB million) [src:PDD-6K-2026-08-25#EX-99.1]; Exhibit 99.1 gives only the amounts, with no explanation of the composition or cause [src:PDD-6K-2026-08-25#EX-99.1]"}
+  - {id: F22, label: "The two 2026 penalties (the domestic penalty + the EU DSA fine) as a share of 2025 operating profit", value: 3.3, unit: "%", period: April–May 2026, source: SAMR-CF-2026-22, note: "Counted in FY2026 by decision date, on the basis set out in PDD-Q14: the domestic penalty totals RMB 1,521,930,222.91 (2026-04-17) [src:SAMR-CF-2026-22], and the European Commission's fine is €200 million (2026-05-28) [src:EC-IP-26-1178], which at the RMB central parity rate on the decision date, RMB 7.9121 per euro, is RMB 1.582 billion [src:CFETS-CCPR-2026-05-28]; the total of RMB 3.104 billion divided by the 20-F's 2025 operating profit of RMB 93.102 billion is 3.33% (this archive's calculation) [src:PDD-20F-FY2025#p103], or 3.28% using the earnings release's RMB 94.624 billion [src:PDD-6K-2026-03-26#EX-99.1]. The report estimates at about RMB 7.9 per euro, for a total of about RMB 3.1 billion [src:PDD-RPT1-2026-09-16#p26]"}
 
 tests:
-  # ———— 林奇模板：stalwart（含 _common 时效测试）————
+  # ---------- Lynch template: stalwart (with the _common staleness tests) ----------
   - id: PDD-Q1
     type: quantitative
-    claim: 增长没有滑出稳定增长型的区间
+    claim: "Growth has not slipped out of the stalwart range"
     origin: template:stalwart
     severity: watch
     covers: [growth]
     pillar: P5
     metric_def:
       id: revenue_yoy_6k
-      description: 总收入同比增速；外国私人发行人的季度数据只在 6-K 业绩公告中，没有 XBRL
+      description: "Total revenue growth, year on year; a foreign private issuer's quarterly figures are only in the 6-K earnings release, with no XBRL"
       unit: "%"
       frequency: quarter
       data: filing_text
       formula: revenue_t / revenue_{t-4q} - 1
-      where: 季度 6-K 附件 99.1 未经审计简明合并损益表的 Revenues 行（新闻稿正文称 Total revenues，收入附注的合计行为 Total）；年度可用 20-F XBRL 核对
-    fail_if: 连续 4 个季度低于 5%
+      where: "The Revenues line of the unaudited condensed consolidated statements of income in Exhibit 99.1 of the quarterly 6-K (the press release text calls it Total revenues, and the total line of the revenue note is Total); annual figures can be checked against the 20-F XBRL"
+    fail_if: "below 5% for 4 consecutive quarters"
     rule: {op: "<", threshold: 5, unit: "%", consecutive: 4, period: quarter}
-    warn_if: 连续 2 个季度低于 8%
+    warn_if: "below 8% for 2 consecutive quarters"
     warn_rule: {op: "<", threshold: 8, unit: "%", consecutive: 2, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 8.1, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "损益表 Revenues 112,358 ÷ 103,985 − 1＝8.05%，保留一位小数为 8.1%（百万元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]；公司新闻稿写 an increase of 8%（公司取整）[src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: "门槛沿用模板；只把数据口径从 XBRL 改为 6-K 正文，因为 PDD 为外国私人发行人。增长读数应与 PDD-Q5、PDD-Q19 并读：2026 年二季度收入增量 8,373 百万元中，交易服务贡献 6,439 百万元（约四分之三），在线营销服务及其他贡献 1,934 百万元（23%，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]；公司不披露地区拆分，报告据交易服务的增速推断总增速几乎全部来自海外 [src:PDD-RPT1-2026-09-16#p11]。"
+    baseline: {value: 8.1, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "Income statement Revenues 112,358 ÷ 103,985 − 1 = 8.05%, or 8.1% to one decimal (RMB million, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]; the company's press release says an increase of 8% (company's rounding) [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Thresholds follow the template; only the data source changes from XBRL to the 6-K text, because PDD is a foreign private issuer. Read the growth reading together with PDD-Q5 and PDD-Q19: of the Q2 2026 revenue increase of RMB 8,373 million, transaction services contributed RMB 6,439 million (about three quarters) and online marketing services and others RMB 1,934 million (23%, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]; the company does not disclose a regional split, and from the growth of transaction services the report infers that almost all of the total growth came from overseas [src:PDD-RPT1-2026-09-16#p11]."
 
   - id: PDD-Q2
     type: quantitative
-    claim: 经营性投入资本保持为负，增长继续由商家的钱而不是股东的钱驱动
+    claim: "Operating invested capital stays negative, and growth continues to be driven by merchants' money rather than shareholders'"
     origin: manual
     severity: watch
     covers: [returns_on_capital, moat]
     pillar: P1
     metric_def:
       id: operating_invested_capital
-      description: 经营性投入资本 = 经营性应收与预付 + 物业设备及软件净值 + 使用权资产 + 存货（如出现）− 经营性应付（应付商家、商家保证金、应计费用及其他经营性负债等）− 租赁负债；科目归类沿用 02 报告
-      unit: 亿元
+      description: "Operating invested capital = operating receivables and prepayments + property, equipment and software, net + right-of-use assets + inventory (if any) − operating payables (payable to merchants, merchant deposits, accrued expenses and other operating liabilities, etc.) − lease liabilities; line items classified as in the 02 report"
+      unit: RMB 100 million
       frequency: quarter
       data: filing_text
       formula: operating_receivables_prepayments + ppe_rou (+ inventory) - operating_payables - lease_liabilities
-      where: 季度 6-K 附件 99.1 的未经审计合并资产负债表
-    fail_if: 经营性投入资本转为正值，连续 2 个季度
-    rule: {op: ">", threshold: 0, unit: 亿元, consecutive: 2, period: quarter}
+      where: "The unaudited consolidated balance sheet in Exhibit 99.1 of the quarterly 6-K"
+    fail_if: "operating invested capital turns positive, for 2 consecutive quarters"
+    rule: {op: ">", threshold: 0, unit: RMB 100 million, consecutive: 2, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: -1829, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "本档案按资产负债表科目计算，算式见 F1；口径是报告自定的，公司未披露 [src:PDD-RPT1-2026-09-16#p30]"}
-    note: "替代模板 Q-returns（ROIC 连续 2 年低于 12%）：投入资本为负时常规 ROIC 没有数学意义 [src:PDD-RPT1-2026-09-16#p6]。改测负投入资本是否翻正。报告的测算以新拼姆三年 1,000 亿元全额计入投入资本为前提（−1,829＋1,000＝−829 亿元），在此之上翻正还需浮存再降 64.5% [src:PDD-RPT1-2026-09-16#p7]；1,000 亿元只见于媒体报道（仅 L2，未见一手数据），这里只作假设 [src:PDD-RPT1-2026-09-16#p5]，报告另处所写的「千亿扶持」三年 1,000 亿元是否同一笔，其二手来源没有区分 [src:PDD-RPT1-2026-09-16#p8]。按 2026-06-30 的资产负债表、其他科目不变，浮存降到零投入资本也仍为负（−182,943＋128,469＝−54,474 百万元，约 −545 亿元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]，单靠浮存下降不会翻正。连续期数沿用模板的 2 期，频率改为季度。若转正，恢复模板的 ROIC 测试。"
+    baseline: {value: -1829, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "This archive's calculation from balance-sheet line items, formula in F1; the definition is the report's own, and the company does not disclose it [src:PDD-RPT1-2026-09-16#p30]"}
+    note: "Replaces the template's Q-returns (ROIC below 12% for 2 consecutive years): with negative invested capital, conventional ROIC has no mathematical meaning [src:PDD-RPT1-2026-09-16#p6]. The test instead checks whether negative invested capital turns positive. The report's estimate assumes that Xinpinmu's three-year RMB 100 billion is added in full to invested capital (−1,829 + 1,000 = −RMB 82.9 billion), and on top of that the float would have to fall a further 64.5% for invested capital to turn positive [src:PDD-RPT1-2026-09-16#p7]; the RMB 100 billion appears only in media reports (L2 only, no primary data seen) and is used here only as an assumption [src:PDD-RPT1-2026-09-16#p5], and whether it is the same money as the three-year RMB 100 billion of “hundred-billion support” mentioned elsewhere in the report is not distinguished by its secondary sources [src:PDD-RPT1-2026-09-16#p8]. On the 2026-06-30 balance sheet with other line items unchanged, invested capital would still be negative even if the float fell to zero (−182,943 + 128,469 = −RMB 54,474 million, about −RMB 54.5 billion, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1], so a fall in the float alone would not turn it positive. The number of consecutive periods follows the template's 2, with the frequency changed to quarterly. If it turns positive, the template's ROIC test is restored."
 
   - id: PDD-Q3
     type: quantitative
-    claim: 股本没有被股权激励持续摊薄（公司不回购，模板的回购检验在这里改读摊薄）
+    claim: "The share count is not being steadily diluted by equity incentives (the company does not buy back shares, so the template's buyback check reads dilution here)"
     origin: template:stalwart
     severity: watch
     covers: [capital_allocation]
     pillar: P3
     metric: diluted_shares_yoy
-    fail_if: 连续 2 年大于 0
+    fail_if: "above 0 for 2 consecutive years"
     rule: {op: ">", threshold: 0, unit: "%", consecutive: 2, period: year}
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2027-04
-    baseline: {value: [1.32, 0.22], unit: "%", period: FY2024–FY2025, source: PDD-20F-FY2025#p183, note: "由 F14 的加权平均摊薄股数计算的同比变化（本档案计算）[src:PDD-20F-FY2025#p183]；FY2023、FY2024 的摊薄股数另含可转债转股假设（36,300／16,273 千股）[src:PDD-20F-FY2025#p183]；季度口径的加权平均摊薄股数由 2025 年二季度的 5,928 百万股降到 2026 年二季度的 5,894 百万股 [src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: "门槛沿用模板，只改 claim：公司上市以来零回购 [src:PDD-20F-FY2025#p140] [src:PDD-20F-FY2025#p157] [src:PDD-20F-FY2022#F-11] [src:PDD-WEB-2026-09-24-1]，模板原句「回购在真正缩减股本」在这里无从成立，改为检验股权激励的摊薄是否持续推高股本。股本的来源：2019–2020 年有增发 ADS 与定向增发 [src:PDD-20F-FY2025#p73] [src:PDD-RPT1-2026-09-16#p29]，2021–2025 年新增股份来自股份支付结算与可转债转股（2021 年 62,732,708 股、2023 年 12,642,752 股、2024 年 8,594,700 股），没有现金增发，也没有回购 [src:PDD-20F-FY2025#p154] [src:PDD-20F-FY2025#p155] [src:PDD-20F-FY2022#F-9]。登记时的已知状态（写在首次运行之前）：FY2024、FY2025 两年摊薄股数都上升，按规则已为失败（watch）。处置意见：这是股权激励的摊薄且在放缓，不改变论点（可转债转股的股份在转股前已按假设转股计入摊薄股数）；2025 年摊薄增速的回落中约 0.28 个百分点来自可转债假设转股股数归零（本档案计算）[src:PDD-20F-FY2025#p183]。FY2026 若股数同比下降，本条转为通过，只说明摊薄停止，不代表出现回购，回购与分红由 PDD-Q18 读。年度数据取 20-F 的 XBRL。"
+    baseline: {value: [1.32, 0.22], unit: "%", period: FY2024–FY2025, source: PDD-20F-FY2025#p183, note: "Year-on-year change calculated from the weighted average diluted shares in F14 (this archive's calculation) [src:PDD-20F-FY2025#p183]; diluted shares in FY2023 and FY2024 also include the assumed conversion of convertible bonds (36,300 / 16,273 thousand shares) [src:PDD-20F-FY2025#p183]; on a quarterly basis, weighted average diluted shares fell from 5,928 million in Q2 2025 to 5,894 million in Q2 2026 [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Thresholds follow the template; only the claim changes: the company has made zero buybacks since listing [src:PDD-20F-FY2025#p140] [src:PDD-20F-FY2025#p157] [src:PDD-20F-FY2022#F-11] [src:PDD-WEB-2026-09-24-1], so the template's original wording “buybacks are genuinely shrinking the share count” cannot hold here, and the test instead checks whether dilution from equity incentives keeps pushing the share count up. Where the shares came from: in 2019–2020 there were follow-on ADS offerings and private placements [src:PDD-20F-FY2025#p73] [src:PDD-RPT1-2026-09-16#p29], and in 2021–2025 new shares came from share-based compensation settlements and conversions of convertible bonds (62,732,708 shares in 2021, 12,642,752 in 2023, 8,594,700 in 2024), with no issuance for cash and no buybacks [src:PDD-20F-FY2025#p154] [src:PDD-20F-FY2025#p155] [src:PDD-20F-FY2022#F-9]. Known status at registration (written before the first run): diluted shares rose in both FY2024 and FY2025, so by the rule this is already a failure (watch). Disposition: this is dilution from equity incentives and it is slowing, which does not change the thesis (shares from convertible bond conversions were already counted in diluted shares under the assumed conversion before they converted); about 0.28 percentage points of the slowdown in dilution in 2025 come from the assumed-conversion shares of the convertible bonds falling to zero (this archive's calculation) [src:PDD-20F-FY2025#p183]. If the share count falls year on year in FY2026, this test turns to a pass, which only means dilution has stopped, not that buybacks have started; buybacks and dividends are read by PDD-Q18. Annual data come from the 20-F XBRL."
 
   - id: PDD-Q4
     type: quantitative
-    claim: 利润能变成现金
+    claim: "Profits turn into cash"
     origin: template:stalwart
     severity: watch
     covers: [free_cash_flow]
     pillar: P1
     metric_def:
       id: fcf_conversion_20f
-      description: 自由现金流 ÷ 净利润（GAAP），算法同登记表的 fcf_conversion；自由现金流 = 经营活动现金流净额 − 购置物业、设备、软件及无形资产
+      description: "Free cash flow ÷ net income (GAAP), computed as fcf_conversion in the registry; free cash flow = net cash from operating activities − purchase of property, equipment and software and intangible assets"
       unit: "%"
       frequency: year
       data: filing_text
       formula: (operating_cash_flow - capex) / net_income
-      where: 20-F 合并现金流量表（Consolidated Statements of Cash Flows）的三行：Net cash generated from operating activities、Purchase of property, equipment and software and intangible assets（资本开支，FY2025 为 1,145,077 千元 [src:PDD-20F-FY2025#p157]）、Net income；季度业绩 6-K 的简明现金流量表没有资本开支一行
-    fail_if: 连续 2 年低于 70%
+      where: "Three lines of the 20-F Consolidated Statements of Cash Flows: Net cash generated from operating activities, Purchase of property, equipment and software and intangible assets (capital expenditure, RMB 1,145,077 thousand in FY2025 [src:PDD-20F-FY2025#p157]) and Net income; the condensed cash flow statement in the quarterly earnings 6-K has no capital expenditure line"
+    fail_if: "below 70% for 2 consecutive years"
     rule: {op: "<", threshold: 70, unit: "%", consecutive: 2, period: year}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2027-04
-    baseline: {value: [155.9, 107.6, 108.1], unit: "%", period: FY2023–FY2025, source: PDD-20F-FY2025#p157, note: "自由现金流 ÷ 净利润，由 20-F 合并现金流量表的经营活动现金流、购置物业设备软件及无形资产与净利润计算（本档案计算）[src:PDD-20F-FY2025#p157]。报告用的是经营现金流 ÷ 净利润：2023 年 1.57 倍、2024 年 1.08 倍、2025 年 1.08 倍 [src:PDD-RPT1-2026-09-16#p8]，前两年按 20-F 重算相同 [src:PDD-20F-FY2025#p157]，2025 年的 1.08 倍以业绩公告的净利润为分母 [src:PDD-6K-2026-03-26#EX-99.1]；按 20-F 数字计算 2025 年为 1.09 倍 [src:PDD-20F-FY2025#p157]，差异来自 20-F 计入 FY2025 的罚没（本档案据差额推断），见 F13"}
-    note: "门槛沿用模板；数据口径从 XBRL 改为 20-F 正文：资本开支一行自 FY2021 的 20-F 起不再用 us-gaap:PaymentsToAcquirePropertyPlantAndEquipment 标注，EDGAR 的 XBRL 汇总数据里这一概念最后一期是 FY2020 [src:PDD-WEB-2026-09-24-1]；FY2025 20-F 把这一行标为公司扩展概念 pdd:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets [src:PDD-20F-FY2025#p157]，按登记表 fcf_conversion 的 us-gaap 概念取数会缺资本开支。报告提醒浮存增长在高增长年份贡献巨大，增长放缓后经营现金流对净利润回落到 1 倍附近 [src:PDD-RPT1-2026-09-16#p8]；一手读数只部分支持：2020 年经营现金流 281.97 亿元中，应付商家与商家保证金的增加为 270.20 亿元 [src:PDD-20F-FY2022#F-11]；2023 年经营现金流比净利润多 341.36 亿元，最大来源是应计费用及其他负债增加 342.58 亿元，应付商家与商家保证金只增加 134.44 亿元，2024、2025 年后者分别增加 164.67、165.75 亿元，并未随增速放缓回落 [src:PDD-20F-FY2025#p157]。比值回到 1.08–1.09 倍，主要因为应计费用及其他负债的增加由 2023 年的 342.58 亿元收窄到 2024、2025 年的 137.81、123.60 亿元 [src:PDD-20F-FY2025#p157]，读数时不能把比值回落直接读成浮存减速。"
+    baseline: {value: [155.9, 107.6, 108.1], unit: "%", period: FY2023–FY2025, source: PDD-20F-FY2025#p157, note: "Free cash flow ÷ net income, calculated from operating cash flow, purchase of property, equipment and software and intangible assets, and net income in the 20-F consolidated statements of cash flows (this archive's calculation) [src:PDD-20F-FY2025#p157]. The report uses operating cash flow ÷ net income: 1.57x in 2023, 1.08x in 2024 and 1.08x in 2025 [src:PDD-RPT1-2026-09-16#p8], and the first two recompute the same from the 20-F [src:PDD-20F-FY2025#p157], while the 2025 figure of 1.08x uses the earnings release's net income as the denominator [src:PDD-6K-2026-03-26#EX-99.1]; on the 20-F figures, 2025 is 1.09x [src:PDD-20F-FY2025#p157], the difference coming from the penalty the 20-F booked in FY2025 (this archive's inference from the difference), see F13"}
+    note: "Thresholds follow the template; the data source changes from XBRL to the 20-F text: from the FY2021 20-F on, the capital expenditure line is no longer tagged us-gaap:PaymentsToAcquirePropertyPlantAndEquipment, and the last period of this concept in EDGAR's XBRL summary data is FY2020 [src:PDD-WEB-2026-09-24-1]; the FY2025 20-F tags this line with the company extension concept pdd:PaymentsToAcquirePropertyEquipmentAndSoftwareAndIntangibleAssets [src:PDD-20F-FY2025#p157], so pulling the us-gaap concept of the registry's fcf_conversion would miss capital expenditure. The report notes that float growth contributed hugely in the high-growth years, and that after growth slowed, operating cash flow fell back to about 1x net income [src:PDD-RPT1-2026-09-16#p8]; the primary figures only partly support this: of 2020 operating cash flow of RMB 28.197 billion, the increase in payable to merchants and merchant deposits was RMB 27.020 billion [src:PDD-20F-FY2022#F-11]; in 2023 operating cash flow exceeded net income by RMB 34.136 billion, the largest source being an increase of RMB 34.258 billion in accrued expenses and other liabilities, while payable to merchants and merchant deposits rose only RMB 13.444 billion, and in 2024 and 2025 the latter rose RMB 16.467 billion and RMB 16.575 billion, without falling back as growth slowed [src:PDD-20F-FY2025#p157]. The ratio returned to 1.08–1.09x mainly because the increase in accrued expenses and other liabilities narrowed from RMB 34.258 billion in 2023 to RMB 13.781 billion and RMB 12.360 billion in 2024 and 2025 [src:PDD-20F-FY2025#p157], so a falling ratio cannot be read directly as a slowdown in the float."
 
   - id: PDD-L1
     type: qualitative
-    claim: 管理层说过的可检验表态与后来发生的事一致
+    claim: "Management's testable statements are consistent with what happened afterward"
     origin: manual
     severity: watch
     covers: [management]
     pillar: P4
-    question: 管理层在 2026-08-24 的二季度电话会上有两条可检验表态（言行账本 PDD-M1、PDD-M2，电话会发言，据第三方整理转述，申报文件未载 [src:PDD-RPT1-2026-09-16#p13] [src:PDD-RPT1-2026-09-16#p15]）：①平台对第三方商家开放、公平的底层机制不会改变；②短期盈利会承压，未来各季利润率的起伏将成常态。本期 6-K 业绩公告或 20-F 中，是否出现与其中任一条相反的事实，而管理层没有作出说明？
-    fail_if: 是
+    question: "On the Q2 earnings call of 2026-08-24, management made two testable statements (say-do ledger PDD-M1 and PDD-M2, earnings-call remarks as reported by third parties, not in the filings [src:PDD-RPT1-2026-09-16#p13] [src:PDD-RPT1-2026-09-16#p15]): (a) the platform's underlying mechanism of openness and fairness to third-party merchants will not change; (b) short-term profitability will come under pressure, and quarter-to-quarter swings in margins will become the norm. Does this period's 6-K earnings release or 20-F show a fact contrary to either statement that management has not explained?"
+    fail_if: "yes"
     judge: independent_model
     evidence: required
-    where: 本期 6-K 附件 99.1 与 20-F。两条表态的文字已写在问题里，见 ledger.yml 的 PDD-M1、PDD-M2。公司不发布文字实录，只在投资者关系网站提供电话会网播与回放 [src:PDD-6K-2026-08-25#EX-99.1]；回放登记为 PDD-CALL-FY2026Q2，本轮未转写，两条表态目前只有第三方整理的转述（二手）
+    where: "This period's 6-K Exhibit 99.1 and 20-F. The wording of the two statements is in the question; see PDD-M1 and PDD-M2 in ledger.yml. The company does not publish transcripts and offers only a webcast and replay of the call on its investor relations website [src:PDD-6K-2026-08-25#EX-99.1]; the replay is registered as PDD-CALL-FY2026Q2 and was not transcribed in this round, so the two statements currently rest only on third-party write-ups (secondary)"
     lookback: 1
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 二季度业绩公告的管理层引语只写二季度加大了生态投入、现阶段优先帮助商家成长与加强行业生态（刘珺），以及以合规为根本优先、建设值得信赖的平台（陈磊、赵佳臻）；两条待验表态不在申报文件中, source: PDD-6K-2026-08-25#EX-99.1, note: "两条表态是电话会发言，据第三方整理转述，申报文件未载：①平台对第三方商家开放、公平的底层机制不变 [src:PDD-RPT1-2026-09-16#p13]；②短期盈利承压、未来各季利润率的起伏为常态 [src:PDD-RPT1-2026-09-16#p15]；报告把出处 [24]（电话会的第三方整理与报道）列为二手 [src:PDD-RPT1-2026-09-16#p30]。电话会的一手载体是公司网站的回放（PDD-CALL-FY2026Q2），本轮没有转写核对，核对之前这两条只有二手支撑，按 §G3 视为待核。"}
-    note: "替代模板 L-guidance：报告与 FY2025 20-F 中都未见公司公布的中期财务目标 [src:PDD-20F-FY2025]，原测试无从判定（待以季度 6-K 复核，见 todo）。问题只列两条已登记的表态，清单封闭；新增表态须先登记进 ledger.yml、再改本题，并在下一份业绩公告发布之前合并。2024 年 8 月「当前做回购或分红不合适、可预见的未来几年也没有必要」的表态（PDD-M3，电话会发言，据第三方整理转述，申报文件未载 [src:PDD-RPT1-2026-09-16#p14]）不列入：出现返还时由 PDD-Q18 作为正面触发处理；其中分红的一半有一手表述，20-F 称目前没有在可预见的将来派发现金股利的计划 [src:PDD-20F-FY2025#p126]，回购的一半没有一手表述。报告第 04 节以说过的话与后来发生的事评估管理层 [src:PDD-RPT1-2026-09-16#p3]；利润会受投入影响的书面表述见 2024-08-26 与 2026-03-25 的业绩新闻稿 [src:PDD-6K-2024-08-26#EX-99.1] [src:PDD-6K-2026-03-26#EX-99.1]，2026 年 8 月电话会上的利润承压表态（PDD-M2）待三季报验证。"
+    baseline: {value: "The management quotes in the Q2 earnings release say only that ecosystem investment was stepped up in the second quarter and that the current priority is helping merchants grow and strengthening the industry ecosystem (Jun Liu), and that compliance is the fundamental priority in building a trustworthy platform (Lei Chen, Jiazhen Zhao); the two statements to be verified are not in the filings", source: PDD-6K-2026-08-25#EX-99.1, note: "Both statements are earnings-call remarks as reported by third parties, not in the filings: (a) the platform's underlying mechanism of openness and fairness to third-party merchants will not change [src:PDD-RPT1-2026-09-16#p13]; (b) short-term profitability is under pressure, and quarter-to-quarter swings in margins are the norm [src:PDD-RPT1-2026-09-16#p15]; the report lists its source [24] (third-party write-ups and coverage of the call) as secondary [src:PDD-RPT1-2026-09-16#p30]. The primary record of the call is the replay on the company's website (PDD-CALL-FY2026Q2), which was not transcribed and checked in this round; until it is checked, the two statements have only secondary support and are treated as pending verification under §G3."}
+    note: "Replaces the template's L-guidance: neither the report nor the FY2025 20-F shows medium-term financial targets published by the company [src:PDD-20F-FY2025], so the original test cannot be judged (to be rechecked against the quarterly 6-Ks, see todo). The question lists only the two registered statements, and the list is closed; a new statement must first be registered in ledger.yml, then the question amended, and the change merged before the next earnings release is published. The August 2024 statement that “buybacks or dividends are not appropriate now, nor necessary in the foreseeable next few years” (PDD-M3, earnings-call remark as reported by third parties, not in the filings [src:PDD-RPT1-2026-09-16#p14]) is not included: if a return occurs, PDD-Q18 handles it as a positive trigger; of that statement, the dividend half has a primary statement, as the 20-F says there is no present plan to pay cash dividends in the foreseeable future [src:PDD-20F-FY2025#p126], while the buyback half has none. Section 04 of the report assesses management by what it said and what happened afterward [src:PDD-RPT1-2026-09-16#p3]; written statements that profits will be affected by the investment are in the earnings press releases of 2024-08-26 and 2026-03-25 [src:PDD-6K-2024-08-26#EX-99.1] [src:PDD-6K-2026-03-26#EX-99.1], and the profit-pressure statement on the August 2026 call (PDD-M2) awaits verification in the third-quarter results."
 
   - id: PDD-S1
     type: staleness
-    claim: 护城河判断不超过四个季度未复核
+    claim: "The moat judgment goes no more than four quarters without review"
     origin: template:stalwart
     severity: watch
     covers: [moat]
@@ -220,7 +220,7 @@ tests:
 
   - id: PDD-S2
     type: staleness
-    claim: 管理层判断不超过四个季度未复核
+    claim: "The management judgment goes no more than four quarters without review"
     origin: template:stalwart
     severity: watch
     covers: [management]
@@ -231,7 +231,7 @@ tests:
 
   - id: PDD-S3
     type: staleness
-    claim: “最可能错在哪”每两个季度重新审视
+    claim: "“Where am I most likely wrong” is re-examined every two quarters"
     origin: template:stalwart
     severity: watch
     covers: [other]
@@ -240,523 +240,523 @@ tests:
     max_age_quarters: 2
     effective_from: FY2026Q3
 
-  # ———— 报告第 09 节：每季必看的五个前瞻指标（watch）————
+  # ---------- Section 09 of the report: the five watch indicators to read every quarter (watch) ----------
   - id: PDD-Q5
     type: quantitative
-    claim: 定价权没有见顶：国内在线营销收入保持正增长
+    claim: "Pricing power has not peaked: domestic online marketing revenue keeps growing"
     origin: report:watch
     severity: watch
     covers: [pricing_power, moat]
     pillar: P2
     metric: segment_revenue_yoy
-    params: {segment: Online marketing services and others, segment_zh: 在线营销服务及其他, basis: 报表口径}
-    fail_if: 连续两个季度 ≤ 0%
+    params: {segment: Online marketing services and others, segment_zh: Online marketing services and others, basis: reported basis}
+    fail_if: "≤ 0% for two consecutive quarters"
     rule: {op: "<=", threshold: 0, unit: "%", consecutive: 2, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 3.5, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "收入附注 57,637 ÷ 55,703 − 1＝3.47%（百万元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: "前瞻指标第 1 号。与阿里巴巴同口径客户管理收入对照读（同一自然季，即阿里财年 FY2027 第一季度：客户管理收入同比 −7%，剔除新业务发展计划的收入冲减后同口径 +1% [src:BABA-6K-2026-08-20#EX-99.1]）：两家同向说明是行业性让利；只有拼多多不回升，主动让利的解释被削弱。"
+    baseline: {value: 3.5, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "Revenue note: 57,637 ÷ 55,703 − 1 = 3.47% (RMB million, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Watch indicator No. 1. Read against Alibaba's customer management revenue on a comparable basis (the same calendar quarter, i.e. the first quarter of Alibaba's fiscal FY2027: customer management revenue −7% year on year, and +1% on a like-for-like basis excluding the revenue offset from new business development programs [src:BABA-6K-2026-08-20#EX-99.1]): if both move the same way, it is an industry-wide margin concession; if only Pinduoduo does not recover, the explanation of a deliberate margin concession is weakened."
 
   - id: PDD-Q6
     type: quantitative
-    claim: 让利是阶段性投入，而不是新的常态成本结构
+    claim: "Margin concessions are a phase of investment, not a new permanent cost structure"
     origin: report:watch
     severity: watch
     covers: [pricing_power, unit_economics]
     pillar: P2
     metric_def:
       id: operating_margin_ttm
-      description: 营业利润率，过去四个季度营业利润合计 ÷ 收入合计；若损益表重新出现「商品销售」一行，按平台业务单独读（剔除商品销售收入及其成本）
+      description: "Operating margin: total operating profit ÷ total revenue over the trailing four quarters; if a “merchandise sales” line reappears in the income statement, read the platform business on its own (excluding merchandise sales revenue and its cost)"
       unit: "%"
       frequency: quarter
       data: filing_text
       formula: sum(operating_profit, 4q) / sum(revenue, 4q)
-      where: 季度 6-K 附件 99.1 的未经审计合并损益表，逐季相加
-    fail_if: 连续两个季度 < 18%
+      where: "The unaudited consolidated statements of income in Exhibit 99.1 of the quarterly 6-K, added up quarter by quarter"
+    fail_if: "< 18% for two consecutive quarters"
     rule: {op: "<", threshold: 18, unit: "%", consecutive: 2, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 21.9, unit: "%", period: TTM 至 FY2026Q2, source: PDD-20F-FY2025#p103, note: "同 F7：20-F 口径（2025Q3＋2025Q4 由 20-F 全年数减 2025 年上半年的公告数得出，含 2026 年 4 月的境内罚没，2026Q1＋2026Q2 取公告数）为 98,553.1 ÷ 450,775.7＝21.9%（百万元，本档案计算）[src:PDD-20F-FY2025#p103] [src:PDD-6K-2026-08-25#EX-99.1]；业绩公告逐季相加（2025Q4 取罚没计入之前的公告数）为 22.2% [src:PDD-6K-2026-03-26#EX-99.1]，报告指标表的当前值即此数 [src:PDD-RPT1-2026-09-16#p25]"}
-    note: 前瞻指标第 2 号；指标表的当前值为 TTM，故按 TTM 读。各季数字取公司自己在业绩 6-K（或 20-F）中列示的数字，同比的上年数取本期文件列示的比较数，与经审计的 20-F 不一致时照用公司数字并在读数说明里记下差额（例如 2025 年四季度营业利润的业绩公告数字未含 2026 年 4 月的罚款，见 F9）。罚款在本条的比率里按入账财年计，不按处罚决定日：境内罚没随 20-F 计入 FY2025（本档案据差额推断，见 F9），不计入 FY2026 的任何一季；2025 年四季度只有业绩公告列示的单季数，读数按上一句的规则取公告数，并记下与 20-F 的差额 1,521,930 千元 [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]。operating_margin_ttm 另被 PDD-Q13 引用（照录于其 metric_def.components），两处定义须同步修改。
+    baseline: {value: 21.9, unit: "%", period: TTM to FY2026Q2, source: PDD-20F-FY2025#p103, note: "As F7: on the 20-F basis (2025Q3 + 2025Q4 derived as the 20-F full-year figure less the first half of 2025 as released, including the April 2026 domestic penalty, and 2026Q1 + 2026Q2 as released), 98,553.1 ÷ 450,775.7 = 21.9% (RMB million, this archive's calculation) [src:PDD-20F-FY2025#p103] [src:PDD-6K-2026-08-25#EX-99.1]; adding up the earnings releases quarter by quarter (2025Q4 as released before the penalty was booked) gives 22.2% [src:PDD-6K-2026-03-26#EX-99.1], which is the current value in the report's indicator table [src:PDD-RPT1-2026-09-16#p25]"}
+    note: "Watch indicator No. 2; the current value in the indicator table is TTM, so it is read as TTM. Quarterly figures are the ones the company itself presents in its earnings 6-K (or 20-F), and the prior-year figure for a year-on-year comparison is the comparative presented in the current filing; where they differ from the audited 20-F, the company's figures are used as they are and the difference is recorded in the reading's explanation (for example, the earnings-release figure for Q4 2025 operating profit does not include the April 2026 fine, see F9). In this test's ratio, a fine counts in the fiscal year in which it is booked, not by its decision date: the domestic penalty is in FY2025 with the 20-F (this archive's inference from the difference, see F9) and in no quarter of FY2026; for Q4 2025 only the single-quarter figure presented in the earnings release exists, so the reading takes the released figure under the rule in the previous sentence and records the difference from the 20-F of RMB 1,521,930 thousand [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]. operating_margin_ttm is also referenced by PDD-Q13 (copied into its metric_def.components), and the two definitions must be changed together."
 
   - id: PDD-Q7
     type: quantitative
-    claim: 商家浮存（公司停止披露 GMV 后交易额的公开代理）没有收缩
+    claim: "Merchant float (the public proxy for transaction volume since the company stopped disclosing GMV) is not shrinking"
     origin: report:watch
     severity: watch
     covers: [moat, returns_on_capital]
     pillar: P1
     metric_def:
       id: merchant_float
-      description: 商家浮存 = 应付商家 + 商家保证金（季末余额）
-      unit: 亿元
+      description: "Merchant float = payable to merchants + merchant deposits (quarter-end balances)"
+      unit: RMB 100 million
       frequency: quarter
       data: filing_text
       formula: payable_to_merchants + merchant_deposits
-      where: 季度 6-K 附件 99.1 的未经审计合并资产负债表（Payable to merchants、Merchant deposits）
-    fail_if: 连续两个季度同比下降
-    rule: {op: decrease, threshold: 0, unit: "%", consecutive: 2, period: quarter, note: 对上年同期季末余额的同比变化}
+      where: "The unaudited consolidated balance sheet in Exhibit 99.1 of the quarterly 6-K (Payable to merchants, Merchant deposits)"
+    fail_if: "down year on year for two consecutive quarters"
+    rule: {op: decrease, threshold: 0, unit: "%", consecutive: 2, period: quarter, note: "year-on-year change against the quarter-end balance a year earlier"}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 1285, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "应付商家 109,924＋商家保证金 18,545＝128,469 百万元（本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: "前瞻指标第 3 号。公司最后一次披露 GMV 是 2021 年全年（2022-03-21 的业绩公告）[src:PDD-6K-2022-03-22#EX-99.1]，此后以商家浮存作交易额的公开代理。下降有两种读法：交易额萎缩，或账期、保证金规则被监管拉平；两者都要同时查当期是否有新规。同比需要上年同期季末余额，补录清单见 todo。"
+    baseline: {value: 1285, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "Payable to merchants 109,924 + merchant deposits 18,545 = RMB 128,469 million (this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Watch indicator No. 3. The company last disclosed GMV for full-year 2021 (earnings release of 2022-03-21) [src:PDD-6K-2022-03-22#EX-99.1], and since then merchant float has served as the public proxy for transaction volume. A decline can be read two ways: shrinking transaction volume, or payment terms and deposit rules flattened by regulators; either way, check at the same time whether new rules came in that period. The year-on-year comparison needs the quarter-end balance a year earlier; the backfill list is in todo."
 
   - id: PDD-Q8
     type: quantitative
-    claim: 自营投入的节奏与资本密集度可控，重资产没有吃掉平台的利润率
+    claim: "The pace and capital intensity of the self-operated investment stay under control, and heavy assets do not eat into the platform's margin"
     origin: report:watch
     severity: watch
     covers: [capital_allocation, returns_on_capital]
     pillar: P5
     metric_def:
       id: ppe_plus_inventory
-      description: 物业设备及软件净值 + 存货（如出现）；自营品牌投入节奏与资本密集度的读数
-      unit: 亿元
+      description: "Property, equipment and software, net + inventory (if any); a reading of the pace and capital intensity of the investment in self-operated brands"
+      unit: RMB 100 million
       frequency: quarter
       data: filing_text
       formula: ppe_and_software_net + inventory
-      where: 季度 6-K 附件 99.1 的未经审计合并资产负债表
+      where: "The unaudited consolidated balance sheet in Exhibit 99.1 of the quarterly 6-K"
       components:
         platform_op_margin_ttm_yoy_pp:
-          description: 平台业务营业利润率（过去四个季度营业利润合计 ÷ 收入合计）的同比变化，即本季末的 TTM 值减去上年同季末的 TTM 值，单位为百分点；损益表出现「商品销售」一行时剔除商品销售收入及其成本（经营费用无法拆分时全部计入平台口径），未出现时即合并口径
+          description: "Year-on-year change in the platform business's operating margin (total operating profit ÷ total revenue over the trailing four quarters), i.e. the TTM value at this quarter-end less the TTM value at the same quarter-end a year earlier, in percentage points; when a “merchandise sales” line appears in the income statement, merchandise sales revenue and its cost are excluded (operating expenses that cannot be split are all counted in the platform basis), and when it does not, this is the consolidated basis"
           unit: pp
-          where: 季度 6-K 附件 99.1 的未经审计合并损益表，逐季相加
-    fail_if: 合计 > 500 亿元而平台业务营业利润率未同步改善（与上年同季末的 TTM 值相比）
+          where: "The unaudited consolidated statements of income in Exhibit 99.1 of the quarterly 6-K, added up quarter by quarter"
+    fail_if: "total > RMB 50 billion while the platform business's operating margin has not improved alongside (compared with the TTM value at the same quarter-end a year earlier)"
     rule:
       all_of:
-        - {metric: ppe_plus_inventory, op: ">", threshold: 500, unit: 亿元, period: quarter}
-        - {metric: ppe_plus_inventory.platform_op_margin_ttm_yoy_pp, op: "<=", threshold: 0, unit: pp, period: quarter, note: 未同步改善即平台业务 TTM 营业利润率不高于上年同季末}
+        - {metric: ppe_plus_inventory, op: ">", threshold: 500, unit: RMB 100 million, period: quarter}
+        - {metric: ppe_plus_inventory.platform_op_margin_ttm_yoy_pp, op: "<=", threshold: 0, unit: pp, period: quarter, note: "“not improved alongside” means the platform business's TTM operating margin is no higher than at the same quarter-end a year earlier"}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 47.5, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "物业设备及软件净值 4,752 百万元，资产负债表尚无存货科目 [src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: 前瞻指标第 4 号。存货科目是否出现，是新拼姆属于自营还是外贸综服模块的第一个判据。报告未写明「未同步改善」的比较基期，登记时定为同比（平台业务 TTM 营业利润率对上年同季末），如需改动须在对应季度的业绩公告发布之前合并。各季数字取公司自己在业绩 6-K（或 20-F）中列示的数字，同比的上年数取本期文件列示的比较数，与经审计的 20-F 不一致时照用公司数字并在读数说明里记下差额（例如 2025 年四季度营业利润的业绩公告数字未含 2026 年 4 月的罚款，见 F9）。罚款在平台业务营业利润率里按入账财年计，不按处罚决定日：境内罚没随 20-F 计入 FY2025（本档案据差额推断，见 F9），不计入 FY2026 的任何一季。ppe_plus_inventory 另被 PDD-Q13 引用（照录于其 metric_def.components），两处定义须同步修改。
+    baseline: {value: 47.5, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "Property, equipment and software, net RMB 4,752 million, and the balance sheet has no inventory line yet [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Watch indicator No. 4. Whether an inventory line appears is the first criterion for whether Xinpinmu is self-operated or an integrated foreign-trade services module. The report does not say what base period “not improved alongside” compares against; at registration it was set as year on year (the platform business's TTM operating margin against the same quarter-end a year earlier), and any change must be merged before the earnings release for the quarter concerned is published. Quarterly figures are the ones the company itself presents in its earnings 6-K (or 20-F), and the prior-year figure for a year-on-year comparison is the comparative presented in the current filing; where they differ from the audited 20-F, the company's figures are used as they are and the difference is recorded in the reading's explanation (for example, the earnings-release figure for Q4 2025 operating profit does not include the April 2026 fine, see F9). In the platform business's operating margin, a fine counts in the fiscal year in which it is booked, not by its decision date: the domestic penalty is in FY2025 with the 20-F (this archive's inference from the difference, see F9) and in no quarter of FY2026. ppe_plus_inventory is also referenced by PDD-Q13 (copied into its metric_def.components), and the two definitions must be changed together."
 
   - id: PDD-Q9
     type: quantitative
-    claim: 报表可读：营业外项目不会淹没经营利润
+    claim: "The statements stay readable: non-operating items do not swamp operating profit"
     origin: report:watch
     severity: watch
     covers: [governance]
     pillar: P4
     metric_def:
       id: nonop_total_to_op
-      description: 营业外三项合计（利息与投资净收益 + 汇兑损益 + 其他收入／损失净额）的绝对值 ÷ 当季营业利润
+      description: "Absolute value of the sum of the three non-operating items (interest and investment income, net + foreign exchange gain/loss + other income/(loss), net) ÷ the quarter's operating profit"
       unit: "%"
       frequency: quarter
       data: filing_text
       formula: abs(interest_and_investment_income + fx_gain_loss + other_income_net) / operating_profit_q
-      where: 季度 6-K 附件 99.1 的未经审计合并损益表与附注
-    fail_if: 单季营业外三项合计的绝对值 > 当季营业利润的 50%
+      where: "The unaudited consolidated statements of income and notes in Exhibit 99.1 of the quarterly 6-K"
+    fail_if: "the absolute value of the sum of the three non-operating items in a quarter > 50% of that quarter's operating profit"
     rule: {op: ">", threshold: 50, unit: "%", consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 20.0, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "损益表三个月栏：利息与投资净收益 13,505、汇兑损失 (558)、其他收入／损失净额 (7,399)，合计 +5,548 百万元，为当季营业利润 27,764 百万元的 20.0%（本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]；一季度（六个月栏减三个月栏）为 −632 − 145 − 2,031＝−2,808 百万元，绝对值为当季营业利润 19,566 百万元的 14.4% [src:PDD-6K-2026-08-25#EX-99.1] [src:PDD-6K-2026-05-28#EX-99.1]。二季度其他收入／损失净额 −73.99 亿元是公司直接列示的单季数 [src:PDD-6K-2026-08-25#EX-99.1]。报告指标表的当前值是 2026 年上半年三项合计 +27.40 亿元（12,873 − 703 − 9,430 百万元），是带符号的半年金额，不是本指标的读数 [src:PDD-RPT1-2026-09-16#p26] [src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: "前瞻指标第 5 号的第一个分支；「连续两年不披露构成」的分支见 PDD-L8，两条任一失败即第 5 号指标触发。罚款在本条按入账的季度计，不按处罚决定日；同时观察欧盟委员会 2026-05-28 的 2 亿欧元 DSA 罚款是否在其中落地 [src:EC-IP-26-1178]。营业外的大额损失消耗现金，本条也与支柱 P3 相关。"
+    baseline: {value: 20.0, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "Three-month column of the income statement: interest and investment income, net 13,505, foreign exchange loss (558), other income/(loss), net (7,399), a total of +RMB 5,548 million, which is 20.0% of the quarter's operating profit of RMB 27,764 million (this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]; the first quarter (six-month column less three-month column) is −632 − 145 − 2,031 = −RMB 2,808 million, whose absolute value is 14.4% of that quarter's operating profit of RMB 19,566 million [src:PDD-6K-2026-08-25#EX-99.1] [src:PDD-6K-2026-05-28#EX-99.1]. Q2 other income/(loss), net of −RMB 7.399 billion is a single-quarter figure the company presents directly [src:PDD-6K-2026-08-25#EX-99.1]. The current value in the report's indicator table is the sum of the three items for the first half of 2026, +RMB 2.740 billion (RMB 12,873 − 703 − 9,430 million), a signed half-year amount, not a reading of this indicator [src:PDD-RPT1-2026-09-16#p26] [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "The first branch of watch indicator No. 5; the branch “composition not disclosed for two consecutive years” is PDD-L8, and if either fails, indicator No. 5 is triggered. In this test, a fine counts in the quarter in which it is booked, not by its decision date; also watch whether the European Commission's €200 million DSA fine of 2026-05-28 lands in these items [src:EC-IP-26-1178]. Large non-operating losses consume cash, so this test also bears on pillar P3."
 
   - id: PDD-L8
     type: qualitative
-    claim: 报表可读：「其他收入／损失净额」的构成有披露
+    claim: "The statements stay readable: the composition of “other income/(loss), net” is disclosed"
     origin: report:watch
     severity: watch
     covers: [governance]
     pillar: P4
-    question: 本期年报（20-F）是否披露了「其他收入／损失净额」（Other income, net）的构成，即主要项目及其金额？
-    fail_if: 否，且上一财年的年报同样未披露（即连续两年不披露构成）
+    question: "Does this period's annual report (20-F) disclose the composition of “other income/(loss), net” (Other income, net), that is, its main items and their amounts?"
+    fail_if: "no, and the previous fiscal year's annual report did not disclose it either (i.e. the composition undisclosed for two consecutive years)"
     judge: independent_model
     evidence: required
-    where: 本期与上一财年 20-F 的合并损益表、财务报表附注与 Item 5 经营回顾；季度 6-K 中的相关说明作参考
+    where: "The consolidated statements of income, the notes to the financial statements and the Item 5 operating review in this period's and the previous fiscal year's 20-F; related explanations in the quarterly 6-Ks for reference"
     lookback: 5
     effective_from: FY2026Q3
     first_readable: 2027-04
-    baseline: {value: FY2025 20-F 的经营回顾只列其他收入净额的金额，未说明构成, source: PDD-20F-FY2025#p105, note: "2026 年上半年该科目为 −94.30 亿元，其中二季度 −73.99 亿元 [src:PDD-6K-2026-08-25#EX-99.1]；6-K 附件 99.1 只列金额，没有说明构成或原因 [src:PDD-6K-2026-08-25#EX-99.1]。报告称公司把它归因为海外非经营项目 [src:PDD-RPT1-2026-09-16#p8]，报告该句未注出处，申报文件未载，只见于第三方转述（仅 L2），不作基线"}
-    note: 前瞻指标第 5 号的第二个分支（原为 PDD-Q9 的事件条件，改为定性测试以便独立判定并附出处）。PDD-Q16（论点破坏者第 10 条）的「仍不披露构成」一腿取本条对当年年报的判定。
+    baseline: {value: "The operating review in the FY2025 20-F gives only the amount of other income, net, without explaining its composition", source: PDD-20F-FY2025#p105, note: "This line was −RMB 9.430 billion in the first half of 2026, of which −RMB 7.399 billion in the second quarter [src:PDD-6K-2026-08-25#EX-99.1]; 6-K Exhibit 99.1 gives only the amounts, without explaining the composition or cause [src:PDD-6K-2026-08-25#EX-99.1]. The report says the company attributes it to overseas non-operating items [src:PDD-RPT1-2026-09-16#p8], but the report gives no source for that sentence, which is not in the filings and appears only in third-party accounts (L2 only), so it is not used as a baseline"}
+    note: "The second branch of watch indicator No. 5 (originally an event condition of PDD-Q9, turned into a qualitative test so that it is judged independently with citations). The “still does not disclose the composition” leg of PDD-Q16 (thesis breaker No. 10) takes this test's judgment on that year's annual report."
 
-  # ———— 报告第 09 节：论点破坏者（breaker；触发即论点作废，进入 7 天内的结论流程）————
+  # ---------- Section 09 of the report: thesis breakers (breaker; if one triggers, the thesis is void and the 7-day conclusion process starts) ----------
   - id: PDD-Q10
     type: quantitative
-    claim: 国内变现能力没有被市场夺走
+    claim: "Domestic monetization power has not been taken away by the market"
     origin: report:breaker
     severity: breaker
     covers: [pricing_power, moat, competition]
     pillar: P2
     metric: segment_revenue_yoy
-    params: {segment: Online marketing services and others, segment_zh: 在线营销服务及其他, basis: 报表口径}
-    fail_if: 在线营销服务收入连续四个季度同比为负
+    params: {segment: Online marketing services and others, segment_zh: Online marketing services and others, basis: reported basis}
+    fail_if: "online marketing services revenue down year on year for four consecutive quarters"
     rule: {op: "<", threshold: 0, unit: "%", consecutive: 4, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 3.5, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "收入附注 57,637 ÷ 55,703 − 1＝3.47%（百万元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: 论点破坏者第 1 条。
+    baseline: {value: 3.5, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "Revenue note: 57,637 ÷ 55,703 − 1 = 3.47% (RMB million, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Thesis breaker No. 1."
 
   - id: PDD-Q11
     type: quantitative
-    claim: 营业利润率守在论点所依赖的盈利水平之上
+    claim: "The operating margin holds above the level of profitability the thesis depends on"
     origin: report:breaker
     severity: breaker
     covers: [unit_economics, pricing_power]
     pillar: P2
     metric_def:
       id: operating_margin_6k
-      description: 单季营业利润率（营业利润 ÷ 收入）；外国私人发行人季度口径。若损益表出现「商品销售」一行，以平台业务口径判定（剔除商品销售收入及其成本，与 PDD-Q6 相同），合并口径并列
+      description: "Quarterly operating margin (operating profit ÷ revenue), on the foreign private issuer's quarterly basis. If a “merchandise sales” line appears in the income statement, judge on the platform-business basis (excluding merchandise sales revenue and its cost, as in PDD-Q6), with the consolidated basis alongside"
       unit: "%"
       frequency: quarter
       data: filing_text
       formula: operating_profit_q / revenue_q
-      where: 季度 6-K 附件 99.1 的未经审计合并损益表
-    fail_if: 营业利润率连续四个季度低于 15%
+      where: "The unaudited consolidated statements of income in Exhibit 99.1 of the quarterly 6-K"
+    fail_if: "operating margin below 15% for four consecutive quarters"
     rule: {op: "<", threshold: 15, unit: "%", consecutive: 4, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 24.7, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "27,764 ÷ 112,358（百万元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: "论点破坏者第 2 条。报告未写明单季还是 TTM，登记时定为单季读：四个季度单季都低于 15% 时，第 08 节估值起点所用的 TTM 营业利润率必然也低于 15%，满足「起点作废」，且比按 TTM 连续四个季度读更早触发 [src:PDD-RPT1-2026-09-16#p26]；TTM 口径的提前警告由 PDD-Q6 承担。若「商品销售」一行出现，以平台业务口径判定：报告提醒自营若按总额法确认会把合并利润率压低，期权的成功不能被误读成论点作废 [src:PDD-RPT1-2026-09-16#p25]。这两处读法如需改动，须在对应季度的业绩公告发布之前合并。各季数字取公司自己在业绩 6-K（或 20-F）中列示的数字，同比的上年数取本期文件列示的比较数，与经审计的 20-F 不一致时照用公司数字并在读数说明里记下差额（例如 2025 年四季度营业利润的业绩公告数字未含 2026 年 4 月的罚款，见 F9）。罚款在本条的利润率里按入账财年计，不按处罚决定日：境内罚没随 20-F 计入 FY2025（本档案据差额推断，见 F9），不计入 FY2026 的任何一季。"
+    baseline: {value: 24.7, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "27,764 ÷ 112,358 (RMB million, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Thesis breaker No. 2. The report does not say whether this is quarterly or TTM; at registration it was set to be read quarterly: when all four single quarters are below 15%, the TTM operating margin used as the starting point of the valuation in section 08 must also be below 15%, which meets “the starting point is void”, and it triggers earlier than reading TTM over four consecutive quarters [src:PDD-RPT1-2026-09-16#p26]; early warning on the TTM basis is PDD-Q6's job. If the “merchandise sales” line appears, judge on the platform-business basis: the report warns that self-operated sales recognized on a gross basis would pull the consolidated margin down, and the success of the option must not be misread as the thesis being void [src:PDD-RPT1-2026-09-16#p25]. Any change to these two readings must be merged before the earnings release for the quarter concerned is published. Quarterly figures are the ones the company itself presents in its earnings 6-K (or 20-F), and the prior-year figure for a year-on-year comparison is the comparative presented in the current filing; where they differ from the audited 20-F, the company's figures are used as they are and the difference is recorded in the reading's explanation (for example, the earnings-release figure for Q4 2025 operating profit does not include the April 2026 fine, see F9). In this test's margin, a fine counts in the fiscal year in which it is booked, not by its decision date: the domestic penalty is in FY2025 with the 20-F (this archive's inference from the difference, see F9) and in no quarter of FY2026."
 
   - id: PDD-Q12
     type: quantitative
-    claim: 负投入资本的引擎没有反向运转
+    claim: "The negative-invested-capital engine is not running in reverse"
     origin: report:breaker
     severity: breaker
     covers: [moat, returns_on_capital]
     pillar: P1
     metric_def:
       id: merchant_float
-      description: 商家浮存 = 应付商家 + 商家保证金（季末余额）
-      unit: 亿元
+      description: "Merchant float = payable to merchants + merchant deposits (quarter-end balances)"
+      unit: RMB 100 million
       frequency: quarter
       data: filing_text
       formula: payable_to_merchants + merchant_deposits
-      where: 季度 6-K 附件 99.1 的未经审计合并资产负债表（Payable to merchants、Merchant deposits）
-    fail_if: 商家浮存连续四个季度同比下降
-    rule: {op: decrease, threshold: 0, unit: "%", consecutive: 4, period: quarter, note: 对上年同期季末余额的同比变化}
+      where: "The unaudited consolidated balance sheet in Exhibit 99.1 of the quarterly 6-K (Payable to merchants, Merchant deposits)"
+    fail_if: "merchant float down year on year for four consecutive quarters"
+    rule: {op: decrease, threshold: 0, unit: "%", consecutive: 4, period: quarter, note: "year-on-year change against the quarter-end balance a year earlier"}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 1285, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "应付商家 109,924＋商家保证金 18,545＝128,469 百万元（本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: 论点破坏者第 3 条；与 PDD-Q7 同一指标，门槛更严。metric_def 与 PDD-Q7 逐字相同，改动须两处同步。
+    baseline: {value: 1285, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "Payable to merchants 109,924 + merchant deposits 18,545 = RMB 128,469 million (this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "Thesis breaker No. 3; the same metric as PDD-Q7, with a stricter threshold. metric_def is word for word the same as in PDD-Q7, and a change must be made in both places."
 
   - id: PDD-Q13
     type: quantitative
-    claim: 现金没有被大额收购或低回报的自营重资产消耗
+    claim: "Cash is not consumed by large acquisitions or by low-return, asset-heavy self-operated business"
     origin: report:breaker
     severity: breaker
     covers: [capital_allocation, returns_on_capital]
     pillar: P5
     metric_def:
       id: cash_acquisition_amount
-      description: 公司宣布的现金收购金额（单笔，或一年内累计）；外币以公司披露的人民币金额为准，未披露时按宣布日中国人民银行公布的人民币汇率中间价折算
-      unit: 亿元
+      description: "Amount of cash acquisitions announced by the company (a single deal, or cumulative within a year); foreign-currency amounts use the RMB amount the company discloses, or if none is disclosed, are converted at the RMB central parity rate published by the People's Bank of China on the announcement date"
+      unit: RMB 100 million
       frequency: event
       data: filing_text
-      where: 6-K 公告、20-F Item 4 与 Item 5、现金流量表投资活动
+      where: "6-K announcements, 20-F Item 4 and Item 5, investing activities in the cash flow statement"
       components:
         acquisition_amount:
-          description: 公司宣布的单笔收购的对价总额，不论以现金、股份还是混合方式支付；外币折算规则同 cash_acquisition_amount
-          unit: 亿元
-          where: 6-K 公告、20-F Item 4 与 Item 5
+          description: "Total consideration of a single acquisition announced by the company, whether paid in cash, shares or a mix; foreign-currency conversion as for cash_acquisition_amount"
+          unit: RMB 100 million
+          where: "6-K announcements, 20-F Item 4 and Item 5"
         ppe_plus_inventory:
-          description: 物业设备及软件净值 + 存货（如出现）；自营品牌投入节奏与资本密集度的读数
-          unit: 亿元
-          where: 季度 6-K 附件 99.1 的未经审计合并资产负债表
+          description: "Property, equipment and software, net + inventory (if any); a reading of the pace and capital intensity of the investment in self-operated brands"
+          unit: RMB 100 million
+          where: "The unaudited consolidated balance sheet in Exhibit 99.1 of the quarterly 6-K"
         operating_margin_ttm:
-          description: 营业利润率，过去四个季度营业利润合计 ÷ 收入合计；若损益表重新出现「商品销售」一行，按平台业务单独读（剔除商品销售收入及其成本）
+          description: "Operating margin: total operating profit ÷ total revenue over the trailing four quarters; if a “merchandise sales” line reappears in the income statement, read the platform business on its own (excluding merchandise sales revenue and its cost)"
           unit: "%"
-          where: 季度 6-K 附件 99.1 的未经审计合并损益表，逐季相加
-    fail_if: 公司宣布单笔或一年内累计超过 1,500 亿元人民币的现金收购，或自营品牌相关的存货＋物业设备合计超过 1,000 亿元而平台业务营业利润率未回到 20% 以上
+          where: "The unaudited consolidated statements of income in Exhibit 99.1 of the quarterly 6-K, added up quarter by quarter"
+    fail_if: "the company announces cash acquisitions of more than RMB 150 billion, in a single deal or cumulatively within a year, or inventory + property and equipment related to self-operated brands totals more than RMB 100 billion while the platform business's operating margin has not returned above 20%"
     rule:
       any_of:
-        - {metric: cash_acquisition_amount, op: ">", threshold: 1500, unit: 亿元, period: event, note: 单笔或一年内累计}
+        - {metric: cash_acquisition_amount, op: ">", threshold: 1500, unit: RMB 100 million, period: event, note: "single deal or cumulative within a year"}
         - all_of:
-            - {metric: cash_acquisition_amount.ppe_plus_inventory, op: ">", threshold: 1000, unit: 亿元, period: quarter, note: 公司不做分部披露，以合并口径的存货加物业设备代读}
-            - {metric: cash_acquisition_amount.operating_margin_ttm, op: "<", threshold: 20, unit: "%", period: quarter, note: 按平台业务单独读}
-    warn_if: 单笔超过 500 亿元人民币的收购，不论支付方式（报告列为现金可得性的反向信号）
-    warn_rule: {metric: cash_acquisition_amount.acquisition_amount, op: ">", threshold: 500, unit: 亿元, period: event, note: 单笔，按对价总额}
+            - {metric: cash_acquisition_amount.ppe_plus_inventory, op: ">", threshold: 1000, unit: RMB 100 million, period: quarter, note: "the company gives no segment disclosure, so consolidated inventory plus property and equipment is read as a proxy"}
+            - {metric: cash_acquisition_amount.operating_margin_ttm, op: "<", threshold: 20, unit: "%", period: quarter, note: "read for the platform business alone"}
+    warn_if: "a single acquisition of more than RMB 50 billion, whatever the payment method (listed by the report as a negative signal for cash availability)"
+    warn_rule: {metric: cash_acquisition_amount.acquisition_amount, op: ">", threshold: 500, unit: RMB 100 million, period: event, note: "single deal, by total consideration"}
     data: filing_text
     effective_from: FY2026Q3
-    baseline: {value: 上市以来无重大并购, source: PDD-20F-FY2025#p72, note: "20-F Item 4.A 的沿革中上市后没有收购，只有 2016 年的集团内整合 [src:PDD-20F-FY2025#p72]；2023–2025 年投资活动现金流没有收购子公司或业务一行 [src:PDD-20F-FY2025#p157]；报告同 [src:PDD-RPT1-2026-09-16#p3]"}
-    note: "论点破坏者第 4 条。警告门槛取自第 09 节正面破坏者一段的反向信号，报告写的是「收购」而不限现金，故警告按对价总额读；破坏者的现金收购一腿按报告原文限于现金 [src:PDD-RPT1-2026-09-16#p26]。报告提醒，利润率判据必须按平台业务单独读，否则自营期权的成功会被误读成论点作废 [src:PDD-RPT1-2026-09-16#p25]。规则里「公司不做分部披露」一句的准确说法是：公司只有一个经营与报告分部（电子商务服务），不按业务或地区拆分披露 [src:PDD-20F-FY2025#p167]，所以自营部分只能以合并口径的存货加物业设备代读。规则引用的 ppe_plus_inventory、operating_margin_ttm 在 metric_def.components 中照录 PDD-Q8、PDD-Q6 的定义，改动须同步。大额收购与重资产消耗的都是现金，本条也守护支柱 P3。"
+    baseline: {value: "no major acquisitions since listing", source: PDD-20F-FY2025#p72, note: "The history in 20-F Item 4.A shows no acquisitions after listing, only an intra-group reorganization in 2016 [src:PDD-20F-FY2025#p72]; investing cash flows in 2023–2025 have no line for acquisitions of subsidiaries or businesses [src:PDD-20F-FY2025#p157]; the report says the same [src:PDD-RPT1-2026-09-16#p3]"}
+    note: "Thesis breaker No. 4. The warning threshold comes from the negative signal in the paragraph on the positive breaker in section 09; the report says “acquisition” without limiting it to cash, so the warning is read by total consideration, while the breaker's cash-acquisition leg is limited to cash, as in the report's text [src:PDD-RPT1-2026-09-16#p26]. The report warns that the margin criterion must be read for the platform business alone, or the success of the self-operated option would be misread as the thesis being void [src:PDD-RPT1-2026-09-16#p25]. The precise wording of the rule's phrase “the company gives no segment disclosure” is: the company has only one operating and reportable segment (e-commerce services) and does not disclose a split by business or region [src:PDD-20F-FY2025#p167], so the self-operated part can only be read through consolidated inventory plus property and equipment as a proxy. The ppe_plus_inventory and operating_margin_ttm used by the rule copy the definitions of PDD-Q8 and PDD-Q6 into metric_def.components, and must be changed in step with them. Large acquisitions and heavy assets both consume cash, so this test also guards pillar P3."
 
   - id: PDD-L2
     type: qualitative
-    claim: 审计检查不再中断，ADS 不面临《外国公司问责法》下的交易禁令
+    claim: "Audit inspections are not interrupted again, and the ADSs face no trading ban under the Holding Foreign Companies Accountable Act"
     origin: report:breaker
     severity: breaker
     covers: [regulation, governance]
     pillar: P4
-    question: 本期文件是否披露：PCAOB 重新认定无法完整检查或调查中国内地或香港的会计师事务所，且公司已连续两年被 SEC 列为 Commission-Identified Issuer？
-    fail_if: 是
+    question: "Does this period's filing disclose that the PCAOB has again determined that it cannot completely inspect or investigate accounting firms in mainland China or Hong Kong, and that the company has been identified by the SEC as a Commission-Identified Issuer for two consecutive years?"
+    fail_if: "yes"
     judge: independent_model
     evidence: required
-    where: 20-F Item 3.D 风险因素与 Item 16I；6-K 公告；SEC 的 Commission-Identified Issuer 名单
+    where: "20-F Item 3.D risk factors and Item 16I; 6-K announcements; the SEC's list of Commission-Identified Issuers"
     lookback: 1
     effective_from: FY2026Q3
-    baseline: {value: PCAOB 已于 2022-12-15 撤销此前的认定，截至 20-F 日期没有新认定；公司预计提交 FY2025 20-F 后不会被列为 Commission-Identified Issuer（2022 年 5 月曾被列入）, source: PDD-20F-FY2025#p12}
-    note: 论点破坏者第 5 条。
+    baseline: {value: "The PCAOB vacated its earlier determinations on 2022-12-15, and there has been no new determination as of the date of the 20-F; the company does not expect to be identified as a Commission-Identified Issuer after filing its FY2025 20-F (it was identified in May 2022)", source: PDD-20F-FY2025#p12}
+    note: "Thesis breaker No. 5."
 
   - id: PDD-L3
     type: qualitative
-    claim: VIE 合约安排保持有效，外部股东对境内经营实体的经济权益没有被切断
+    claim: "The VIE contractual arrangements remain valid, and outside shareholders' economic interest in the operating entities in China is not cut off"
     origin: report:breaker
     severity: breaker
     covers: [regulation, governance]
     pillar: P4
-    question: 本期文件或监管公告是否披露：中国监管机构认定公司的 VIE 合约安排无效，或要求拆除该结构？
-    fail_if: 是
+    question: "Does this period's filing or a regulatory announcement disclose that a Chinese regulator has found the company's VIE contractual arrangements invalid, or required the structure to be dismantled?"
+    fail_if: "yes"
     judge: independent_model
     evidence: required
-    where: 20-F Item 3 与 Item 4.C（VIE 结构与风险因素）；6-K 公告
+    where: "20-F Item 3 and Item 4.C (VIE structure and risk factors); 6-K announcements"
     lookback: 1
     effective_from: FY2026Q3
-    baseline: {value: 合约安排的合法性与可执行性整体上尚未经中国法院检验, source: PDD-20F-FY2025#p9, note: "VIE 及其子公司贡献 2025 年总收入的 13.1% [src:PDD-20F-FY2025#p8]"}
-    note: 论点破坏者第 6 条。
+    baseline: {value: "The legality and enforceability of the contractual arrangements as a whole have not been tested in a Chinese court", source: PDD-20F-FY2025#p9, note: "The VIE and its subsidiaries contributed 13.1% of total revenue in 2025 [src:PDD-20F-FY2025#p8]"}
+    note: "Thesis breaker No. 6."
 
   - id: PDD-Q14
     type: quantitative
-    claim: 与监管的冲突停留在可以从利润里付掉的罚单层面
+    claim: "Conflict with regulators stays at the level of fines that can be paid out of profits"
     origin: report:breaker
     severity: breaker
     covers: [regulation, management]
     pillar: P4
     metric_def:
       id: regulatory_fines_to_prior_op
-      description: 一个财年内截至判定日累计、因价格行为、平台规则、食品安全或反垄断被处罚没的金额合计 ÷ 上一财年营业利润。罚没含罚款与没收违法所得，也含境外监管机构的罚款（欧盟《数字服务法》下的罚款按平台规则计入），与报告读数的算法一致；外币金额以公司文件披露的人民币金额为准，未披露时按处罚决定日中国人民银行公布的人民币汇率中间价折算；分母取上一财年 20-F 合并损益表的营业利润
+      description: "Total penalties imposed within a fiscal year up to the judgment date for pricing conduct, platform rules, food safety or antitrust ÷ the previous fiscal year's operating profit. Penalties include fines and confiscated illegal gains, and also fines by regulators outside China (fines under the EU Digital Services Act count as platform rules), consistent with how the report computes its reading; foreign-currency amounts use the RMB amount disclosed in the company's filings, or if none is disclosed, are converted at the RMB central parity rate published by the People's Bank of China on the decision date; the denominator is operating profit in the consolidated statements of income of the previous fiscal year's 20-F"
       unit: "%"
       frequency: event
       data: mixed
       formula: sum(fines_fiscal_year_to_date) / operating_profit_{t-1y}
-      where: 监管机构处罚公告；6-K 公告；20-F Item 8.A 法律程序；上一财年营业利润取 20-F 合并损益表
+      where: "Regulators' penalty announcements; 6-K announcements; 20-F Item 8.A legal proceedings; the previous fiscal year's operating profit from the 20-F consolidated statements of income"
       components:
         fines_fiscal_year_to_date:
-          description: 一个财年内截至判定日累计的罚没金额合计，口径与外币折算规则见上
-          unit: 亿元
-          where: 监管机构处罚公告；6-K 公告；20-F Item 8.A 法律程序
+          description: "Total penalties within a fiscal year up to the judgment date; basis and foreign-currency conversion as above"
+          unit: RMB 100 million
+          where: "Regulators' penalty announcements; 6-K announcements; 20-F Item 8.A legal proceedings"
         operating_profit_prior_year:
-          description: 上一财年营业利润（公式中的 operating_profit_{t-1y}）
-          unit: 亿元
-          where: 上一财年 20-F 合并损益表
-    fail_if: 一个财年内因价格行为、平台规则、食品安全或反垄断被处以超过上一年度营业利润 5% 的罚款
-    rule: {op: ">", threshold: 5, unit: "%", period: event, note: 财年内累计，每出现一笔新处罚即重算}
+          description: "Operating profit of the previous fiscal year (operating_profit_{t-1y} in the formula)"
+          unit: RMB 100 million
+          where: "The consolidated statements of income in the previous fiscal year's 20-F"
+    fail_if: "fines within one fiscal year for pricing conduct, platform rules, food safety or antitrust exceeding 5% of the previous year's operating profit"
+    rule: {op: ">", threshold: 5, unit: "%", period: event, note: "cumulative within the fiscal year, recomputed at each new penalty"}
     data: mixed
     effective_from: FY2026Q3
-    baseline: {value: 3.3, unit: "%", period: 2026 年 4–5 月, source: SAMR-CF-2026-22, note: "按处罚决定日计入 FY2026：境内罚没合计 1,521,930,222.91 元（2026-04-17）[src:SAMR-CF-2026-22]，欧盟委员会罚款 2 亿欧元（2026-05-28）[src:EC-IP-26-1178]，按决定日的人民币汇率中间价 7.9121 元／欧元折合 15.82 亿元 [src:CFETS-CCPR-2026-05-28]；合计 31.04 亿元，除以 FY2025 20-F 的营业利润 931.02 亿元为 3.33%（本档案计算）[src:PDD-20F-FY2025#p103]，若按业绩公告的 946.24 亿元为 3.28% [src:PDD-6K-2026-03-26#EX-99.1]；已达触发线的三分之二 [src:PDD-RPT1-2026-09-16#p26]。境内一笔另有两处佐证：20-F 记为约 15 亿元 [src:PDD-20F-FY2025#p28]，也等于 20-F 与业绩公告的 2025 年一般及行政费用差额 1,521,930 千元 [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]。报告的欧元折算按约 7.9 元／欧元，仅作量级参考 [src:PDD-RPT1-2026-09-16#p30]"}
-    note: "论点破坏者第 7 条的第一个分支；「被责令修改流量分配与定价规则」的分支见 PDD-L6，两条任一失败即第 7 条触发。报告称本条已有实测读数 [src:PDD-RPT1-2026-09-16#p26]。口径（罚没与境外罚款都计入、外币折算、按财年累计并在每笔新处罚后重算）在登记时写下，如需改动须在下一笔处罚公布之前合并。本条按处罚决定日把罚单计入财年，不按入账年度：2026-04-17 与 2026-05-28 的两笔都计入 FY2026，分母为 FY2025 的营业利润；境内一笔在财务报表上随 20-F 计入 FY2025（本档案据差额推断，见 F9），不影响本条的计数。罚没消耗现金，本条也与支柱 P3 相关。"
+    baseline: {value: 3.3, unit: "%", period: April–May 2026, source: SAMR-CF-2026-22, note: "Counted in FY2026 by decision date: the domestic penalty totals RMB 1,521,930,222.91 (2026-04-17) [src:SAMR-CF-2026-22], and the European Commission's fine is €200 million (2026-05-28) [src:EC-IP-26-1178], which at the RMB central parity rate on the decision date, RMB 7.9121 per euro, is RMB 1.582 billion [src:CFETS-CCPR-2026-05-28]; the total of RMB 3.104 billion divided by operating profit in the FY2025 20-F of RMB 93.102 billion is 3.33% (this archive's calculation) [src:PDD-20F-FY2025#p103], or 3.28% using the earnings release's RMB 94.624 billion [src:PDD-6K-2026-03-26#EX-99.1]; this is already two-thirds of the trigger line [src:PDD-RPT1-2026-09-16#p26]. The domestic penalty is corroborated in two more places: the 20-F records it as about RMB 1.5 billion [src:PDD-20F-FY2025#p28], and it equals the difference in 2025 general and administrative expenses between the 20-F and the earnings release, RMB 1,521,930 thousand [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1]. The report converts at about RMB 7.9 per euro, for an order of magnitude only [src:PDD-RPT1-2026-09-16#p30]"}
+    note: "The first branch of thesis breaker No. 7; the branch “ordered to change traffic allocation and pricing rules” is PDD-L6, and if either fails, No. 7 is triggered. The report says this test already has a measured reading [src:PDD-RPT1-2026-09-16#p26]. The basis (penalties and fines outside China both counted, foreign-currency conversion, cumulative within the fiscal year and recomputed after each new penalty) was written down at registration, and any change must be merged before the next penalty is announced. This test assigns a fine to a fiscal year by its decision date, not by the year it is booked: the two fines of 2026-04-17 and 2026-05-28 both count in FY2026, with FY2025 operating profit as the denominator; that the domestic penalty is booked in FY2025 in the financial statements, with the 20-F (this archive's inference from the difference, see F9), does not affect this test's count. Penalties consume cash, so this test also bears on pillar P3."
 
   - id: PDD-L6
     type: qualitative
-    claim: 与监管的冲突没有伤及流量分配与定价规则
+    claim: "Conflict with regulators has not reached traffic allocation and pricing rules"
     origin: report:breaker
     severity: breaker
     covers: [regulation, pricing_power]
     pillar: P4
-    question: 本期文件或监管公告是否披露：监管机构因价格行为、平台规则、食品安全或反垄断，以处罚决定、责令改正或整改要求的形式，责令公司修改其流量分配规则或定价规则？只计针对本公司的要求；对全行业生效的新规不算，除非监管机构据此向本公司单独下达整改要求。
-    fail_if: 是
+    question: "Does this period's filing or a regulatory announcement disclose that a regulator, over pricing conduct, platform rules, food safety or antitrust, has ordered the company, by a penalty decision, an order to correct or a rectification requirement, to change its traffic allocation rules or pricing rules? Only requirements directed at this company count; new rules that apply to the whole industry do not, unless a regulator issues a separate rectification requirement to this company under them."
+    fail_if: "yes"
     judge: independent_model
     evidence: required
-    where: 6-K 公告；20-F Item 8.A 法律程序与风险因素；市场监管总局等境内外监管机构的处罚决定书与公告
+    where: "6-K announcements; 20-F Item 8.A legal proceedings and risk factors; penalty decisions and announcements of SAMR and other regulators in and outside China"
     lookback: 1
-    judge_notes: 暂停商家入驻（如 2026 年 4 月处罚中暂停新蛋糕商家入驻 [src:PDD-20F-FY2025#p28]）属于类目准入限制，不计为修改流量分配或定价规则。
+    judge_notes: "A suspension of merchant onboarding (such as the suspension of new cake merchants in the April 2026 penalty [src:PDD-20F-FY2025#p28]) is a restriction on access to a category and does not count as a change to traffic allocation or pricing rules."
     effective_from: FY2026Q3
-    baseline: {value: 2026 年 4 月的处罚为罚款约 15 亿元，并暂停新蛋糕商家（预包装蛋糕除外）入驻九个月, source: PDD-20F-FY2025#p28, note: "决定书原文：罚没合计 1,521,930,222.91 元，责令暂停新增蛋糕（预包装除外）店铺 9 个月，并责令改正所涉的资质审查与转单违法行为 [src:SAMR-CF-2026-22]；报告只以罚单金额读第 7 条，没有认定这一分支已经触发 [src:PDD-RPT1-2026-09-16#p26]"}
-    note: 论点破坏者第 7 条的第二个分支（原为 PDD-Q14 的事件条件，改为定性测试以便独立判定并附出处），与 PDD-Q14 任一失败即第 7 条触发。
+    baseline: {value: "The April 2026 penalty was a fine of about RMB 1.5 billion and a nine-month suspension of new cake merchants (other than prepackaged cakes)", source: PDD-20F-FY2025#p28, note: "The text of the decision: total penalties of RMB 1,521,930,222.91, an order to suspend new cake stores (other than prepackaged) for 9 months, and an order to correct the violations involved in qualification review and order transfers [src:SAMR-CF-2026-22]; the report reads No. 7 only by the amount of the fine and does not find that this branch has been triggered [src:PDD-RPT1-2026-09-16#p26]"}
+    note: "The second branch of thesis breaker No. 7 (originally an event condition of PDD-Q14, turned into a qualitative test so that it is judged independently with citations); if either this test or PDD-Q14 fails, No. 7 is triggered."
 
   - id: PDD-Q15
     type: quantitative
-    claim: 两位自 2021 年以来股数未动的大股东没有开始离场
+    claim: "The two major shareholders whose holdings have not changed since 2021 have not started to exit"
     origin: report:breaker
     severity: breaker
     covers: [governance, management]
     pillar: P4
     metric_def:
       id: major_holder_shares
-      description: 黄峥关联实体、腾讯关联实体的实益持股数（两组分别读）
-      unit: 股
+      description: "Shares beneficially owned by entities affiliated with Zheng Huang and by entities affiliated with Tencent (each group read separately)"
+      unit: shares
       frequency: year
       data: filing_text
-      where: 腾讯一组以腾讯提交的 Schedule 13D/A 修订为主要数据源（20-F 受益所有权表对腾讯照录其 13D/A [src:PDD-20F-FY2025#p122]）；黄峥一组以 20-F Item 6.E／Item 7.A 受益所有权表为主，并查 Schedule 13D／13G 修订
+      where: "For the Tencent group, the main source is the Schedule 13D/A amendments filed by Tencent (the 20-F beneficial ownership table copies its 13D/A for Tencent [src:PDD-20F-FY2025#p122]); for the Zheng Huang group, mainly the 20-F Item 6.E / Item 7.A beneficial ownership table, also checking Schedule 13D / 13G amendments"
     params: {holders: [Entities affiliated with Zheng Huang, Entities affiliated with Tencent]}
-    fail_if: 黄峥或腾讯关联实体的持股在任一年度减少超过 20%
-    rule: {op: decrease, threshold: 20, unit: "%", consecutive: 1, period: year, note: 对 params.holders 中每一组分别计算同比降幅，任一组触发即失败}
+    fail_if: "holdings of entities affiliated with Zheng Huang or with Tencent fall by more than 20% in any year"
+    rule: {op: decrease, threshold: 20, unit: "%", consecutive: 1, period: year, note: "the year-on-year decline is computed separately for each group in params.holders, and the test fails if either group triggers"}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2027-04
-    baseline: {value: [1409744080, 783468116], unit: 股, as_of: 2026-03-18, source: PDD-20F-FY2025#p121, note: "两组股数与 2021 年 3 月的申报相同：黄峥的 Schedule 13G/A 第 2 号（事件日 2021-03-17）为 1,409,744,080 股 [src:PDD-SC13GA-2021-03-18]，腾讯的 Schedule 13D/A 第 4 号（2021-03-24）为 783,468,116 股 [src:PDD-SC13DA-2021-03-24]；在此之前，FY2020 20-F 对腾讯一组按其 2020 年 11 月的 13D/A 列 783,217,772 股 [src:PDD-20F-FY2020#Item6.E]。2026-09-24 查 EDGAR 本公司申报索引（含以本公司为标的的他人申报），腾讯 2021-03-24 那份 13D/A 之后没有新的 13D 修订，黄峥一方 2021-03-18 之后也没有新的 13D 或 13G 申报 [src:PDD-WEB-2026-09-24-2]。20-F 对腾讯一组照录 2021-03-24 的 13D/A [src:PDD-20F-FY2025#p122]，腾讯的「未变」部分是申报口径的结果。报告称两组自 2021 年以来股数未变 [src:PDD-RPT1-2026-09-16#p15]。黄峥另为 Quantum Dot（由 Qubit Partners 全资持有）的唯一董事 [src:PDD-20F-FY2025#p122]，该部分不在本条口径内"}
-    note: 论点破坏者第 8 条。只读年度 20-F 可能漏掉腾讯的变化：13D/A 修订随时可能出现，出现即读，与一年前的读数比较。
+    baseline: {value: [1409744080, 783468116], unit: shares, as_of: 2026-03-18, source: PDD-20F-FY2025#p121, note: "Both groups' share counts are the same as in the March 2021 filings: Zheng Huang's Schedule 13G/A Amendment No. 2 (event date 2021-03-17) reports 1,409,744,080 shares [src:PDD-SC13GA-2021-03-18], and Tencent's Schedule 13D/A Amendment No. 4 (2021-03-24) reports 783,468,116 shares [src:PDD-SC13DA-2021-03-24]; before that, the FY2020 20-F listed 783,217,772 shares for the Tencent group, per its 13D/A of November 2020 [src:PDD-20F-FY2020#Item6.E]. A check on 2026-09-24 of EDGAR's filing index for the company (including filings by others with the company as subject) shows no new 13D amendment after Tencent's 13D/A of 2021-03-24, and no new 13D or 13G filing by the Zheng Huang side after 2021-03-18 [src:PDD-WEB-2026-09-24-2]. The 20-F copies the 13D/A of 2021-03-24 for the Tencent group [src:PDD-20F-FY2025#p122], so the “unchanged” part for Tencent is a result of the filing basis. The report says both groups' share counts have not changed since 2021 [src:PDD-RPT1-2026-09-16#p15]. Zheng Huang is also the sole director of Quantum Dot (wholly owned by Qubit Partners) [src:PDD-20F-FY2025#p122], which is outside the scope of this test"}
+    note: "Thesis breaker No. 8. Reading only the annual 20-F could miss a change at Tencent: a 13D/A amendment can appear at any time, and is read when it appears and compared with the reading a year earlier."
 
   - id: PDD-L4
     type: qualitative
-    claim: Temu 在美国与欧盟的经营不被监管切断
+    claim: "Temu's operations in the US and the EU are not cut off by regulators"
     origin: report:breaker
     severity: breaker
     covers: [regulation, growth]
     pillar: P5
-    question: 本期文件或监管公告是否披露：Temu 在美国或欧盟任一市场被禁止运营、被要求本地化持股，或欧盟委员会否决其 DSA 整改方案并启动按期罚款？
-    fail_if: 是
+    question: "Does this period's filing or a regulatory announcement disclose that Temu has been barred from operating in either the US or the EU, or required to localize its ownership, or that the European Commission has rejected its DSA action plan and started periodic penalty payments?"
+    fail_if: "yes"
     judge: independent_model
     evidence: required
-    where: 6-K 公告；20-F 风险因素与法律程序；欧盟委员会就 Temu《数字服务法》案件（正式程序 2024-10-31 启动 [src:EC-IP-24-5622]）发布的新闻稿与决定；美国政府针对 Temu 的禁令或本地化持股要求的官方文件。后两类在公司文件之外，判定时作为附加输入提供，首次引用时登记进 sources.yml（欧委会的 IP/24/5622、IP/26/1178 已登记）
+    where: "6-K announcements; 20-F risk factors and legal proceedings; press releases and decisions of the European Commission in the Temu Digital Services Act case (formal proceedings opened on 2024-10-31 [src:EC-IP-24-5622]); official US government documents on a ban on Temu or a requirement to localize its ownership. The last two are outside the company's filings; they are supplied as additional inputs at judgment and registered in sources.yml when first cited (the Commission's IP/24/5622 and IP/26/1178 are already registered)"
     lookback: 1
     effective_from: FY2026Q3
-    baseline: {value: 欧盟委员会 2026-05-28 依《数字服务法》对 Temu 作出不合规决定并罚款，Temu 须于 2026-08-28 前提交整改方案（action plan）, source: EC-IP-26-1178, note: "罚款金额为 2 亿欧元，针对 Temu 未能尽职识别、分析和评估其平台上非法产品的系统性风险 [src:EC-IP-26-1178]。按新闻稿，欧洲数字服务委员会在收到方案后一个月内出具意见，欧委会再于一个月内作出最终决定，不遵守可被处以按期罚款 [src:EC-IP-26-1178]。按本档案的 as_of（2026-09-24），8 月 28 日的期限已过；公司 2026-08-25 的二季度业绩公告没有提到这一决定或整改方案 [src:PDD-6K-2026-08-25#EX-99.1]，提交情况与欧委会的后续决定待判定时补读"}
-    note: 论点破坏者第 9 条；报告预计 DSA 最终决定在 2026 年末前后 [src:PDD-RPT1-2026-09-16#p27]。
+    baseline: {value: "On 2026-05-28 the European Commission adopted a non-compliance decision against Temu under the Digital Services Act and fined it, and Temu must submit an action plan by 2026-08-28", source: EC-IP-26-1178, note: "The fine is €200 million, for Temu's failure to diligently identify, analyze and assess the systemic risks of illegal products on its platform [src:EC-IP-26-1178]. According to the press release, the European Board for Digital Services gives its opinion within one month of receiving the plan, and the Commission then takes a final decision within one month; non-compliance can bring periodic penalty payments [src:EC-IP-26-1178]. As of this archive's as_of (2026-09-24), the 28 August deadline has passed; the company's Q2 earnings release of 2026-08-25 does not mention the decision or the action plan [src:PDD-6K-2026-08-25#EX-99.1], and whether the plan was submitted, and the Commission's subsequent decision, are to be read at judgment"}
+    note: "Thesis breaker No. 9; the report expects the final DSA decision around the end of 2026 [src:PDD-RPT1-2026-09-16#p27]."
 
   - id: PDD-Q16
     type: quantitative
-    claim: 其他收入／损失不会长期大到让利润失去可解释性
+    claim: "Other income/(loss) does not stay so large for so long that profits can no longer be explained"
     origin: report:breaker
     severity: breaker
     covers: [governance]
     pillar: P4
     metric_def:
       id: other_income_to_op_year
-      description: 其他收入／损失净额（Other income, net）的绝对值 ÷ 当年营业利润
+      description: "Absolute value of other income/(loss), net (Other income, net) ÷ the year's operating profit"
       unit: "%"
       frequency: year
       data: filing_text
       formula: abs(other_income_net) / operating_profit
-      where: 20-F 合并损益表与附注；季度 6-K 用于中期跟踪
-    fail_if: 连续两个财年「其他收入／损失净额」的绝对值超过当年营业利润的 20%，且公司仍不披露其构成
+      where: "20-F consolidated statements of income and notes; quarterly 6-Ks for interim tracking"
+    fail_if: "for two consecutive fiscal years, the absolute value of “other income/(loss), net” exceeds 20% of that year's operating profit, and the company still does not disclose its composition"
     rule:
       all_of:
         - {metric: other_income_to_op_year, op: ">", threshold: 20, unit: "%", consecutive: 2, period: year}
-        - {op: event, threshold: 当年年报仍未披露其他收入／损失净额的构成（取 PDD-L8 对当年年报的判定）, period: year}
+        - {op: event, threshold: "that year's annual report still does not disclose the composition of other income/(loss), net (taken from PDD-L8's judgment on that year's annual report)", period: year}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2027-04
-    baseline: {value: [5.0, 2.9, 2.9], unit: "%", period: FY2023–FY2025, source: PDD-20F-FY2025#p103, note: "其他收入净额的绝对值 ÷ 当年营业利润（本档案计算）[src:PDD-20F-FY2025#p103]；FY2025 为 2,726,933 千元对 93,102,131 千元 [src:PDD-20F-FY2025#p103]。2026 年上半年该科目为 −94.30 亿元 [src:PDD-6K-2026-08-25#EX-99.1]，公司没有在业绩公告中说明构成；报告称公司把它归因为海外非经营项目 [src:PDD-RPT1-2026-09-16#p8]，这一说法申报文件未载，只见于第三方转述（仅 L2）"}
-    note: 论点破坏者第 10 条。两腿须同时成立；事件腿由 PDD-L8 的独立判定提供，须附出处与原文摘录。罚款在本条的比率里按入账财年计，不按处罚决定日。未解释的大额损失消耗现金，本条也与支柱 P3 相关。
+    baseline: {value: [5.0, 2.9, 2.9], unit: "%", period: FY2023–FY2025, source: PDD-20F-FY2025#p103, note: "Absolute value of other income, net ÷ the year's operating profit (this archive's calculation) [src:PDD-20F-FY2025#p103]; FY2025 is RMB 2,726,933 thousand against RMB 93,102,131 thousand [src:PDD-20F-FY2025#p103]. This line was −RMB 9.430 billion in the first half of 2026 [src:PDD-6K-2026-08-25#EX-99.1], and the company did not explain its composition in the earnings release; the report says the company attributes it to overseas non-operating items [src:PDD-RPT1-2026-09-16#p8], a claim that is not in the filings and appears only in third-party accounts (L2 only)"}
+    note: "Thesis breaker No. 10. Both legs must hold; the event leg comes from PDD-L8's independent judgment, which must cite its source with an excerpt of the original text. In this test's ratio, a fine counts in the fiscal year in which it is booked, not by its decision date. Large unexplained losses consume cash, so this test also bears on pillar P3."
 
   - id: PDD-L5
     type: qualitative
-    claim: 排序权不外移：购物代理兴起时，拼多多的商品目录仍在主流协议之内
+    claim: "Ranking power does not move elsewhere: as shopping agents rise, Pinduoduo's product catalog stays within the mainstream protocols"
     origin: report:breaker
     severity: breaker
     covers: [moat, competition]
     pillar: P2
-    question: 微信、淘宝、抖音三个国内入口中，是否已有任一入口接入代理购物协议；若有，拼多多的商品目录是否不能经该协议被读取（被排除或自我封闭），而淘宝／天猫、京东、抖音电商中至少一家的目录可以被读取？三个入口都还没有接入任何代理购物协议时，答「否」。
-    fail_if: 是（判据是协议接入名单）
+    question: "Among the three domestic gateways WeChat, Taobao and Douyin, has any one adopted an agentic shopping protocol; and if so, is Pinduoduo's product catalog unreadable through that protocol (excluded or self-closed) while the catalog of at least one of Taobao/Tmall, JD.com and Douyin E-commerce can be read? If none of the three gateways has yet adopted any agentic shopping protocol, answer “no”."
+    fail_if: "yes (the criterion is the protocol's list of participants)"
     judge: independent_model
     evidence: required
-    where: 三个入口官方发布的代理购物协议接入公告，以及所接入协议公开的商户／平台接入名单；公司公告与 6-K。此项证据多在公司文件之外，首次引用时登记进 sources.yml
+    where: "Official announcements by the three gateways that they have adopted an agentic shopping protocol, and the public lists of merchants/platforms connected to the protocol adopted; company announcements and 6-Ks. Most of this evidence is outside the company's filings and is registered in sources.yml when first cited"
     lookback: 1
     effective_from: FY2026Q3
-    baseline: {value: 海外已有代理商务协议：Stripe 与 OpenAI 共同开发的开放标准 Agentic Commerce Protocol 于 2025-09-29 发布，ChatGPT 内的 Instant Checkout 同日在美国上线, source: STRIPE-NEWS-2025-09-29, note: "报告称在海外，发现与比价已进入代理、交易执行尚未 [src:PDD-RPT1-2026-09-16#p13]；这一句的出处 [27] 被报告列为二手 [src:PDD-RPT1-2026-09-16#p30]，仅 L2，未见一手数据，不作基线判据（OpenAI 自己的页面未能读取）。报告预计国内入口的接入在 2027–2028 年可读 [src:PDD-RPT1-2026-09-16#p27]"}
-    note: 论点破坏者第 11 条，即排序权外移的第一步。报告写作「微信、淘宝、抖音等」；本条登记时把入口封闭为这三个，把同业定为淘宝／天猫、京东、抖音电商（报告第 07 节的同业加内容电商），改动须在判定之前写下。
+    baseline: {value: "Agentic commerce protocols already exist abroad: the Agentic Commerce Protocol, an open standard co-developed by Stripe and OpenAI, was released on 2025-09-29, and Instant Checkout in ChatGPT launched in the US the same day", source: STRIPE-NEWS-2025-09-29, note: "The report says that abroad, discovery and price comparison have moved into agents while transaction execution has not yet [src:PDD-RPT1-2026-09-16#p13]; the source of this sentence, [27], is listed by the report as secondary [src:PDD-RPT1-2026-09-16#p30], L2 only, no primary data seen, and it is not used as a baseline criterion (OpenAI's own page could not be read). The report expects the adoption by domestic gateways to become readable in 2027–2028 [src:PDD-RPT1-2026-09-16#p27]"}
+    note: "Thesis breaker No. 11, the first step of ranking power moving elsewhere. The report writes “WeChat, Taobao, Douyin and others”; at registration this test closed the gateways to these three and set the peers as Taobao/Tmall, JD.com and Douyin E-commerce (the peers in section 07 of the report plus content commerce), and any change must be written down before judgment."
 
   - id: PDD-Q17
     type: quantitative
-    claim: 新拼姆若确为自营，其存货不会以大额减值收场
+    claim: "If Xinpinmu is indeed self-operated, its inventory does not end in large write-downs"
     origin: report:breaker
     severity: breaker
     covers: [capital_allocation, management]
     pillar: P5
     metric_def:
       id: selfop_inventory_impairment
-      description: 新拼姆自营相关存货的累计减值
-      unit: 亿元
+      description: "Cumulative write-downs of inventory related to Xinpinmu's self-operated business"
+      unit: RMB 100 million
       frequency: year
       data: filing_text
-      where: 20-F 存货附注与合并损益表；6-K 公告
-    fail_if: 新拼姆三年验收（2028 年报）时，自营相关存货减值超过首期注资 150 亿元的一半
-    rule: {metric: selfop_inventory_impairment, op: ">", threshold: 75, unit: 亿元, period: year, evaluate_on: [FY2027], note: "首期注资 150 亿元 [src:PDD-RPT1-2026-09-16#p5] 的一半"}
+      where: "20-F inventory note and consolidated statements of income; 6-K announcements"
+    fail_if: "at Xinpinmu's three-year review (the 2028 annual report), write-downs of self-operated inventory exceed half of the initial capital injection of RMB 15 billion"
+    rule: {metric: selfop_inventory_impairment, op: ">", threshold: 75, unit: RMB 100 million, period: year, evaluate_on: [FY2027], note: "half of the initial capital injection of RMB 15 billion [src:PDD-RPT1-2026-09-16#p5]"}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2028-04
-    baseline: {value: null, unit: 亿元, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "2026-06-30 资产负债表的资产方没有存货科目，本指标尚无读数 [src:PDD-6K-2026-08-25#EX-99.1]。门槛所依的首期现金出资 150 亿元与三年计划投入 1,000 亿元只见于媒体报道（据报道是公司 2026-03-25 官宣的口径），SEC 文件没有披露金额，仅 L2，未见一手数据 [src:PDD-RPT1-2026-09-16#p5]；一季报只写将投入大量资源建设自有品牌业务，没有金额 [src:PDD-6K-2026-05-28#EX-99.1]"}
-    note: "论点破坏者第 12 条的第一个分支；「无声退出」的分支见 PDD-L7，两条任一失败即第 12 条触发。「2028 年报」登记时读作 2028 年 4 月前后发布的 FY2027 20-F：报告的时间轴把它排在 2027-04 的年报与 2028-07 之间 [src:PDD-RPT1-2026-09-16#p3]，并按发布时间称呼年报（如「2027 年 4 月的年报」）[src:PDD-RPT1-2026-09-16#p25]。规则 note 中的首期注资 150 亿元同样仅 L2（SEC 文件未披露）[src:PDD-RPT1-2026-09-16#p5]；门槛已登记，本期不改，日后一手文件给出不同的首期注资额时，以新的 effective_from 另行登记。新拼姆是自营还是外贸综服模块尚无法区分 [src:PDD-RPT1-2026-09-16#p6]：公司在 2026-05-27 的一季报中称将投入大量资源建设自有品牌（first-party brand）业务 [src:PDD-6K-2026-05-28#EX-99.1]，但没有点名新拼姆，也没有披露模式与会计处理，截至 2026-06-30 资产负债表仍无存货科目 [src:PDD-6K-2026-08-25#EX-99.1]；两种读法的判据是三季报起资产负债表是否出现存货、损益表是否重现商品销售收入。若始终没有存货科目，本条无读数。"
+    baseline: {value: null, unit: RMB 100 million, as_of: 2026-06-30, source: PDD-6K-2026-08-25#EX-99.1, note: "The asset side of the 2026-06-30 balance sheet has no inventory line, so this indicator has no reading yet [src:PDD-6K-2026-08-25#EX-99.1]. The initial cash contribution of RMB 15 billion on which the threshold rests, and the three-year planned investment of RMB 100 billion, appear only in media reports (reportedly the figures the company officially announced on 2026-03-25), and SEC filings do not disclose the amounts, L2 only, no primary data seen [src:PDD-RPT1-2026-09-16#p5]; the first-quarter release says only that significant resources will be committed to building a first-party brand business, with no amount [src:PDD-6K-2026-05-28#EX-99.1]"}
+    note: "The first branch of thesis breaker No. 12; the “silent exit” branch is PDD-L7, and if either fails, No. 12 is triggered. At registration, “the 2028 annual report” was read as the FY2027 20-F published around April 2028: the report's timeline places it between the annual report of 2027-04 and 2028-07 [src:PDD-RPT1-2026-09-16#p3], and the report names annual reports by publication date (e.g. “the annual report of April 2027”) [src:PDD-RPT1-2026-09-16#p25]. The initial injection of RMB 15 billion in the rule's note is likewise L2 only (not disclosed in SEC filings) [src:PDD-RPT1-2026-09-16#p5]; the threshold is registered and is not changed this period, and if a primary filing later gives a different initial injection, it will be registered separately with a new effective_from. Whether Xinpinmu is self-operated or an integrated foreign-trade services module cannot yet be told [src:PDD-RPT1-2026-09-16#p6]: in its first-quarter release of 2026-05-27, the company said it would commit significant resources to building a first-party brand business [src:PDD-6K-2026-05-28#EX-99.1], but it did not name Xinpinmu or disclose the model or the accounting treatment, and as of 2026-06-30 the balance sheet still has no inventory line [src:PDD-6K-2026-08-25#EX-99.1]; the criteria between the two readings are whether inventory appears on the balance sheet, and whether merchandise sales revenue reappears in the income statement, from the third-quarter release on. If there is never an inventory line, this test has no reading."
 
   - id: PDD-L7
     type: qualitative
-    claim: 新拼姆若确为自营，不会像 2021 年的「商品销售」那样收缩后不再单列、且公司不说明原因
+    claim: "If Xinpinmu is indeed self-operated, it will not, like the “merchandise sales” of 2021, be scaled down and then no longer shown separately without the company explaining why"
     origin: report:breaker
     severity: breaker
     covers: [capital_allocation, management]
     pillar: P5
-    question: 本期 20-F 或 6-K 是否显示新拼姆的自营业务已经停止（例如损益表的「商品销售」一行或资产负债表的存货科目在出现后消失，或业务被关停、改为纯服务模块），而公司在文件中没有解释原因？新拼姆从未以自营方式运营（从未出现存货科目或商品销售收入）时，答「否」。
-    fail_if: 是
+    question: "Does this period's 20-F or 6-K show that Xinpinmu's self-operated business has stopped (for example, a “merchandise sales” line in the income statement or an inventory line on the balance sheet disappears after having appeared, or the business is shut down or turned into a pure services module), without the company explaining why in its filings? If Xinpinmu has never operated on a self-operated basis (no inventory line or merchandise sales revenue has ever appeared), answer “no”."
+    fail_if: "yes"
     judge: independent_model
     evidence: required
-    where: 三年验收时点的 20-F（登记时读作 2028 年 4 月前后发布的 FY2027 20-F，理由见 PDD-Q17）及此前的 6-K；合并损益表、资产负债表与业务概览
+    where: "The 20-F at the three-year review (read at registration as the FY2027 20-F published around April 2028, for the reasons in PDD-Q17) and the 6-Ks before it; the consolidated statements of income, balance sheet and business overview"
     lookback: 6
     effective_from: FY2026Q3
     first_readable: 2028-04
-    baseline: {value: 2026-06-30 资产负债表尚无存货科目，新拼姆是自营还是外贸综服模块尚无法区分, source: PDD-6K-2026-08-25#EX-99.1, note: "报告判为无法区分 [src:PDD-RPT1-2026-09-16#p6]；公司 2026-05-27 的一季报称将投入大量资源建设自有品牌业务，没有点名新拼姆 [src:PDD-6K-2026-05-28#EX-99.1]"}
-    note: "论点破坏者第 12 条的第二个分支（原为 PDD-Q17 的事件条件，改为定性测试以便独立判定并附出处），与 PDD-Q17 任一失败即第 12 条触发。先例：2021 年的商品销售收入为 72.5 亿元 [src:PDD-6K-2022-03-22#EX-99.1]，2022 年降至 2.09 亿元，FY2022 20-F 只用一句「主动收缩了这部分业务」（as we scaled down this aspect of our business）解释下降，没有说明收缩的理由 [src:PDD-20F-FY2022#Item5.A]；自 FY2023 20-F 起这一行并入「在线营销服务及其他」，不再单列 [src:PDD-20F-FY2023#Item5.A]。claim 的先例描述已在本条生效（FY2026Q3）之前按首次事实审计更正（04A-4-03，2026-09-25）：原措辞「无声退出」与一手文件不符；判定仍以 question 的定义为准：自营业务停止，而公司在文件中没有解释原因。"
+    baseline: {value: "The 2026-06-30 balance sheet has no inventory line yet, and whether Xinpinmu is self-operated or an integrated foreign-trade services module cannot yet be told", source: PDD-6K-2026-08-25#EX-99.1, note: "The report judges it impossible to tell [src:PDD-RPT1-2026-09-16#p6]; the company's first-quarter release of 2026-05-27 says it will commit significant resources to building a first-party brand business, without naming Xinpinmu [src:PDD-6K-2026-05-28#EX-99.1]"}
+    note: "The second branch of thesis breaker No. 12 (originally an event condition of PDD-Q17, turned into a qualitative test so that it is judged independently with citations); if either this test or PDD-Q17 fails, No. 12 is triggered. Precedent: merchandise sales revenue was RMB 7.25 billion in 2021 [src:PDD-6K-2022-03-22#EX-99.1], fell to RMB 209 million in 2022, and the FY2022 20-F explains the decline only with one phrase, “as we scaled down this aspect of our business”, without giving the reason for scaling it down [src:PDD-20F-FY2022#Item5.A]; from the FY2023 20-F on, this line is merged into “online marketing services and others” and no longer shown separately [src:PDD-20F-FY2023#Item5.A]. The precedent described in the claim was corrected in line with the first fact audit before this test took effect (FY2026Q3) (04A-4-03, 2026-09-25): the original wording “silent exit” did not match the primary filings; the judgment still follows the definition in the question: the self-operated business stops, without the company explaining why in its filings."
 
-  # ———— 报告第 09 节：唯一的正面破坏者（向上改结论）————
+  # ---------- Section 09 of the report: the only positive breaker (revises the conclusion upward) ----------
   - id: PDD-Q18
     type: quantitative
-    claim: 股东返还仍为零，现行结论以现金不能全额到达股东为前提；出现首笔返还即推翻这一前提，论点须上修
+    claim: "Shareholder returns are still zero, and the current conclusion assumes that cash cannot reach shareholders in full; the first return would overturn this assumption, and the thesis would have to be revised upward"
     origin: report:breaker
     severity: breaker
     covers: [capital_allocation, management]
     pillar: P3
     metric_def:
       id: shareholder_return_quarter
-      description: 季度融资活动现金流中的股东返还（普通股或 ADS 回购 + 现金分红）；不含可转债的偿还或回购（现金流量表 Repayment or repurchase of convertible bonds 一行不算）
-      unit: 元
+      description: "Shareholder returns in quarterly financing cash flows (repurchases of ordinary shares or ADSs + cash dividends); excluding repayment or repurchase of convertible bonds (the Repayment or repurchase of convertible bonds line in the cash flow statement does not count)"
+      unit: RMB
       frequency: quarter
       data: filing_text
       formula: share_repurchases + dividends_paid
-      where: 季度 6-K 附件 99.1 的现金流数据（融资活动）；年度用 20-F 合并现金流量表核对
-    fail_if: 季度融资活动现金流中出现任何非零的股东返还
-    rule: {op: ">", threshold: 0, unit: 元, consecutive: 1, period: quarter}
+      where: "Cash flow data (financing activities) in Exhibit 99.1 of the quarterly 6-K; annual figures checked against the 20-F consolidated statements of cash flows"
+    fail_if: "any non-zero shareholder return appears in quarterly financing cash flows"
+    rule: {op: ">", threshold: 0, unit: RMB, consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 0, unit: 元, period: FY2025, source: PDD-20F-FY2025#p157, note: "FY2025 融资活动为可转债偿还 5,228,716 千元与其他 1,363 千元，无回购或分红 [src:PDD-20F-FY2025#p157]。上市以来股东返还为零：20-F 称 PDD Holdings Inc. 没有宣派或支付过现金股利 [src:PDD-20F-FY2025#p17]，Item 16E 为 Not applicable [src:PDD-20F-FY2025#p140]；2018–2025 年的合并现金流量表融资活动都没有回购或股利行 [src:PDD-20F-FY2020#Item18] [src:PDD-20F-FY2022#F-11] [src:PDD-20F-FY2025#p157]，XBRL 汇总数据中的普通股回购只有上市前 2017 年一笔 [src:PDD-WEB-2026-09-24-1]；2026 年上半年融资活动现金流的绝对值不足 100 万元 [src:PDD-6K-2026-08-25#EX-99.1]。报告同 [src:PDD-RPT1-2026-09-16#p3]"}
-    note: "正面触发，不是恶化。报告称这是全篇唯一能在单季内把结论向上改的事件 [src:PDD-RPT1-2026-09-16#p26]。规范的 severity 只有 breaker 与 watch，这里暂用 breaker，以保留 7 天内写结论的节奏；结论方向是上修，不计入恶化统计（待 thesis-ci 规范增加正面触发的写法，见 todo）。2024-08-26 的二季度电话会上，管理层表示当前做回购或分红不合适、可预见的未来几年也没有必要（言行账本 PDD-M3，电话会发言，据第三方整理转述，申报文件未载）[src:PDD-RPT1-2026-09-16#p14]；其中分红的一半有一手表述：20-F 称目前没有在可预见的将来派发现金股利的计划 [src:PDD-20F-FY2025#p17]。"
+    baseline: {value: 0, unit: RMB, period: FY2025, source: PDD-20F-FY2025#p157, note: "FY2025 financing activities were repayment of convertible bonds of RMB 5,228,716 thousand and other items of RMB 1,363 thousand, with no buybacks or dividends [src:PDD-20F-FY2025#p157]. Shareholder returns since listing are zero: the 20-F says PDD Holdings Inc. has never declared or paid cash dividends [src:PDD-20F-FY2025#p17], and Item 16E is Not applicable [src:PDD-20F-FY2025#p140]; the consolidated statements of cash flows for 2018–2025 have no buyback or dividend line under financing activities [src:PDD-20F-FY2020#Item18] [src:PDD-20F-FY2022#F-11] [src:PDD-20F-FY2025#p157], and the only repurchase of ordinary shares in the XBRL summary data is one in 2017, before the listing [src:PDD-WEB-2026-09-24-1]; the absolute value of financing cash flow in the first half of 2026 was less than RMB 1 million [src:PDD-6K-2026-08-25#EX-99.1]. The report says the same [src:PDD-RPT1-2026-09-16#p3]"}
+    note: "A positive trigger, not a deterioration. The report says this is the only event in the whole report that can revise the conclusion upward within a single quarter [src:PDD-RPT1-2026-09-16#p26]. The spec's severity has only breaker and watch, and breaker is used here for now, to keep the rhythm of writing a conclusion within 7 days; the direction of the conclusion is an upward revision, and it does not count in the deterioration statistics (until the thesis-ci spec adds a way to write positive triggers, see todo). On the Q2 earnings call of 2024-08-26, management said that buybacks or dividends are not appropriate now, nor necessary in the foreseeable next few years (say-do ledger PDD-M3, earnings-call remark as reported by third parties, not in the filings) [src:PDD-RPT1-2026-09-16#p14]; of that statement, the dividend half has a primary statement: the 20-F says there is no present plan to pay cash dividends in the foreseeable future [src:PDD-20F-FY2025#p17]."
 
-  # ———— 审计后补充：报告里有信号、此前没有测试盯住的两条（手工）————
+  # ---------- Added after the audit: two signals in the report that no test watched before (manual) ----------
   - id: PDD-Q19
     type: quantitative
-    claim: Temu 的第二形态在关税重置与 DSA 之下自持：交易服务收入没有掉到个位数增长
+    claim: "Temu's second form sustains itself under the tariff reset and the DSA: transaction services revenue has not dropped to single-digit growth"
     origin: manual
     severity: watch
     covers: [growth, competition]
     pillar: P5
     metric: segment_revenue_yoy
-    params: {segment: Transaction services, segment_zh: 交易服务, basis: 报表口径}
-    fail_if: 交易服务收入同比增速转为个位数（低于 10%）
+    params: {segment: Transaction services, segment_zh: Transaction services, basis: reported basis}
+    fail_if: "transaction services revenue growth turns single-digit year on year (below 10%)"
     rule: {op: "<", threshold: 10, unit: "%", consecutive: 1, period: quarter}
     data: filing_text
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 13.3, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "收入附注：54,721 ÷ 48,282 − 1＝13.3% [src:PDD-6K-2026-08-25#EX-99.1]；2026 年上半年 111,014 ÷ 95,232 − 1＝16.6%（百万元，本档案计算）[src:PDD-6K-2026-08-25#EX-99.1]。报告推断二季度含欧盟按件关税生效前的抢运、无法剥离 [src:PDD-RPT1-2026-09-16#p11]；这是报告的推断，公司的业绩公告没有提到关税或抢运 [src:PDD-6K-2026-08-25#EX-99.1]"}
-    note: "设计审计指出，支柱 P5 除总收入（PDD-Q1）与禁令破坏者（PDD-L4）外没有直接读数。判据取自报告：关税路径的信号是交易服务收入增速 [src:PDD-RPT1-2026-09-16#p13]，岔路口①的偏平庸分支是交易服务转个位数 [src:PDD-RPT1-2026-09-16#p27]。交易服务里装着 Temu 的履约链条，也含国内的佣金与服务费，读数不等同于 Temu [src:PDD-RPT1-2026-09-16#p4]。"
+    baseline: {value: 13.3, unit: "%", period: FY2026Q2, source: PDD-6K-2026-08-25#EX-99.1, note: "Revenue note: 54,721 ÷ 48,282 − 1 = 13.3% [src:PDD-6K-2026-08-25#EX-99.1]; first half of 2026: 111,014 ÷ 95,232 − 1 = 16.6% (RMB million, this archive's calculation) [src:PDD-6K-2026-08-25#EX-99.1]. The report infers that the second quarter includes shipments pulled forward ahead of the EU's per-item duty taking effect, which cannot be separated out [src:PDD-RPT1-2026-09-16#p11]; this is the report's inference, and the company's earnings release does not mention tariffs or pulled-forward shipments [src:PDD-6K-2026-08-25#EX-99.1]"}
+    note: "The design audit pointed out that pillar P5 has no direct reading apart from total revenue (PDD-Q1) and the ban breaker (PDD-L4). The criterion comes from the report: the signal on the tariff path is the growth of transaction services revenue [src:PDD-RPT1-2026-09-16#p13], and the mediocre-leaning branch of fork ① is transaction services turning single-digit [src:PDD-RPT1-2026-09-16#p27]. Transaction services contain Temu's fulfillment chain but also domestic commissions and service fees, so the reading is not the same as Temu [src:PDD-RPT1-2026-09-16#p4]."
 
   - id: PDD-L9
     type: qualitative
-    claim: 执法现场的姿态不再恶化：没有再一次「阻碍执法」的官方认定
+    claim: "Conduct during enforcement does not get worse: no further official finding of “obstructing enforcement”"
     origin: manual
     severity: watch
     covers: [regulation, management, culture]
     pillar: P4
-    question: 本期文件或监管机构公告中，是否有监管机构在正式文书（行政处罚决定书、通报或新闻稿）里认定公司或其子公司拒绝提供材料、提供虚假材料，或以其他方式阻碍监管执法？只计 2026-04-17 那份决定书（国市监处罚〔2026〕22 号 [src:SAMR-CF-2026-22]）之后作出的新认定。
-    fail_if: 是
+    question: "In this period's filings or regulators' announcements, has a regulator found in a formal document (an administrative penalty decision, a notice or a press release) that the company or its subsidiaries refused to provide materials, provided false materials, or otherwise obstructed regulatory enforcement? Only new findings made after the decision of 2026-04-17 (Guo Shi Jian Chu Fa [2026] No. 22 [src:SAMR-CF-2026-22]) count."
+    fail_if: "yes"
     judge: independent_model
     evidence: required
-    where: 6-K 公告；20-F Item 8.A 法律程序与风险因素；市场监管总局等境内外监管机构的处罚决定书、通报与新闻稿
+    where: "6-K announcements; 20-F Item 8.A legal proceedings and risk factors; penalty decisions, notices and press releases of SAMR and other regulators in and outside China"
     lookback: 1
     effective_from: FY2026Q3
     first_readable: 2026-11
-    baseline: {value: 国市监处罚〔2026〕22 号决定书（2026-04-17）记载「当事人多次出现无正当理由拒绝提供有关材料、信息，或提供虚假材料、信息等行为，甚至采用暴力、软对抗等手段阻碍监管执法」, source: SAMR-CF-2026-22, note: "当事人为拼多多平台的经营主体上海寻梦信息技术有限公司 [src:SAMR-CF-2026-22]；报告引同一决定书 [src:PDD-RPT1-2026-09-16#p15]"}
-    note: "设计审计指出，支柱 P4 与第五条永久亏损路径都依赖执法姿态不再恶化，此前没有测试盯住。报告把这份决定书里的记载当作全书最硬的一条记录 [src:PDD-RPT1-2026-09-16#p29]，把再一次「阻碍执法」的官方认定列为岔路口⑧的偏平庸分支 [src:PDD-RPT1-2026-09-16#p27]，并说明执法姿态按规则不进折现率，进论点破坏者第 7 条与「情节严重」档次的观察 [src:PDD-RPT1-2026-09-16#p22]。报告没有把它列为论点破坏者，本条因此为 watch；失败时公司经理须在结论里说明是否按破坏者处理。"
+    baseline: {value: "Decision Guo Shi Jian Chu Fa [2026] No. 22 (2026-04-17) records that “the party repeatedly refused without good reason to provide relevant materials and information, or provided false materials and information, and even used violence, soft resistance and other means to obstruct regulatory enforcement”", source: SAMR-CF-2026-22, note: "The party is Shanghai Xunmeng Information Technology Co., Ltd., the operating entity of the Pinduoduo platform [src:SAMR-CF-2026-22]; the report cites the same decision [src:PDD-RPT1-2026-09-16#p15]"}
+    note: "The design audit pointed out that pillar P4 and the fifth permanent-loss path both depend on enforcement conduct not getting worse, and no test watched it before. The report treats this record in the decision as the hardest piece of evidence in the whole report [src:PDD-RPT1-2026-09-16#p29], lists a further official finding of “obstructing enforcement” as the mediocre-leaning branch of fork ⑧ [src:PDD-RPT1-2026-09-16#p27], and explains that under its rules enforcement conduct does not go into the discount rate, but into thesis breaker No. 7 and the watch on the “serious circumstances” tier [src:PDD-RPT1-2026-09-16#p22]. The report does not list it as a thesis breaker, so this test is a watch; if it fails, the company manager must state in the conclusion whether to treat it as a breaker."
 
 todo:
-  - "资本配置与企业文化两个维度报告不予评级（证据缺失）[src:PDD-RPT1-2026-09-16#p3]，ratings 中留空；出现第一笔股东返还或治理变化（设 CFO、独董过半）后补评。"
-  - "首次读数（2026 年三季度 6-K，预计 2026-11-18 前后 [src:PDD-RPT1-2026-09-16#p26]）之前要补齐的历史数据：①应付商家与商家保证金的季末余额，2024-12-31 至 2026-03-31 各季末（PDD-Q7、PDD-Q12 的同比与连续两个／四个季度的窗口）；②2024Q4 至 2026Q2 各季的营业利润与收入（PDD-Q6 的 TTM、PDD-Q8 的同比变化、PDD-Q11 的单季窗口）；③2025Q4、2026Q1 的在线营销服务、交易服务与总收入同比（PDD-Q5、PDD-Q10、PDD-Q19、PDD-Q1 的窗口）。PDD-Q9 的 2026Q1、2026Q2 单季读数已写入其基线。2025Q4 至 2026Q2 的数字取 PDD-6K-2026-03-26、PDD-6K-2026-05-28、PDD-6K-2026-08-25；2025 年一至三季度的 6-K 尚未登记，待补登（STATUS 待办 T2）。2025Q4 的营业利润按业绩公告列示的数字补录，与 20-F 口径的差额（见 F9）在读数说明里记下，规则见 PDD-Q6、PDD-Q8、PDD-Q11 的 note。"
-  - "新拼姆的业务性质（自营还是外贸综服模块）目前无法区分，2026 年三季度 6-K 是否出现存货科目是第一个判据 [src:PDD-RPT1-2026-09-16#p6]。公司 2026-05-27 的一季报称将投入大量资源建设自有品牌（first-party brand）业务 [src:PDD-6K-2026-05-28#EX-99.1]，没有点名新拼姆，也没有披露模式与会计处理；两种读法各自的判据是三季报起资产负债表是否出现存货、损益表是否重现商品销售收入。登记时已定下的读法（PDD-Q8 按同比、PDD-Q11 按单季并在出现「商品销售」时以平台口径判定、PDD-Q14 的罚没口径、PDD-Q17 与 PDD-L7 读 FY2027 20-F）如需改动，须在对应文件发布之前合并。"
-  - "2026 年上半年其他收入／损失净额 −94.30 亿元的构成未披露 [src:PDD-6K-2026-08-25#EX-99.1]。境内罚没 15.22 亿元已计提在经审计的 FY2025 报表中（本档案据差额推断：20-F 的 2025 年一般及行政费用、营业利润、净利润与 2025-12-31 的应计费用及其他负债、留存收益，都与 2026-03-25 的未经审计公告恰好相差 1,521,930 千元，等于决定书的罚没合计）[src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1] [src:SAMR-CF-2026-22]，所以不在 2026 年上半年的其他收入／损失里；只有欧盟委员会的 2 亿欧元罚款是否计提、计入哪一科目仍无法确认 [src:EC-IP-26-1178]。"
-  - "公司最后一次披露 GMV 是 2021 年全年 24,410 亿元（2022-03-21 的业绩公告，年人均消费也止于这一份）[src:PDD-6K-2022-03-22#EX-99.1]；月活与年活跃买家最后一次披露是 2022-05-27 的一季报（2022 年一季度平均月活 7.513 亿，截至 2022-03-31 的十二个月活跃买家 8.819 亿）[src:PDD-6K-2022-05-31#EX-99.1]，自 2022-08-29 的二季报起不再披露 [src:PDD-6K-2022-08-30#EX-99.1]。公司也从未单独披露 Temu 的收入与盈亏，只有一个经营与报告分部 [src:PDD-20F-FY2025#p167]；所有海外与交易额判断只能靠间接读数（交易服务收入、商家浮存）。"
-  - "报告附录登记的其他未知项：价格行为规则中平台统一定价除外条款对 Temu 全托管的适用范围、千亿扶持的实际支出与会计科目、Temu 收入按总额法还是净额法确认、雄安单位的并表状态、「其他子公司」持有的现金类资产中境内与境外的比例 [src:PDD-RPT1-2026-09-16#p30]；截至 2025-12-31，「其他子公司」持有的现金、现金等价物、受限资金与短期投资为 3,249 亿元 [src:PDD-20F-FY2025#p18]。"
-  - "PDD-L4、PDD-L5 的部分判据在公司文件之外。已登记：欧委会的两份新闻稿（EC-IP-24-5622、EC-IP-26-1178）与 Stripe 关于代理商务协议的新闻稿（STRIPE-NEWS-2025-09-29）；其余（欧委会就整改方案的后续决定、美国针对 Temu 的官方文件、国内入口的代理购物协议接入公告与接入名单、OpenAI 关于 Instant Checkout 的原文）首次引用时登记进 sources.yml 并写明访问日期。报告预计国内入口接入在 2027–2028 年可读 [src:PDD-RPT1-2026-09-16#p27]。"
-  - "PDD-L1 替代模板 L-guidance 的理由是报告与 FY2025 20-F 中都未见公司公布的中期财务目标；待以季度 6-K 业绩公告复核公司是否给过任何财务指引。"
-  - "言行账本已登记 PDD-L1 要对照的两条表态与 2024 年 8 月的回购分红表态（PDD-M1 至 PDD-M3，都是电话会发言，据第三方整理转述，申报文件未载）。电话会的一手载体是公司网站的回放，已登记为 PDD-CALL-FY2026Q2、PDD-CALL-FY2024Q2，本轮没有转写核对；取得回放原话后改引，PDD-L1 的基线在此之前按 §G3 视为待核。新拼姆三年 1,000 亿元的投入计划 [src:PDD-RPT1-2026-09-16#p5] 只见于媒体报道（据报道是公司 2026-03-25 官宣的口径），仅 L2，未见一手数据，待查明公司自己的表态日期与出处后登记：首期出资在合并报表上不可见，SEC 文件也未披露 [src:PDD-RPT1-2026-09-16#p15]。"
-  - "董事与高管的内部人申报：2026-03-18 起，11 位董事与高管在 EDGAR 报送 Form 3，此后有 2026-04-01、07-02、08-04、09-02、09-04 报送的 Form 4，董事另报送 Form 144 [src:PDD-WEB-2026-09-25-1]。写管理层与治理部分、判断内部人买卖时，以这些申报为准。"
-  - "规范层面待定的写法（交 thesis-ci 规范维护者）：正面触发的 severity（PDD-Q18 暂用 breaker）；同一定义在多条测试中重复（merchant_float、ppe_plus_inventory、operating_margin_ttm）时须同步修改。"
-  - "depends_on 为空：三个现有行业模块都不对应拼多多；报告里的行业级路标（代理商务协议、网上商品零售增速、欧盟低值包裹关税）适合日后建一个电商／跨境电商行业模块。"
+  - "The report does not rate the two dimensions capital allocation and culture (evidence missing) [src:PDD-RPT1-2026-09-16#p3], so they are left blank in ratings; rate them once the first shareholder return or a governance change (a CFO appointed, independent directors in the majority) occurs."
+  - "Historical data to fill in before the first reading (the Q3 2026 6-K, expected around 2026-11-18 [src:PDD-RPT1-2026-09-16#p26]): (a) quarter-end balances of payable to merchants and merchant deposits, for each quarter-end from 2024-12-31 to 2026-03-31 (the year-on-year comparison and the two- / four-consecutive-quarter windows of PDD-Q7 and PDD-Q12); (b) operating profit and revenue for each quarter from 2024Q4 to 2026Q2 (the TTM of PDD-Q6, the year-on-year change of PDD-Q8, the single-quarter window of PDD-Q11); (c) year-on-year growth of online marketing services, transaction services and total revenue for 2025Q4 and 2026Q1 (the windows of PDD-Q5, PDD-Q10, PDD-Q19 and PDD-Q1). The single-quarter readings of PDD-Q9 for 2026Q1 and 2026Q2 are already in its baseline. Figures for 2025Q4 to 2026Q2 come from PDD-6K-2026-03-26, PDD-6K-2026-05-28 and PDD-6K-2026-08-25; the 6-Ks for the first three quarters of 2025 are not yet registered and are still to be added (STATUS to-do T2). 2025Q4 operating profit is filled in with the figure presented in the earnings release, and the difference from the 20-F basis (see F9) is recorded in the reading's explanation; the rules are in the notes of PDD-Q6, PDD-Q8 and PDD-Q11."
+  - "The nature of Xinpinmu's business (self-operated or an integrated foreign-trade services module) cannot be told at present, and whether an inventory line appears in the Q3 2026 6-K is the first criterion [src:PDD-RPT1-2026-09-16#p6]. The company's first-quarter release of 2026-05-27 says it will commit significant resources to building a first-party brand business [src:PDD-6K-2026-05-28#EX-99.1], without naming Xinpinmu or disclosing the model or the accounting treatment; the criteria for the two readings are whether inventory appears on the balance sheet, and whether merchandise sales revenue reappears in the income statement, from the third-quarter release on. Any change to the readings fixed at registration (PDD-Q8 year on year, PDD-Q11 by single quarter and on the platform basis once “merchandise sales” appears, the penalty basis of PDD-Q14, PDD-Q17 and PDD-L7 reading the FY2027 20-F) must be merged before the filing concerned is published."
+  - "The composition of other income/(loss), net of −RMB 9.430 billion in the first half of 2026 is not disclosed [src:PDD-6K-2026-08-25#EX-99.1]. The domestic penalty of RMB 1.522 billion has been accrued in the audited FY2025 financial statements (this archive's inference from the differences: the 20-F's 2025 general and administrative expenses, operating profit and net income, and its accrued expenses and other liabilities and retained earnings at 2025-12-31, all differ from the unaudited release of 2026-03-25 by exactly RMB 1,521,930 thousand, which equals the total penalty in the decision) [src:PDD-20F-FY2025#p153] [src:PDD-6K-2026-03-26#EX-99.1] [src:SAMR-CF-2026-22], so it is not in other income/(loss) for the first half of 2026; only whether the European Commission's €200 million fine has been accrued, and in which line, still cannot be confirmed [src:EC-IP-26-1178]."
+  - "The company last disclosed GMV for full-year 2021, RMB 2,441.0 billion (earnings release of 2022-03-21, which is also the last to give annual spending per active buyer) [src:PDD-6K-2022-03-22#EX-99.1]; monthly active users and annual active buyers were last disclosed in the first-quarter release of 2022-05-27 (average MAUs of 751.3 million in Q1 2022, and 881.9 million active buyers in the twelve months to 2022-03-31) [src:PDD-6K-2022-05-31#EX-99.1], and have not been disclosed since the second-quarter release of 2022-08-29 [src:PDD-6K-2022-08-30#EX-99.1]. The company has also never disclosed Temu's revenue or profit separately, and has only one operating and reportable segment [src:PDD-20F-FY2025#p167]; all judgments on the overseas business and on transaction volume can only rely on indirect readings (transaction services revenue, merchant float)."
+  - "Other unknowns registered in the report's appendix: how far the exemption for platform-unified pricing in the pricing-conduct rules applies to Temu's fully managed model, the actual spending and accounting line of the hundred-billion support, whether Temu revenue is recognized gross or net, the consolidation status of the Xiong'an unit, and the split between China and abroad of the cash-type assets held by “other subsidiaries” [src:PDD-RPT1-2026-09-16#p30]; as of 2025-12-31, the cash, cash equivalents, restricted cash and short-term investments held by “other subsidiaries” were RMB 324.9 billion [src:PDD-20F-FY2025#p18]."
+  - "Some criteria of PDD-L4 and PDD-L5 lie outside the company's filings. Registered: the Commission's two press releases (EC-IP-24-5622, EC-IP-26-1178) and Stripe's press release on the agentic commerce protocol (STRIPE-NEWS-2025-09-29); the rest (the Commission's subsequent decision on the action plan, official US documents on Temu, the domestic gateways' announcements of adopting agentic shopping protocols and the participant lists, OpenAI's original text on Instant Checkout) are registered in sources.yml with the access date when first cited. The report expects the domestic gateways' adoption to be readable in 2027–2028 [src:PDD-RPT1-2026-09-16#p27]."
+  - "PDD-L1 replaces the template's L-guidance because neither the report nor the FY2025 20-F shows medium-term financial targets published by the company; recheck against the quarterly 6-K earnings releases whether the company has given any financial guidance."
+  - "The say-do ledger has registered the two statements PDD-L1 judges against and the August 2024 statement on buybacks and dividends (PDD-M1 to PDD-M3, all earnings-call remarks as reported by third parties, not in the filings). The primary record of the calls is the replay on the company's website, registered as PDD-CALL-FY2026Q2 and PDD-CALL-FY2024Q2, not transcribed and checked in this round; cite the replay's actual words once obtained, and until then treat PDD-L1's baseline as pending verification under §G3. Xinpinmu's three-year RMB 100 billion investment plan [src:PDD-RPT1-2026-09-16#p5] appears only in media reports (reportedly as officially announced by the company on 2026-03-25), L2 only, no primary data seen; register it once the date and source of the company's own statement are found: the initial contribution is not visible in the consolidated statements and is not disclosed in SEC filings either [src:PDD-RPT1-2026-09-16#p15]."
+  - "Insider filings by directors and officers: from 2026-03-18, 11 directors and officers filed Form 3 on EDGAR, followed by Forms 4 filed on 2026-04-01, 07-02, 08-04, 09-02 and 09-04, and directors also filed Form 144 [src:PDD-WEB-2026-09-25-1]. Use these filings when writing the management and governance parts and when judging insider buying and selling."
+  - "Spec-level wording still to be settled (for the thesis-ci spec maintainers): the severity of a positive trigger (PDD-Q18 uses breaker for now); when the same definition is repeated in several tests (merchant_float, ppe_plus_inventory, operating_margin_ttm), the copies must be changed together."
+  - "depends_on is empty: none of the three existing industry modules fits Pinduoduo; the industry-level signposts in the report (agentic commerce protocols, growth in online retail sales of physical goods, EU duties on low-value parcels) would suit an e-commerce / cross-border e-commerce industry module built later."
