@@ -1,0 +1,76 @@
+# 预注册的时间戳（docs/decisions/0018；thesis-ci SPEC §2.1、C-PREREG-IMMUTABLE）。
+#
+# - 预注册条目文件（companies/*/prereg/<期间>.yml 与 <期间>-owner.yml）合并进 main 后，立即给它们打
+#   OpenTimestamps 时间戳，把 <文件>.ots 提交回 main。截止时间已过的不打；已有证明而内容变了的拒绝
+#   （pipeline/timestamp.py），这一轮以失败结束，由人处理。
+# - 每 6 小时：把待确认的证明升级为比特币确认的证明并提交；上一轮因日历联系不上而没打成的，这时补打。
+#
+# 权限：默认只读；只有下面这一个 job 有 contents: write（推送证明），而且只在 main 上运行。
+# 不需要任何密钥：推送用 GitHub 为这次运行发放的 GITHUB_TOKEN。
+# 不会循环：(1) 用 GITHUB_TOKEN 推送的提交不触发任何 workflow（GitHub 的规则）；(2) 这里只提交 *.ots，
+# 不匹配下面的 paths；(3) 没有新打或升级的证明就不提交。
+name: timestamp
+
+"on":
+  push:
+    branches: [main]
+    paths:
+      - "companies/*/prereg/*.yml"
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: timestamp
+  cancel-in-progress: false
+
+jobs:
+  proofs:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: 安装 OpenTimestamps 客户端（版本取自 requirements.txt）
+        run: pip install -c requirements.txt opentimestamps-client pyyaml
+      - name: 打时间戳、升级证明，提交回 main
+        shell: bash
+        run: |
+          set -u
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            rc=0
+            python -m pipeline.timestamp stamp --prereg || rc=1
+            python -m pipeline.timestamp upgrade --prereg || rc=1
+            git ls-files -z --others --modified --exclude-standard -- 'companies/*/prereg/*.ots' \
+              | xargs -0 -r git add --
+            if git diff --cached --quiet; then
+              echo "没有新打或升级的证明。"
+              exit "$rc"
+            fi
+            proofs=$(git diff --cached --name-only)
+            base=$(git rev-parse HEAD)
+            git commit -q -m "prereg: 时间戳证明（打时间戳或升级）" -m "$proofs" \
+              -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+            if git push -q origin HEAD:main; then
+              exit "$rc"
+            fi
+            git fetch -q origin main
+            if [ "$(git rev-parse origin/main)" = "$base" ]; then
+              echo "推送被拒绝，而 main 没有变：不是并发，停下。" >&2
+              exit 1
+            fi
+            echo "main 已前进：丢掉这次提交，从新的 main 重做（第 $attempt 次）。"
+            git reset -q --hard origin/main
+          done
+          echo "连续三次推送都没成功。" >&2
+          exit 1

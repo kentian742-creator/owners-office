@@ -24,6 +24,10 @@ jobs:
           python-version: "3.12"
       - name: 安装 thesis-ci（见 docs/decisions/0007）
         run: pip install -r requirements-lint.txt
+      # C-PREREG-IMMUTABLE 在 PATH 上有 ots 时用 ots verify 核验预注册的证明，没有就只报警（docs/decisions/0018）。
+      # 版本取自 requirements.txt（-c 只借用它的版本约束，不装其他依赖）。
+      - name: 安装 OpenTimestamps 客户端
+        run: pip install -c requirements.txt opentimestamps-client
       - name: thesis-ci lint
         run: thesis-ci lint .
 
