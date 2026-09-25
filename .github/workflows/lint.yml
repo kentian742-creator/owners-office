@@ -1,0 +1,40 @@
+# 公开仓库的 CI：thesis-ci lint + 流水线单元测试。
+#
+# 注意：这里检查不到私有仓库 owners-office-private。公开仓库的 CI 没有读取私有仓库的权限，
+# 也不应该有。跨仓库的检查（私有仓库带 --counterpart 的 lint、验收脚本 scripts/accept.py）
+# 在私有仓库自己的 CI 和本地运行。
+#
+# 本 workflow 不需要任何密钥：lint 和测试都不调用模型（测试用假客户端）。
+name: lint
+
+"on":
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  thesis-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: 安装 thesis-ci（见 docs/decisions/0007）
+        run: pip install -r requirements-lint.txt
+      - name: thesis-ci lint
+        run: thesis-ci lint .
+
+  pipeline-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+      - name: pytest
+        run: python -m pytest -q tests

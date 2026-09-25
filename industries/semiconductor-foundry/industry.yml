@@ -1,0 +1,355 @@
+# 行业模块：半导体代工（thesis-ci SPEC 第 6 节；schema：industry.schema.json）
+# 本模块只描述行业本身：不记录任何公司论点与本模块之间的引用关系，不含任何买卖观点。
+# 事实数字全部来自 IND-FOUNDRY-2026-09（见同目录 sources.yml），#pN 为 PDF 页码（与印刷页码一致）。
+# 门槛（threshold / rule）是事先写下的判定标准，不需要出处；读数（current_reading）是事实，必须带出处。
+# 标“研究计算”的数字是研究作者在公开数字上的算术；标“本模块推论”的句子是本模块的推断，不是研究原话。
+# 可能性用语沿用研究的定义：很可能、可能、不确定、不太可能、很不可能（数值区间见 README）。
+id: semiconductor-foundry
+name: 半导体代工
+name_en: Semiconductor Foundry
+as_of: 2026-09-16
+reviewed: 2026-09-24
+source: IND-FOUNDRY-2026-09#p3
+
+summary: >-
+  半导体代工是替其他公司合同制造逻辑、模拟和特色晶圆的行业，代工厂现在也连同晶圆出售先进封装，2025 年前十大代工厂的晶圆收入约 1,700 亿美元 [src:IND-FOUNDRY-2026-09#p3]。
+  这是一门学习曲线生意：每代制程的固定成本增长快于市场，能负担新节点的厂商越来越少，按 2020 年的统计，在 180nm 生产的芯片制造商有 94 家，在 5nm 只有 3 家（统计含全部芯片制造商，不只代工厂）[src:IND-FOUNDRY-2026-09#p9][src:IND-FOUNDRY-2026-09#p10]。
+  在最新节点上量产最多的厂商学得最快、赚得最多、再为下一个节点出资，加上不与客户竞争的承诺，TSMC 占前十大代工收入的份额从 2021 年第一季度的 55% 升至 2026 年第二季度的 72.5%，2025 年其营业利润超过代工层其余公司之和（研究计算）[src:IND-FOUNDRY-2026-09#p3]。
+  利润跟着稀缺走：2025 财年 TSMC 的营业利润率为 50.8%，成熟制程代工厂为 12–19%，独立封测厂只有 7–8% [src:IND-FOUNDRY-2026-09#p8]。
+  研究认为补贴更容易改变晶圆厂建在哪里，而不是谁赢，成熟制程则是另一门周期性生意，价格将越来越多地由中国的扩产决定 [src:IND-FOUNDRY-2026-09#p3]。
+
+structure:
+  - >-
+    收费方式：代工厂按晶圆、并越来越多地按封装出租制造能力，价格由制程节点和该节点产能的稀缺程度决定，成本大部分固定，因此利润取决于制程结构、产能利用率，以及是否拥有客户在别处买不到的产能 [src:IND-FOUNDRY-2026-09#p6]。
+  - >-
+    从终端买家到代工：终端买家付钱给芯片设计公司，设计公司再付钱给少数稀缺的制造环节 [src:IND-FOUNDRY-2026-09#p6]。
+    按 Epoch AI 对 Nvidia B200 的成本模型推算（研究计算），TSMC 的逻辑裸片加 CoWoS 封装约 1,850 美元，只占售价的 5–6% 左右，10% 的晶圆涨价只让一颗 3 万美元以上的芯片多出约 85 美元 [src:IND-FOUNDRY-2026-09#p7]。
+  - >-
+    谁留下价值：设计创造的价值最多，但利润按稀缺程度分配 [src:IND-FOUNDRY-2026-09#p8]，2025 财年营业利润率 TSMC 为 50.8%、UMC 为 18.5%、GlobalFoundries 为 11.7% [src:IND-FOUNDRY-2026-09#p4]，独立封测厂 ASE 与 Amkor 只有 7–8%，因为最稀缺的封装形式 CoWoS 在代工厂内部完成 [src:IND-FOUNDRY-2026-09#p8]。
+  - >-
+    会移动的护城河：持久的资产不是晶圆厂本身（晶圆厂可以买到），而是只有在最新节点上大量生产才能积累的制程学习，由不断上升的固定成本和客户对代工厂不与其竞争的信任守护，但必须在每个节点重新赢得 [src:IND-FOUNDRY-2026-09#p9]。
+    再投资的规模本身就是壁垒：TSMC 2025 年资本开支 409 亿美元，超过 UMC、GlobalFoundries 与 SMIC 的收入之和 237 亿美元（研究计算）[src:IND-FOUNDRY-2026-09#p10]。
+  - >-
+    回报分化：领先者在很重的再投资负担下取得高回报，TSMC 2006–2025 年的 ROE 介于 18.4% 与 39.8% 之间、平均约 26%（研究计算）[src:IND-FOUNDRY-2026-09#p14]，同期资本开支平均约占收入的 37%（研究计算）[src:IND-FOUNDRY-2026-09#p11]。
+    其余厂商的回报随周期和产能利用率波动，例如 UMC 的毛利率自 2019 年以来在 14% 与 45% 之间 [src:IND-FOUNDRY-2026-09#p11]。
+  - >-
+    国家成为所有者与守门人：国家通过入股（Intel）、产业基金（中国）、出口管制和本地化规则介入，补贴、关税和客户对台湾以外供应的需求推动产能在地理上分散 [src:IND-FOUNDRY-2026-09#p19]。
+    中国以受保护需求和国家资金支撑 SMIC，其收入从 2020 年的 39 亿美元增至 2025 年的 93 亿美元，但 2025 年毛利率只有 21%，同年 TSMC 为 59.9% [src:IND-FOUNDRY-2026-09#p13]。
+
+signposts:
+  - id: FOUNDRY-SP1
+    title: 挑战者在 2nm 级工艺上为具名外部客户量产
+    observable: >-
+      Intel Foundry、Samsung Foundry 或其他非 TSMC 代工厂，是否有具名外部客户的产品在其 2nm 级工艺上进入量产出货；外部客户不含挑战者自己的产品。
+      本路标把 Intel 18A 及以后的工艺、Samsung 2nm 及以后的工艺、Rapidus 2nm 都算作 2nm 级，研究点名要看的是 Intel 14A 与 Samsung 2nm [src:IND-FOUNDRY-2026-09#p3]。
+      研究的推翻条件还要求旗舰客户、高量产品和有竞争力的良率 [src:IND-FOUNDRY-2026-09#p3]；良率很少公开，这里以公司确认的量产出货作为可观察的代理，良率与客户规模在复核时记录。
+      辅助读数是 TrendForce 季度排名中 TSMC 占前十大代工收入的份额，研究以这一份额的上升作为第一条核心论点的证据 [src:IND-FOUNDRY-2026-09#p3]，该排名不含 Intel Foundry [src:IND-FOUNDRY-2026-09#p11]。
+    threshold: >-
+      任一条件满足即触发：
+      （1）挑战者或其客户在公司公告、定期报告或业绩电话会中确认，某个具名外部客户的产品已在挑战者的 2nm 级工艺上进入量产并出货；只宣布合作意向、完成流片、送样，或据报道计划采用，都不算。
+      （2）TSMC 占前十大代工收入的份额连续 4 个季度低于上年同季（TrendForce 季度排名，两个季度都取最新发布、含重述的数值），即研究用作证据的份额上升趋势反转。
+      研究给出的更强一级、足以证明其观点错误的情形是挑战者赢得前五大客户之一过半的领先制程量 [src:IND-FOUNDRY-2026-09#p19]；这一级没有公开的定期数据，只在复核时判断，不写入机器规则。
+    rule:
+      any_of:
+        - op: event
+          period: event
+          metric: challenger_2nm_class_named_external_customer_in_volume
+          threshold: 具名外部客户的产品在挑战者的 2nm 级工艺上量产出货，经挑战者或客户正式披露
+          note: 媒体报道只作线索；合作意向、流片、送样与计划采用不算
+        - op: "<"
+          threshold: 0
+          unit: pp
+          consecutive: 4
+          period: quarter
+          metric: tsmc_top10_foundry_revenue_share_yoy_change
+          note: TrendForce 季度排名中 TSMC 的份额减去上年同季的份额
+    check_frequency: quarterly
+    data_source: >-
+      Intel 季度业绩新闻稿与 10-Q/10-K（EDGAR，CIK 0000050863）中关于 Intel Foundry 外部客户、18A 与 14A 的披露；
+      Samsung Electronics 季度业绩电话会与新闻稿（news.samsung.com）中关于 2nm 客户和得州 Taylor 工厂量产的披露；
+      Rapidus 新闻稿（rapidus.inc）；
+      TrendForce 每季发布的全球前十大晶圆代工收入排名新闻稿（trendforce.com/presscenter）。
+    current_reading:
+      value: >-
+        未触发：研究列出的待观察项仍是 Intel 14A 的具名客户进入量产，以及据报道于 2027 年下半年在得州爬坡的 Samsung 2nm 特斯拉项目能否按期，研究没有记录任何挑战者已在 2nm 级工艺上为具名外部客户量产出货
+      period: "2026-09"
+      as_of: 2026-09-16
+      source: IND-FOUNDRY-2026-09#p16
+      note: >-
+        Intel 的首批 18A 产品于 2025 年底起上市，但属 Intel 自己的产品，不算外部客户 [src:IND-FOUNDRY-2026-09#p13]。
+        特斯拉据报道计划采用 Intel 14A，而 Intel 的 10-K 警告若没有重要外部客户可能暂停 14A [src:IND-FOUNDRY-2026-09#p13]。
+        第二项条件：TSMC 占前十大代工收入的份额在 2026 年第二季度为 72.5%，Samsung 为 5.9% [src:IND-FOUNDRY-2026-09#p4]，研究的图表显示 TSMC 的份额在所列各季逐季上升，但没有给出上年同季的精确值 [src:IND-FOUNDRY-2026-09#p11]。
+    implication: >-
+      触发意味着研究的第一条核心论点（规模加学习是真实但会移动的护城河，领先制程上量产最多的厂商赢下每个节点，差距还在扩大）开始受到直接检验 [src:IND-FOUNDRY-2026-09#p3]。
+      芯片按某一家代工厂的工艺设计，客户很少在一代产品之内更换代工厂，但每一代新产品都可以重新选择，所以领先者必须赢下每个节点 [src:IND-FOUNDRY-2026-09#p8]。
+      买方虽然集中，却缺少同等的第二供应源，因此用长期承诺而不是议价来应对 [src:IND-FOUNDRY-2026-09#p8]，一个量产出货的外部客户说明第二供应源开始成形，这一格局可能松动（本模块推论）。
+      研究在 5–10 年视野下的基准判断是：领先制程收入出现 10 个百分点以上的实质性份额转移属“不太可能”，置信度中等 [src:IND-FOUNDRY-2026-09#p16]。
+      第二项条件触发时先区分原因：份额下降也可能来自需求周期或成熟制程价格变化，而不是第二供应源（本模块推论）。
+    tests_to_rerun: [moat, competition, pricing_power, customer_concentration]
+
+  - id: FOUNDRY-SP2
+    title: 领先代工厂的毛利率下限与 AI 需求
+    observable: >-
+      TSMC 的季度毛利率，对照公司穿越周期毛利率“56% 及以上”的目标 [src:IND-FOUNDRY-2026-09#p14]，研究要求在海外新厂爬坡期间盯住这一下限 [src:IND-FOUNDRY-2026-09#p19]。
+      同时观察研究列出的 AI 需求早期信号：HPC（高性能计算）占 TSMC 收入的比例停滞、资本开支指引下调、客户采购承诺收缩 [src:IND-FOUNDRY-2026-09#p16]。
+    threshold: >-
+      任一条件满足即触发：
+      （1）TSMC 季度毛利率连续 3 个季度低于 56%，按公司报告的毛利率判定，不扣除海外新厂的稀释；研究写作“数个季度” [src:IND-FOUNDRY-2026-09#p3]，此处事先定为 3 个季度。
+      （2）TSMC 在同一年度内下调当年资本开支指引，即新指引区间的中点低于上一次指引区间的中点。
+      （3）HPC 占 TSMC 季度收入的比例连续 2 个季度不高于上年同季（用同比口径避开季节性）。
+      判读时区分周期与结构：只有（1）触发且同期需求没有崩塌，才对应研究推翻其第二条核心论点的条件 [src:IND-FOUNDRY-2026-09#p3]。
+      “需求崩塌”在此事先定义为 TrendForce 口径的前十大代工厂季度合计收入较此前的季度峰值下降 20% 以上；作为参照，2022 年第三季度至 2023 年第一季度的降幅为 22% [src:IND-FOUNDRY-2026-09#p15]。
+    rule:
+      any_of:
+        - op: "<"
+          threshold: 56
+          unit: "%"
+          consecutive: 3
+          period: quarter
+          metric: tsmc_gross_margin
+          note: TSMC 季度 Management Report 报告的毛利率，不做调整
+        - op: "<"
+          threshold: 0
+          unit: USD
+          period: quarter
+          metric: tsmc_capex_guidance_midpoint_change
+          note: 同一年度内新的资本开支指引区间中点减去上一次指引区间中点
+        - op: "<="
+          threshold: 0
+          unit: pp
+          consecutive: 2
+          period: quarter
+          metric: tsmc_hpc_revenue_share_yoy_change
+          note: HPC 占季度收入的比例减去上年同季的比例
+    check_frequency: quarterly
+    data_source: >-
+      TSMC 季度 Management Report 与业绩电话会纪要（investor.tsmc.com 的 Quarterly Results 页）：毛利率、按平台划分的收入占比（HPC）与当年资本开支指引；
+      TSMC 亦通过 EDGAR 提交 6-K 与 20-F（CIK 0001046179）；
+      TrendForce 每季发布的全球前十大晶圆代工收入排名新闻稿（trendforce.com/presscenter），用于判定需求是否崩塌。
+    current_reading:
+      value: 67.7
+      unit: "%"
+      period: 2Q26
+      as_of: 2026-06-30
+      source: IND-FOUNDRY-2026-09#p16
+      note: >-
+        指 TSMC 2026 年第二季度的毛利率 [src:IND-FOUNDRY-2026-09#p16]，2025 全年为 59.9% [src:IND-FOUNDRY-2026-09#p9]。
+        HPC 占 TSMC 收入的比例在 2025 全年为 58%、2026 年第二季度为 66% [src:IND-FOUNDRY-2026-09#p6]，研究没有给出上年同季的比例。
+        TSMC 随第二季度业绩把 2026 年资本开支指引上调至 600–640 亿美元 [src:IND-FOUNDRY-2026-09#p16]。
+        2026 年第二季度的年化 ROE 为 45.9%，研究视之为周期高点而非新基准 [src:IND-FOUNDRY-2026-09#p14]。
+    implication: >-
+      需求信号先触发时，主要是周期性检验：超大规模云厂商放缓资本开支，领先制程与 CoWoS 的利用率下降，固定成本压缩利润率 [src:IND-FOUNDRY-2026-09#p16]，由此检验当前利润率中有多少是稀缺租金 [src:IND-FOUNDRY-2026-09#p3]。
+      研究在 1–5 年视野下的判断是：某个时点出现周期性下滑属“可能”，永久性损伤属“不太可能”，置信度中等 [src:IND-FOUNDRY-2026-09#p16]。
+      毛利率跌破下限而需求没有崩塌，对应研究推翻其第二条核心论点（代工已成为能赚到设计级利润的关口）的条件 [src:IND-FOUNDRY-2026-09#p3]，研究的另一条推翻条件是 TSMC 的 ROE 在需求没有崩塌时连续数年跌到 high-teens 以下 [src:IND-FOUNDRY-2026-09#p19]。
+      固定成本高使利润对利用率很敏感：折旧占 TSMC 2025 年营业成本的 42%（研究计算）[src:IND-FOUNDRY-2026-09#p14]，2023 年下行期 TSMC 的毛利率从 59.6% 降到 54.4% [src:IND-FOUNDRY-2026-09#p15]。
+      海外新厂预计先稀释毛利率 2–3 个百分点、之后扩大到 3–4 个百分点 [src:IND-FOUNDRY-2026-09#p16]，研究把这种稀释列为产能外迁的代价 [src:IND-FOUNDRY-2026-09#p19]，门槛按报告值判定，稀释本身就是本路标要检验的内容之一。
+    tests_to_rerun: [pricing_power, returns_on_capital, growth, free_cash_flow, moat]
+
+  - id: FOUNDRY-SP3
+    title: 先进封装在代工收入中的比重
+    observable: >-
+      TSMC 先进封装收入占公司总收入的比例，按管理层在第四季度业绩电话会上给出的全年数字读取；
+      同时观察研究列出的另一个早期信号，即客户是否与代工厂共同设计封装 [src:IND-FOUNDRY-2026-09#p16]，以及量产的数据中心 AI 加速器所用的逻辑与 HBM 集成封装由谁开发、由谁制造。
+    threshold: >-
+      任一条件满足即触发：
+      （1）TSMC 管理层披露的全年先进封装收入占比达到或超过 15%，只给约数时按字面下限记录（例如“略高于 10%”记为 10%）。15% 是事先定下的门槛，比 2025 年的略高于 10% [src:IND-FOUNDRY-2026-09#p8] 明显上升。
+      （2）某家设计公司当期最新一代的数据中心 AI 加速器在量产出货中，把逻辑芯片与 HBM 的集成封装交给逻辑芯片代工厂以外的公司，并采用该公司自己开发的封装架构（存储厂、整合厂或独立封测厂均算），经设计公司或封装供应商披露，或经独立拆解证实；代工厂把自己的封装架构授权或外包给他人不算。
+    rule:
+      any_of:
+        - op: ">="
+          threshold: 15
+          unit: "%"
+          period: year
+          metric: tsmc_advanced_packaging_revenue_share
+          note: 管理层披露的全年占比，只给约数时按字面下限记录
+        - op: event
+          period: event
+          metric: ai_accelerator_packaging_architecture_outside_logic_foundry
+          threshold: 当期最新一代数据中心 AI 加速器在量产中采用逻辑代工厂以外公司自己的集成封装架构
+          note: 对应研究所列集成先进封装的失效条件，以及新封装架构由现任者以外的公司从一开始主导这一推翻情形
+    check_frequency: quarterly
+    data_source: >-
+      TSMC 第四季度业绩电话会纪要与 Management Report（investor.tsmc.com）中关于先进封装收入占比的表述；
+      TrendForce 关于 CoWoS 产能与供需的报道；
+      主要数据中心 AI 加速器设计公司的产品发布与年报中关于封装方案和封装供应商的描述，以及 TechInsights 等独立拆解机构的分析。
+    current_reading:
+      value: 10
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: IND-FOUNDRY-2026-09#p8
+      note: >-
+        管理层的原话是 2025 年先进封装占收入“slightly over 10%”，这里按字面下限记为 10% [src:IND-FOUNDRY-2026-09#p8]。
+        2026 年 TSMC 的 CoWoS 产能据报道估计为每月 12–14 万片晶圆 [src:IND-FOUNDRY-2026-09#p10]。
+    implication: >-
+      比重持续上升与研究在 10–20 年视野下描述的变化一致：晶体管微缩带来的单位成本下降继续减弱，价值转向封装与系统设计，研究判断价值位置的转移属“很可能”，价值转离领先者属“不确定”，置信度低 [src:IND-FOUNDRY-2026-09#p16]。
+      数量条件触发时，价值向拥有先进封装能力的代工厂集中：研究把这类代工厂列为可能的受益者，把独立封测厂和规模不足的代工厂列为可能的受损者 [src:IND-FOUNDRY-2026-09#p19]，因为同时拥有晶圆和封装能让领先者把瓶颈作为一个产品出售 [src:IND-FOUNDRY-2026-09#p10]。
+      事件条件触发时，瓶颈可能移出代工厂：研究把存储厂或整合厂的新封装方案列为集成先进封装这一优势的失效条件 [src:IND-FOUNDRY-2026-09#p11]，并把新封装架构由现任者以外的公司从一开始主导，列为可能证明其观点错误的情形之一 [src:IND-FOUNDRY-2026-09#p19]。
+    tests_to_rerun: [moat, competition, growth, capital_allocation]
+
+  - id: FOUNDRY-SP4
+    title: 中国代工体系的先进制程产出与利润率
+    observable: >-
+      中国大陆代工厂（SMIC、Hua Hong 等）的先进制程进展，即是否实现 5nm 级量产，以及 SMIC 的季度毛利率，辅以 TrendForce 对中国大陆占全球成熟制程代工产能份额的估计 [src:IND-FOUNDRY-2026-09#p16]。
+      研究设想的路径是国产设备加国家需求达到 5nm 级产出 [src:IND-FOUNDRY-2026-09#p16]。
+    threshold: >-
+      任一条件满足即触发：
+      （1）中国大陆代工厂以 5nm 级工艺量产逻辑芯片：该代工厂披露 5nm 级工艺已量产，或独立拆解机构在公开发售的产品中发现由中国大陆代工厂以 5nm 级工艺制造的逻辑芯片。
+      （2）SMIC 季度毛利率连续 4 个季度不低于 45%。45% 是研究记录的跟随者毛利率区间的上沿（从负值到 45%）[src:IND-FOUNDRY-2026-09#p4]，也接近领先者近年最弱年份的水平（TSMC 2019 年为 46.0%）[src:IND-FOUNDRY-2026-09#p9]，研究指出领先者近年最弱的一年大致相当于跟随者最好的一年 [src:IND-FOUNDRY-2026-09#p16]。
+      （3）TrendForce 对当年或已过去年份的中国大陆成熟制程代工产能份额估计超过 39%，不采用远期预测，即高于研究引用的 2027 年预测区间上限（33–39%）[src:IND-FOUNDRY-2026-09#p17]。
+    rule:
+      any_of:
+        - op: event
+          period: event
+          metric: china_foundry_5nm_class_volume_production
+          threshold: 中国大陆代工厂以 5nm 级工艺量产逻辑芯片，经公司披露或独立拆解证实
+        - op: ">="
+          threshold: 45
+          unit: "%"
+          consecutive: 4
+          period: quarter
+          metric: smic_gross_margin
+          note: SMIC 季度业绩公告中的毛利率
+        - op: ">"
+          threshold: 39
+          unit: "%"
+          period: year
+          metric: china_share_of_global_mature_node_foundry_capacity
+          note: TrendForce 对当年或已过去年份的估计，不采用远期预测
+    check_frequency: quarterly
+    data_source: >-
+      SMIC 季度业绩公告（香港交易所披露易 hkexnews.hk 与 smics.com）：毛利率、产能利用率与收入构成；
+      Hua Hong 季度业绩公告（hkexnews.hk）；
+      TechInsights 等独立拆解机构对中国产先进芯片的分析；
+      TrendForce 关于各地区晶圆代工产能份额的报告。
+    current_reading:
+      value: 25.3
+      unit: "%"
+      period: 2Q26
+      as_of: 2026-06-30
+      source: IND-FOUNDRY-2026-09#p16
+      note: >-
+        指 SMIC 2026 年第二季度的毛利率，同季产能利用率为 93.7% [src:IND-FOUNDRY-2026-09#p16]。
+        SMIC 2025 全年毛利率为 21%，同年 TSMC 为 59.9%，SMIC 到 2023 年已在没有 EUV 设备的情况下做出 7nm 级芯片 [src:IND-FOUNDRY-2026-09#p13]，研究记录的最先进产出仍是 7nm 级 [src:IND-FOUNDRY-2026-09#p17]。
+        中国大陆占成熟制程代工产能的份额在 2023 年为 29% [src:IND-FOUNDRY-2026-09#p17]。
+    implication: >-
+      中国大陆代工厂实现 5nm 级量产，或 SMIC 的毛利率接近领先者，意味着受保护需求加国家资金带来的不只是一个能存活的第二生态。
+      研究的第三条核心论点（没有量产规模，钱买不到领先制程）目前在商业上得到支持，Intel Foundry 在 2023–25 年亏损 306 亿美元，反方只在中国的主权能力上占上风 [src:IND-FOUNDRY-2026-09#p3]，触发说明反证开始从主权能力延伸到商业回报（本模块推论）。
+      研究在 5–10 年视野下的判断是：成熟制程价格承压属“可能”，领先者流失中国以外的领先制程客户属“不太可能”，置信度低 [src:IND-FOUNDRY-2026-09#p16]。
+      研究认为成熟制程价格将越来越多地由中国的扩产决定 [src:IND-FOUNDRY-2026-09#p3]，中国份额超过预测上限说明扩产快于研究引用的预测 [src:IND-FOUNDRY-2026-09#p17]，中国以外成熟制程代工厂的利用率与价格会更早承压（本模块推论）。
+    tests_to_rerun: [competition, pricing_power, moat, regulation]
+
+  - id: FOUNDRY-SP5
+    title: 关税、产能外迁与台湾生产
+    observable: >-
+      自 2026 年 1 月起美国对部分先进计算芯片征收 25% 的关税，在美建厂的企业可获减免 [src:IND-FOUNDRY-2026-09#p19]，本路标观察美国是否正式实施第二阶段芯片关税，以及其覆盖范围、税率和与在美生产挂钩的减免条件 [src:IND-FOUNDRY-2026-09#p16]。
+      同时观察 TSMC 对海外新厂毛利率稀释的指引与海外产能占比 [src:IND-FOUNDRY-2026-09#p16]，台湾要求海外工厂制程至少落后两代的 N-2 规则是否修改 [src:IND-FOUNDRY-2026-09#p19]，以及台湾的晶圆生产是否因冲突、封锁或制裁而中断 [src:IND-FOUNDRY-2026-09#p17]。
+    threshold: >-
+      任一条件满足即触发：
+      （1）美国以总统公告（或据此在联邦公报发布的文件）正式实施新的半导体进口关税，即在 2026 年 1 月起对部分先进计算芯片征收 25% 关税的措施之外，扩大产品范围或提高税率；复核时记录覆盖范围、税率与减免条件。只有官员表态或媒体报道不算。
+      （2）TSMC 把海外新厂的毛利率稀释指引上调到上限超过 4 个百分点；现有指引为先 2–3 个百分点、后 3–4 个百分点 [src:IND-FOUNDRY-2026-09#p16]。
+      （3）台湾正式放宽或收紧 N-2 规则，以主管机关公告为准。
+      （4）台湾的晶圆生产或出货因冲突、封锁或制裁而中断，以 TSMC 的重大讯息公告或台湾主管机关的公告为准；地震等自然灾害造成的停工不算。
+    rule:
+      any_of:
+        - op: event
+          period: event
+          metric: us_phase2_semiconductor_tariff_in_force
+          threshold: 美国正式实施超出 2026 年 1 月措施范围或税率的半导体进口关税
+        - op: ">"
+          threshold: 4
+          unit: pp
+          period: quarter
+          metric: tsmc_overseas_fab_margin_dilution_guidance_upper
+          note: 取 TSMC 指引区间的上限
+        - op: event
+          period: event
+          metric: taiwan_n2_rule_amended
+          threshold: 台湾正式放宽或收紧海外工厂制程至少落后两代的规则
+        - op: event
+          period: event
+          metric: taiwan_wafer_production_disrupted
+          threshold: 台湾的晶圆生产或出货因冲突、封锁或制裁而中断
+    check_frequency: monthly
+    data_source: >-
+      白宫总统公告（whitehouse.gov/presidential-actions）与联邦公报（federalregister.gov）中关于半导体进口的调整，基线为研究所引 2026 年 1 月 14 日的总统公告，另看美国商务部的新闻稿与事实说明；
+      TSMC 季度业绩电话会纪要中关于海外新厂毛利率稀释与海外产能的表述；
+      台湾经济部等主管机关关于对外投资制程限制（N-2 规则）的公告；
+      TSMC 在台湾证券交易所公开资讯观测站（mops.twse.com.tw）发布的重大讯息。
+    current_reading:
+      value: 未触发：研究写作时第二阶段芯片关税仍在考虑中（2026 年 9 月）
+      period: "2026-09"
+      as_of: 2026-09-16
+      source: IND-FOUNDRY-2026-09#p16
+      note: >-
+        研究所引报道分别发表于 2026 年 8 月 27 日与 9 月 3 日，前者称美国在考虑新一轮半导体关税，后者称芯片关税将会推出、减免与在美制造挂钩 [src:IND-FOUNDRY-2026-09#p23]。
+        N-2 规则于 2025 年 12 月重申 [src:IND-FOUNDRY-2026-09#p19]。
+        TSMC 在美投资计划从 2025 年 3 月宣布的 1,650 亿美元增至 2,650 亿美元 [src:IND-FOUNDRY-2026-09#p17]。
+    implication: >-
+      研究认为这一风险在 1–5 年内起作用的条件是关税减免与本地生产挂钩、客户坚持要台湾以外的产能，美国、日本、欧洲新厂的成本会稀释毛利率 [src:IND-FOUNDRY-2026-09#p16]。
+      研究的判断是按指引稀释 2–4 个百分点属“可能”、份额流失属“不太可能”，置信度中等，反方理由是成本可以转嫁给客户，涨价报道即是迹象 [src:IND-FOUNDRY-2026-09#p16]。
+      研究认为外迁改变的主要是领先者在哪里生产、而不是谁领先，因为美国新增的领先制程产能多数属于 TSMC 自己，N-2 规则则把最新节点留在台湾 [src:IND-FOUNDRY-2026-09#p19]。
+      N-2 规则一旦修改，最新节点的生产地点可能随之改变，上面这条判断需要重新检验（本模块推论）。
+      台湾生产一旦中断，受损的是整条产业链的经济性，而不是厂商之间的份额转移 [src:IND-FOUNDRY-2026-09#p3]，研究认为这一尾部风险无法负责任地预测，也不在任何基准情形之内 [src:IND-FOUNDRY-2026-09#p17]。
+    tests_to_rerun: [regulation, returns_on_capital, capital_allocation, free_cash_flow, pricing_power]
+
+  - id: FOUNDRY-SP6
+    title: 中国以外成熟制程的产能利用率
+    observable: >-
+      中国大陆以外成熟制程代工厂的季度产能利用率，以 UMC 每季公布的产能利用率为主要代理，辅以 TrendForce 对成熟制程利用率与报价的报告；
+      同时确认中国大陆的成熟制程产能是否仍在增加，以 SMIC、Hua Hong 的产能披露与 TrendForce 的估计为准。
+      参照：研究引述 TrendForce，2026 年上半年成熟制程报价上涨 5–15%，原因是 AI 相关需求吸收了产能 [src:IND-FOUNDRY-2026-09#p16]。
+    threshold: >-
+      两个方向，任一触发：
+      上行：UMC 季度产能利用率连续 4 个季度高于 90%，且同期中国大陆的成熟制程产能仍在增加。研究把中国以外成熟制程利用率到 2028 年一直高于 90%、同时中国继续扩产，列为推翻其成熟制程论点的条件 [src:IND-FOUNDRY-2026-09#p3]；连续 4 个季度是提前复核的门槛，完整的推翻条件要到 2028 年底才能判定。
+      下行：UMC 季度产能利用率连续 2 个季度低于 80%，即回到研究记录的 2023–24 年 70–80% 的区间 [src:IND-FOUNDRY-2026-09#p3]，UMC 在 2023 年第二季度为 71% [src:IND-FOUNDRY-2026-09#p15]。
+    rule:
+      any_of:
+        - all_of:
+            - op: ">"
+              threshold: 90
+              unit: "%"
+              consecutive: 4
+              period: quarter
+              metric: umc_capacity_utilization
+              note: UMC 季度业绩新闻稿中的产能利用率
+            - op: increase
+              period: year
+              metric: china_mature_node_foundry_capacity
+              note: 中国大陆成熟制程产能较上年增加，以 SMIC 与 Hua Hong 的产能披露和 TrendForce 的估计为准
+        - op: "<"
+          threshold: 80
+          unit: "%"
+          consecutive: 2
+          period: quarter
+          metric: umc_capacity_utilization
+          note: UMC 季度业绩新闻稿中的产能利用率
+    check_frequency: quarterly
+    data_source: >-
+      UMC 季度业绩新闻稿中的产能利用率（UMC 投资人关系网站或 businesswire；UMC 的 EDGAR CIK 为 0001033767）；
+      SMIC 与 Hua Hong 季度业绩公告中的产能数据（hkexnews.hk）；
+      TrendForce 关于成熟制程利用率、报价与中国成熟制程产能份额的报告。
+    current_reading: null
+    implication: >-
+      上行触发意味着成熟制程并未像研究预期的那样由中国的扩产定价。
+      研究列出的反方理由是成熟制程芯片黏性强（认证周期长），功率与模拟芯片的需求在上升，2026 年价格已经上涨 [src:IND-FOUNDRY-2026-09#p3]；触发说明这些力量足以让中国以外的成熟制程保持紧俏，相关代工厂的定价与回报可能好于研究的判断（本模块推论）。
+      下行触发意味着成熟制程回到周期低谷：研究记录的 2023 年下行期中，UMC 收入下降 20%、毛利率下降 10.2 个百分点，SMIC 的毛利率从 38.0% 降到 19.3%，而 TSMC 的毛利率只下降 5.2 个百分点 [src:IND-FOUNDRY-2026-09#p15]。
+    tests_to_rerun: [pricing_power, returns_on_capital, competition, unit_economics]
+
+todo:
+  - >-
+    FOUNDRY-SP6 没有当前读数：研究只给出 2023–24 年下行期的成熟制程利用率区间，以及 UMC 在 2022 年第二季度与 2023 年第二季度的利用率，首次季度检查时从 UMC 最新季度业绩补录，并把该来源登记进本目录的 sources.yml。
+  - >-
+    FOUNDRY-SP1 第二项条件与 FOUNDRY-SP2 第三项条件都要与上年同季比较，研究没有给出 2025 年各季 TSMC 占前十大代工收入的份额，也没有给出各季 HPC 收入占比；首次季度检查时从 TrendForce 新闻稿与 TSMC Management Report 补录上年同季数值，并登记来源。
+  - >-
+    FOUNDRY-SP2 第二项条件需要资本开支指引的历次数值，研究只给出第二季度上调后的 2026 年指引区间；首次季度检查时从 TSMC 业绩电话会纪要补录此前的指引。
+  - >-
+    FOUNDRY-SP3 的读数是管理层的约数（略高于十分之一），首次年度检查时改用 TSMC 披露的精确比例（如有）。
+  - >-
+    FOUNDRY-SP4 缺少先进制程产出的定期数据系列，研究没有给出 SMIC 按制程划分的收入，需要确定一个可重复读取的来源（公司披露或独立拆解报告）。
+  - >-
+    中国成熟制程产能份额在研究中有两种口径（TrendForce 的成熟制程代工产能份额，以及另一处对 28nm 及更旧逻辑产能份额的远期预测），FOUNDRY-SP4 固定使用 TrendForce 口径，首次检查时核对其最新发布值。
+  - >-
+    FOUNDRY-SP1、SP3、SP4、SP5 的事件条件需要监听公司公告、联邦公报、台湾主管机关公告等 EDGAR 以外的来源；在流水线接入这些来源之前，由行业研究员按检查频率人工核对，并在更新记录中写明。
+  - >-
+    as_of 取自研究 PDF 元数据的创建日期（封面只写 2026 年 9 月，研究所引来源中日期最晚的是 2026-09-09）；若 Business Library 另有正式发布日期，据此更新 as_of 与 sources.yml 的 date。

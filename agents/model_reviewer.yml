@@ -1,0 +1,30 @@
+# 模型审查：独立监督之一。只审估值：私有估值文件、研报的估值一节，以及它们和系列读数是否对称；估值待审版本能否生效由它决定。
+# reports_to 为 null：独立监督不向任何经理人汇报。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 model_reviewer.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+role: model_reviewer
+name: 模型审查
+model:
+  id: claude-fable-5-1
+  effort: high
+  fallbacks: default
+  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；估值会影响排名和备忘录，审查不能打折。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。
+reports_to: null
+can_see:
+  - valuation                    # 待审版本或当前版本的 valuation.yml 与 valuation.md（私有）
+  - report_valuation_section     # 审研报时给研报的估值一节
+  - series_roster                # 系列内其他公司的读数
+  - price_reference
+  - anchors
+  - sources
+cannot_see: []                   # 隔离表对模型审查没有额外限制；04 的各部分互相看不到结果，由 can_see 白名单保证
+outputs:
+  - model_checks                 # 十五项逐条
+  - valuation_decision           # 只在审估值待审版本时：approved 即生效，returned 退回产出它的环节
+  - findings
+  - questions
+decision_rights:
+  - audit                        # L1
+  - valuation_update             # L2：估值重算生效；重算本身是公司经理的起草，待审版本经它批准才生效
+prompts: ["04C"]
+trust_managed: false

@@ -1,0 +1,99 @@
+# MSFT 来源标签表（公开；thesis-ci spec §3；schema: spec/schemas/sources.schema.json）
+# 定位符约定：MSFT-RPT1-2026-09-17#pN 中的 N 是报告 PDF 的页码，与 inputs/text 抽取文本的页标记一致
+# （报告页眉印的页码比 PDF 页码小一：印刷第 10 页 = PDF 第 11 页）。
+# 档案里的数字目前都引用报告页码；下面登记的一手文件是报告自述所依据的文件，数字待逐条与之核对。
+# 报告没有引用微软的任何 10-Q（附录只引用了 Amazon 的一份 10-Q）：FY2026 的 10-K 已覆盖到 2026-06-30，
+# 新口径下微软的第一份 10-Q 是 FY27 第一季度（约 2026 年 10 月底），届时登记。
+# 下面各条的登记号、申报日与 8-K 的项目号、附件号按 EDGAR 核对；其余说明来自报告附录。
+sources:
+  - tag: MSFT-RPT1-2026-09-17
+    kind: report
+    title: 收租五十一年后第一次置业，年金还在，问的是它什么时候回本（Microsoft 企业报告 · 长期持有人视角，2026 年 9 月）
+    date: 2026-09-17
+    location: private:reports/MSFT.pdf
+    primary: false
+    note: 本人的 02 企业报告，共十二节；财务数据基准为 FY2026（截至 2026-06-30）。报告自述财务数据以 Form 10-K、8-K 与官方电话会纪要为准，引用他人分析处标注为二手，二手不单独支撑评级。全文只存私有仓库，公开档案只引用页码。
+
+  - tag: MSFT-10K-FY2026
+    kind: filing
+    title: Microsoft Corporation 2026 财年年度报告（Form 10-K，财年截至 2026-06-30）
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2026
+    accession: "0001193125-26-323660"
+    filed: 2026-07-29
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/0001193125-26-323660-index.htm
+    primary: true
+    note: 报告的主要财务基准：利润表与分部、现金流量表（现金资本开支、自由现金流）、固定资产附注（使用年限与资产构成）、商誉与 Activision 购买价分摊附注、合同义务表、执行官名单与第一部分的员工人数。
+
+  - tag: MSFT-10K-FY2025
+    kind: filing
+    title: Microsoft Corporation 2025 财年年度报告（Form 10-K，财年截至 2025-06-30）
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2025
+    accession: "0000950170-25-100235"
+    filed: 2025-07-30
+    url: https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/0000950170-25-100235-index.htm
+    primary: true
+    note: 报告用它读 FY2025 的对比数与员工人数；FY2016–FY2026 的十年序列来自各年 10-K 的现金流量表，需要时再逐年登记。
+
+  - tag: MSFT-8K-2026-07-29
+    kind: filing
+    title: Microsoft Corporation FY26 第四季度业绩 8-K（附件 99.1 为业绩新闻稿）
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2026Q4
+    accession: "0001193125-26-323632"
+    filed: 2026-07-29
+    date: 2026-07-29
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312526323632/0001193125-26-323632-index.htm
+    primary: true
+    note: 第 2.02、9.01 项；除 XBRL 文件外只有附件 99.1（FY26 第四季度业绩新闻稿），报告附录写的“8-K 分部历史附件”不在这份 8-K 里。报告用它读第四季度与全年业绩、Xbox 内容与服务收入；报告第二节的脚注 [1] 同时引用 FY2026 10-K 与这份新闻稿，覆盖 FY2026 分部数字与 FY2027 Windows OEM、Xbox 的指引。新闻稿的 Business Outlook 一段写明前瞻指引在电话会与网络直播上给出，10-K 里也没有这两条指引，所以本档案把它们记在 MSFT-CALL-FY2026Q4 名下。
+
+  - tag: MSFT-8K-2026-09-02
+    kind: filing
+    title: Microsoft Corporation 8-K 及附件 99.1《FY27 Segments and Investor Metrics》
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2027
+    accession: "0001193125-26-380280"
+    filed: 2026-09-02
+    date: 2026-09-02
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/0001193125-26-380280-index.htm
+    primary: true
+    note: 第 7.01、9.01 项（Reg FD，不是业绩 8-K）。自 FY2027 起报告分部由三个改为两个（Agents and Infra、Devices and Consumer），Azure 口径收窄并首次按季披露美元收入，M365 商业席位纳入 GitHub 付费席位，并重述 FY2026。本档案的前瞻指标与论点破坏信号全部按这个新口径判定。附件 99.1 第 21 张幻灯片（FY27 Q1 Outlook Detail）按新分部口径，对 2026-07-29 给出的 FY27 第一季度指引只做机械调整：M365 商业云由固定汇率约 15% 调为约 17%；报告第四节注到这份文件的就是这个约 17%（脚注 [9]），言行账本 MSFT-MGT-02 引用它。
+
+  - tag: MSFT-DEF14A-2025-10-21
+    kind: filing
+    title: Microsoft Corporation 2025 年股东大会委托书（DEF 14A，对应 FY2025）
+    issuer_cik: "0000789019"
+    form: DEF 14A
+    period: FY2025
+    accession: "0001193125-25-245150"
+    filed: 2025-10-21
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312525245150/0001193125-25-245150-index.htm
+    primary: true
+    note: 长期绩效股票的指标结构（MSFT-L2 的基线）。对应 FY2026 的委托书预计 2026 年 10 月发布，届时登记。
+
+  - tag: MSFT-CALL-FY2026Q2
+    kind: transcript
+    title: Microsoft FY26 第二季度业绩电话会纪要（2026-01-28）
+    date: 2026-01-28
+    primary: true
+    note: 公司唯一一次披露商业履约余额来自单一客户（OpenAI）的比例，报告的集中度读数出自这里。
+
+  - tag: MSFT-CALL-FY2026Q3
+    kind: transcript
+    title: Microsoft FY26 第三季度业绩电话会纪要（2026-04-29）
+    date: 2026-04-29
+    primary: true
+    note: 报告脚注 [28]：CFO Hood 预期 FY2027 员工人数继续下降。言行账本 MSFT-MGT-05 的一手出处。
+
+  - tag: MSFT-CALL-FY2026Q4
+    kind: transcript
+    title: Microsoft FY26 第四季度业绩电话会纪要（2026-07-29）
+    date: 2026-07-29
+    url: http://www.microsoft.com/en-us/investor
+    primary: true
+    note: 电话会与网络直播在 2026-07-29 美国太平洋时间 14:30（东部时间 17:30）举行，入口是上面的投资者关系网址，回放保留到 2027-07-29；业绩新闻稿写明前瞻指引在这次电话会与网络直播上给出（MSFT-8K-2026-07-29 附件 99.1 的 Business Outlook 与 Webcast Details 两段）。本档案没有这次电话会的纪要全文，引用时附上转述它的报告页。报告脚注 [4]、[7]：Copilot 付费席位与使用强度、需求与容量的表述、资本开支口径调整。FY2027 Windows OEM 与设备、Xbox 的指引也出自这次电话会（言行账本 MSFT-MGT-03、MSFT-MGT-04）。FY27 第一季度的 M365 商业云指引最初在这里给出（固定汇率约 15%），2026-09-02 的 8-K 按新分部口径机械调整为约 17%，报告与言行账本 MSFT-MGT-02 用的是后者。

@@ -1,0 +1,135 @@
+# 宪法规则与对应检查
+# schema: thesis-ci/spec/schemas/constitution-rules.schema.json
+# 条文以 constitution/owner.md 为准，本文件是它的机器可读索引；两者的编号、标题与条文必须一致。
+# R1–R13 与系列规则 00 §C 的编号、标题、条文一字不差；H1–H5 按 00 §H，其中 H2、H4 里本身就在
+# 禁用清单上的几个用语换成了意思相同的描述（公开文件不能出现它们，见 owner.md「二、硬规则」）。
+# 每条至少引用一个 thesis-ci 登记的检查（C-CONSTITUTION-MAP）。很多条文是判断，机器只能检查它的
+# 记录一侧；how_checked 照实写明检查实际管到哪一步，管不到的也写出来。
+rules:
+  # ---------- 投资宪法（kind: constitution） ----------
+  - id: R1
+    kind: constitution
+    title: 顺序与价格观
+    text: '企业质量第一，管理层第二，估值第三。宁可用合理价格买优秀企业，也不用低价买普通企业；合理价格不等于任何价格，仍要有与质量、预期回报和不确定性相称的安全边际；也不机械地等待极端低价——错过优秀企业长期复利的代价，大于把买点再优化一点的好处。'
+    checks: [C-RATING-ORDER]
+    how_checked: '每家公司的 thesis.yml 必须有生意（business）与管理层（management）评级；私有仓库的系列排名（hq/ranking.yml）每一行必须写排序理由；排序本身按 00 §V13 综合判断，不检查。检查只管分项评级和理由有没有写；"质量第一、管理层第二、估值第三"的分量和"合理价格仍要有安全边际"是判断，由模型审查（04C）与总部排名（17C）落实，机器不判断先后。'
+
+  - id: R2
+    kind: constitution
+    title: 质量试金石
+    text: '股市关闭十年，是否仍愿意持有？看持久的护城河、定价权、高资本回报、不断增长的自由现金流。'
+    checks: [C-TESTS-COVERAGE, C-STALENESS]
+    how_checked: '每家公司 thesis tests 的 covers 合起来必须包含 moat、pricing_power、returns_on_capital、free_cash_flow；时效测试按 reviewed 日期报警过期未复核的部分（C-STALENESS 只报警，不挡合并）。检查保证四个方面都有测试守着、判断按期复核；测试本身写得好不好，由反方（04B）和总部复核。'
+
+  - id: R3
+    kind: constitution
+    title: 管理层
+    text: '资本配置是否理性、是否像所有者一样思考、是否以长期股东价值为先，回购、分红与再投资是否得当。'
+    checks: [C-TESTS-CAPALLOC]
+    how_checked: '每家公司至少一条测试的 covers 含 capital_allocation，至少一条含 management。只检查测试存在；芒格矩阵管理层一半的两条读数（00 §V14）由事实审计（12A）与模型审查（04C）验算，机器不评价管理层。'
+
+  - id: R4
+    kind: constitution
+    title: 集中与仓位
+    text: '集中持有约 4–5 家核心企业；不值得占一个有意义仓位的企业，也不值得拥有。10–20% 是入选门槛，不是目标。仓位来自理解深度、企业质量、管理层质量、长期确定性和安全边际，不来自波动率或回撤模型。这是资本配置的框架，不机械套用。仓位由所有者决定。'
+    checks: [C-CONCENTRATION, C-DECISION-RIGHTS]
+    how_checked: 'decision-rights.yml 的 portfolio.max_holdings 是正整数（大于 5 时报警，条文是“约 4–5 家”）、entry_band 等于 [0.10, 0.20]；status 为 holding 的公司多于上限时报警，不报错；私有仓库买入、加仓备忘录的目标仓位低于入选门槛下沿（10%）为错误，高于上沿（20%）允许（确信度更高的企业可以获得更大的仓位），但须在 weight_note 里写明理由，没写时报警；buy、add、trim、sell 只在决策 L3，决定者是所有者。"仓位不来自波动率模型"是方法要求，没有对应的机器检查。'
+
+  - id: R5
+    kind: constitution
+    title: 估值的位置
+    text: '需要一个明确的近似价值，否则无从判断；但 DCF 只是近似和辅助，不是决策引擎；不把模型推到让企业显得过分高估或低估；估值不压过企业质量；不以市盈率比较代替估值。折现率的细则见 §V1。'
+    checks: [C-DISCOUNT-RATE]
+    how_checked: '私有仓库每个 valuation.yml 的 discount_rate.total 等于 risk_free 加 premium；填了折现率时 discount_rate.note 写明溢价的判断依据，method_note 非空；缺国债收益率的取值日期（risk_free_date）时报警；不在公司之间比较溢价（decisions/0012）。只检查折现率的算术与记录；"DCF 只是辅助、不压过企业质量"由模型审查（04C）逐项检查（重复打折、单一折现率、只给区间），机器不判断。'
+
+  - id: R6
+    kind: constitution
+    title: 持有与卖出
+    text: '理想的持有期是无限期——只要基本面、护城河和管理层没有永久恶化就一直持有；1–3 年只是最短的观察窗口。只因永久性恶化或明显更好的机会卖出：护城河永久受损、商业模式根本改变、管理层质量下降、资本配置严重失误、出现明显更好的长期机会。不因价格下跌、衰退、市场恐慌或单季不及预期卖出。'
+    checks: [C-SELL-REASONS, C-DEFAULT-HOLD, C-SCHEMA]
+    how_checked: 'memo.sell_reasons 与 memo.schema.json 的 sell_reason 枚举一致，forbidden_sell_reasons 含价格下跌、衰退、恐慌、单季不及预期；私有仓库的减仓、卖出备忘录必须引用允许的理由；默认选项是 maintain、14 天不回复按默认；升级请求的 schema 只接受四种企业内部原因，起草者只能是公司经理，备忘录的起草者只能是总部。检查只看理由填的是哪一种；是否真的"永久恶化"由总部（17B）核对事实后判断、所有者决定。"无限期持有、1–3 年只是观察窗口"没有对应的机器检查。'
+
+  - id: R7
+    kind: constitution
+    title: 机会成本
+    text: '买入或继续持有，长期预期回报与质量都要过得了伯克希尔或 VOO 这条比较线（持仓低于比较线时，由总部在 17C 判断是否构成 R6 的"明显更好的机会"）。新想法和现有持仓、高质量替代品比较，只有质量相当或更高、长期回报更好、价格合理，才替换或新增。宁可长期拥有少数优秀企业，也不不停地寻找新名字。现金是期权，不为凑仓位或消化闲置现金而买。'
+    checks: [C-HURDLE]
+    how_checked: '私有仓库每个 valuation.yml 记录伯克希尔与 VOO 两个参照（hurdles）。门槛次序按 00 §V6 的工程默认：伯克希尔在当前价格下的长期回报测算是第一道门槛，指数的前瞻回报是第二道参照，不取两者中较高者。买入、加仓备忘录的长期预期回报必须高于第一道门槛，也不能自设低于它的门槛，否则为错误；只过第一道、没过 VOO 参照时报警，备忘录写明理由；持仓低于任一条线时报警，交总部判断（报警本身不是升级理由）。质量那一半与"现金是期权"没有对应的机器检查：没有公司过门槛时，总部不写买入备忘录。'
+
+  - id: R8
+    kind: constitution
+    title: 少交易
+    text: '倾向一次下单建仓，不拆成多笔小单（在所有者的规模下，每笔佣金不可忽略）；不喜欢频繁交易；不追求完美买点。'
+    checks: [C-SINGLE-ORDER]
+    how_checked: 'portfolio.single_order_entry 为 true；买入、加仓备忘录的 order.type 为 single，摘要或说明里写分批方案即报错；同一家公司 31 天内有多份生效的买入、加仓备忘录时报警；每月备忘录数超过 memo.monthly_target_max 时报警。只检查备忘录的写法；原文是"倾向"，所有者本人决定时不受此限，下单由所有者亲手执行。'
+
+  - id: R9
+    kind: constitution
+    title: 下跌不是论点
+    text: '市场或核心企业下跌本身不改变论点；若因此长期预期回报明显上升，是考虑追加资金的情形（由总部提出，所有者决定，决策 L3）。'
+    checks: [C-DECISION-RIGHTS, C-SCHEMA]
+    how_checked: 'add 只在决策 L3、决定者是所有者；备忘录 schema 规定起草者只能是总部，升级请求 schema 的理由只有 R6 的四种企业内部原因，公司经理因此无从提出追加资金。"下跌本身不改变论点"是判断，机器不检查；价格静默（H2）让起草者看不到日常股价。'
+
+  - id: R10
+    kind: constitution
+    title: 决策前五步
+    text: '理解生意 → 评估护城河与管理层 → 估计长期价值创造 → 与现有持仓比较预期回报 → 判断当前价格是否有合理的安全边际。'
+    checks: [C-SCHEMA]
+    how_checked: '备忘录 schema 要求至少两个选项且其中一个是 maintain、引用的条款（R 或 H 编号）和起草者；升级请求 schema 要求写明触发的测试（test_ids）、至少一条带来源标签的事实、原因和结论。只检查记录一侧：五步有没有真正走完，由总部起草备忘录时写明、所有者判断。备忘录的 evidence 字段目前是可选的，写了才检查来源标签的格式。'
+
+  - id: R11
+    kind: constitution
+    title: 记录过程，不按结果打分
+    text: '好决策可能有坏结果，坏决策也可能有好结果。决策记录训练的是推理过程。'
+    checks: [C-SCHEMA, C-PREREG-TIMING, C-PREREG-IMMUTABLE, C-TEST-FROZEN]
+    how_checked: '决策日志 schema 要求九个字段（日期、决定、公司、原始论点、假设、预期结果、风险、复盘日期、结果）；预注册的截止时间落在发布日之前、合并时间早于截止时间，所有者改写的截止时间与系统文件相同（C-PREREG-TIMING）；截止之后每个条目文件旁边必须有 OpenTimestamps 证明，装有 ots 客户端时证明必须核验通过（C-PREREG-IMMUTABLE）；PR 检查给出基线版本和当期时，当期有效的测试门槛不得改动或删除（C-TEST-FROZEN，没有这两个参数时空过）。机器只能保证判断在结果出来之前写下、事后不被改动；"不按结果打分"靠结算员只记兑现与否、不评价当时的决策（15B），机器不检查。'
+
+  - id: R12
+    kind: constitution
+    title: 能力圈
+    text: '保持谦逊；兴趣不等于决策，理解不够就不投。所有者自述最了解的是云与企业软件；半导体仍在学习（周期性强，长期赢家难以预测）。'
+    checks: [C-SCHEMA]
+    how_checked: 'thesis.yml 必须声明校准领域 domain（枚举之一），预注册条目与预测记录同样带 domain，校准按领域统计。只检查领域有没有声明；"理解不够就不投"要等已结算的预测攒够、按领域算出校准分之后才能用数据检验（第 4 阶段），在那之前靠总部排名（17C）参考趋势。'
+
+  - id: R13
+    kind: constitution
+    title: 心性
+    text: '不过度交易；不因价格波动改变长期判断；不追求完美买点；把价格波动与永久性损害分开；保持耐心。'
+    checks: [C-SINGLE-ORDER, C-NO-TRADING, C-NO-PRICE-FEED, C-DEFAULT-HOLD]
+    how_checked: '检查的是把这些提醒变成默认值的机制：买入、加仓只写一次下单，每月备忘录不超过目标（C-SINGLE-ORDER）；系统没有任何券商或下单接口（C-NO-TRADING）；不接日常行情（C-NO-PRICE-FEED）；资金事项默认维持现状（C-DEFAULT-HOLD）。心性本身无法检查。'
+
+  # ---------- 硬规则（kind: hard_rule） ----------
+  - id: H1
+    kind: hard_rule
+    title: 出处
+    text: '档案、报告、更新里的每个事实数字都带来源标签（§E1）。没有出处的数字不写进任何交付物。'
+    checks: [C-SRC-TAG, C-SRC-FACT, C-SRC-ACCESSION]
+    how_checked: '档案内容里的 Markdown（companies/、industries/、letters/ 与 mistakes.md）中含事实数字的句子都有可解析的 [src:] 标签；YAML 的 source 字段与自由文本里的事实数字能解析到 sources.yml；定期报告来源缺 EDGAR 登记号时报警。检查看标签在不在、能不能解析；数字与原文是否一致，由事实审计（04A、09A、12A）逐条核对。'
+
+  - id: H2
+    kind: hard_rule
+    title: 价格静默
+    text: '不抓取、不展示日常股价，也不凭记忆写任何价格。允许出现的价格只有四类，都带日期和来源：(1) 私有文件（估值、研报、完整企业报告）里的"价格参照"，供对价格的评级、价格 ÷ 中枢和由价格推出的回报测算使用；(2) 五年回测所需的历年年末未复权收盘价，只存私有估值文件；(3) 公司文件披露的历史回购均价——这是公司的事实，可以写进公开的 `ledger.yml`；(4) 跨越事先写好的价值区间时的一次性提醒。(1)(2) 由流水线以 `price_reference`、`year_end_closes` 输入提供；没有提供就不写，登记进未知清单。之所以静默：日常股价会把判断锚在价格上，而这个系统判断的是生意。'
+    checks: [C-NO-PRICE-FEED]
+    how_checked: '代码与 workflow 不引用任何行情源（私有仓库的回测取价与价格提醒模块除外）；公开数据文件没有价格类的键；公开档案内容不写股价。"不凭记忆写价格"和四类价格各带日期与来源，由事实审计核对，没有专门的检查。'
+
+  - id: H3
+    kind: hard_rule
+    title: 不给买卖建议，不执行交易
+    text: '任何输出都不含下单指令。'
+    checks: [C-PUBLIC-NO-ADVICE, C-NO-TRADING]
+    how_checked: '公开档案内容（companies/、industries/、forecasts/、letters/、mistakes.md）与各处 README 不含买卖建议用语；任何代码、notebook 与 workflow 不引用券商或下单接口。'
+
+  - id: H4
+    kind: hard_rule
+    title: 公私分离
+    text: '价值区间、中枢、折现率、由价格推出的回报测算、对价格的评级、价格参照、L3 备忘录、升级请求、带金额的决策记录，只存私有仓库。公开文件（包括否定句、注释、YAML 的 note、PR 正文、PR 附件和 issue）里不得出现这些数字，也不得出现禁用用语清单里的任何一个。公开文件也不写以当前股价为输入的倍数或比率（市盈率、市值、自由现金流收益率等）。需要指代私有内容时，只写"估值见私有文件"。资本回报率、利润率、增速、测试门槛等经营数字照常写。'
+    checks: [C-PUBLIC-NO-VALUATION, C-PUBLIC-NO-AMOUNTS]
+    how_checked: '公开仓库没有 valuation 文件、memos/、escalations/、decision-log/；任何 YAML 没有估值、价格参照、由价格推出的回报或对价格的评级一类的键，也没有持仓金额与账户类的键；档案内容（companies/、industries/、forecasts/、letters/、mistakes.md）里没有禁用用语、带数字的价格区间和仓位数字，以股价为输入的倍数或比率与数字同句出现即报错。用语扫描不覆盖 constitution/、agents/（README 除外）与 docs/，这些文件靠写作时自查；PR 正文与 issue 还不在扫描范围内。'
+
+  - id: H5
+    kind: hard_rule
+    title: 可复现
+    text: '模型调用只经 `pipeline/llm.py`，它记录模型名、00 的版本、提示词版本（git 哈希）和输入哈希。提示词不指定模型。不经 `llm.py` 产生的内容（包括手动对话的产出）不能直接合并，只能作为线索，由流水线重跑后才能合并。'
+    checks: [C-LLM-ENTRY]
+    how_checked: '除 pipeline/llm.py 外，任何代码、notebook 与 workflow 不导入模型 SDK、不直接调用模型接口。只检查入口唯一；日志字段由 owners-office 的 tests/test_llm.py 覆盖（单独记录 00 的版本要等 llm.py 升级）；"手动产出不能直接合并"由总部放行（17A）把关，没有专门的检查。'

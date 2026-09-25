@@ -1,0 +1,147 @@
+# 三级决策权、信任等级与放行关口
+# schema: thesis-ci/spec/schemas/decision-rights.schema.json（规范 0.2）
+# 依据：constitution/owner.md（R1–R13、H1–H5）；系列规则 00 的 §G（私有仓库，按编号引用）；
+#       DESIGN.md「分权治理」「一次财报事件的流水线」「开工指令·默认值」。
+# 哪些改动算修宪见 owner.md「修宪程序」：memo、portfolio、ranking.rule 直接体现所有者条款，
+# levels 与 trust 决定各角色自身的权限，改动它们都是决策 L3；其余是运行参数，调整记进 docs/decisions/ 并在股东信里报备。
+# 注意：这里的"决策 L1／L2／L3"与证据分级的 L1、L2 是两回事（00 §G1）。
+
+levels:
+  L1:  # 自治：各角色自行决定并执行，不打扰所有者
+    who: 各角色自行决定并执行
+    actions:
+      - fetch                    # 抓取（流水线的确定性代码）
+      - parse                    # 解析与抽取：XBRL、事实抽取 16A、指标抽取 16B
+      - draft                    # 起草：档案、报告、更新、问题清单、分歧图、股东信、备忘录草稿、排版
+      - test                     # 测试：定量测试由流水线计算；定性测试由判定员 14T；结算员 15B 按事先写好的标准结算
+      - audit                    # 审计：04、09、12 的各部分
+      - blind_read               # 盲推 14A
+      - routine_merge            # 例行合并，按 trust.routing 分流
+      - fact_revision            # 档案事实修订
+      - signpost_check           # 行业路标检查
+    report: 月度股东信汇总
+  L2:  # 自治并报备：执行后在月度股东信里各占一行
+    who: 各角色决定并执行，事后报备
+    actions:
+      - prereg_content           # 预注册内容（15A）
+      - scenario_probability     # 情景概率调整（08）
+      - test_warning_disposition # 测试警告与 watch 失败的处置（03）
+      - candidate_rotation       # 候选名单轮换（17C）
+      - model_selection          # 各角色所用模型（总部）
+      - valuation_update         # 估值重算生效：待审版本经模型审查 04C 批准
+      - prompt_change            # 00 的 §F、§G 与各提示词中非所有者条款的流程、格式修改
+      - publish                  # 公开发布，须审计无误；按 trust.routing 分流
+    report: 月度股东信各占一行
+  L3:  # 所有者（董事长）决定：资金事项与修宪只在这一级
+    who: owner（所有者，董事长）
+    actions: [buy, add, trim, sell, amend_constitution]
+    report: 一页备忘录，附默认选项"维持现状"；14 天不回复即按默认处理
+
+trust:
+  # 受信任等级管理的角色：agents/*.yml 中 trust_managed: true（公司经理、行业研究员）。
+  # 等级只由流水线计算和写入（00 §G8）：记录在 trust/levels.yml，公司经理的抄在各公司 thesis.yml 的 trust_level，
+  # 行业研究员的抄在 industry.yml 的 trust_level；两处必须一致（C-TRUST-WRITE）。
+  levels:
+    "0": 暂停自治
+    "1": 逐条复核（新角色的起点）
+    "2": 公开前复核
+    "3": 完全自治
+  initial: 1                                              # 新角色从 1 级起步
+  window: 8                                               # 看最近 8 次计分产出
+  downgrade: {"on": factual_error, by: 1}                 # 一次事实错误（00 §F3 的 fact_error）降一级；"on" 加引号，否则 YAML 1.1 读成布尔值
+  upgrade: {after_consecutive_clean_updates: 4, by: 1}    # 连续 4 次零事实错误升一级
+  routing:                                                # 00 §G9、17A；预注册不受此限，只需通过格式与时间检查
+    "3": 通过全部检查自动合并并公开
+    "2": 自动合并，公开前总部复核
+    "1": 私有仓库暂存，总部逐条复核后公开
+    "0": 暂停自治，写进股东信待你一看
+  scoring:
+    factual_error: 降一级                     # 含总部月度随机复核（17D）查出的事实错误
+    adverse_divergence_ruling: 窗口内不升级   # 分歧图（14B）裁定公司经理一边读错
+    counted_outputs: 季度更新、档案建立与重建、研报
+
+memo:
+  default_option: maintain       # 资金事项的默认选项永远是维持现状（设计原则 3）
+  timeout_days: 14               # 14 天不回复即按默认处理
+  monthly_target_max: 2          # 超出时不压着不发：总部在股东信里解释原因，并调高升级门槛
+  sell_reasons:                  # R6；必须与 memo.schema.json 的 sell_reason 枚举一致
+    - moat_permanent_impairment    # 护城河永久受损
+    - business_model_change        # 商业模式根本改变
+    - management_deterioration     # 管理层质量下降
+    - capital_allocation_failure   # 资本配置严重失误
+    - better_opportunity           # 明显更好的长期机会：跨公司判断，只由总部提出（00 §G3）
+  forbidden_sell_reasons:        # R6：不因这些卖出
+    - price_decline                # 价格下跌
+    - recession                    # 衰退
+    - panic                        # 市场恐慌
+    - single_quarter_miss          # 单季不及预期
+
+portfolio:
+  max_holdings: 5                # R4：集中持有约 4–5 家核心企业；持仓多于此数时 C-CONCENTRATION 报警，不报错
+  entry_band: [0.10, 0.20]       # R4：入选门槛，不是目标；目标仓位低于 10% 为错误，高于 20% 须写明理由
+  benchmarks: [BRK, VOO]         # R7：比较线是伯克希尔或 VOO；次序按 00 §V6 的工程默认：伯克希尔为第一道门槛，指数为第二道参照
+  single_order_entry: true       # R8：一次下单建仓
+
+ranking:
+  rule: "§V13"                   # 系列排名按 00 §V13：带全；回报与确定性综合判断，不按单一指标或固定的先后顺序机械排序
+  candidates: 3                  # 持仓之外排名最前的三家为候选（17C，决策 L2）；其余转为归档，随年报每年刷新
+  rotation: quarterly            # 每季度排名一次
+
+budget:
+  monthly_usd: 20                # 设计文档的默认上限；提高预算由所有者决定
+  degrade_order: [pause_candidates, downgrade_drafting_model]   # 先停候选公司，再降级起草模型；监督类角色不降级
+
+gate:                            # 放行关口（17A 的 gate_rules）：任何一条成立就不放行；其余问题合并后复核，不挡合并
+  blocking:
+    - lint_errors                  # 格式检查（thesis-ci lint）有错误
+    - open_04A_must_fix            # 事实审计 04A 的必须改没有在 03R 处理完
+    - breaker_without_disposition  # 有 breaker 失败没有处置
+    - unresolved_pillar_divergence # 触及论点支柱的分歧既没有消解，也没有标记进股东信
+    - insufficient_trust           # 信任等级不够自动放行：按 trust.routing 走复核那一条路
+
+phase_gate:
+  auto_advance: true             # 验收脚本通过即进入下一阶段，不需要所有者签字
+  on_fail: report_in_letter      # 未通过才写进股东信
+  acceptance_script: scripts/accept.py
+
+escalation:                      # 00 §G3：测试结果的处置与升级请求。测试失败不等于卖出
+  test_failure:
+    applies_to: breaker                        # severity 为 breaker 的测试结果为 fail
+    responsible: company_manager
+    disposition_within_days: 7
+    disposition_options: [false_trigger, confirmed_trigger]
+    # false_trigger 误触发：论点破坏者写下的事实际没有发生（口径变化、一次性会计处理等），附一手证据，修正测试，只对以后生效
+    # confirmed_trigger 确认触发：该部分投资逻辑作废，写出整个论点怎样调整，并对照 R6 判断是否提交升级请求
+    not_allowed: 维持论点                      # breaker 失败不能用"维持论点"处置
+    pending_check: 读数存疑时可以先记"待核"并写进 questions，7 天内仍只能在上面两种里结案
+  test_warning:
+    applies_to: [warn, watch_fail]             # 任何测试的 warn，以及 severity 为 watch 的测试失败
+    responsible: company_manager
+    disposition_within_days: 7
+    disposition_options: [maintain, revise_thesis, pending]
+    # maintain 维持论点（说明为什么不触及承重部分）；revise_thesis 修改论点（写明哪个支柱、怎么改）；pending 结论待定（写截止日期和在等什么文件）
+    handled_as: test_warning_disposition       # 决策 L2，月度股东信报备
+  escalation_request:
+    from: company_manager                      # 公司经理只提交升级请求，不起草备忘录
+    to: hq_capital_allocator                   # 总部 17B 核对事实，判断是否只需修改论点
+    only_for:                                  # R6 的四种企业内部原因；escalation.schema.json 的 reason 枚举
+      - moat_permanent_impairment
+      - business_model_change
+      - management_deterioration
+      - capital_allocation_failure
+    not_a_reason: [hurdle_alarm]               # R7 的门槛报警本身不是升级理由
+  memo:
+    drafted_by: hq_capital_allocator           # L3 备忘录只由总部起草（memo.schema.json 的 drafted_by）
+    hq_only: [better_opportunity, r9_add_after_decline]   # 跨公司的资金事项只由总部根据 17C 的排名提出
+    on_alert: 价格提醒本身不是理由，先问论点与排名是否支持，再决定要不要写备忘录
+  divergence:                                  # 公司经理与盲推的逐题对比：一致、分歧、无法判断
+    first_to: hq_capital_allocator             # 分歧图先交总部，而不是所有者
+    then_to: letter_for_owner                  # 股东信的"待你一看"栏
+    then_only_if: [unresolved_after_hq_review, touches_thesis]
+  step_failure:                                # 流水线任何一步失败
+    action: open_issue                         # 开 issue 说明原因，绝不静默跳过
+    to_letter_after_consecutive: 2             # 同一步连续失败两次，写进股东信
+    if_pipeline_down: semi_auto_phase1         # 流水线出故障就退回第 1 阶段的半自动流程，更新不能停
+  memo_overflow:
+    when: monthly_memos_exceed_target          # 当月备忘录数超过 memo.monthly_target_max
+    actions: [explain_in_letter, raise_escalation_threshold]

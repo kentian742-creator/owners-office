@@ -1,0 +1,114 @@
+# PDD 来源标签表（公开）
+# 定位符约定：PDD-RPT1-2026-09-16#pN = 报告 PDF 第 N 页（与 inputs/text 的页码标记一致）；
+#             PDD-20F-FY2025#pN = 20-F 本地 PDF 第 N 页。
+# 6-K 条目按 02 报告附录一预先登记，是有意为之：2026 年的三份是首次读数前补录历史数据的来源（见 thesis.yml 的 todo），
+# 其余三份是报告引用的一手文件，引用待逐条从报告页码改指原件（docs/decisions/0006）。
+sources:
+  - tag: PDD-RPT1-2026-09-16
+    kind: report
+    title: 拼多多集团 · 完整企业报告（02 报告，12 维框架）
+    date: 2026-09-16
+    location: private:reports/PDD.pdf
+    primary: false
+    note: 所有者自有企业报告；数据基准日为 2026-06-30（季报）与 2025-12-31（年报）；估值与价格部分只进私有仓库。
+
+  - tag: PDD-20F-FY2025
+    kind: filing
+    title: PDD Holdings Inc. 年度报告 Form 20-F（截至 2025-12-31 的财年）
+    issuer_cik: "0001737806"
+    form: 20-F
+    period: FY2025
+    accession: 0001104659-26-050727
+    filed: 2026-04-29
+    url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926050727/0001104659-26-050727-index.htm
+    location: private:reports/PDD_20-F_FY2025.pdf
+    primary: true
+    note: "#pN 为本地 PDF 页码（私有仓库 reports/ 下的副本）。"
+
+  - tag: PDD-6K-2026-08-25
+    kind: filing
+    title: 2026 年第二季度未经审计业绩公告（Form 6-K 附件 99.1）
+    issuer_cik: "0001737806"
+    form: 6-K
+    period: FY2026Q2
+    accession: 0001104659-26-100534
+    filed: 2026-08-25
+    url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926100534/0001104659-26-100534-index.htm
+    primary: true
+    note: 新闻稿落款 2026-08-24，6-K 次日报送 EDGAR；含 2026-06-30 资产负债表、上半年损益与现金流、收入附注（据 02 报告附录一）；报告的季度读数大多出自此件。
+
+  - tag: PDD-6K-2026-05-28
+    kind: filing
+    title: 2026 年第一季度未经审计业绩公告（Form 6-K）
+    issuer_cik: "0001737806"
+    form: 6-K
+    period: FY2026Q1
+    accession: 0001104659-26-067186
+    filed: 2026-05-28
+    url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926067186/0001104659-26-067186-index.htm
+    primary: true
+    note: 新闻稿落款 2026-05-27，6-K 次日报送 EDGAR。
+
+  - tag: PDD-6K-2026-03-26
+    kind: filing
+    title: 2025 年第四季度及全年未经审计业绩公告（Form 6-K）
+    issuer_cik: "0001737806"
+    form: 6-K
+    period: FY2025Q4
+    accession: 0001104659-26-034813
+    filed: 2026-03-26
+    url: https://www.sec.gov/Archives/edgar/data/1737806/000110465926034813/0001104659-26-034813-index.htm
+    primary: true
+    note: 新闻稿落款 2026-03-25，6-K 次日报送 EDGAR；02 报告的 2025 年度利润率序列取自此件。
+
+  - tag: PDD-6K-2025-12-19
+    kind: filing
+    title: 联席董事长及新任高管任命（Form 6-K）
+    issuer_cik: "0001737806"
+    form: 6-K
+    period: null
+    accession: 0001104659-25-122766
+    filed: 2025-12-19
+    url: https://www.sec.gov/Archives/edgar/data/1737806/000110465925122766/0001104659-25-122766-index.htm
+    primary: true
+    note: 公告正文在 6-K 本体，无附件；同日另一份 6-K（0001104659-25-122765）是 2025 年股东大会结果，不是本件。
+
+  - tag: PDD-6K-2022-03-22
+    kind: filing
+    title: 2021 年第四季度及全年未经审计业绩公告（Form 6-K 附件 99.1，末次披露 GMV 与用户数）
+    issuer_cik: "0001737806"
+    form: 6-K
+    period: FY2021Q4
+    accession: 0001104659-22-036291
+    filed: 2022-03-22
+    url: https://www.sec.gov/Archives/edgar/data/1737806/000110465922036291/0001104659-22-036291-index.htm
+    primary: true
+    note: 新闻稿落款 2022-03-21，6-K 次日报送 EDGAR；公司此后停止披露 GMV、月活、年活跃买家与年人均消费。
+
+  - tag: PDD-6K-2021-03-18
+    kind: filing
+    title: 领导层交接公告与 2021 年致股东信（Form 6-K 附件 99.2、99.3）
+    issuer_cik: "0001737806"
+    form: 6-K
+    period: null
+    accession: 0001104659-21-038019
+    filed: 2021-03-18
+    url: https://www.sec.gov/Archives/edgar/data/1737806/000110465921038019/0001104659-21-038019-index.htm
+    primary: true
+    note: 附件落款 2021-03-17，6-K 次日报送 EDGAR；创始人辞任董事长、投票权委托董事会行使的原始公告。
+
+  - tag: PDD-WEB-2026-09-24-1
+    kind: web
+    title: EDGAR XBRL 汇总数据（companyfacts），PDD Holdings Inc.，CIK 0001737806
+    url: https://data.sec.gov/api/xbrl/companyfacts/CIK0001737806.json
+    date: 2026-09-24
+    primary: true
+    note: 2026-09-24 读取；只收 us-gaap 等标准概念，不收公司扩展概念。us-gaap:PaymentsToAcquirePropertyPlantAndEquipment 最后一次出现在 FY2020 的 20-F（0001104659-21-058237），FY2021 至 FY2025 的 20-F 都没有用它。
+
+  - tag: PDD-WEB-2026-09-24-2
+    kind: web
+    title: EDGAR 申报索引（submissions），PDD Holdings Inc.，CIK 0001737806
+    url: https://data.sec.gov/submissions/CIK0001737806.json
+    date: 2026-09-24
+    primary: true
+    note: 2026-09-24 读取；列出以本公司为申报人或标的公司的全部申报，最近一份为 2026-09-04。表格名含 13D 的申报中，最后一份是腾讯（CIK 0001293451）2021-03-24 提交的 SC 13D/A（0000950103-21-004487）。

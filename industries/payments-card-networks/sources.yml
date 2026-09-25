@@ -1,0 +1,26 @@
+# 行业模块 payments-card-networks 的来源标签表（schema：thesis-ci/spec/schemas/sources.schema.json）
+# 定位约定：#p<N> = PDF 页码，与文本抽取中的 "[page N]" 标记一致；本研究共 25 页，印刷页码与 PDF 页码相同，封面为第 1 页。
+# 本模块只引用行业研究本身；研究所依据的一手来源（Nilson Report、美联储、Visa 与 Mastercard 的 10-K 等）列在研究 p22 至 p25，未被直接引用，因此不在此单独登记。
+sources:
+  - tag: IND-PAYMENTS-2026-09
+    kind: industry_report
+    title: "Business Library 行业研究：Payments & Card Networks（支付与卡组织），2026 年 9 月版"
+    date: "2026-09-16"
+    url: null
+    location: private:reports/payments-card-networks.pdf
+    primary: false
+    note: >-
+      本模块的权威来源。封面日期为 2026 年 9 月，研究所引网络来源的访问日为 2026-09-16（见 p22），PDF 元数据的创建日期也是同日，
+      故本模块以 2026-09-16 为数据截止日。研究是对一手资料（Nilson Report、美联储、欧盟委员会、各国央行、
+      Visa 与 Mastercard 等公司的 10-K 等，清单见 p22 至 p25）的整理；标注 derived 的数字是研究作者在引用值上的算术，本模块译作“研究推算”。
+      本模块只转引研究原文并注明页码，未逐条回查一手资料。
+  - tag: IND-PAYMENTS-2026-09-V0
+    kind: industry_report
+    title: "Business Library 行业研究：Payments & Card Networks，早期较短版本（2026 年 9 月）"
+    date: "2026-09-15"
+    url: null
+    location: private:reports/payments-card-networks.v0.pdf
+    primary: false
+    note: >-
+      次要来源，只作对照，本模块不从中引用事实。该版本注明数据截至 2026-09-15（见 p1）。
+      它的部分数字与正式版不一致（例如 Visa 2025 财年的国际交易收入与客户激励），一律以 IND-PAYMENTS-2026-09 为准。

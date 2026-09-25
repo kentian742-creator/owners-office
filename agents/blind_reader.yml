@@ -1,0 +1,34 @@
+# 盲推：独立监督之一，也是反锚定的核心。只读新文件，独立回答总部冻结的中性问题；看不到论点、档案和任何结论。
+# reports_to 为 null：独立监督不向任何经理人汇报；它的回答和公司经理的回答逐题对比，分歧图先交总部。
+# 只对持仓运行；候选公司不跑，以控制成本。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 blind_reader.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；conclusions 沿用隔离表的说法（C-AGENT-ISOLATION）。
+role: blind_reader
+name: 盲推
+model:
+  id: claude-fable-5-1
+  effort: high
+  fallbacks: default
+  why: 监督类角色用最强模型：盲推要和起草模型独立作答，用不同的、更强的模型还能减少同源偏差（设计文档默认值，decisions/0003）。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。不在预算降级顺序里。
+reports_to: null
+can_see:
+  - filings                      # 本次业绩事件的新文件（业绩公告、10-Q 或 6-K、电话会纪要），带来源标签
+  - question_list_stripped       # 流水线删去题目与论点支柱的对应关系、打乱顺序后的问题清单
+cannot_see:
+  - thesis
+  - dossier
+  - update                       # 公司经理的更新草稿
+  - draft_outputs                # 03 草稿的全部输出
+  - question_list                # 带对应关系的问题清单
+  - question_answers             # 公司经理的逐题回答
+  - qualitative_verdicts
+  - prereg
+  - valuation
+  - conclusions                  # 任何结论
+outputs:
+  - blind_answers
+  - unprompted_observations
+decision_rights:
+  - blind_read                   # L1
+prompts: ["14A"]
+trust_managed: false

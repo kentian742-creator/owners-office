@@ -1,0 +1,157 @@
+# 公司经理：相当于伯克希尔的子公司 CEO，每家公司一个（持仓与候选）。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 company_manager.md。
+# can_see / cannot_see 用提示词 front matter 的输入名（可选输入去掉末尾的 ?）；提示词在私有仓库，这里只写编号。
+role: company_manager
+name: 公司经理
+model:
+  id: claude-sonnet-5
+  effort: high
+  why: 起草类角色用中档模型（设计文档默认值，decisions/0003）；它的产出都要经过事实审计和反方，错误能被抓住。总部可按错误率和成本调整（决策 L2 model_selection）；预算接近上限时按 budget.degrade_order 降级。
+reports_to: hq_capital_allocator
+can_see:
+  # 运行参数与规则
+  - run_date
+  - schema
+  - constitution
+  - sources
+  # 档案与系统文件
+  - dossier
+  - existing_dossier
+  - existing_system_files
+  - thesis
+  - ledger
+  - lynch_template
+  - metrics_registry
+  - industries
+  # 新文件与数据
+  - filings
+  - latest_filings
+  - xbrl_facts
+  - historical_records
+  - field_evidence
+  - event
+  - release_history
+  - calibration
+  # 估值（私有）
+  - valuation
+  - series_roster
+  - price_reference
+  - year_end_closes
+  - anchors
+  - valuation_input_notes
+  # 测试、独立判定与结算的结果；总部冻结的问题清单
+  - ci_results
+  - qualitative_verdicts
+  - prereg_settlement
+  - prereg_due
+  - ledger_settlement
+  - question_list
+  # 其他环节交回、待并入或待定稿的内容
+  - pending_archive_patch
+  - pending_test_proposals
+  - pending_ledger_entries
+  - prereg_candidates
+  - archive_patch_draft
+  - test_proposals_draft
+  - prereg_candidates_draft
+  - ledger_entries_draft
+  - patches_02
+  - patches_06_08
+  - draft_outputs
+  # 审计结论与总部退回
+  - findings_04A
+  - findings_04B
+  - findings_04C
+  - bear_case_04B
+  - weakest_sentence_04B
+  - test_proposals_04B_lite
+  - findings_09A
+  - findings_09B
+  - findings_09C
+  - counter_case_09B
+  - misleading_sentence_09B
+  - layout_instructions_09C
+  - findings_12V
+  - findings_12A
+  - findings_12B
+  - findings_12C
+  - connection_audit_12B
+  - answers_12B
+  - layout_instructions_12C
+  - returns_17A
+  # 成品与版面
+  - report
+  - cover
+  - charts
+  - main_visual
+  - connections
+  - document
+  - visual_specs
+  - rendered_pages
+  - wordmark
+  - doc_02
+  - doc_06
+  - doc_07
+  - doc_08
+  # 所有者的笔记：只作线索，事实回到一手材料核实
+  - owner_notes
+cannot_see:
+  - blind_answers                # 14A 的回答：交出自己的 question_answers 之前看不到，否则分歧图失效（00 §G6）；此后各部分的输入里也没有它
+  - unprompted_observations      # 同上
+outputs:
+  # 档案、系统文件与估值（01、02、05）
+  - dossier
+  - thesis
+  - story
+  - ledger
+  - valuation_md
+  - valuation_yml
+  # 研报、深度认知与完整企业报告（02、05、06–08、10、11、13）
+  - report
+  - revised_report
+  - cover
+  - charts
+  - document
+  - revised_document
+  - visual_specs
+  - main_visual
+  - connections
+  - revised_connections
+  # 季度更新（03、03R、03P）
+  - update
+  - question_answers
+  - dossier_changes
+  - patch_decisions
+  - reviewed_sections
+  - pr_body
+  - mistakes_entry
+  - escalation                   # 私有；只在触及 R6 的四种企业内部原因时交总部
+  # 预注册（15A）
+  - prereg
+  # 交接通道（00 §F7）
+  - archive_patch
+  - archive_patch_draft
+  - test_proposals
+  - test_proposals_draft
+  - prereg_candidates
+  - prereg_candidates_draft
+  - ledger_entries
+  - ledger_entries_draft
+  - patches_02
+  - patches_06_08
+  - layout_instructions
+  - valuation_input_notes
+  - revision_notes
+  - sources_additions
+  - l2_report
+  - questions
+decision_rights:
+  - draft                        # L1
+  - fact_revision                # L1
+  - routine_merge                # L1；合并与公开按 trust.routing 分流
+  - prereg_content               # L2（15A）
+  - scenario_probability         # L2（08）
+  - test_warning_disposition     # L2（03）
+  - publish                      # L2，须审计无误
+prompts: ["01", "02", "03", "05", "06", "07", "08", "10", "11", "13", "15A"]
+trust_managed: true

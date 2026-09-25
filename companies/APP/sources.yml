@@ -1,0 +1,135 @@
+# AppLovin（APP）来源标签表（公开）。
+# 报告页码 locator 写作 TAG#pN（N = PDF 页码）。
+sources:
+  - tag: APP-RPT1-2026-09-23
+    kind: report
+    title: "APP · 完整企业报告"
+    date: 2026-09-23
+    location: "private:reports/APP.pdf"
+    primary: false
+    note: "自有企业报告；财务数据至 2026-06-30（FY2026 Q2）；locator 为 PDF 页码。"
+
+  - tag: APP-10K-FY2025
+    kind: filing
+    title: "AppLovin 10-K：FY2025 年报"
+    issuer_cik: "0001751008"
+    form: 10-K
+    period: FY2025
+    accession: 0001751008-26-000010
+    filed: 2026-02-19
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000010/0001751008-26-000010-index.htm
+    primary: true
+
+  - tag: APP-10Q-FY2026Q2
+    kind: filing
+    title: "AppLovin 10-Q：截至 2026-06-30 的季度"
+    issuer_cik: "0001751008"
+    form: 10-Q
+    period: FY2026Q2
+    accession: 0001751008-26-000059
+    filed: 2026-08-05
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000059/0001751008-26-000059-index.htm
+    primary: true
+
+  - tag: APP-10Q-FY2026Q1
+    kind: filing
+    title: "AppLovin 10-Q：截至 2026-03-31 的季度"
+    issuer_cik: "0001751008"
+    form: 10-Q
+    period: FY2026Q1
+    accession: 0001751008-26-000044
+    filed: 2026-05-06
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000044/0001751008-26-000044-index.htm
+    primary: true
+
+  - tag: APP-10K-FY2022
+    kind: filing
+    title: "AppLovin 10-K：FY2022 年报"
+    issuer_cik: "0001751008"
+    form: 10-K
+    period: FY2022
+    accession: 0001751008-23-000006
+    filed: 2023-02-28
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100823000006/0001751008-23-000006-index.htm
+    primary: true
+    note: "2020–2022 年收入按软件平台与应用两个分部列示（第 7 项 MD&A、附注 14）。"
+
+  - tag: APP-10Q-FY2022Q3
+    kind: filing
+    title: "AppLovin 10-Q：截至 2022-09-30 的季度"
+    issuer_cik: "0001751008"
+    form: 10-Q
+    period: FY2022Q3
+    accession: 0001751008-22-000020
+    filed: 2022-11-10
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100822000020/0001751008-22-000020-index.htm
+    primary: true
+    note: "2022 年与 2021 年三季度及前三季度的收入，按分部拆分（附注 3）。"
+
+  - tag: APP-8K-2026-08-05
+    kind: filing
+    title: "AppLovin 8-K（Item 2.02）：2026 年二季度业绩新闻稿（附件 99.1）"
+    issuer_cik: "0001751008"
+    form: 8-K
+    period: FY2026Q2
+    accession: 0001751008-26-000057
+    date: 2026-08-05
+    filed: 2026-08-05
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000057/0001751008-26-000057-index.htm
+    primary: true
+
+  - tag: APP-8K-2026-05-06
+    kind: filing
+    title: "AppLovin 8-K（Item 2.02）：2026 年一季度业绩新闻稿"
+    issuer_cik: "0001751008"
+    form: 8-K
+    period: FY2026Q1
+    accession: 0001751008-26-000042
+    date: 2026-05-06
+    filed: 2026-05-06
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000042/0001751008-26-000042-index.htm
+    primary: true
+
+  - tag: APP-8K-2026-02-11
+    kind: filing
+    title: "AppLovin 8-K（Item 2.02）：2025 年四季度业绩新闻稿"
+    issuer_cik: "0001751008"
+    form: 8-K
+    period: FY2025Q4
+    accession: 0001751008-26-000005
+    date: 2026-02-11
+    filed: 2026-02-11
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000005/0001751008-26-000005-index.htm
+    primary: true
+
+  - tag: APP-8K-2026-04-07
+    kind: filing
+    title: "AppLovin 8-K（附件 99.1）：CTO 与首席法务官交接、独立董事长"
+    issuer_cik: "0001751008"
+    form: 8-K
+    period: null
+    accession: 0001751008-26-000014
+    date: 2026-04-07
+    filed: 2026-04-07
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000014/0001751008-26-000014-index.htm
+    primary: true
+
+  - tag: APP-DEF14A-2026-04-21
+    kind: filing
+    title: "AppLovin 2026 年股东大会委托书：投票权、投票协议与高管薪酬"
+    issuer_cik: "0001751008"
+    form: DEF 14A
+    period: "2026"
+    accession: 0001751008-26-000028
+    date: 2026-04-21
+    filed: 2026-04-21
+    url: https://www.sec.gov/Archives/edgar/data/1751008/000175100826000028/0001751008-26-000028-index.htm
+    primary: true
+
+  - tag: APP-CALL-FY2026Q2
+    kind: transcript
+    title: "AppLovin 2026 年二季度业绩电话会逐字稿（公司官网）"
+    date: 2026-08-05
+    url: null
+    primary: true
+    note: "公司发布的原始记录，不在 EDGAR；MAX 发布商收入、消费类支出与算力成本等表述的出处。"

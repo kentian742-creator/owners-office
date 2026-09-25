@@ -1,0 +1,301 @@
+# 行业模块：支付与卡组织
+# schema：thesis-ci/spec/schemas/industry.schema.json；规范：thesis-ci/spec/SPEC.md 第 6 节。
+# 本模块只描述行业本身：不含任何公司的投资观点，也不列出引用本模块的公司（引用关系只写在公司一侧）。
+# 事实数字一律转引自来源标签 IND-PAYMENTS-2026-09，并在同一句内注明 PDF 页码（本研究的印刷页码与 PDF 页码相同）。
+# 标“研究推算”的数字是研究作者在公开数字上的算术（原文 derived）；标“本模块推论”的句子是本模块的推断，不是研究原话。
+# 可能性用语沿用研究 p3 的定义：很可能（very likely）、可能（likely）、不确定（uncertain）、不太可能（unlikely）、很不可能（very unlikely），数值区间见 README。
+# threshold 与 rule 是事先写下的判定标准，不是事实。长文本每行一句，便于逐行比较修改。
+id: payments-card-networks
+name: 支付与卡组织
+name_en: Payments & Card Networks
+as_of: "2026-09-16"
+reviewed: "2026-09-24"
+source: IND-PAYMENTS-2026-09#p3
+
+summary: >-
+  一笔卡支付是一次费用分成：商户付费，发卡行收下大部分费用并把其中很多以奖励返还持卡人，收单机构在价格上竞争，居中的卡组织只留下很小的比例，却因为掌握连接银行与商户的规则和受理网络、又不承担持卡人借贷风险，占据产业链上最有价值的位置 [src:IND-PAYMENTS-2026-09#p3]。
+  2024 年美国商户为受理卡片支付了 1,872 亿美元，占 11.9 万亿美元消费额的 1.57%，而 Visa 2025 财年 400 亿美元的净收入只相当于其支付额的 0.28%（研究推算）[src:IND-PAYMENTS-2026-09#p6]，卡组织的营业利润率却在 58% 到 66% 之间（Mastercard 2025 年按 GAAP 为 58%，Visa 2025 财年剔除诉讼拨备为 66%）[src:IND-PAYMENTS-2026-09#p4]。
+  交换费上限至今主要是在发卡行、商户、收单机构和消费者之间搬动利润，没有把利润从卡组织身上拿走 [src:IND-PAYMENTS-2026-09#p3]：Durbin 修正案之后，卡组织在美国借记卡费用池中的份额从 2011 年的 18% 升至 2023 年的 28% [src:IND-PAYMENTS-2026-09#p9]，欧盟封顶后按 2015 至 2017 年的年度净效应计，卡组织每年多得 5.5 亿欧元，发卡行每年少得 29.5 亿欧元 [src:IND-PAYMENTS-2026-09#p10]。
+  卡片只在国家塑造的市场失去领先地位，而且先被取代的是现金、转账和借记卡，不是信用卡 [src:IND-PAYMENTS-2026-09#p3]：2025 年下半年巴西 Pix 占零售支付笔数的 54.7%，同期巴西信用卡支付仍增长 9.4% [src:IND-PAYMENTS-2026-09#p14]，印度借记卡支付笔数在 2021 至 2025 年间下降 67%，信用卡支付笔数增至 2.6 倍 [src:IND-PAYMENTS-2026-09#p18][src:IND-PAYMENTS-2026-09#p17]。
+  研究的基准判断是：近期压力落在价格上，主要由发卡行和持卡人消化，中期账户到账户（A2A）支付会在有国家或银行联盟推动的地方取走类借记卡的支付，长期的问题是卡组织能否继续充当 AI 代理人和代币化货币所用的支付凭证 [src:IND-PAYMENTS-2026-09#p19]。
+
+structure:
+  - >-
+    谁付钱给谁：四方模式中，发卡行（持卡人的银行）与收单机构（商户的银行）从不直接谈判，由卡组织制定规则和两者之间的默认价格，商户付给收单机构的折扣费包含三项，即卡组织设定、经收单机构转给发卡行的交换费，向收单与发卡两侧收取的卡组织（scheme）费用，以及收单机构自己的利润 [src:IND-PAYMENTS-2026-09#p6]。
+    三方模式（American Express，以及 Discover 的自有卡）由一家公司同时发卡、收单并运营网络，保留全部折扣费，例如 American Express 2025 年在 1.67 万亿美元签账额上取得 374 亿美元折扣收入，把其中约一半（184 亿美元）用于持卡人奖励 [src:IND-PAYMENTS-2026-09#p6]。
+  - >-
+    每 100 美元去了哪里（美国奖励型信用卡，研究的示意估算）：商户约付 2.30 美元，发卡行收取约 1.80 美元交换费，其中约 1.50 美元以奖励及相关成本返还持卡人，发卡行在扣除服务、欺诈与资金成本前约留 0.25 美元，卡组织从两侧合计约留 0.15 至 0.25 美元（示意图取约 0.20 美元），收单与处理机构约留 0.35 美元（余数）[src:IND-PAYMENTS-2026-09#p6]。
+  - >-
+    利润在中间被留住：价值在两端创造（发卡行承担信用和欺诈风险，商户得到销售），却被最难替代的中间层留住 [src:IND-PAYMENTS-2026-09#p8]。
+    卡组织拿到不到十分之一的费用，却有最稳定的利润，营业利润率 58% 到 66%，含资本化软件的资本开支约为净收入的 3.7% [src:IND-PAYMENTS-2026-09#p4]。
+  - >-
+    发卡行用交换费买来消费和余额，靠放贷赚钱：2021 年底大型银行卡业务的奖励前净交易收入约为每美元消费 1.3 美分，奖励成本约 1.5 美分，信用功能贡献约 80% 的卡业务利润 [src:IND-PAYMENTS-2026-09#p8]。
+    发卡行也是卡组织最强的对手方，因为由它们决定卡面上的品牌 [src:IND-PAYMENTS-2026-09#p8]，Visa 2025 财年返还给客户的激励为 158 亿美元，占总收入的 28.3%（研究推算），2010 财年为 16.2% [src:IND-PAYMENTS-2026-09#p10]。
+  - >-
+    收单机构与支付服务商提供的是商户可以更换的标准化服务，费率持续下降 [src:IND-PAYMENTS-2026-09#p9]，规模看似护城河其实不是，持久优势来自掌握商户的系统集成（软件、单一全球平台）[src:IND-PAYMENTS-2026-09#p3]。
+    FIS 于 2019 年以约 430 亿美元（企业价值）收购 Worldpay，2022 至 2023 年减记了 244 亿美元商誉 [src:IND-PAYMENTS-2026-09#p12]；
+    Adyen 的费率从 2015 年的约 31 个基点降到 2025 年的约 17 个基点（研究推算），EBITDA 利润率仍保持在 53% [src:IND-PAYMENTS-2026-09#p16][src:IND-PAYMENTS-2026-09#p3]。
+  - >-
+    各国结构不同：同一门生意在美国是私营收费公路，在欧洲和澳大利亚是受监管的收费公路，在巴西、印度和中国是国家修的路，凡是国家修建轨道的地方，国际卡组织只是国内支付的少数参与者 [src:IND-PAYMENTS-2026-09#p7]。
+    2025 年下半年，巴西 Pix 占零售支付笔数的 54.7%，印度 UPI 占数字支付交易量（原文 volume）的 85.5% [src:IND-PAYMENTS-2026-09#p7]。
+
+signposts:
+  - id: PAY-SP1
+    title: 美国：全卡受理与单一网络路由规则被削弱
+    observable: >-
+      美国卡组织赖以定价的两条规则是否被打破（研究的 1 至 5 年视野）：全卡受理（honour-all-cards，受理某品牌某类卡就须受理该类的所有卡）与单一网络路由 [src:IND-PAYMENTS-2026-09#p16][src:IND-PAYMENTS-2026-09#p3][src:IND-PAYMENTS-2026-09#p6]。
+      具体看四件事：MDL 1720 商户集体诉讼修订后的禁令救济和解能否获最终批准并生效，生效后商户可按借记卡、商务卡、高端信用卡、标准信用卡分别决定是否受理 [src:IND-PAYMENTS-2026-09#p16][src:IND-PAYMENTS-2026-09#p23]；
+      《信用卡竞争法》（CCCA）一类的信用卡路由强制能否立法 [src:IND-PAYMENTS-2026-09#p16]；
+      美国诉 Visa 借记卡垄断案（No. 1:24-cv-07214，S.D.N.Y.）能否形成救济 [src:IND-PAYMENTS-2026-09#p23]；
+      以及 Visa 在美国借记卡交易笔数中的份额。
+      前三件是研究列出的早期路标 [src:IND-PAYMENTS-2026-09#p18]，第四件对应研究所说的“司法部案之后美国借记卡走非关联网络的份额”[src:IND-PAYMENTS-2026-09#p22]，本模块改用 Visa 的份额来量，因为研究给出了它的基线 [src:IND-PAYMENTS-2026-09#p8]。
+    threshold: >-
+      任一情形即视为越过：（a）和解中按类别受理的条款获最终批准并生效，且未被上诉推翻或中止；
+      （b）信用卡路由强制成为法律，例如 CCCA 要求资产超过 1,000 亿美元的发卡行在信用卡上至少启用一个 Visa、Mastercard 以外的网络 [src:IND-PAYMENTS-2026-09#p16]；
+      （c）美国诉 Visa 案以判决或和解形成救济，限制排他安排或按交易量计的激励，或强制路由竞争；
+      （d）美联储按支付卡网络公布的 Regulation II 数据显示，Visa 旗下网络（Visa 与 Interlink）合计占美国全部借记卡交易笔数的比例降到 50% 以下，即 Visa 不再承载美国借记卡的多数交易。
+    rule:
+      any_of:
+        - {op: event, metric: us_mdl1720_category_acceptance_effective, period: event}
+        - {op: event, metric: us_credit_card_routing_mandate_enacted, period: event}
+        - {op: event, metric: us_v_visa_debit_remedy_ordered, period: event}
+        - {op: "<", threshold: 50, unit: "%", metric: visa_share_of_us_debit_transactions, period: year, note: "Visa 各报文类型与 Interlink 之和，占受监管与豁免发卡行合计的全部交易笔数"}
+    check_frequency: monthly
+    data_source: >-
+      （a）MDL 1720 案卷，以及 Visa 在 EDGAR（CIK 0001403161）提交的 8-K、10-Q、10-K 中的法律程序一节；
+      （b）congress.gov 上 CCCA 的立法状态；
+      （c）美国司法部反垄断局发布的 United States v. Visa Inc.（No. 1:24-cv-07214，S.D.N.Y.）诉讼文件与法院案卷；
+      （d）美联储按支付卡网络公布的 Regulation II 借记卡数据（federalreserve.gov/paymentsystems/regii-average-interchange-fee.htm，即研究 p24 所列来源 [45]），按年份列出各具名网络占交易笔数的比例，受监管、豁免发卡行分列并有合计。
+    current_reading:
+      value: >-
+        未越过：和解于 2026-06-09 获初步批准，最终批准听证定于 2026-11-16；
+        CCCA 于 2026-01-13 重新提出，未获通过；
+        美国诉 Visa 案的事实证据开示期延至 2027-01-29，尚无审判日期。
+      as_of: "2026-09-16"
+      source: IND-PAYMENTS-2026-09#p17
+      note: >-
+        司法部 2024 年起诉时指称，Visa 仍承载美国 60% 以上的借记卡交易，每年从借记卡网络费中赚取逾 70 亿美元 [src:IND-PAYMENTS-2026-09#p8]。
+        法院于 2025 年 6 月驳回了该案的撤案动议 [src:IND-PAYMENTS-2026-09#p16]。
+        和解的异议期于 2026-09-14 截止，异议者超过 900 名，另有沃尔玛 [src:IND-PAYMENTS-2026-09#p17]。
+        把 CCCA 附加到其他法案的尝试在 2025 年和 2026 年 3 月都失败了，但总统在 2026 年 1 月和 8 至 9 月两度表态支持 [src:IND-PAYMENTS-2026-09#p17]。
+    implication: >-
+      研究给出的最强反方论点是：卡组织的回报建立在法律容许的集体定价和限制性规则之上，一旦去掉全卡受理和单一网络路由，护城河会缩成普通的交换开关 [src:IND-PAYMENTS-2026-09#p3]。
+      研究认为，真正伤及卡组织而不只是发卡行的机制，是信用卡的路由竞争或对按量激励的限制，单纯的价格上限至今没有做到 [src:IND-PAYMENTS-2026-09#p17]。
+      研究把美国信用卡路由强制或司法部救济、再加上每美元美国交易额收入的持续下降，列为推翻其第一个核心判断（薄切片、厚利润）的条件 [src:IND-PAYMENTS-2026-09#p3]；
+      本路标只捕捉前一半，后一半由 PAY-SP3 观察（本模块推论）。
+      按类别受理会让高端信用卡变成商户可选的产品，受损的是高端奖励卡的发卡方，研究对此的判断是“不确定”，取决于法院是否批准 [src:IND-PAYMENTS-2026-09#p21]。
+      研究判断五年内出现美国信用卡路由强制的可能性为“不确定”（40% 至 60%），并提示即便立法，借记卡的先例显示在位者仍会保住大部分交易量 [src:IND-PAYMENTS-2026-09#p17][src:IND-PAYMENTS-2026-09#p3]。
+    tests_to_rerun: [moat, pricing_power, competition, regulation, unit_economics]
+
+  - id: PAY-SP2
+    title: 主要市场对卡组织自身费用实施有约束力的价格管制
+    observable: >-
+      研究覆盖的主要市场（美国、欧盟与欧元区、英国、澳大利亚、巴西、印度、中国）中，监管是否从交换费延伸到卡组织自己收取的 scheme 费和处理费 [src:IND-PAYMENTS-2026-09#p7]，研究把境外对 scheme 费的监管列在 1 至 5 年视野 [src:IND-PAYMENTS-2026-09#p18]。
+      研究指出英国、欧盟和澳大利亚的监管者已开始直接针对 scheme 费 [src:IND-PAYMENTS-2026-09#p3]。
+    threshold: >-
+      任一上述市场的监管机构或立法机构在 2026-09-16 之后正式通过适用于 Visa 或 Mastercard 的 scheme 费或处理费的有约束力的价格管制（费率上限、价格冻结或须经批准的定价）。
+      只要求透明度、定价治理或信息披露的措施不算越过；只针对交换费或商户附加费的措施也不算。
+    rule: {op: event, metric: binding_scheme_fee_price_control_adopted, period: event, note: "只计 2026-09-16 之后通过、适用于 Visa 或 Mastercard 的措施；只要求透明度或定价治理的措施不计"}
+    check_frequency: monthly
+    data_source: >-
+      英国支付系统监管局（PSR，psr.org.uk）关于卡组织 scheme 费与处理费的市场审查及后续决定（研究所引为 2026 年 7 月的 PS26/1）；
+      欧盟委员会竞争总司对 Visa、Mastercard scheme 费的问询与调查，以及《交换费条例》（Regulation (EU) 2015/751）的评估；
+      澳大利亚储备银行（RBA）零售支付监管审查的结论文件（其中有单独的 scheme 费结论）；
+      美联储 Regulation II 的修订程序（只看其中涉及网络费的部分）；
+      巴西央行、印度政府与 NPCI 的收费通知，中国人民银行的收费规定；
+      Visa（EDGAR CIK 0001403161）与 Mastercard（EDGAR CIK 0001141391）10-K、10-Q 中的监管一节。
+    current_reading:
+      value: >-
+        未越过：英国 PSR 2026 年 7 月通过的是透明度与定价治理救济，不是价格上限；
+        欧盟委员会自 2024 年起就 Visa、Mastercard 的 scheme 费向市场问询；
+        澳大利亚自 2026 年 10 月起下调的是消费信用卡交换费上限并禁止附加费。
+      as_of: "2026-09-16"
+      source: IND-PAYMENTS-2026-09#p10
+      note: >-
+        英国救济于 2026-07-30 通过，澳大利亚新规于 2026-10-01 生效 [src:IND-PAYMENTS-2026-09#p17]。
+        英国 PSR 发现 2017 至 2023 年核心 scheme 费与处理费按实际值至少上涨 25%，使英国企业每年至少多付 1.7 亿英镑 [src:IND-PAYMENTS-2026-09#p10]。
+        澳大利亚 2024/25 年度收单方支付的 scheme 费为 9.92 亿澳元（交易额的 10.5 个基点），发卡方为 3.11 亿澳元（3.3 个基点）[src:IND-PAYMENTS-2026-09#p10]。
+    implication: >-
+      研究的第二个核心判断是，交换费上限只在卡组织周围挪动利润，欧盟封顶后卡组织每年多得 5.5 亿欧元，发卡行每年少得 29.5 亿欧元 [src:IND-PAYMENTS-2026-09#p3]。
+      研究给出的反方论点是监管者已经学会直接盯住 scheme 费，并把主要市场出现有约束力的 scheme 费和处理费价格管制列为推翻这一判断的条件之一 [src:IND-PAYMENTS-2026-09#p3]。
+      越过即意味着价格管制开始触及卡组织自己的收费，而不只是在发卡行、商户、收单机构和消费者之间转移利润（本模块推论）。
+      研究认为监管重心从交换费转向 scheme 费和路由“可能”发生（60% 至 80%），受损的是卡组织的收益率和发卡行的奖励预算 [src:IND-PAYMENTS-2026-09#p21][src:IND-PAYMENTS-2026-09#p3]。
+    tests_to_rerun: [pricing_power, regulation, returns_on_capital, unit_economics]
+
+  - id: PAY-SP3
+    title: 卡组织的定价能力：每美元净收入与发卡行激励
+    observable: >-
+      两个年度指标：其一，卡组织每美元交易额的净收入，即 Visa 净收入除以支付额、Mastercard 净收入除以总交易额（GDV），看全球口径，披露允许时也看美国口径；
+      其二，Visa 客户激励占总收入（净收入加客户激励）的比例，衡量大型发卡行从卡组织手中取回的份额。
+      研究把 Visa 的激励占比列为 1 至 5 年视野的早期路标 [src:IND-PAYMENTS-2026-09#p18]，把每美元收入下降五分之一列为证明其中心判断错误的情形 [src:IND-PAYMENTS-2026-09#p22]。
+    threshold: >-
+      任一情形即视为越过：（a）任一主要卡组织的每美元净收入（全球口径，或披露允许时的美国口径）较 2025 财年基线累计下降 20% 或以上，即研究所说的“下降五分之一”，且主要由竞争而非监管造成；
+      （b）以 2025 财年为基线，Visa 客户激励占总收入的比例此后连续 3 个财年上升，等价于激励增速连续 3 年高于净收入增速。
+    rule:
+      any_of:
+        - {op: decrease, threshold: 20, unit: "%", metric: network_net_revenue_per_dollar_of_volume, period: year, note: "相对 FY2025 基线的累计降幅，Visa 与 Mastercard 分别计算，竞争或监管的归因由读者判断"}
+        - {op: increase, threshold: 0, unit: pp, metric: visa_client_incentives_share_of_gross_revenue, consecutive: 3, period: year, note: "逐年比较，自 FY2026 起计"}
+    check_frequency: annual
+    data_source: >-
+      Visa 年报 10-K（EDGAR CIK 0001403161，财年截至 9 月 30 日）：收入构成（服务、数据处理、国际交易与其他收入，减客户激励）与净收入，以及营运数据中的支付额；
+      Mastercard 年报 10-K（EDGAR CIK 0001141391，自然年）：净收入与 GDV；
+      美国口径取两家 10-K 中按地区拆分的收入与交易额（如有披露）。
+    current_reading:
+      value: 0.28
+      unit: "%"
+      period: FY2025
+      as_of: "2025-09-30"
+      source: IND-PAYMENTS-2026-09#p6
+      note: >-
+        数值为 Visa 每美元支付额的净收入：2025 财年净收入 400 亿美元，相当于 14.2 万亿美元支付额的 0.28%，Mastercard 2025 年的对应比例为 0.31%，其核心支付网络收入为 0.18%，均为研究推算 [src:IND-PAYMENTS-2026-09#p6]。
+        Visa 2025 财年客户激励为 158 亿美元，占总收入的 28.3%（研究推算），2010 财年为 16.2% [src:IND-PAYMENTS-2026-09#p10]。
+        研究图表所列的年份中，这一比例从 2010 财年的 16.2% 逐次升到 2025 财年的 28.3% [src:IND-PAYMENTS-2026-09#p12]，所以 (b) 越过可能只是长期趋势的延续，复核时要看升幅是否加快（本模块推论）。
+    implication: >-
+      研究把某个主要市场的每美元收入因竞争而非监管下降五分之一，列为证明其中心判断错误的情形之一 [src:IND-PAYMENTS-2026-09#p22]；
+      每美元净收入也是卡组织定价能力最直接的读数（本模块推论）。
+      研究还把美国信用卡路由强制或司法部救济之后每美元美国交易额收入的持续下降，列为推翻“薄切片、厚利润”判断的条件 [src:IND-PAYMENTS-2026-09#p3]，因此本路标与 PAY-SP1 要合起来读（本模块推论）。
+      客户激励是另一条渠道：研究把上升的激励视为卡组织向大型发卡行的间接转移，并把激励成本连续数年快于卡组织收入增长列为推翻“上限只在卡组织周围挪动利润”这一判断的条件 [src:IND-PAYMENTS-2026-09#p3]。
+      研究把发卡行的忠诚归为契约性、正在侵蚀的优势 [src:IND-PAYMENTS-2026-09#p12]。
+      最大的发卡行还可以自建网络：Capital One 收购 Discover 后把借记卡迁往自有网络，目标是到 2027 年取得 12 亿美元的网络协同 [src:IND-PAYMENTS-2026-09#p10]。
+    tests_to_rerun: [pricing_power, moat, returns_on_capital, customer_concentration, competition]
+
+  - id: PAY-SP4
+    title: 国家修建的 A2A 轨道是否开始取代信用卡（印度、巴西）
+    observable: >-
+      印度与巴西信用卡支付笔数的同比变化，以及 UPI、Pix 上信用产品的发展（UPI 信用额度、经 UPI 使用的 RuPay 信用卡、Pix 分期），属研究的 5 至 10 年视野 [src:IND-PAYMENTS-2026-09#p18][src:IND-PAYMENTS-2026-09#p3]。
+      研究发现，国家建设的 A2A 轨道先取代现金、转账和借记卡，信用卡至今仍在增长 [src:IND-PAYMENTS-2026-09#p3][src:IND-PAYMENTS-2026-09#p14]。
+    threshold: >-
+      任一情形即视为越过：（a）印度信用卡支付笔数连续两个半年同比下降；
+      （b）巴西信用卡支付笔数连续两个半年同比下降。
+      两种情形都须同时确认 UPI 或 Pix 上的信用类支付在增长，以排除经济衰退、信贷收紧等其他原因。
+    rule:
+      any_of:
+        - {op: "<", threshold: 0, unit: "%", metric: india_credit_card_payments_count_yoy, consecutive: 2, period: half}
+        - {op: "<", threshold: 0, unit: "%", metric: brazil_credit_card_payments_count_yoy, consecutive: 2, period: half}
+      note: "机器规则只看信用卡笔数，A2A 上信用支付的增长与归因由读者核实"
+    check_frequency: semiannual
+    data_source: >-
+      印度：印度储备银行（RBI）Payment System Report 与月度支付系统指标中的信用卡、借记卡交易笔数，NPCI 发布的 UPI 与 RuPay 数据（含经 UPI 的 RuPay 信用卡交易），印度政府新闻局（PIB）的相关发布；
+      巴西：巴西央行（BCB）半年度零售支付统计（Estatísticas de Pagamentos de Varejo）与 Pix 管理报告（Relatório de Gestão do Pix）。
+    current_reading:
+      value: 9.4
+      unit: "%"
+      period: 2025H2
+      as_of: "2025-12-31"
+      source: IND-PAYMENTS-2026-09#p14
+      note: >-
+        数值为巴西 2025 年下半年信用卡支付的同比增速，同期借记卡支付为 −0.2% [src:IND-PAYMENTS-2026-09#p14]。
+        研究没有说明 9.4% 是按笔数还是按金额计算，而本路标的规则按笔数判断，需用巴西央行原始统计核对 [src:IND-PAYMENTS-2026-09#p14]。
+        印度 2021 至 2025 年借记卡支付笔数下降 67%，信用卡支付笔数增至 2.6 倍 [src:IND-PAYMENTS-2026-09#p18][src:IND-PAYMENTS-2026-09#p17]，研究没有给出印度的半年同比读数。
+        到 2025 年初，印度约 16% 的卡消费走 RuPay，其中一半是经 UPI 的信用 [src:IND-PAYMENTS-2026-09#p18]。
+    implication: >-
+      研究的第三个核心判断是，只有国家塑造的市场取代了卡片，而且先取代借记卡 [src:IND-PAYMENTS-2026-09#p3]。
+      信用卡凭借分期、免息期和奖励至今仍在增长 [src:IND-PAYMENTS-2026-09#p14]，而研究列出的反方论点是 UPI 已经承载 RuPay 信用卡，信用可能是下一个 [src:IND-PAYMENTS-2026-09#p3]。
+      研究把印度或巴西 A2A 上的信用从卡信用手中夺取份额，列为推翻该判断的条件 [src:IND-PAYMENTS-2026-09#p3]。
+      越过即说明“先借记、后信用”的规律在印度或巴西被打破，卡组织在这些市场剩下的信用卡业务也开始流失（本模块推论）。
+    tests_to_rerun: [moat, growth, competition]
+
+  - id: PAY-SP5
+    title: 卡片发达市场的收银台：欧洲 A2A 与美国的非卡支付
+    observable: >-
+      在卡片发达的市场，A2A 支付能否在没有价格管制推动的情况下进入线下收银台（研究的 5 至 10 年视野）[src:IND-PAYMENTS-2026-09#p17][src:IND-PAYMENTS-2026-09#p18]。
+      欧元区看 wero 钱包的线下使用和数字欧元立法，美国看卡片消费增速相对名义居民消费增速的变化，以及商户银行账户直付（pay-by-bank）的份额，都是研究列出的路标 [src:IND-PAYMENTS-2026-09#p18][src:IND-PAYMENTS-2026-09#p22]。
+    threshold: >-
+      任一情形即视为越过：（a）wero 或数字欧元在欧元区线下支付中的份额按笔数达到 10% 或以上，且不是由新的卡费价格管制推动；
+      （b）欧盟正式通过数字欧元立法；
+      （c）美国卡片消费增速连续 3 年低于名义居民消费增速，且同期 A2A 在收银台的份额上升。
+      （a）的门槛借用研究在 p22 对美国线下消费所用的“十分之一”标准（原标准针对私营钱包或稳定币）；
+      （c）中的“连续 3 年”是本模块对研究所说“数年”的具体化。
+    rule:
+      any_of:
+        - {op: ">=", threshold: 10, unit: "%", metric: euro_area_instore_share_wero_or_digital_euro, period: half, note: "是否由新的卡费价格管制推动由读者判断"}
+        - {op: event, metric: digital_euro_regulation_adopted, period: event}
+        - {op: "<", threshold: 0, unit: pp, metric: us_card_spending_growth_minus_nominal_pce_growth, consecutive: 3, period: year, note: "机器规则只看增速差，A2A 在收银台的份额是否上升由读者核实"}
+    check_frequency: semiannual
+    data_source: >-
+      欧元区：欧洲央行（ECB）SPACE 消费者支付行为调查中线下支付工具的构成（数年一次，研究所引为 2024 年版）；
+      两次调查之间，用欧洲支付倡议（EPI）公布的 wero 线下交易笔数，除以 wero 线下笔数与 ECB 半年度支付统计中欧元区卡支付笔数（能区分线下时只取线下）之和，作为上限近似（分母不含现金，会高估份额），近似值越过 10% 时须用 SPACE 或其他全口径数据确认后才算越过；
+      EPI 发布的 wero 用户与商户受理数据，欧盟理事会与欧洲议会关于数字欧元条例的立法进程。
+      美国：Visa、Mastercard 10-K 中的美国支付额增速（或 Nilson Report 的年度美国卡消费额），美国经济分析局（BEA）的名义个人消费支出，美联储支付研究（Federal Reserve Payments Study，三年一次），以及 RTP、FedNow 公布的交易统计。
+    current_reading:
+      value: "未越过：wero 的线下支付计划 2026 年推出，尚无线下份额读数；数字欧元立法尚未完成；美国分支尚无基线"
+      period: "2026-09"
+      as_of: "2026-09-16"
+      source: IND-PAYMENTS-2026-09#p17
+      note: >-
+        wero 到 2026 年 9 月有 5,700 万用户，自 2025 年底起在德国可用于网购，荷兰的 iDEAL 将在 2027 年前迁入 [src:IND-PAYMENTS-2026-09#p17]。
+        数字欧元：欧洲央行计划 2027 年年中开始试点，若 2026 年完成立法，可能在 2029 年发行 [src:IND-PAYMENTS-2026-09#p17]。
+        欧元区现金仍占 2024 年线下支付的 52%，卡片占 2025 年下半年非现金支付笔数的 57% [src:IND-PAYMENTS-2026-09#p7]。
+        美国即时支付在企业和账户间转账中扩张，2025 年 RTP 为 1.45 万亿美元、FedNow 为 8,530 亿美元（按季度数据加总）、Zelle 为 1.2 万亿美元，但都还没有进入收银台 [src:IND-PAYMENTS-2026-09#p17]。
+        研究没有给出美国名义居民消费增速，（c）的基线待回填。
+    implication: >-
+      研究认为，A2A 要在卡片发达的市场进入收银台，需要商户能够转嫁的价格差、可与拒付相比的买方保护、接近全覆盖的触达，以及愿意承担建设成本的推动者 [src:IND-PAYMENTS-2026-09#p18]。
+      美国大型发卡行在奖励上花掉约每美元 1.5 美分，拒付规则保护持卡人，银行转账两者都不提供，这是 A2A 至今没有进入美国收银台的原因 [src:IND-PAYMENTS-2026-09#p18]。
+      研究预计国家或银行联盟的 A2A 轨道以 Pix、UPI 为模板进入欧洲和新兴市场的收银台“可能”发生（60% 至 80%），在美国则“不太可能” [src:IND-PAYMENTS-2026-09#p21][src:IND-PAYMENTS-2026-09#p3]。
+      研究把 wero 或数字欧元不靠价格管制取得线下份额，以及美国卡片消费数年跑输居民消费而 A2A 在收银台上升，列为推翻其判断的条件 [src:IND-PAYMENTS-2026-09#p3][src:IND-PAYMENTS-2026-09#p22]。
+      越过即说明卡片在最富裕市场的交易量基础开始松动（本模块推论）。
+    tests_to_rerun: [moat, growth, competition, pricing_power]
+
+  - id: PAY-SP6
+    title: 支付凭证的控制权：AI 代理人、稳定币与跨境收益率
+    observable: >-
+      三个量，都是研究在 10 至 20 年视野列出的路标 [src:IND-PAYMENTS-2026-09#p18][src:IND-PAYMENTS-2026-09#p22]：其一，AI 代理人发起的购买中使用卡组织令牌（network token）的比例；
+      其二，稳定币等代币化货币的支付规模相对卡支付的规模，特别是绕开卡组织轨道的私营钱包或稳定币在美国线下消费中的份额，依托卡组织令牌的钱包（如 Apple Pay）不计 [src:IND-PAYMENTS-2026-09#p19]；
+      其三，跨境收益率，即卡组织跨境相关收入相对跨境交易额的比率。
+    threshold: >-
+      任一情形即视为越过：（a）Visa、Mastercard，或 Google（AP2）、OpenAI 与 Stripe（Agentic Commerce Protocol）等主要代理人支付协议的运营方公开的数据显示，代理人发起的购买中使用卡组织令牌的比例低于 50%；
+      （b）绕开卡组织轨道的私营钱包或稳定币在没有政府强制的情况下取得美国线下消费额的 10% 以上；
+      （c）Visa 或 Mastercard 的跨境收益率较 2025 财年基线累计下降 20% 或以上，且主要由竞争（稳定币、互联的即时支付系统等）而非监管造成。
+      （b）即研究所说的“十分之一”；（a）和（c）的数值门槛是本模块的设定，（c）借用研究对每美元收入所用的“五分之一”。
+    rule:
+      any_of:
+        - {op: "<", threshold: 50, unit: "%", metric: agent_checkouts_on_network_tokens_share, period: year, note: "任一卡组织或主要代理人支付协议公开的比例低于门槛即计"}
+        - {op: ">", threshold: 10, unit: "%", metric: us_instore_share_noncard_wallet_or_stablecoin, period: year}
+        - {op: decrease, threshold: 20, unit: "%", metric: cross_border_yield_proxy_vs_fy2025, period: year, note: "以跨境相关收入增速与跨境交易额增速逐年推算并连乘"}
+    check_frequency: semiannual
+    data_source: >-
+      （a）Visa Intelligent Commerce、Mastercard Agent Pay、Google 的 AP2 协议、OpenAI 与 Stripe 的 Agentic Commerce Protocol 等发布的使用数据，以及 Visa、Mastercard 10-K 与业绩材料中关于令牌的披露；
+      （b）美联储的消费者支付选择日记调查（Diary of Consumer Payment Choice，frbservices.org，每年一期，列出线下支付按工具的构成），美联储支付研究、Nilson Report，以及美国《GENIUS 法案》框架下支付型稳定币发行方的公开数据；
+      （c）Visa 10-K 中的国际交易收入与业绩发布中的跨境交易额增速；Mastercard 10-K 中的跨境交易额增速，以及单独披露时的跨境相关收入。
+    current_reading:
+      value: "尚无读数：三项规则指标研究都没有给出；相关的背景数字是 Visa 的稳定币结算年化规模到 2026 年 9 月已超过 200 亿美元，这是卡组织自己采用稳定币结算，不是绕开卡组织的支付"
+      period: "2026-09"
+      as_of: "2026-09-16"
+      source: IND-PAYMENTS-2026-09#p18
+      note: >-
+        研究把 Visa 超过 200 亿美元的稳定币结算年化规模放在“反方论据”一栏，用来说明卡组织已经在用稳定币结算并签发代理人令牌 [src:IND-PAYMENTS-2026-09#p18]。
+        Visa 2025 财年国际交易收入为 142 亿美元，占总收入的四分之一 [src:IND-PAYMENTS-2026-09#p18]，可作 (c) 的分子，研究没有给出对应的跨境交易额。
+        研究没有给出代理人结账使用卡组织令牌的比例，也没有给出美国线下非卡钱包或稳定币的份额。
+    implication: >-
+      研究认为，长期最可信的威胁是一条完全去掉商户费用的轨道，而证据表明这需要国家推动、并从借记卡开始 [src:IND-PAYMENTS-2026-09#p16]。
+      稳定币和代币化存款让跨境结算可编程、近乎即时，威胁卡组织收益最高的跨境业务，AI 购物代理人则改变由谁签发和验证支付凭证 [src:IND-PAYMENTS-2026-09#p18]。
+      在位者已提前布局，Visa 于 2025 年 12 月在美国推出 USDC 结算，Visa Intelligent Commerce 与 Mastercard Agent Pay 把卡组织令牌延伸到代理人，但 Google 的 AP2 与 OpenAI、Stripe 的 Agentic Commerce Protocol 不绑定单一网络，竞争仍然开放 [src:IND-PAYMENTS-2026-09#p18]。
+      研究把代币化货币或 AI 购物代理人使支付凭证的控制权离开卡组织令牌，以及私营钱包或稳定币在没有强制的情况下取得美国线下消费一成以上，列为会改变其判断的情形，分别对应（a）与（b）[src:IND-PAYMENTS-2026-09#p3][src:IND-PAYMENTS-2026-09#p22]。
+      跨境收益率不同：研究的基准情形本来就包含更低的跨境收益率，并判断跨境收益率被压缩“可能”发生（2030 年以后）[src:IND-PAYMENTS-2026-09#p18][src:IND-PAYMENTS-2026-09#p22]；
+      因此（c）越过不等于研究的判断被推翻，而是说明卡组织收益最高的业务受压的速度需要重估（本模块推论）。
+    tests_to_rerun: [moat, pricing_power, competition, growth]
+
+todo:
+  - >-
+    PAY-SP3：研究图表 9 只标出少数年份的 Visa 客户激励占比，需从 Visa 10-K 回填 FY2022 至 FY2025 逐年的客户激励与净收入，确认建档前几年该比例升幅是否在加快，供解读 (b) 分支时参照。
+  - >-
+    PAY-SP3：研究的每美元净收入是全球口径的推算值，需从 Visa、Mastercard 10-K 回填美国口径的净收入与交易额，建立美国基线。
+  - >-
+    PAY-SP1 (d)：美联储按网络公布的页面（研究 p24 所列来源 [45]）逐年给出各网络占借记卡交易笔数的比例；
+    需读取最新年份 Visa 与 Interlink 的合计份额，在 sources.yml 登记该网页后替代目前转引的司法部指称。
+  - >-
+    PAY-SP4：核实印度 RBI 统计中经 UPI 的 RuPay 信用卡交易计入信用卡还是计入 UPI；
+    若计入信用卡，卡信用向 A2A 轨道的迁移不会表现为信用卡笔数下降，(a) 分支需改用或补充 NPCI 公布的 UPI 信用类数据。
+  - >-
+    PAY-SP4：研究没有说明巴西 2025 年下半年信用卡支付的同比增速按笔数还是按金额计算 [src:IND-PAYMENTS-2026-09#p14]，需用巴西央行零售支付统计原表核对，并回填印度的半年同比读数。
+  - >-
+    PAY-SP5：研究没有给出美国名义居民消费增速，(c) 分支需用 BEA 个人消费支出与 Visa、Mastercard 美国支付额（或 Nilson Report）建立基线；
+    wero 的线下份额在其线下支付上线后开始读取，并确认 EPI 是否单独公布线下交易笔数。
+  - >-
+    PAY-SP6：研究没有给出代理人结账使用卡组织令牌的比例和美国线下非卡钱包或稳定币的份额；
+    跨境收益率需先用国际交易收入增速与跨境交易额增速建立 FY2025 基线；
+    Mastercard 是否仍单独披露跨境相关收入需在其 10-K 中确认。
+  - >-
+    来源：本模块的事实都经由行业研究转引并注明页码，研究中标注“推算”的数字依据作者另行保存的数字底稿，底稿未随研究提供。
+    若将来直接引用研究所列的一手资料（Nilson Report、美联储、Visa 与 Mastercard 10-K 等），需在 sources.yml 中补登；
+    研究 p23 的链接已含 Visa 与 Mastercard 年报的 EDGAR 路径，可据此补登登记号。

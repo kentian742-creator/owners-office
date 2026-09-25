@@ -1,0 +1,775 @@
+# SPGI 论点文件（公开；thesis-ci spec §4；schema: spec/schemas/thesis.schema.json）
+# 生成方式：先套林奇 stalwart 模板与 _common 时效测试，再逐条补入 02 报告第 11 节的
+# 六条论点破坏者（severity: breaker）与五个每季度前瞻指标（severity: watch）；
+# 第 11 节七个岔路口里，报告明说“每季度”可读、并称为指数唯一季度指标的 #7，和到 FY2028 判定的 #2，也写成 watch。
+# 门槛按报告原文；报告没给门槛的地方在测试 note 里写明本档案的操作化方式，并且都在首次判定之前写下。
+# 超出报告字面的两处也在 note 里注明，待总部确认：SPGI-L2 的 (b) 支（通道整体收紧），SPGI-L3 把有约束力的最终规则算作正式立法。
+# 模板 stalwart 的五条测试全部保留：Q-growth→SPGI-Q1、Q-returns→SPGI-Q2、Q-buyback→SPGI-Q3、Q-fcf→SPGI-Q13、L-guidance→SPGI-L1，改写处见各自 note。
+# 次类 cyclical 模板：采用 Q-leverage（SPGI-Q14）与 L-cycle-capalloc（SPGI-L6）；Q-cycle 看信用损失拨备，SPGI 不放贷，不适用，没有采用。
+# 本档案自加一条（origin: manual）：SPGI-L7，永久亏损路径 #3（可信度冲击）的代理测试。
+# 与价格有关的一切（区间、参考价、对价格的评级、折现参数）只在私有仓库 owners-office-private/companies/SPGI/valuation.yml。
+schema_version: "0.2"
+company: SPGI
+name: S&P Global Inc.（标普全球）
+exchange: NYSE
+status: candidate
+filer:
+  cik: "0000064040"
+  type: domestic
+  fiscal_year_end: "12-31"
+  earnings_form: 8-K
+  annual_form: 10-K
+category: stalwart
+category_secondary: cyclical
+category_rationale: "FY2025 收入 153.36 亿美元 [src:SPGI-RPT1-2026-09-18#p4]，公司中期有机收入增长目标 7%–9%、2026 年上半年实际 +10% [src:SPGI-RPT1-2026-09-18#p11]，2026 年调整后每股收益指引中值同口径增长约 11.2% [src:SPGI-RPT1-2026-09-18#p6]，是大而稳、年增一成左右的稳定增长型；次类为周期型：每 1 美元收入里约 36 美分跟着市场的量走 [src:SPGI-RPT1-2026-09-18#p4]，2022 年发行荒使评级分部收入 −26%、营业利润 −36% [src:SPGI-RPT1-2026-09-18#p6]。"
+domain: payments_financial_data
+# 现有三个行业模块都不描述 SPGI 所依赖的经济（信用发行周期、ETF 资产规模、金融基准的监管引用），见 todo。
+depends_on: []
+trust_level: 1
+as_of: 2026-09-24
+
+# 档案十二个部分的最近复核日期 = 02 报告日期。报告十二节加附录齐全，覆盖全部十二个部分：
+#   business 01 生意、economics 02 经济引擎、moat 03 护城河、capital_allocation 04 资本配置、management 05 管理层、
+#   culture 06 企业文化、runway 07 再投资跑道与期权、valuation 08 内在价值、bear_case 09 不买它的最强理由与
+#   “最可能错在哪”（p3）、“证据最薄的地方”（p21），monitoring 与 breakers 11 监测清单与论点破坏者，thesis 12 结论。
+#   报告没有单列芒格反向清单与未知登记，munger、unknowns 不写。
+reviewed:
+  business: 2026-09-18
+  economics: 2026-09-18
+  moat: 2026-09-18
+  capital_allocation: 2026-09-18
+  management: 2026-09-18
+  culture: 2026-09-18
+  runway: 2026-09-18
+  valuation: 2026-09-18
+  bear_case: 2026-09-18
+  monitoring: 2026-09-18
+  thesis: 2026-09-18
+  breakers: 2026-09-18
+
+# 报告第 3 页的字母评级表；对价格的那一栏只在私有仓库
+ratings:
+  business: A−
+  management: B+
+  capital_allocation: B
+  culture: B
+  source: SPGI-RPT1-2026-09-18#p3
+
+thesis:
+  summary: "标普全球卖的是被别人写进合同、授权和监管里的参照物：评级、指数与 Platts 是一组利润率 65%–70% 的市场收费站，评级与指数用 47% 的收入贡献了 61% 的调整后营业利润 [src:SPGI-RPT1-2026-09-18#p19] [src:SPGI-RPT1-2026-09-18#p4]。它还捆着一门占收入 34%、利润率 33% 的数据订阅生意（市场情报），这门生意的定价权正被 AI 工作流的界面层质疑 [src:SPGI-RPT1-2026-09-18#p4] [src:SPGI-RPT1-2026-09-18#p7]。生意几乎不需要再投入：FY2025 资本开支只占收入 1.3%，调整后自由现金流是调整后净利润的 101% [src:SPGI-RPT1-2026-09-18#p4] [src:SPGI-RPT1-2026-09-18#p5]；护城河的每一次加宽都是监管者或第三方替它写进自己义务的，填平也不需要它同意 [src:SPGI-RPT1-2026-09-18#p2]。论点最怕三件事：客户开始按调用量而不是席位为市场情报的数据谈价，私募信贷与监管让评级失去被认可的地位，以及把纪录高位发行量带来的周期性利润当成趋势 [src:SPGI-RPT1-2026-09-18#p16]。"
+  pillars:
+    - id: P1
+      claim: "评级的地位由监管引用与发行人付费合同固定，而不是由产品优劣决定：2026 年上半年评级非交易收入 11.83 亿美元、同比 +10%、占该分部 45%，2022 年发行荒里只 −2% [src:SPGI-RPT1-2026-09-18#p6]；三大评级机构剔除政府证券后合计占 81.5%，小机构的份额在 2023 年停止扩张 [src:SPGI-RPT1-2026-09-18#p2]。"
+      source: SPGI-RPT1-2026-09-18#p6
+    - id: P2
+      claim: "指数与 Platts 被第三方产品和结算写进合约：指数分部 2026 年上半年收入 +18%、利润率 72%，二季度资产挂钩费 +22%、连续第四个创纪录季度 [src:SPGI-RPT1-2026-09-18#p7]；交易所按结算引用 Platts 评估价支付版税，欧盟能源监管合作署的 LNG 基准自愿使用、未见取代 Platts [src:SPGI-RPT1-2026-09-18#p5] [src:SPGI-RPT1-2026-09-18#p7]。"
+      source: SPGI-RPT1-2026-09-18#p7
+    - id: P3
+      claim: "市场情报的定价权没有被 AI 工作流拆走：它用 34% 的收入只贡献 22% 的利润 [src:SPGI-RPT1-2026-09-18#p4]，2026 年上半年有机固定汇率增速 +6%、是四个分部里最低 [src:SPGI-RPT1-2026-09-18#p7]；公司自己把数据接进大模型接口，是主动迁移，但一次调用值多少钱至今没有披露 [src:SPGI-RPT1-2026-09-18#p11] [src:SPGI-RPT1-2026-09-18#p12]。"
+      source: SPGI-RPT1-2026-09-18#p7
+    - id: P4
+      claim: "会计利润就是现金，生意几乎不需要再投入：FY2025 调整后自由现金流 54.81 亿美元、调整后净利润 54.41 亿美元，比值 101% [src:SPGI-RPT1-2026-09-18#p5]；资本开支只占收入 1.3% [src:SPGI-RPT1-2026-09-18#p4]，GAAP 盈利低于现金盈利的全部原因是 FY2025 的 11.09 亿美元并购无形资产摊销 [src:SPGI-RPT1-2026-09-18#p5]。"
+      source: SPGI-RPT1-2026-09-18#p5
+    - id: P5
+      claim: "周期压的是当年利润，不是生意本身：每 1 美元收入里约 64 美分是合同性经常收入 [src:SPGI-RPT1-2026-09-18#p4]，2022 年发行荒中评级分部收入 −26%、营业利润 −36%，非交易收入只 −2% [src:SPGI-RPT1-2026-09-18#p6]；穿过周期，增长仍落在稳定增长型的区间，公司中期有机收入目标 7%–9% [src:SPGI-RPT1-2026-09-18#p11]。"
+      source: SPGI-RPT1-2026-09-18#p6
+    - id: P6
+      claim: "管理层的资本配置至少不毁坏价值：分拆与组合修剪方向正确、按时兑现 [src:SPGI-RPT1-2026-09-18#p9]；回购在缩减 2022 年全股票并购发行的 1.138 亿股 [src:SPGI-RPT1-2026-09-18#p8]。论点需要的是股东返还今后回到报告给的健康区间、不再靠新发债撑着，而今天的读数还不支持这一点：报告的健康区间是调整后自由现金流的 85%–110% [src:SPGI-RPT1-2026-09-18#p19]，公司自己的政策只写返还 85% 或以上，FY2025 实际为 113% [src:SPGI-RPT1-2026-09-18#p9] [src:SPGI-RPT1-2026-09-18#p8]，2026 年约为分拆后调整后自由现金流的 163%，超出部分来自资产出售与新发债 [src:SPGI-RPT1-2026-09-18#p9]；报告对“股东回报是否被新发债或增发抵消”这条标准的读数是被抵消 [src:SPGI-RPT1-2026-09-18#p20]。这一条由 SPGI-Q3、SPGI-Q10、SPGI-Q14 与 SPGI-L6 守护。"
+      source: SPGI-RPT1-2026-09-18#p9
+  # 芒格反向清单：怎样会永久亏损（取自报告第 9 节“不买它的最强理由”、第 3 节的侵蚀路径与“证据最薄的地方”）
+  permanent_loss_paths:
+    - "市场情报被拆价：AI 代理与工作流让客户不再在意数据来自谁，续约谈判的对象从“不可替代的数据”变成“可比价的输入”，计价单位从席位变成调用、单价由别人定 [src:SPGI-RPT1-2026-09-18#p7] [src:SPGI-RPT1-2026-09-18#p16]。它最先表现为老客户续约时少付，而不是客户流失：留存不变、每客户收入下降 15%，约合每股 −1.35 美元、约 −8.2% [src:SPGI-RPT1-2026-09-18#p12]，而公司不披露市场情报的留存率 [src:SPGI-RPT1-2026-09-18#p5]。"
+    - "评级被绕开或失去监管认可：私募信贷约 1.7 万亿美元、预计 2028 年约 2.8 万亿美元，证券估值办公室自 2026 年起有权质疑并推翻豁免申报的私募评级 [src:SPGI-RPT1-2026-09-18#p7]。两条路的后果量级不同。若整条豁免申报通道收紧、私募信用的外部评级不再被监管接受，失去的是评级利润里来自私募市场的那部分增量，也就是报告第 3 节的私募评级归零上限情形，约为基准年每股所有者盈利的 2.7%–5.4% [src:SPGI-RPT1-2026-09-18#p16] [src:SPGI-RPT1-2026-09-18#p8]；若主要司法辖区正式立法取消发行人付费或强制评级机构轮换，被直接摧毁的是约占集团 43% 利润的那块来源 [src:SPGI-RPT1-2026-09-18#p19]。"
+    - "可信度冲击：竞争压力下它放松标准有前科，2011 年它在 CMBS 评级上为争业务放宽标准且没有告诉投资者，2015 年与证交会和解，并暂停评级一年 [src:SPGI-RPT1-2026-09-18#p10]；2008 年那次最终以约 15 亿美元和解落到利润上 [src:SPGI-RPT1-2026-09-18#p17]。今天的测试场是增长 60% 的私募评级与超大规模 AI 发债人的评级 [src:SPGI-RPT1-2026-09-18#p10] [src:SPGI-RPT1-2026-09-18#p18]；若再次失守并招来监管改写发行人付费或评级引用，一次性的罚金会变成永久性的地位损失。"
+    - "把周期当成趋势，再用负债去回购：评级的交易费、指数的挂钩费与市场情报受到的质疑都挂在同一个 AI 资本开支叙事上，这个叙事无论成败，四个分部都不会同时受益 [src:SPGI-RPT1-2026-09-18#p16]；一次 2022 型发行荒约压当年每股盈利 2.94 美元、约 −18% [src:SPGI-RPT1-2026-09-18#p6]，多年期发行荒或利率长期在 5% 以上时的发行，在公司的现代记录里找不到先例 [src:SPGI-RPT1-2026-09-18#p21]。与此同时 2026 年股东返还约为分拆后调整后自由现金流的 163%，超出部分来自资产出售与新发债 [src:SPGI-RPT1-2026-09-18#p9]，总债务已从 2021 年末约 41 亿美元升到 2025 年末 130.88 亿美元 [src:SPGI-RPT1-2026-09-18#p20]。"
+    - "基准被第三方撤下：ETF 外壳里不需要授权的那部分在变大，主动型 ETF 约拿走年内流入的 35%–39% [src:SPGI-RPT1-2026-09-18#p16]；2012 年 Vanguard 把约 5,370 亿美元的基金从 MSCI 换到 FTSE 与 CRSP、基金名字未改 [src:SPGI-RPT1-2026-09-18#p7]。交易所若把旗舰能源合约的结算价从 Platts 改为自有价格，或 ACER 的 LNG 基准进入主流合同，Platts 靠行业惯例维持的地位就会松动 [src:SPGI-RPT1-2026-09-18#p19]。"
+
+# 报告中的基准事实，供审计与日后 XBRL/申报文件逐条核对
+baseline_facts:
+  - id: F1
+    label: 总收入（含 Mobility，报表口径）
+    value: 15336
+    unit: 百万美元
+    period: FY2025
+    as_of: 2025-12-31
+    source: SPGI-RPT1-2026-09-18#p5
+    note: "FY2024 为 14,208 百万美元，2026 年上半年 pro forma（不含 Mobility）为 7,397 百万美元 [src:SPGI-RPT1-2026-09-18#p5]。"
+  - id: F2
+    label: 评级与指数合计的收入占比 / 调整后营业利润占比（重铸口径，不含 Mobility）
+    value: [47, 61]
+    unit: "%"
+    period: FY2025
+    as_of: 2025-12-31
+    source: SPGI-RPT1-2026-09-18#p4
+  - id: F3
+    label: 市场情报的收入占比 / 调整后营业利润占比（重铸口径）
+    value: [34, 22]
+    unit: "%"
+    period: FY2025
+    as_of: 2025-12-31
+    source: SPGI-RPT1-2026-09-18#p4
+  - id: F4
+    label: 分部调整后营业利润率：评级 / 指数 / 能源 / 市场情报（重铸口径）
+    value: [65, 70, 46, 33]
+    unit: "%"
+    period: FY2025
+    as_of: 2025-12-31
+    source: SPGI-RPT1-2026-09-18#p4
+  - id: F5
+    label: 每美元收入中的合同性经常收入 / 跟着市场量走的收入（pro forma，报告取整后的约数）
+    value: [64, 36]
+    unit: 美分
+    period: 1H26
+    as_of: 2026-06-30
+    source: SPGI-RPT1-2026-09-18#p4
+    note: "按同页图注的一位小数：合同性经常收入 = 订阅 44.9¢ + 评级非交易费 15.0¢ + 经常性可变 4.6¢ = 64.5¢，跟着市场量走的 = 评级交易费 19.7¢ + 资产挂钩费 9.3¢ + 交易所版税 3.5¢ + 会议咨询等 3.0¢ = 35.5¢ [src:SPGI-RPT1-2026-09-18#p4]。报告正文取整写作 45、15、5 分与 20、9、3.5、3.4 分，相加是 65 分与 35.9 分，前者与正文的约 64 美分对不上，会议咨询 3.4 分也与图注的 3.0¢ 不一致，本档案以图注为准 [src:SPGI-RPT1-2026-09-18#p4]。"
+  - id: F6
+    label: 调整后自由现金流 / 调整后净利润
+    value: [5481, 5441]
+    unit: 百万美元
+    period: FY2025
+    as_of: 2025-12-31
+    source: SPGI-RPT1-2026-09-18#p5
+    note: "比值 101%，FY2024 为 116% [src:SPGI-RPT1-2026-09-18#p5]。调整后自由现金流已扣少数股东分配 [src:SPGI-RPT1-2026-09-18#p5]。"
+  - id: F7
+    label: 资本开支 ÷ 收入
+    value: 1.3
+    unit: "%"
+    period: FY2025
+    as_of: 2025-12-31
+    source: SPGI-RPT1-2026-09-18#p4
+    note: "资本开支 1.95 亿美元，对应收入 153.36 亿美元 [src:SPGI-RPT1-2026-09-18#p4]。"
+  - id: F8
+    label: 并购无形资产摊销
+    value: 11.09
+    unit: 亿美元
+    period: FY2025
+    as_of: 2025-12-31
+    source: SPGI-RPT1-2026-09-18#p5
+    note: "是同期资本开支的 5.7 倍 [src:SPGI-RPT1-2026-09-18#p5]。"
+  - id: F9
+    label: 2022 年评级分部的收入 / 营业利润 / 非交易收入同比
+    value: [-26, -36, -2]
+    unit: "%"
+    period: FY2022
+    as_of: 2022-12-31
+    source: SPGI-RPT1-2026-09-18#p6
+    note: "非交易收入剔除汇率影响为 +1% [src:SPGI-RPT1-2026-09-18#p6]；公司层面 pro forma 调整后每股收益只 −4%，被 IHS Markit 并表缓冲 [src:SPGI-RPT1-2026-09-18#p6]。"
+  - id: F10
+    label: 三大评级机构剔除政府证券后的合计份额
+    value: 81.5
+    unit: "%"
+    period: 2022 年底
+    as_of: 2022-12-31
+    source: SPGI-RPT1-2026-09-18#p6
+    note: "KBRA 存量评级 2023 年 −12.2% [src:SPGI-RPT1-2026-09-18#p6]。"
+  - id: F11
+    label: 总债务：2021 年末 / 2025 年末
+    value: [41, 130.88]
+    unit: 亿美元
+    period: 2021 年末 / 2025 年末
+    source: SPGI-RPT1-2026-09-18#p20
+    note: "2021 年末为约数 [src:SPGI-RPT1-2026-09-18#p20]；2026 年发行 19.86 亿美元优先票据，短期债务由 7.18 亿升至 25.72 亿美元 [src:SPGI-RPT1-2026-09-18#p8]。"
+  - id: F12
+    label: IHS Markit 合并的股权对价（全部以股票支付）
+    value: 435.36
+    unit: 亿美元
+    period: 2022-02-28 完成
+    as_of: 2022-02-28
+    source: SPGI-RPT1-2026-09-18#p8
+    note: "按 0.2838 的换股比例发行 1.138 亿股 [src:SPGI-RPT1-2026-09-18#p8]。"
+  - id: F13
+    label: 正式员工人数
+    value: 44500
+    unit: 人
+    period: FY2025
+    source: SPGI-RPT1-2026-09-18#p10
+    note: "亚洲 26,200 人（约 59%）[src:SPGI-RPT1-2026-09-18#p10]；10-K 不披露留存率、内部晋升率与敬业度 [src:SPGI-RPT1-2026-09-18#p10]。"
+  - id: F14
+    label: 首席执行官
+    value: Martina Cheung，2024-11-01 出任总裁兼首席执行官；此前任评级分部总裁，更早任市场情报分部总裁
+    source: SPGI-RPT1-2026-09-18#p9
+
+tests:
+  # ---------- 林奇 stalwart 模板（五条全部保留：SPGI-Q1、Q2、Q3、Q13、L1） ----------
+  - id: SPGI-Q1
+    type: quantitative
+    claim: 增长没有滑出稳定增长型的区间
+    origin: template:stalwart
+    severity: watch
+    covers: [growth]
+    pillar: P5
+    metric: revenue_growth_organic_cc
+    fail_if: 连续 4 个季度低于 5%
+    rule: {op: "<", threshold: 5, unit: "%", consecutive: 4, period: quarter}
+    warn_if: 连续 2 个季度低于 6.5%
+    warn_rule: {op: "<", threshold: 6.5, unit: "%", consecutive: 2, period: quarter}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 10
+      unit: "%"
+      period: 1H26
+      as_of: 2026-06-30
+      source: SPGI-RPT1-2026-09-18#p9
+      note: "pro forma（不含 Mobility）有机固定汇率口径 [src:SPGI-RPT1-2026-09-18#p9]；超额完成主要来自发行量周期 [src:SPGI-RPT1-2026-09-18#p9]。"
+    note: "失败线沿用模板默认值。警告线由模板的 8% 改为 6.5%：报告第 7 节的增长路径里，第 1–5 年收入增速取 6.5%、第 6–10 年取 5.0%，有意低于公司 7%–9% 的中期目标下限，理由是周期高位时定下的中期目标不该当作十年平均来用 [src:SPGI-RPT1-2026-09-18#p11]。同页的目标表把 6.5% 称作“十年平均收入增速”，与这个拆解不一致，按拆解算十年平均约 5.75% [src:SPGI-RPT1-2026-09-18#p11]；本条取第 1–5 年的 6.5% 作警告线，介于它与 7% 的目标下限之间的增速不构成对本论点的警告 [src:SPGI-RPT1-2026-09-18#p11]。指标用公司口径的有机固定汇率增速，而不是登记表的报表收入同比：收入序列在 2022 年被 IHS Markit 合并切断、2026 年又被 Mobility 分拆切断 [src:SPGI-RPT1-2026-09-18#p5]，分拆后四个季度的报表同比会混入含 Mobility 的基数。"
+
+  - id: SPGI-Q2
+    type: quantitative
+    claim: 按报告口径的投入资本回报守在优秀企业的水平，2022 年为 IHS Markit 付出的价格没有变成回报的拖累
+    origin: template:stalwart
+    severity: watch
+    covers: [returns_on_capital, capital_allocation]
+    pillar: P4
+    metric_def:
+      id: roic_adjusted_incl_redeemable_nci
+      description: 报告口径的投入资本回报 = 税后调整后营业利润 ÷ 年末投入资本；投入资本 = 股东权益 + 总债务 + 可赎回少数股东权益 − 现金；税率事先固定为 0.223、每年不变（理由见 note）
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 年度业绩新闻稿的非 GAAP 调节表（调整后营业利润）；10-K 资产负债表（股东权益、短期与长期债务、可赎回少数股东权益、现金及现金等价物）
+      formula: adjusted_operating_profit * (1 - 0.223) / (equity + total_debt + redeemable_noncontrolling_interest - cash)
+    fail_if: 连续 2 年低于 12%
+    rule: {op: "<", threshold: 12, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2027-02"
+    baseline:
+      value: 12.6
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: SPGI-RPT1-2026-09-18#p5
+      note: "调整后营业利润 77.30 亿美元、税后 60.06 亿美元，投入资本 474.95 亿美元 = 股东权益 312.35 亿 + 总债务 130.88 亿 + 可赎回少数股东权益 49.17 亿 − 现金 17.45 亿 [src:SPGI-RPT1-2026-09-18#p5]。"
+    note: "替代模板 stalwart 的 Q-returns 所用的登记表指标 roic（GAAP 营业利润、平均投入资本），门槛沿用模板默认值。理由有二：GAAP 营业利润扣除了 FY2025 的 11.09 亿美元并购无形资产摊销，报告把它当作非现金项加回 [src:SPGI-RPT1-2026-09-18#p5]；指数合资里芝加哥商品交易所持有的那 27% 以可赎回少数股东权益列示，2025 年末 49.17 亿美元，属于投入资本 [src:SPGI-RPT1-2026-09-18#p5]。所以按报告口径就地定义。这条测试量的不是生意本身的资本效率：商誉与无形资产 527.46 亿美元，等于投入资本的 111%，有形投入资本为负，读数衡量的主要是 2022 年 IHS Markit 那笔收购的对价赚回了多少 [src:SPGI-RPT1-2026-09-18#p5]；covers 因此记 capital_allocation，不记模板的 moat。税率在首次读数之前固定为 22.3%，即报告 FY2025 基线隐含的税率：调整后营业利润 77.30 亿美元、税后 60.06 亿美元 [src:SPGI-RPT1-2026-09-18#p5]。基线离 12% 的失败线只有 0.6 个百分点，税率口径足以改变结论：若改用报告在别处用的约 24.5% 实际税率，同一基线约为 12.3% [src:SPGI-RPT1-2026-09-18#p5] [src:SPGI-RPT1-2026-09-18#p13]；所以税率写死，此后每年按同一税率计算，不随当年实际税率变动。"
+
+  - id: SPGI-Q3
+    type: quantitative
+    claim: 回购在真正缩减股本，而不是抵消股权激励或只追回 2022 年发行的股份
+    origin: template:stalwart
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P6
+    metric: diluted_shares_yoy
+    fail_if: 连续 2 年大于 0
+    rule: {op: ">", threshold: 0, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    effective_from: FY2026Q3
+    first_readable: "2027-02"
+    note: "门槛沿用模板默认值。2022 年 IHS Markit 的对价全部以股票支付，按 0.2838 的换股比例发行 1.138 亿股 [src:SPGI-RPT1-2026-09-18#p8]；GAAP 摊薄股数从 2021 年的 2.418 亿股升到 2025 年的 3.051 亿股 [src:SPGI-RPT1-2026-09-18#p8]，2026 年二季度加权平均摊薄股数 2.955 亿股 [src:SPGI-RPT1-2026-09-18#p14]。报告没有给同比读数，基线待从 2026 年二季度 10-Q 的 XBRL 回填。2026 年回购目标超过 70 亿美元，上半年已执行 15 亿美元 [src:SPGI-RPT1-2026-09-18#p8]。"
+
+  - id: SPGI-Q13
+    type: quantitative
+    claim: 利润能变成现金（GAAP 口径的后备检查）
+    origin: template:stalwart
+    severity: watch
+    covers: [free_cash_flow]
+    pillar: P4
+    metric: fcf_conversion
+    fail_if: 连续 2 年低于 70%
+    rule: {op: "<", threshold: 70, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    effective_from: FY2026Q3
+    first_readable: "2027-02"
+    note: "模板 stalwart 的 Q-fcf，门槛沿用模板默认值。它和 SPGI-Q5、SPGI-Q9 量的是同一件事，口径不同：分子是经营现金流减资本开支，分母是 GAAP 净利润，全部可以从 XBRL 直接算出，不依赖公司自己定义的“调整后”口径，也不需要调用模型，候选公司暂停模型调用时照常运行。SPGI 的 GAAP 净利润扣除了 FY2025 的 11.09 亿美元并购无形资产摊销，远低于现金盈利 [src:SPGI-RPT1-2026-09-18#p5]，所以本条读数会系统性高于 SPGI-Q5、SPGI-Q9，70% 的门槛很宽；它是后备，不替代那两条。报告没有给 GAAP 口径的读数，基线待从 FY2025 10-K 的 XBRL 回填。FY2026 的现金流含 Mobility 上半年 [src:SPGI-RPT1-2026-09-18#p5]，判定时与 SPGI-Q5 一样要求分子分母同口径，拿不到同口径数字时记为无法判定。"
+
+  - id: SPGI-L1
+    type: qualitative
+    claim: 管理层没有下调已公布的中期财务目标
+    origin: template:stalwart
+    severity: watch
+    covers: [management]
+    pillar: P6
+    question: 本期文件中，管理层是否下调或撤回了此前公布的中期财务目标（企业整体及评级、指数、市场情报、能源各分部的中期有机收入增长目标）？区间的上沿或下沿任一被调低即算下调。
+    fail_if: 是，不论是否同时给出新的目标；只因组合变动（例如 Mobility 分拆、业务在分部之间移动）而在同口径下重述的目标不算下调
+    judge: independent_model
+    evidence: required
+    where: 业绩 8-K 的新闻稿与附表、业绩电话会材料、投资者日材料、10-K/10-Q 的 MD&A
+    lookback: 4
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 中期有机收入增长目标：企业整体 7%–9%，指数 10%–12%，评级 6%–9%，市场情报 6%–8%，能源 6%–8%
+      source: SPGI-RPT1-2026-09-18#p11
+      note: "2026-07-28 分拆后把全年调整后每股收益指引重设为 17.50–17.75 美元，评级与指数分部指引各上调 [src:SPGI-RPT1-2026-09-18#p9]。"
+    note: "改写了模板 stalwart 的 L-guidance 门槛。模板写的是“是，且没有同时给出可检验的新目标”：按这个写法，一次普通的下调（把目标调低、同时给出更低的新区间）会因为给出了新目标而记为通过，与 claim 不符。本条把任何下调或撤回都记为失败（watch 级），只排除纯粹因组合变动而做的同口径重述。报告第 7 节认为市场情报 6%–8% 的目标上限已高于近三年实际、按 5%–6% 处理，能源较可能落在目标区间下沿以下 [src:SPGI-RPT1-2026-09-18#p11]。本档案据此推断，若有分部目标被下调，最可能是这两个；这是本档案的推断，报告没有预测目标会被下调。"
+
+  # ---------- 林奇 cyclical 模板（次类；Q-cycle 不适用，见文件头） ----------
+  - id: SPGI-Q14
+    type: quantitative
+    claim: 杠杆没有在下一次发行下行之前被回购推高到危险水平
+    origin: template:cyclical
+    severity: watch
+    covers: [balance_sheet]
+    pillar: P6
+    metric: net_debt_to_ebitda
+    fail_if: 高于 3 倍
+    rule: {op: ">", threshold: 3, unit: x, consecutive: 1, period: year}
+    data: xbrl
+    effective_from: FY2026Q3
+    first_readable: "2027-02"
+    note: "模板 cyclical（本档案的次类）的 Q-leverage，门槛沿用模板默认值。它守的是永久亏损路径 #4 的后一半：总债务从 2021 年末约 41 亿美元升到 2025 年末 130.88 亿美元 [src:SPGI-RPT1-2026-09-18#p20]，2026 年股东返还约为分拆后调整后自由现金流的 163%，超出部分来自资产出售与新发债 [src:SPGI-RPT1-2026-09-18#p9]；而一次 2022 型发行荒会压当年利润，分母随之变小 [src:SPGI-RPT1-2026-09-18#p6]。报告没有给 EBITDA 与净负债倍数，基线待从 FY2025 10-K 的 XBRL 回填。登记表口径的债务只取 us-gaap:LongTermDebt，而 2026 年短期债务由 7.18 亿升至 25.72 亿美元 [src:SPGI-RPT1-2026-09-18#p8]；判定按登记表口径，若它不含短期借款，公司经理在读数旁另记含短期借款的倍数，门槛不变。"
+
+  - id: SPGI-L6
+    type: qualitative
+    claim: 发行周期高点没有在不说明周期假设的情况下大幅追加回购
+    origin: template:cyclical
+    severity: watch
+    covers: [capital_allocation, balance_sheet]
+    pillar: P6
+    question: 本期是否同时满足以下两项：（1）发行周期处于高位，即本期 SPGI-Q7 的评级计费发行额同比高于 +15%（健康区间的上沿之外）；（2）本年度公司公布的全年回购目标，或本年度已执行的回购金额，比上一年度实际回购金额高出 25% 以上？
+    fail_if: 是，且同期的业绩新闻稿、业绩电话会或 10-K/10-Q 没有说明发行量下行时回购与举债怎样调整
+    judge: independent_model
+    evidence: required
+    where: 季度业绩新闻稿与补充披露（计费发行额、回购目标）；10-Q/10-K 的现金流量表与股东回报一节；业绩电话会
+    lookback: 4
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 2026 年回购目标超过 70 亿美元、上半年已执行 15 亿美元；FY2025 回购 50.01 亿美元
+      source: SPGI-RPT1-2026-09-18#p8
+      note: "2026 年二季度评级计费发行额同比 +25% [src:SPGI-10Q-FY2026Q2#MD&A]。"
+    note: "改写自模板 cyclical 的 L-cycle-capalloc（模板问的是利润创新高的同时是否大幅提高资本开支或回购，失败条件是管理层没有说明周期假设）。三处改写都在首次判定之前写下。一，“利润创新高”改为评级计费发行额在健康区间上沿之外：SPGI 的周期性集中在评级交易收入，报告用计费发行额判断周期位置 [src:SPGI-RPT1-2026-09-18#p15] [src:SPGI-RPT1-2026-09-18#p19]。二，资本开支不看，它只占收入 1.3% [src:SPGI-RPT1-2026-09-18#p4]。三，“大幅”由本档案定为比上一年实际回购高出 25% 以上，2026 年超过 70 亿美元的回购目标比 FY2025 实际的 50.01 亿美元约高出四成 [src:SPGI-RPT1-2026-09-18#p8]。按报告数字，两项条件建档时都已成立，二季度计费发行额同比 +25% [src:SPGI-RPT1-2026-09-18#p19]；本条是否失败，取决于管理层有没有说明发行量下行时回购与举债怎样调整。报告把在一次真正的发行量下行周期里仍按 85% 的既定比例、而不是靠举债维持回购，列为管理层从“普通”移到“优秀”的条件之一 [src:SPGI-RPT1-2026-09-18#p20]。"
+
+  # ---------- 报告第 11 节：论点破坏者（发生即作废，按宪法 7 天内写出结论） ----------
+  - id: SPGI-Q4
+    type: quantitative
+    claim: 市场情报的定价权没有被界面层拆走，客户没有开始按调用量而不是席位谈续约
+    origin: report:breaker
+    severity: breaker
+    covers: [pricing_power, moat, competition]
+    pillar: P3
+    metric_def:
+      id: mi_subscription_revenue_yoy_change
+      description: 市场情报分部订阅收入（Subscription）绝对额的同比变化（与上年同季比较）
+      unit: USD
+      frequency: quarter
+      data: filing_text
+      where: 10-Q/10-K 收入附注中按分部、按收入类型的分解（Market Intelligence 的 Subscription 一行）；无分部明细时读季度补充披露
+      formula: mi_subscription_t - mi_subscription_{t-4q}
+      components:
+        mi_subscription_plus_recurring_variable_yoy_change:
+          description: 市场情报分部订阅收入与经常性可变收入（Recurring variable revenue）合计的同比变化（与上年同季比较，按季度；(mi_subscription + mi_recurring_variable)_t - (mi_subscription + mi_recurring_variable)_{t-4q}）；为负表示经常性可变收入的增加没有补上订阅收入的下滑
+          unit: USD
+          where: 同上，Market Intelligence 的 Subscription 与 Recurring variable revenue 两行
+        mi_organic_cc_revenue_growth_fy:
+          description: 市场情报分部全年有机、固定汇率收入增速（公司口径，按年）
+          unit: "%"
+          where: 第四季度业绩新闻稿附表中的分部有机增速（报告所引为 Exhibit 8）
+    params:
+      segment: Market Intelligence
+      segment_zh: 市场情报
+    fail_if: 市场情报的订阅收入绝对额出现下滑，而经常性可变收入没有同步补上；或（更晚但仍成立的信号）市场情报有机固定汇率收入连续两个完整财年低于 4%
+    rule:
+      any_of:
+        - all_of:
+            - {metric: mi_subscription_revenue_yoy_change, op: "<", threshold: 0, unit: USD, consecutive: 1, period: quarter}
+            - {metric: mi_subscription_revenue_yoy_change.mi_subscription_plus_recurring_variable_yoy_change, op: "<", threshold: 0, unit: USD, consecutive: 1, period: quarter}
+          note: 两项须在同一季度同时成立。
+        - {metric: mi_subscription_revenue_yoy_change.mi_organic_cc_revenue_growth_fy, op: "<", threshold: 4, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 6
+      unit: "%"
+      period: 1H26
+      as_of: 2026-06-30
+      source: SPGI-RPT1-2026-09-18#p5
+      note: "这是第二支（有机固定汇率增速）的当前读数；第一支的订阅收入绝对额同比，报告没有给出，待从 2026 年二季度 10-Q 回填。席位与企业授权订阅占该分部 96.4%，该口径含按笔数计费的经常性可变收入 [src:SPGI-RPT1-2026-09-18#p4]。"
+    note: "报告第 11 节论点破坏者 #1 [src:SPGI-RPT1-2026-09-18#p19]：客户改按调用量而不是按席位谈续约，最早能在报表上看到的就是订阅收入下滑、按用量计费的收入又没补上，它领先有机增速几个季度；有机固定汇率收入连续两个完整财年低于 4% 出现得更晚，但同样算数 [src:SPGI-RPT1-2026-09-18#p19]。“下滑”报告没有写比较基准，本档案按与上年同季比较，避开季节性。并购与处置会改变绝对额，第一支的比较口径在首次读数之前写定如下。公司披露市场情报订阅收入的有机或 pro forma 口径时，用该口径。只有报表口径时：比较窗口（本季与上年同季）里只有收购的照常判定，因为收购只会抬高本季读数，例如 With Intelligence 于 2025-11-25 交割并入市场情报 [src:SPGI-RPT1-2026-09-18#p9]；窗口里有涉及市场情报的处置、而公司没有披露被处置业务收入的，该季第一支记为无法判定，第二支（全年有机增速）不受影响。企业数据管理与 thinkFolio 于 2026-01-12 出售，属于市场情报 [src:SPGI-10Q-FY2026Q2#note-2]，所以 2026 年三季度至 2027 年一季度的第一支读数按这条处置规则处理（见 todo）。领先于本条的两个岔路口不单列测试：#1 计价单位之争（2027–2029 可读）与 #3 计价权的价格信号（第三方成交库里 Capital IQ Pro 中位年合同约 32.75 万美元，仅 4 份）[src:SPGI-RPT1-2026-09-18#p18]，数据来自第三方、样本极小，由公司经理在季度更新里记录。"
+
+  - id: SPGI-Q5
+    type: quantitative
+    claim: 会计利润就是现金，把并购摊销加回所有者盈利的依据仍然成立
+    origin: report:breaker
+    severity: breaker
+    covers: [free_cash_flow]
+    pillar: P4
+    metric_def:
+      id: adj_fcf_to_adj_net_income
+      description: 公司口径的调整后自由现金流（已扣少数股东分配）÷ 调整后净利润
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 年度业绩新闻稿的非 GAAP 调节表（Adjusted free cash flow、Adjusted net income）
+      formula: adjusted_free_cash_flow / adjusted_net_income
+    fail_if: 调整后自由现金流连续两年低于调整后净利润的 85%
+    rule: {op: "<", threshold: 85, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2027-02"
+    baseline:
+      value: 101
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: SPGI-RPT1-2026-09-18#p5
+      note: "调整后自由现金流 54.81 亿美元、调整后净利润 54.41 亿美元，FY2024 为 116% [src:SPGI-RPT1-2026-09-18#p5]。"
+    note: "报告第 11 节论点破坏者 #6：一旦成立，报告把并购摊销加回所有者盈利的依据失效 [src:SPGI-RPT1-2026-09-18#p19]。FY2026 的读数有口径断裂：上半年的现金流含 Mobility，而调整后净利润按不含 Mobility 的口径，报告因此把 2026 年上半年的现金转换率留空 [src:SPGI-RPT1-2026-09-18#p5]；判定时分子分母须同口径，拿不到同口径数字时记为无法判定，连续计数从下一个干净年度开始。"
+
+  - id: SPGI-L2
+    type: qualitative
+    claim: 评级在私募信用里仍被监管认可：NAIC 的收紧没有扩大到标普自己的私募评级，外部私募评级整体也没有失去豁免申报的资格
+    origin: report:breaker
+    severity: breaker
+    covers: [regulation, moat, growth]
+    pillar: P1
+    question: 截至本期，是否出现以下任一情况：（a）美国保险监理官协会（NAIC）证券估值办公室对豁免申报（filing exempt）私募评级的质疑或推翻已经扩大到标普出具的私募评级，且标普所占比例“显著上升”，本档案事先定为：按 NAIC 公布的分机构数字，本期标普在被质疑或推翻评级中的占比不低于标普在全部豁免申报私募评级中的占比；NAIC 没有公布后一个占比时，改为比上一次有分机构数字的读数高出 10 个百分点以上；（b）NAIC 在 2026-09-18 之后正式通过规则，使外部机构出具的私募评级整体不再被接受为豁免申报的依据（关闭整条豁免申报通道，或规定所有私募评级都改由证券估值办公室自行评估），不论涉及哪家评级机构？只增加抽查或质疑程序、不改变外部评级整体可用性的规则不算 (b)。
+    fail_if: 是（(a) 或 (b) 任一成立即失败）。两支都核对过且都不成立才记为通过；本期没有核对 where 所列的 NAIC 材料，或 NAIC 没有公布 (a) 所需的分机构数字而 (b) 又不成立时，记为无法判定，不记为通过
+    judge: independent_model
+    evidence: required
+    where: NAIC 估值证券工作组与证券估值办公室的会议材料、决议与统计（报告附录来源 24 所列材料为起点，来源标签 NAIC-SVO-2026）；标普 10-K/10-Q 的风险因素与业绩电话会；评级机构评论
+    lookback: 4
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: "早先一次比对里，109 只带私募评级的私募信用证券中有 97% 的评级高于证券估值办公室自己的评估；这个比例覆盖全部私募评级，公开材料没有按机构拆分"
+      source: SPGI-RPT1-2026-09-18#p8
+      note: "证券估值办公室自 2026-01-01 起有权质疑并推翻豁免申报评级 [src:SPGI-RPT1-2026-09-18#p7]。2026 年二季度私募市场评级收入同比 +60%，绝对额未披露 [src:SPGI-RPT1-2026-09-18#p8]。"
+    note: "报告第 11 节论点破坏者 #2 [src:SPGI-RPT1-2026-09-18#p19]：一旦成立，评级利润中来自私募市场的那部分增量就不能再假设，报告估算的私募评级归零上限情形（每股 −0.45 至 −0.90 美元）会变成基准情形 [src:SPGI-RPT1-2026-09-18#p19]。(a) 是破坏者 #2 的原文，但报告没有给“显著上升”的门槛 [src:SPGI-RPT1-2026-09-18#p19]，公开材料也没有按机构拆分 [src:SPGI-RPT1-2026-09-18#p8]；问题里的两个门槛是本档案在首次判定之前写下的操作化，待总部记入 docs/decisions/ 确认。理由是报告认为真正的读数是被推翻的是谁的评级、不是被推翻的数量：被推翻的若主要是小机构的评级，需求会向标普集中，只有标普被质疑的比例不低于它自己的份额，才说明收紧扩大到了它身上 [src:SPGI-RPT1-2026-09-18#p8] [src:SPGI-RPT1-2026-09-18#p16]。(b) 来自岔路口 #4 的另一支：报告说若整条豁免申报通道收紧、私募信用的外部评级不再被监管接受，同一个上限情形兑现 [src:SPGI-RPT1-2026-09-18#p16] [src:SPGI-RPT1-2026-09-18#p18]；破坏者 #2 的原文只写了 (a)，(b) 是本档案按同一后果并入的。岔路口 #4（2027–2029 可读）与 #6 里“私募评级中标普被质疑或推翻的比例”的读数也并入本条 [src:SPGI-RPT1-2026-09-18#p18]。"
+
+  - id: SPGI-L3
+    type: qualitative
+    claim: 发行人付费模式与评级机构的自主选择没有被立法拆除
+    origin: report:breaker
+    severity: breaker
+    covers: [regulation, moat]
+    pillar: P1
+    question: 截至本期，是否有任何一个主要司法辖区（本档案事先定为美国联邦、欧盟、英国）在 2026-09-18 之后正式立法，取消信用评级的发行人付费模式，或强制评级机构轮换？“正式立法”在本条指立法机关通过并颁布的法律，或监管机构依法定授权正式发布、具有约束力的最终规则，以颁布或发布日为准、不必等到生效；征求意见稿、研究报告与提案不算。适用范围须至少覆盖企业、金融机构、结构化融资或政府评级中的一整类，只针对其中个别产品的规定不算。
+    fail_if: 是。本期没有核对 where 所列的立法记录与监管公告时，记为无法判定，不记为通过
+    judge: independent_model
+    evidence: required
+    where: 美国（国会与证交会）、欧盟与英国的立法记录，以及这三地评级监管机构的最终规则与公告；标普 10-K/10-Q 的监管一节与风险因素
+    lookback: 4
+    judge_notes:
+      - 2026-09-18 时已经存在的法律与规则属于基线，判定只看 2026-09-18 之后新颁布的法律或新发布的最终规则。
+      - 名单（美国联邦、欧盟、英国）之外的辖区立法不触发本条。
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: "多德-弗兰克法要求从联邦规则中删去对评级的引用，已经执行，但市场对评级的依赖没有明显下降；关于替代发行人付费模式的研究 2013 年之后再无进展"
+      source: SPGI-RPT1-2026-09-18#p7
+    note: "报告第 11 节论点破坏者 #3：它会直接打掉约占集团 43% 利润的那块来源，报告把它列为可能发生、但不是基准的情形 [src:SPGI-RPT1-2026-09-18#p19]。报告原文是“正式立法”，没有列举司法辖区，也没有说监管规则算不算 [src:SPGI-RPT1-2026-09-18#p19]。问题里的辖区名单、把有约束力的最终规则也算作正式立法、以及“至少覆盖一整类评级”的范围条件，都是本档案在首次判定之前写下的操作化，不是报告原文；其中最终规则一项超出了报告字面，待总部记入 docs/decisions/ 确认。理由：报告把强制轮换列为监管者可以直接动手的方式之一 [src:SPGI-RPT1-2026-09-18#p7]，一条有约束力的最终规则对发行人和评级机构的效力与法律相同；评级收入的分类取自报告第 1 节（企业、金融机构、结构化融资、政府、Crisil 及其他）[src:SPGI-RPT1-2026-09-18#p4]。名单之外的辖区立法由公司经理在季度更新里记录；名单只能在相关事件发生之前修改。"
+
+  - id: SPGI-L4
+    type: qualitative
+    claim: 标普指数仍被写进 ETF 的授权与产品，大型发行人没有把旗舰产品换到自建或第三方指数
+    origin: report:breaker
+    severity: breaker
+    covers: [moat, pricing_power, competition]
+    pillar: P2
+    question: 截至本期，是否有一家规模前三的 ETF 发行人正式宣布或完成，把一只资产超过 1,000 亿美元的旗舰产品从标普道琼斯指数切换到自建指数或第三方指数？
+    fail_if: 是。本期没有核对 where 所列的 ETF 发行人公告与招募说明书变更时，记为无法判定，不记为通过
+    judge: independent_model
+    evidence: required
+    where: ETF 发行人的公告与招募说明书变更、交易所公告；标普 10-Q/10-K 与业绩电话会
+    lookback: 4
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 2026 年二季度资产挂钩费 +22%，连续第四个创纪录季度；主动型 ETF 约拿走年内流入的 35%–39%，但一只旗舰标普 500 ETF 年内净流入超过 1,240 亿美元
+      source: SPGI-RPT1-2026-09-18#p7
+    note: "报告第 11 节论点破坏者 #4：一旦发生，“基准被写进授权”这个前提就被证伪了 [src:SPGI-RPT1-2026-09-18#p19]。先例是 2012 年 Vanguard 把 22 只基金（约 5,370 亿美元）从 MSCI 换到 FTSE 与 CRSP、基金名字未改 [src:SPGI-RPT1-2026-09-18#p7]。报告写的是“切换”，没有区分宣布与完成 [src:SPGI-RPT1-2026-09-18#p19]；本档案把正式宣布也算作切换，这是事先写下的操作化，不是报告原文：正式宣布即表明发行人已经作出决定，等过渡完成才判定，只会让同一个结论来得更晚。先例的一手出处（报告附录来源 25）已登记为来源标签 VANGUARD-2012-10-02，原件未取得。指数名写进产品名的基金很难换指数，名字通用的宽基产品则已经换过 [src:SPGI-RPT1-2026-09-18#p7]。"
+
+  - id: SPGI-L5
+    type: qualitative
+    claim: Platts 的价格评估仍是能源合约的结算参照
+    origin: report:breaker
+    severity: breaker
+    covers: [moat, pricing_power, competition]
+    pillar: P2
+    question: 截至本期，是否出现以下任一情况：（a）一家主要商品交易所（本档案事先定为 CME 集团含 NYMEX、洲际交易所 ICE、新加坡交易所 SGX）正式公告，把一只旗舰能源合约（该交易所以 Platts 评估价结算的能源合约中，上一年成交量最大的三只之一）的结算价从 Platts 评估价改为交易所自有价格；（b）欧盟能源监管合作署（ACER）的 LNG 基准被写进主流合同，即上列任一交易所上市以 ACER LNG 基准结算的合约、且其任一季度成交量达到同一交易所以 Platts 评估价结算的 LNG 合约合计成交量的 25% 以上，或者 ACER、欧盟委员会已公布的统计显示欧盟 LNG 交易中以 ACER 基准定价的比例达到 25% 以上？
+    fail_if: 是（(a) 或 (b) 任一成立即失败）。(b) 中统计那一条以已公布的数字为准，没有公布相关统计时按不成立处理；两支都核对过且都不成立才记为通过，本期没有核对 where 所列外部来源、或读不到判定所需的成交量时，记为无法判定，不记为通过
+    judge: independent_model
+    evidence: required
+    where: 上列交易所的合约规则变更公告与成交量统计；ACER 的公告与市场报告（报告附录来源 21 所列材料为起点，来源标签 ACER-LNG-2025）；欧盟委员会的相关统计；标普 10-Q/10-K 与业绩电话会
+    lookback: 4
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: "ACER 的 LNG 基准 2023 年起每日发布、2025 年转为常设，市场自愿采用，目前没有取代 Platts 的迹象；能源分部 2026 年二季度调整后收入只增长 3%，咨询与会议收入下滑，还受制裁影响"
+      source: SPGI-RPT1-2026-09-18#p7
+    note: "报告第 11 节论点破坏者 #5 [src:SPGI-RPT1-2026-09-18#p19]。Platts 写进的是行业惯例而不是法律义务，报告判断方向为“走平偏弱” [src:SPGI-RPT1-2026-09-18#p7]。“主要商品交易所”“旗舰能源合约”“主流合同”报告都没有定义 [src:SPGI-RPT1-2026-09-18#p19]；问题里的交易所名单、成交量前三的口径、两个比例门槛与“以正式公告为准”，都是本档案在首次判定之前写下的操作化，不是报告原文，待总部记入 docs/decisions/ 确认，只能在相关事件发生之前修改。改用其他价格评估机构的价格不在报告的原文之内，出现时由公司经理在季度更新里记录。"
+
+  # ---------- 报告第 11 节：每季度跟踪的五个前瞻指标 ----------
+  - id: SPGI-Q6
+    type: quantitative
+    claim: 市场情报的增长没有继续失速，桌面数据的定价权没有被 AI 与客户预算压缩
+    origin: report:watch
+    severity: watch
+    covers: [growth, pricing_power, competition]
+    pillar: P3
+    metric: segment_revenue_yoy
+    params: {segment: Market Intelligence, segment_zh: 市场情报, basis: 有机、固定汇率（公司口径）}
+    fail_if: 连续两季低于 5%
+    rule: {op: "<", threshold: 5, unit: "%", consecutive: 2, period: quarter}
+    warn_if: 低于健康线 6%
+    warn_rule: {op: "<", threshold: 6, unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 6
+      unit: "%"
+      period: 1H26
+      as_of: 2026-06-30
+      source: SPGI-RPT1-2026-09-18#p19
+    note: "报告第 11 节前瞻指标（一），读季度财报 Exhibit 8 [src:SPGI-RPT1-2026-09-18#p19]；报告写“连续两季 <5% 触发关注”，这里记为 watch 级失败，健康线 6% 以下记警告 [src:SPGI-RPT1-2026-09-18#p19]。2026 年上半年报表口径 +7%、有机固定汇率 +6% [src:SPGI-RPT1-2026-09-18#p4]，有机固定汇率口径下是四个分部里最低 [src:SPGI-RPT1-2026-09-18#p7]；公司中期目标 6%–8%，报告按 5%–6% 处理 [src:SPGI-RPT1-2026-09-18#p11]。"
+
+  - id: SPGI-Q7
+    type: quantitative
+    claim: 发行周期没有转入 2022 型的退潮
+    origin: report:watch
+    severity: watch
+    covers: [growth]
+    pillar: P5
+    metric_def:
+      id: ratings_billed_issuance_yoy
+      description: 评级分部计费发行额（billed issuance）的季度同比增速
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: 10-Q/10-K 的 MD&A 中评级分部的计费发行额表（Billed Issuance Volumes）；月度数据见公司每月 15 日发布的评级计费发行额（投资者关系网站，不是申报文件）
+      formula: billed_issuance_q / billed_issuance_{q-4} - 1
+    fail_if: 连续两季低于 −15%
+    rule: {op: "<", threshold: -15, unit: "%", consecutive: 2, period: quarter}
+    warn_if: 落在健康区间 −10% 至 +15% 之外（高于上沿说明发行处在周期高位）
+    warn_rule: {op: outside, threshold: [-10, 15], unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 25
+      unit: "%"
+      period: 2026Q2
+      as_of: 2026-06-30
+      source: SPGI-10Q-FY2026Q2#MD&A
+      note: "二季度计费发行额 1.268 万亿美元、上半年 2.498 万亿美元 [src:SPGI-10Q-FY2026Q2#MD&A]；上半年约 1,690 亿美元来自超大规模云厂商 [src:SPGI-RPT1-2026-09-18#p17]，约占上半年计费发行额的 6.8%（1,690 亿 ÷ 24,980 亿）[src:SPGI-RPT1-2026-09-18#p17] [src:SPGI-10Q-FY2026Q2#MD&A]。"
+    note: "报告第 11 节前瞻指标（二），公司每月 15 日发布 [src:SPGI-RPT1-2026-09-18#p19]。健康区间有上沿：高于 +15% 说明发行处在周期高位、当期盈利仍含周期位置，报告认为这个指标正是判断“评级交易收入的水平本身是否高于趋势”的办法 [src:SPGI-RPT1-2026-09-18#p15]。建档时读数 +25% 已在健康区间之外，本条处于警告状态 [src:SPGI-RPT1-2026-09-18#p19]。公司对全年超大规模云厂商发行的工作假设是 2,500 至 3,000 亿美元 [src:SPGI-RPT1-2026-09-18#p16]；报告认为真正的风险不在这批发行人的集中度本身，而在它们退潮时引发一次 2022 型的全面收缩 [src:SPGI-RPT1-2026-09-18#p17]。"
+
+  - id: SPGI-Q8
+    type: quantitative
+    claim: 指数的收费基数由资金净流入而不只是价格上涨撑起
+    origin: report:watch
+    severity: watch
+    covers: [moat, growth]
+    pillar: P2
+    metric_def:
+      id: index_linked_etf_net_flows
+      description: 与标普道琼斯指数挂钩的 ETF 资产规模变动中来自净流入的部分（剔除市场价格变动）
+      unit: USD
+      frequency: quarter
+      data: external
+      where: 季度业绩幻灯片（投资者关系网站，不随 8-K 报送）中指数分部 ETF 资产规模变动的拆分（净流入与市场升值）
+    fail_if: 净流入连续两季为负
+    rule: {op: "<", threshold: 0, unit: USD, consecutive: 2, period: quarter}
+    data: external
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    note: "报告第 11 节前瞻指标（三），读业绩幻灯片 [src:SPGI-RPT1-2026-09-18#p19]。报告没有给当期净流入读数，基线待从 2026 年二季度业绩幻灯片回填；同期资产挂钩费 +22%、连续第四个创纪录季度 [src:SPGI-RPT1-2026-09-18#p7]，被动流入的绝对量在创纪录 [src:SPGI-RPT1-2026-09-18#p16]。"
+
+  - id: SPGI-Q9
+    type: quantitative
+    claim: 现金转换守在健康水平，调整后利润能变成现金
+    origin: report:watch
+    severity: watch
+    covers: [free_cash_flow]
+    pillar: P4
+    metric_def:
+      id: adj_fcf_to_adj_net_income
+      description: 公司口径的调整后自由现金流（已扣少数股东分配）÷ 调整后净利润
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 年度业绩新闻稿的非 GAAP 调节表（Adjusted free cash flow、Adjusted net income）
+      formula: adjusted_free_cash_flow / adjusted_net_income
+    fail_if: 连续两年低于 90%
+    rule: {op: "<", threshold: 90, unit: "%", consecutive: 2, period: year}
+    warn_if: 低于健康线 95%
+    warn_rule: {op: "<", threshold: 95, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2027-02"
+    baseline:
+      value: 101
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: SPGI-RPT1-2026-09-18#p19
+    note: "报告第 11 节前瞻指标（四）；健康线 95%，低于它记警告 [src:SPGI-RPT1-2026-09-18#p19]。本条是判断现金转换的主测试，用公司口径的调整后数字；模板 stalwart 的 Q-fcf 保留为 SPGI-Q13（GAAP 口径、XBRL 自动计算），作本条与 SPGI-Q5 的后备。SPGI 的 GAAP 净利润扣除了 FY2025 的 11.09 亿美元并购无形资产摊销，远低于现金盈利 [src:SPGI-RPT1-2026-09-18#p5]，所以两种口径的读数不能直接比较。FY2026 读数的口径断裂见 SPGI-Q5。"
+
+  - id: SPGI-Q10
+    type: quantitative
+    claim: 每股收益的增长没有被资产负债表买单，股东返还不长期超过自由现金流
+    origin: report:watch
+    severity: watch
+    covers: [capital_allocation, balance_sheet, governance]
+    pillar: P6
+    metric_def:
+      id: shareholder_return_to_adj_fcf
+      description: （回购 + 分红）÷ 公司口径的调整后自由现金流（已扣少数股东分配）
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K 现金流量表（回购、分红）；年度业绩新闻稿的非 GAAP 调节表（调整后自由现金流）
+      formula: (buybacks + dividends) / adjusted_free_cash_flow
+    fail_if: 连续两年高于 130%
+    rule: {op: ">", threshold: 130, unit: "%", consecutive: 2, period: year}
+    warn_if: 落在健康区间 85%–110% 之外
+    warn_rule: {op: outside, threshold: [85, 110], unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2027-02"
+    baseline:
+      value: 113
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: SPGI-RPT1-2026-09-18#p19
+      note: "FY2025 回购 50.01 亿美元、分红 11.70 亿美元 [src:SPGI-RPT1-2026-09-18#p8]；2026 年指引隐含约 160% [src:SPGI-RPT1-2026-09-18#p19]。"
+    note: "报告第 11 节前瞻指标（五）：连续两年高于 130%，意味着每股收益的增长靠资产负债表撑着 [src:SPGI-RPT1-2026-09-18#p19]；而按委托书的薪酬概述，长期激励唯一的量化指标正是调整后每股收益 [src:SPGI-RPT1-2026-09-18#p19] [src:SPGI-RPT1-2026-09-18#p9]。健康区间 85%–110%，落在区间外记警告 [src:SPGI-RPT1-2026-09-18#p19]；FY2025 读数 113% 已在区间外，建档即处于警告状态 [src:SPGI-RPT1-2026-09-18#p19]。2026 年超出自由现金流的约 32 亿美元来自出售 OSTTRA 合资权益的 15 亿美元现金、上半年处置所得 3.61 亿美元与新发债 [src:SPGI-RPT1-2026-09-18#p9]；公司自己的政策是返还调整后自由现金流的 85% 或以上 [src:SPGI-RPT1-2026-09-18#p9]。FY2026 的读数有口径断裂：全年的回购与分红按报表口径发生，而报告的约 163% 用的是分拆后的调整后自由现金流约 50 亿美元 [src:SPGI-RPT1-2026-09-18#p9]。本条在首次读数之前写定：分子分母都用报表口径，分母含 Mobility 上半年的现金流，与 SPGI-Q5 的同口径要求一致；公司只披露不含 Mobility 的 FY2026 调整后自由现金流时，FY2026 记为无法判定，连续计数从 FY2027 开始。"
+
+  # ---------- 报告第 11 节：岔路口中标明可读时点的两条 ----------
+  - id: SPGI-Q11
+    type: quantitative
+    claim: 指数的收费基数没有被 ETF 外壳里不需要授权的部分侵蚀
+    origin: report:watch
+    severity: watch
+    covers: [moat, pricing_power]
+    pillar: P2
+    metric_def:
+      id: asset_linked_fee_growth_minus_us_etf_aum_growth
+      description: 指数分部资产挂钩费同比增速减去美国 ETF 总资产同比增速
+      unit: pp
+      frequency: quarter
+      data: mixed
+      formula: yoy(asset_linked_fees) - yoy(us_etf_total_assets)
+      components:
+        asset_linked_fees:
+          description: 指数分部资产挂钩费
+          unit: USD
+          where: 季度业绩新闻稿附表或 10-Q 收入分解
+        us_etf_total_assets:
+          description: 美国 ETF 总资产
+          unit: USD
+          where: 行业统计（不是申报文件）
+    fail_if: 资产挂钩费增速持续落后于美国 ETF 总资产增速（差值持续为负，本档案按连续 4 个季度计）
+    rule: {op: "<", threshold: 0, unit: pp, consecutive: 4, period: quarter}
+    data: mixed
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    note: "报告第 11 节岔路口 #7，每季度可读，当前偏主干 [src:SPGI-RPT1-2026-09-18#p18]；持续为负即侵蚀路径 C（ETF 外壳里不需要授权的那部分变大）的第 4 步兑现 [src:SPGI-RPT1-2026-09-18#p18] [src:SPGI-RPT1-2026-09-18#p7]。报告说这条路径真正要看的一步，就是资产挂钩费增速持续落后 ETF 行业资产增速，今天还没有出现，并为指数只留这一个季度指标 [src:SPGI-RPT1-2026-09-18#p16]。报告只写“持续为负”，没有给期数；本档案按连续 4 个季度计，是事先写下的操作化，不是报告原文门槛。当前读数只有一半：2026 年二季度资产挂钩费同比 +22% [src:SPGI-RPT1-2026-09-18#p7]，同期美国 ETF 总资产增速报告未给，差值待回填。报告对这条腿的量级估算：资产挂钩费增速连续三年落后 ETF 行业资产增速 5 个百分点，按 73% 的归属比例约合每股 −0.32 美元，约为市场情报那条的四分之一 [src:SPGI-RPT1-2026-09-18#p16]。"
+
+  - id: SPGI-Q12
+    type: quantitative
+    claim: 市场情报的利润率杠杆真实存在，管理层能把它做上去
+    origin: report:watch
+    severity: watch
+    covers: [management, unit_economics]
+    pillar: P3
+    metric_def:
+      id: mi_adjusted_operating_margin_fy
+      description: 市场情报分部全年调整后营业利润率（公司口径）
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 第四季度业绩新闻稿附表或 10-K 分部附注中市场情报的调整后营业利润与收入
+      formula: mi_adjusted_operating_profit_fy / mi_revenue_fy
+    params: {segment: Market Intelligence, segment_zh: 市场情报, basis: 调整后营业利润率（公司口径）}
+    fail_if: 到 FY2028，市场情报调整后营业利润率低于 35%（仍在 34% 一线，杠杆不存在）
+    rule: {op: "<", threshold: 35, unit: "%", consecutive: 1, period: year, evaluate_on: [FY2028], note: 只在 FY2028 年报判定一次；此前各年只记录读数、不判定；FY2028 判定之后本条退役。}
+    warn_if: 到 FY2028 介于 35% 与 38% 之间（没有“走对”，也不在 34% 一线）
+    warn_rule: {op: "<", threshold: 38, unit: "%", consecutive: 1, period: year, evaluate_on: [FY2028], note: 只在 FY2028 年报判定一次；读数同时低于失败线时按失败处理。}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: "2029-02"
+    baseline:
+      value: 33
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: SPGI-RPT1-2026-09-18#p4
+      note: "重铸口径；2026 年二季度为 34% [src:SPGI-RPT1-2026-09-18#p17]。"
+    note: "报告第 11 节岔路口 #2：到 FY2028，34% → 38% 以上算走对，仍在 34% 一线说明杠杆不存在，当前偏平庸 [src:SPGI-RPT1-2026-09-18#p18]。本条按报告的三段来判：38% 以上通过，低于 35% 失败，两者之间记警告，其中 35% 这条线是本档案对“34% 一线”的事先操作化，报告没有给 [src:SPGI-RPT1-2026-09-18#p18]。只在 FY2028 判定一次，写在 rule 与 warn_rule 的 evaluate_on 里。指标就地定义为全年口径，因为登记表的 segment_operating_margin 是季度指标，而本条按年判定。这是集团内部最大的利润率杠杆：市场情报利润率每提高 5 个百分点约合每股 +0.62 美元，而两次重组之后仍在 34% 一线 [src:SPGI-RPT1-2026-09-18#p11] [src:SPGI-RPT1-2026-09-18#p12]。报告把管理层从“普通”移到“优秀”的条件之一，是市场情报调整后利润率在两个完整财年内升到 38% 以上 [src:SPGI-RPT1-2026-09-18#p20]。"
+
+  # ---------- 本档案自加：永久亏损路径 #3（可信度冲击）的代理 ----------
+  - id: SPGI-L7
+    type: qualitative
+    claim: 评级标准没有为份额让步，标普评级没有再次招来与评级标准或利益冲突有关的执法
+    origin: manual
+    severity: watch
+    covers: [governance, regulation, culture]
+    pillar: P1
+    question: 本期标普的 10-Q/10-K（法律诉讼一节与承诺及或有事项附注）、任何 8-K，或美国证交会、司法部及其他评级监管机构的公告，是否在 2026-09-18 之后首次披露了针对标普全球评级的新的监管调查、执法行动、和解或业务暂停，且事由涉及评级标准或评级方法的执行、利益冲突（例如为争取业务而调整评级）或评级质量？
+    fail_if: 是。只涉及记录保存或报备程序、与评级标准无关的违规不算，由公司经理记录；本期文件的法律诉讼一节没有读到时，记为无法判定
+    judge: independent_model
+    evidence: required
+    where: 标普 10-Q/10-K 的法律诉讼一节与承诺及或有事项附注、8-K；美国证交会与司法部的执法公告；其他评级监管机构的公告
+    lookback: 4
+    effective_from: FY2026Q3
+    first_readable: "2026-10"
+    baseline:
+      value: 报告记录的与评级标准有关的执法：2011 年它在 CMBS 评级上为争业务放宽标准并向投资者隐瞒，2015 年 1 月与证交会和解 5,800 多万美元并暂停评级一年
+      source: SPGI-RPT1-2026-09-18#p10
+      note: "更早的结构化融资案以约 15 亿美元和解落到利润上（2015 年司法部与各州 13.75 亿，另加州公务员退休基金 1.25 亿）[src:SPGI-RPT1-2026-09-18#p17]。"
+    note: "本档案自加，对应永久亏损路径 #3（可信度冲击）与岔路口 #6（标准会不会为份额让步，不可预约、无法判定）[src:SPGI-RPT1-2026-09-18#p18]。岔路口 #6 本身没有能从申报文件回答的是非题；本条用它最早能在文件里看到的形态做代理，即与评级标准或利益冲突有关的新执法，问题与范围都在首次判定之前写下。报告把可信度冲击列为两种冲击之一：它付的是一次性现金，评级的地位没有因此被集体弃用 [src:SPGI-RPT1-2026-09-18#p17]，所以本条是 watch 而不是 breaker。报告认为今天的测试场是收入增长 60% 的私募评级，而监管刚刚拿到推翻评级的权力 [src:SPGI-RPT1-2026-09-18#p10]。"
+
+  # ---------- _common：时效测试 ----------
+  - id: SPGI-S1
+    type: staleness
+    claim: 护城河判断不超过四个季度未复核
+    origin: template:stalwart
+    severity: watch
+    covers: [moat]
+    pillar: P1
+    section: moat
+    max_age_quarters: 4
+    effective_from: FY2026Q3
+    note: "报告第 3 节对四条护城河方向的读法：写进法律义务的评级与指数在走强，写进行业惯例的 Platts 走平，没有写进任何义务的市场情报在走弱 [src:SPGI-RPT1-2026-09-18#p7]。岔路口 #5（第三方引用的累积，不设截止期）在这里复核 [src:SPGI-RPT1-2026-09-18#p18]。"
+
+  - id: SPGI-S2
+    type: staleness
+    claim: 管理层判断不超过四个季度未复核
+    origin: template:stalwart
+    severity: watch
+    covers: [management]
+    pillar: P6
+    section: management
+    max_age_quarters: 4
+    effective_from: FY2026Q3
+    note: "CEO 2024-11-01 上任，任期不足两年；市场情报总裁 2026-05-26 宣布离任，市场情报 7 月 6 日改为两条线 [src:SPGI-RPT1-2026-09-18#p9]。报告给管理层 B+，意思是到目前没有犯错，但证明优秀的证据还不够 [src:SPGI-RPT1-2026-09-18#p10]。"
+
+  - id: SPGI-S3
+    type: staleness
+    claim: “最可能错在哪”每两个季度重新审视
+    origin: template:stalwart
+    severity: watch
+    covers: [other]
+    pillar: P5
+    section: bear_case
+    max_age_quarters: 2
+    effective_from: FY2026Q3
+    note: "报告认为证据最薄的地方在周期波动：一个完整周期里现金流会掉多少，只有一个干净的观测点，即 2022 年评级分部收入 −26%、营业利润 −36%、非交易收入 −2% [src:SPGI-RPT1-2026-09-18#p21]；报告还列出三种在公司现代记录里找不到先例的情形：多年期发行荒、利率长期在 5% 以上时的发行、AI 发债潮退潮 [src:SPGI-RPT1-2026-09-18#p21]。岔路口 #6（标准会不会为份额让步，不可预约）也在这里复核，其中能从文件里读到的执法一面由 SPGI-L7 跟踪 [src:SPGI-RPT1-2026-09-18#p18]。"
+
+todo:
+  - SPGI-Q3（稀释股本同比）、SPGI-Q13（GAAP 口径的自由现金流 ÷ 净利润）与 SPGI-Q14（净负债 ÷ EBITDA）报告没有读数，基线待从 FY2025 10-K 与 2026 年二季度 10-Q 的 XBRL 回填；SPGI-Q14 回填时核对 us-gaap:LongTermDebt 是否含短期借款。
+  - SPGI-Q8（指数挂钩 ETF 的净流入）与 SPGI-Q11（资产挂钩费增速减美国 ETF 总资产增速）报告没有给当期读数，基线待从 2026 年二季度业绩幻灯片与行业统计回填；美国 ETF 总资产不是申报文件，需要另登记一个行业统计来源标签。
+  - "SPGI-Q4：10-Q 的分部信息附注按分部、按收入类型分列了市场情报的收入，2026 年二季度订阅（Subscription）10.76 亿美元、经常性可变收入（Recurring variable revenue）1.73 亿美元 [src:SPGI-10Q-FY2026Q2#note-11]，第一支直接读这张表，不需要改读季度补充披露。企业数据管理与 thinkFolio 于 2026-01-12 出售，属于市场情报 [src:SPGI-10Q-FY2026Q2#note-2]，所以 FY2026Q3 至 FY2027Q1 的第一支读数按 SPGI-Q4 note 写定的处置规则处理：公司既没有披露被出售业务的收入、也没有披露市场情报订阅收入的有机或 pro forma 口径的季度，第一支记为无法判定，第二支不受影响。"
+  - "SPGI-Q8 的 ETF 净流入拆分只在业绩幻灯片里（投资者关系网站；业绩 8-K 只附新闻稿），SPGI-Q11 的美国 ETF 总资产来自行业统计，都不是 SEC 申报文件，分别标 data: external 与 mixed；SPGI-Q7 的季度计费发行额在 10-Q/10-K 的 MD&A 里有表 [src:SPGI-10Q-FY2026Q2#MD&A] [src:SPGI-10K-FY2025#MD&A]，仍为 filing_text。SPGI-L2 至 SPGI-L5 所读的 NAIC 材料、立法记录与监管规则、ETF 发行人公告、交易所公告与 ACER 公告同样不是 SEC 申报文件；它们在本期没有核对外部来源时记为无法判定、不记为通过，已写进各自的 fail_if；判定时读到的每份外部文件逐份登记来源标签。报告附录里这几条路径已知的一手来源已登记为 NAIC-SVO-2026、ACER-LNG-2025 与 VANGUARD-2012-10-02，原件都未取得。"
+  - "上半年约 1,690 亿美元的超大规模云厂商计费发行额，以及公司对全年的工作假设 2,500 至 3,000 亿美元，只有报告的数字 [src:SPGI-RPT1-2026-09-18#p16] [src:SPGI-RPT1-2026-09-18#p17]，报告把它们归于二季度业绩会（附录来源 6）；10-Q 与业绩 8-K 都没有这两个数，10-Q 里的 1,690 亿美元是二季度高收益债的计费发行额 [src:SPGI-10Q-FY2026Q2#MD&A]。取得 SPGI-CALL-FY2026Q2 的纪要后核对；在此之前，SPGI-Q7 基线 note 与 depends_on 条目里 6.8% 的占比，分子仍是报告的数字。"
+  - "SPGI-L2 的 (a) 支需要按机构拆分的被质疑或推翻评级数字，而报告说公开材料没有拆分 [src:SPGI-RPT1-2026-09-18#p8]；首次判定之前核实 NAIC 是否公布分机构数字，没有公布时 (a) 支持续记为无法判定，整条的结论取决于 (b) 支。"
+  - SPGI 是候选公司，按 DESIGN 的成本规则只跑定量测试和公司经理草稿（decisions/0002）：六条论点破坏者里只有 SPGI-Q4、SPGI-Q5 会运行，SPGI-L1 至 SPGI-L7 在转为持仓之前都不运行。需要总部决定 severity 为 breaker 的定性测试（SPGI-L2 至 SPGI-L5）是否豁免这条规则。
+  - 报告没有定义的判定用语，已在首次判定之前写下本档案的操作化：SPGI-L2 的“显著上升”与 (b) 支，SPGI-L3 的“主要司法辖区”“正式立法”（含有约束力的最终规则，超出报告字面）与范围条件，SPGI-L4 的“正式宣布算作切换”，SPGI-L5 的“主要商品交易所”“旗舰能源合约”“主流合同”，SPGI-L6 的“大幅”，SPGI-Q12 的失败线。待总部记入 docs/decisions/ 确认或修改；修改只能在相关事件发生之前做。
+  - "SPGI-Q5、SPGI-Q9、SPGI-Q10 与 SPGI-Q13 的 FY2026 读数有口径断裂（上半年现金流含 Mobility）[src:SPGI-RPT1-2026-09-18#p5]；FY2026 年报发布时确认公司给出的调整后自由现金流是含 Mobility 上半年的报表口径，还是只有不含 Mobility 的口径，再按各测试 note 写定的同口径规则判定。"
+  - "公司不披露市场情报的客户留存率，而它是唯一能区分“主动剥离后会加速”与“定价权被 AI 与客户预算压缩”这两种解释的指标 [src:SPGI-RPT1-2026-09-18#p5]；公司一旦披露，补一条留存测试。"
+  - "公司不披露任何人力指标（留存率、内部晋升率、敬业度），企业文化维度暂时写不出定量测试；FY2025 公司层面的高管团队过渡成本 4,100 万美元 [src:SPGI-RPT1-2026-09-18#p10]。SPGI-L7 覆盖的只是其中可信度（与评级标准有关的执法）的一面。"
+  - 激励结构：报告只读了 2026 年委托书的薪酬概述，没有读完整的薪酬讨论与分析，无法排除相对股东总回报修正器之类的安排；读完 SPGI-DEF14A-2026-03-31 全文后，决定是否增加一条“长期激励含资本回报指标”的管理层测试（报告把它列为管理层从“普通”移到“优秀”的条件之一）。
+  - "私募市场评级收入 2026 年二季度同比 +60%、绝对额未披露 [src:SPGI-RPT1-2026-09-18#p8]；报告按占评级收入 5%–10% 做量级估算，这个占比没有出处 [src:SPGI-RPT1-2026-09-18#p8]。公司若披露绝对额即回填。"
+  - 报告第 7 节中期目标表的来源脚注写作“10”，而附录来源 10 是司法部与证交会的和解文件，疑为编号错误；中期目标的一手出处（投资者日材料）待登记来源标签，SPGI-L1 的基线届时改指一手文件。
+  - 报告自述未能核实的事项：公司历史倍数序列、1928 年协议所引价格是否为 Platts 公布价、CFO Aboaf 的到任日期、2023 年回购金额。
+  - "depends_on 为空：现有三个行业模块（支付与卡组织、非酒精即饮饮料、半导体代工）都不描述 SPGI 依赖的经济，即信用发行周期、ETF 资产规模与金融基准的监管引用；超大规模云厂商的 AI 资本开支发债约占上半年计费发行额的 6.8%（约 1,690 亿 ÷ 24,980 亿美元）[src:SPGI-RPT1-2026-09-18#p17] [src:SPGI-10Q-FY2026Q2#MD&A]，与半导体代工同受 AI 资本开支驱动，但那是需求叙事，不是代工经济。建议日后增设“信用评级与金融基准”或“资本市场发行周期”行业模块，再建立依赖；模块的路标应当包含 SPGI-L2 至 SPGI-L5 的可观测量（NAIC 对私募评级的规则与统计、评级相关立法、大型 ETF 的换指数、交易所结算价与 ACER 基准的采用），路标触发时 CI 才会自动重跑这几条定性测试。"
+  - "岔路口 #5（第三方引用的累积）是期权而非失败条件，在 SPGI-S1 的复核里处理；#6（标准会不会为份额让步）没有能从申报文件直接回答的是非题，改用 SPGI-L7（与评级标准或利益冲突有关的新执法）做代理，其余部分在 SPGI-S3 的复核里处理；#6 中“私募评级里标普被质疑或推翻的比例”那一半已并入 SPGI-L2。"
+  - 本文件带有报告自己算出的若干每股敏感度（永久亏损路径第一、四条，SPGI-L2、SPGI-Q11、SPGI-Q12 的 note）与 ROIC 拆解（SPGI-Q2）；非 MSFT 公司的公开 thesis.yml 可以带多少报告自己的计算，DESIGN 的默认是完整档案只公开 MSFT，待总部写决策记录定下界线，再决定这些数字留在公开侧、改为只引页码，还是移到私有仓库。

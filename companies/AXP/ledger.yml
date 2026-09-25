@@ -1,0 +1,23 @@
+# AXP 双向言行账本（thesis-ci spec §2；schema: spec/schemas/ledger.schema.json）
+# 管理层一侧先登记 02 报告记载的 2026 年全年指引，作为 AXP-L1 判定“下调”时的参照；
+# 其余承诺与系统/本人的预期从第 1 阶段起按财报事件逐条登记。
+company: AXP
+entries:
+  - id: AXP-M-2026-01
+    side: management
+    kind: numeric_target
+    statement: "2026 财年收入增长指引上调至 +10%，每股盈利指引维持不变，理由是把超额收入再投资 [src:AXP-RPT1-2026-09-17#p9]。"
+    made_at: 2026-07-24
+    due: "2026"
+    source: AXP-RPT1-2026-09-17#p9
+    status: pending
+    note: "报告写作 2026 年 7 月、在二季度业绩的同一次电话会上；二季度业绩新闻稿（2026-07-24）写明全年收入增长指引上调至 10%、超出预期的部分再投资于增长 [src:AXP-8K-2026-07-24#EX-99.1]，made_at 取这一日期。以 FY2026 年报中扣除利息支出后总收入的同比结算。"
+  - id: AXP-M-2026-02
+    side: management
+    kind: numeric_target
+    statement: "2026 财年每股盈利指引区间 $17.30–$17.90（中点 $17.60），2026 年 7 月维持不变 [src:AXP-8K-2026-07-24#EX-99.1]。"
+    made_at: 2026-07-24
+    due: "2026"
+    source: AXP-8K-2026-07-24#EX-99.1
+    status: pending
+    note: "报告写的是指引区间 $17.30–$17.90 的中点 $17.60 [src:AXP-RPT1-2026-09-17#p12] [src:AXP-8K-2026-07-24#EX-99.1]，没有给首次公布的日期；这里按 2026 年 7 月维持指引的那次公布登记，made_at 同上一条 [src:AXP-RPT1-2026-09-17#p9]。以 FY2026 年报的摊薄每股收益结算：不低于区间下沿 $17.30 记 kept，低于 $17.30 记 not_kept [src:AXP-8K-2026-07-24#EX-99.1]，settlement_source 填 FY2026 10-K 的来源标签。公司此后若调整区间，本条仍按这里登记的原区间结算，调整写进本条 note。"

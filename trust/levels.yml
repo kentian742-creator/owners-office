@@ -1,0 +1,16 @@
+# 各角色的信任等级 0–3（thesis-ci spec §4.2；00 §G8、§G9）。由流水线维护；公司经理和行业研究员不得修改。
+# 3 级：通过全部检查自动合并并公开。2 级：自动合并，公开前由总部复核（17A）。
+# 1 级：季度更新先留私有仓库，由总部逐条复核后公开。0 级：暂停自治，写进股东信"待你一看"。
+# 起步都是 1 级（decisions/0011）。
+as_of: 2026-09-24
+companies:
+  APP: 1
+  AXP: 1
+  BRK: 1
+  MSFT: 1
+  PDD: 1
+  SPGI: 1
+industries:
+  non-alcoholic-rtd-beverages: 1
+  payments-card-networks: 1
+  semiconductor-foundry: 1

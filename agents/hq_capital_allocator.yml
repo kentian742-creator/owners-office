@@ -1,0 +1,84 @@
+# 总部：资本配置官。守住放行关口、裁定问题、把资金事项整理成一页备忘录交给所有者、跨公司比较。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 hq_capital_allocator.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+role: hq_capital_allocator
+name: 总部：资本配置官
+model:
+  id: claude-sonnet-5
+  effort: high
+  why: 起草类工作（问题清单、分歧图、备忘录、股东信）用中档模型，最强模型留给监督类角色（设计文档默认值，decisions/0003）。模型选用本身是总部的决策 L2，按错误率和成本调整，在月度股东信里报备。
+reports_to: owner                # 所有者（董事长）
+can_see:
+  # 隔离表对总部不设限制，它能看到全部；下面列出它各部分（14Q、14B、17A–17D、18）实际拿到的输入
+  - run_date
+  - schema
+  - constitution
+  - decision_rights
+  - gate_rules
+  - dossier
+  - thesis
+  - filings
+  - update
+  - update_outputs
+  - updates
+  - merged_updates_list
+  - question_list
+  - question_answers
+  - blind_answers
+  - unprompted_observations
+  - divergence_map
+  - findings_04A
+  - inversion_list
+  - ci_results
+  - trust_level
+  - trust_changes
+  - questions
+  - questions_open
+  - valuation
+  - valuation_input_notes
+  - series_roster
+  - anchors
+  - calibration
+  - holdings
+  - ranking
+  - escalation
+  - memo_requests
+  - price_alert
+  - memo_log
+  - memos
+  - month_events
+  - owner_letter_items
+  - l2_report
+  - rulings
+  - budget
+  - failures
+  - phase_status
+  - prereg_activity
+  - mistakes
+cannot_see: []
+outputs:
+  - question_list                # 14Q，业绩事件之前冻结
+  - divergence_map               # 14B
+  - gate_decision                # 17A
+  - returns
+  - rulings
+  - owner_letter_items
+  - memo                         # 17B，私有；只在需要时
+  - reply
+  - ranking                      # 17C，私有
+  - candidate_rotation
+  - memo_requests
+  - reaudit_pick                 # 17D
+  - letter                       # 18，公开
+  - private_appendix             # 18，私有
+  - l2_report
+  - questions
+decision_rights:
+  - draft                        # L1：问题清单、分歧图、股东信、备忘录草稿
+  - routine_merge                # L1：信任 1 级的更新逐条复核后合并
+  - publish                      # L2：信任 1、2 级的更新复核后公开
+  - candidate_rotation           # L2
+  - model_selection              # L2
+  - prompt_change                # L2：只限 00 的 §F、§G 与提示词中的非所有者条款
+prompts: ["14Q", "14B", "17A", "17B", "17C", "17D", "18"]
+trust_managed: false

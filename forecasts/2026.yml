@@ -1,0 +1,6 @@
+# 预测与覆盖记录 2026（schema: thesis-ci spec/schemas/forecast.schema.json）
+# 两本账：book: system 是系统自己的预测；book: owner_override 只记主人改过的概率（“覆盖”）。
+# 每条预测在结果出来之前登记，来源文件（预注册或言行账本）写在 source_file；
+# 结算后填 outcome 与 brier，按 domain 汇总校准分。
+year: 2026
+forecasts: []

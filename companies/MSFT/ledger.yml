@@ -1,0 +1,61 @@
+# MSFT 双向言行账本（thesis-ci spec §2；schema: spec/schemas/ledger.schema.json）
+# DESIGN 把账本排在第 3 阶段，但下面几条管理层承诺在那之前就会到期，所以建档时先把 02 报告里有日期、有出处的登记下来，
+# 趁结果出来之前写下。之后的管理层承诺、系统与本人的预期，按财报事件逐条登记。
+# made_at 取承诺所在文件或电话会的日期（报告的脚注编号写在 note 里）；有一手原文的引用一手文件，没有的引用转述它的报告页码，一手文件见 sources.yml。
+# 结算标准（约数的容差、“high teens”的范围、Xbox 的口径）须在各条结算之前写下，见 thesis.yml 的 todo。
+company: MSFT
+entries:
+  - id: MSFT-MGT-01
+    side: management
+    kind: capex_plan
+    statement: "日历 2026 年资本开支约 1,750 亿美元（公司口径）[src:MSFT-RPT1-2026-09-17#p4]。"
+    made_at: 2026-07-29
+    due: 2026-12-31
+    source: MSFT-RPT1-2026-09-17#p4
+    status: pending
+    settlement_source: null
+    note: "报告脚注 [4]（FY26 Q4 电话会，2026-07-29）。口径从约 1,900 亿美元改为约 1,750 亿美元，是因为数据中心租赁自 FY2027 起多以经营租赁入账 [src:MSFT-RPT1-2026-09-17#p4]。结算时按公司口径加总 FY26 第三、四季度与 FY27 第一、二季度的资本开支，约 2027 年 1 月底可读。"
+
+  - id: MSFT-MGT-02
+    side: management
+    kind: numeric_target
+    statement: "FY27 第一季度（2026 年 7–9 月）Microsoft 365 商业云收入（FY27 新口径）按固定汇率增长约 17% [src:MSFT-8K-2026-09-02#EX-99.1-slide21]。"
+    made_at: 2026-09-02
+    due: 2026-09-30
+    source: MSFT-8K-2026-09-02#EX-99.1-slide21
+    status: pending
+    settlement_source: null
+    note: "出自附件 99.1 第 21 张幻灯片 FY27 Q1 Outlook Detail：公司按新分部口径，对 2026-07-29 给出的 FY27 第一季度指引只做机械调整，M365 商业云由固定汇率约 15% 调为约 17%，按上年同期的期内收入确认调整后由约 16% 调为约 18% [src:MSFT-8K-2026-09-02#EX-99.1-slide21]。约 17% 这个数最早见于这份 8-K [src:MSFT-8K-2026-09-02#EX-99.1-slide21]，made_at 取它的日期；报告第四节引用的就是它（脚注 [9]）[src:MSFT-RPT1-2026-09-17#p6]。7 月 29 日的原指引在当天的业绩电话会与网络直播上给出 [src:MSFT-8K-2026-07-29#EX-99.1-Business-Outlook]。约 2026 年 10 月底随 FY27 第一季度业绩结算。"
+
+  - id: MSFT-MGT-03
+    side: management
+    kind: numeric_target
+    statement: "FY2027 Windows OEM 与设备下滑 high teens [src:MSFT-RPT1-2026-09-17#p3]。"
+    made_at: 2026-07-29
+    due: 2027-06-30
+    source: MSFT-CALL-FY2026Q4
+    status: pending
+    settlement_source: null
+    note: "指引在 2026-07-29 的 FY26 第四季度业绩电话会上给出：当天的业绩新闻稿写明前瞻指引在电话会与网络直播上给出 [src:MSFT-8K-2026-07-29#EX-99.1-Business-Outlook]，FY2026 10-K 里没有这条指引 [src:MSFT-10K-FY2026]。本档案没有这次电话会的纪要全文，措辞取自转述它的报告第二节 [src:MSFT-RPT1-2026-09-17#p3]，报告把出处注成 10-K 与新闻稿（脚注 [1]）。made_at 取电话会的日期。按收入同比读，随 FY2027 年报结算。"
+
+  - id: MSFT-MGT-04
+    side: management
+    kind: other
+    statement: "Xbox 在重置后，FY2027 预计恢复增长 [src:MSFT-RPT1-2026-09-17#p3]。"
+    made_at: 2026-07-29
+    due: 2027-06-30
+    source: MSFT-CALL-FY2026Q4
+    status: pending
+    settlement_source: null
+    note: "出处同 MSFT-MGT-03：FY26 第四季度业绩电话会，本档案没有纪要全文，措辞取自报告第二节 [src:MSFT-RPT1-2026-09-17#p3]。结算前先确认指引所指的 Xbox 口径（例如 Xbox 内容与服务收入），随 FY2027 年报结算。"
+
+  - id: MSFT-MGT-05
+    side: management
+    kind: other
+    statement: "CFO 预期 FY2027 员工人数继续下降；FY2026 年末为 223,000 人 [src:MSFT-RPT1-2026-09-17#p7]。"
+    made_at: 2026-04-29
+    due: 2027-06-30
+    source: MSFT-RPT1-2026-09-17#p7
+    status: pending
+    settlement_source: null
+    note: "报告脚注 [28]（FY26 Q3 电话会，2026-04-29，一手来源登记为 MSFT-CALL-FY2026Q3）。结算：FY2027 年报第一部分的员工人数低于 FY2026 年末即兑现。"

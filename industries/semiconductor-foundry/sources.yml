@@ -1,0 +1,15 @@
+# 半导体代工行业模块的来源标签表（thesis-ci SPEC 第 3 节；schema：sources.schema.json）
+# 本模块只引用行业研究本身；研究所依据的原始来源（公司财报、TrendForce、SIA/WSTS 等）未被直接引用，因此不在此登记。
+sources:
+  - tag: IND-FOUNDRY-2026-09
+    kind: industry_report
+    title: "Business Library · Industry Study: Semiconductor Foundry"
+    date: 2026-09-16
+    url: null
+    location: private:reports/semiconductor-foundry.pdf
+    primary: false
+    note: >-
+      Business Library 行业研究（英文，教育用途，不构成投资建议），研究半导体代工的结构、经济性与利润池变化。
+      封面只写 September 2026，具体日期取自 PDF 元数据的创建日期（2026-09-16）；研究所引网络来源均于 2026 年 9 月访问（见 p20），被引来源中日期最晚的是 2026-09-09 的 TrendForce 新闻稿（见 p21）。
+      定位符 #pN 为 PDF 页码，与印刷页码一致，封面为第 1 页。
+      研究中标 est. 的数字为第三方估计，标 our calculation 的为研究作者基于公开数字的计算。

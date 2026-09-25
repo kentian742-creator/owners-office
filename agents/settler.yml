@@ -1,0 +1,33 @@
+# 结算员：独立监督之一。按事先写好的判定标准结算到期的预注册与言行账本条目；看不到概率、作者和所有者的改写。
+# reports_to 为 null：独立监督不向任何经理人汇报；歧义交总部裁定。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 settler.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+role: settler
+name: 结算员
+model:
+  id: claude-fable-5-1
+  effort: high
+  fallbacks: default
+  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；结算结果进入校准记录，是能力圈实测的原始数据。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。
+reports_to: null
+can_see:
+  - event
+  - items_blind                  # 到期的预注册条目，只有 id、statement、criterion、data_source、horizon
+  - filings
+  - metric_values                # 流水线取到的数值（XBRL 与 16B），各带来源
+  - ledger_due                   # 到期的账本条目：去掉 side，改标 settle_as
+cannot_see:
+  - prereg                       # 带概率、作者；所有者的改写单独成文件，同样不给
+  - prereg_due                   # 带当时的概率
+  - ledger                       # 完整账本带 side，看得出预测是谁写的
+  - thesis
+  - dossier
+  - update
+outputs:
+  - prereg_settlement            # 交 03 写进季度更新，并交流水线更新校准记录
+  - ledger_settlement
+  - questions
+decision_rights:
+  - test                         # L1：按事先写好的标准判定；决策权配置没有单列"结算"
+prompts: ["15B"]
+trust_managed: false

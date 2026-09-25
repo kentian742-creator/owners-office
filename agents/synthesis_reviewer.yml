@@ -1,0 +1,30 @@
+# 合成审查：独立监督之一，只审完整企业报告（11）：有没有生产痕迹、有没有真正的新分析、论证的质地。
+# reports_to 为 null：独立监督不向任何经理人汇报。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 synthesis_reviewer.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+role: synthesis_reviewer
+name: 合成审查
+model:
+  id: claude-fable-5-1
+  effort: high
+  fallbacks: default
+  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；要逐条验算"接起来才出现"的分析。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。
+reports_to: null
+can_see:
+  - report                       # 11 的完整企业报告
+  - connections                  # 作者列出的连接清单
+  - doc_02                       # 四份研究材料
+  - doc_06
+  - doc_07
+  - doc_08
+  - sources                      # 验算用的原始材料
+cannot_see: []                   # 隔离表对合成审查没有额外限制；12 的各部分分别独立运行，由 can_see 白名单保证
+outputs:
+  - connection_audit
+  - answers
+  - findings
+  - questions
+decision_rights:
+  - audit                        # L1
+prompts: ["12B"]
+trust_managed: false

@@ -1,0 +1,820 @@
+# BRK 论点文件（公开；thesis-ci spec §4；schema: spec/schemas/thesis.schema.json）
+# 生成方式：先套林奇 stalwart 模板与 _common 时效测试。模板里对伯克希尔没有意义的三条定量指标与一条定性题
+# （Q-growth、Q-returns、Q-fcf、L-guidance）由本档案自行替换成等价测试，理由见各测试 note；模板 README 只写了
+# 门槛可以改写，没有写指标可以替换，替换是否允许、origin 怎样记，待规范或总部确认（见 todo）。其中每股账面一条
+# 借用次类 asset_play 的模板测试，次类的闲置现金测试照搬。再逐条补入 02 报告第十节的论点破坏信号（severity: breaker）
+# 与每季度前瞻指标（severity: watch），最后是本档案据报告第七、十二节补上的两条 watch 测试（BRK-Q16、BRK-L5）。
+# 门槛按报告原文；报告没给门槛或口径的地方，在测试 note 里写明本档案事先写下的操作化方式。
+# 与价格有关的一切（参考价、区间、预期回报、对价格的评级，以及由价格推出的“占市值”读数）只在私有仓库
+# owners-office-private/companies/BRK/valuation.yml。
+schema_version: "0.2"
+company: BRK
+name: Berkshire Hathaway Inc.（伯克希尔哈撒韦）
+exchange: NYSE
+status: archive
+filer:
+  cik: "0001067983"
+  type: domestic
+  fiscal_year_end: "12-31"
+  annual_form: 10-K
+category: stalwart
+category_secondary: asset_play
+category_rationale: "大而稳、靠持续性赚钱：2015 到 2025 年公司口径的税后经营利润从 174 亿美元增到 445 亿美元，每 A 股账面从 15.6 万美元增到 49.9 万美元 [src:BRK-RPT1-2026-09-18#p4]；风险在增长悄悄放慢与为增长而做的昂贵配置，正是稳定增长型模板盯的两件事。次类为资产富裕型：2026-06-30 持有 3,647 亿美元现金与国库券、3,238 亿美元股票组合 [src:BRK-RPT1-2026-09-18#p3]，关键在这些资产会不会被保全、并以足够的回报投出去。"
+domain: insurance_conglomerate
+# 不声明行业依赖：美国运通与可口可乐都在股票组合的前五大持仓里，但报告把整个股票组合当作估值里的一行敏感度，
+# 论点的支柱（浮存金成本、经营业务、现金的配置）不取决于支付卡组织或即饮饮料的行业经济学。
+# 重新评估的触发条件已事先写在 todo 的最后一条（单一持仓年末市值占股东权益的比例）。
+depends_on: []
+trust_level: 1
+as_of: 2026-09-24
+
+# 档案十二个部分与附加清单 munger 的最近复核日期 = 02 报告日期（报告十二节齐全，芒格矩阵在第六节；页脚只印月份，
+# 取封面的读取截止日，见 todo）
+reviewed:
+  business: 2026-09-18
+  economics: 2026-09-18
+  moat: 2026-09-18
+  capital_allocation: 2026-09-18
+  management: 2026-09-18
+  culture: 2026-09-18
+  runway: 2026-09-18
+  valuation: 2026-09-18
+  bear_case: 2026-09-18
+  monitoring: 2026-09-18
+  thesis: 2026-09-18
+  breakers: 2026-09-18
+  munger: 2026-09-18
+
+# 报告第一节的评级：生意一行在 PDF 第 2 页，管理层、资本配置、企业文化三行在第 3 页，所以 source 写成 p2-p3；
+# 对价格的那一行只在私有仓库
+ratings:
+  business: A
+  management: A−
+  capital_allocation: B+
+  culture: A
+  source: BRK-RPT1-2026-09-18#p2-p3
+
+thesis:
+  summary: "伯克希尔把保险客户预付的保费与经营子公司的利润集中到总部统一配置：2026-06-30 有 1,775 亿美元浮存金，2025 年集团财险综合成本率 87.1%（不含追溯再保险）[src:BRK-RPT1-2026-09-18#p3]。2025 年公司口径的税后经营利润 445 亿美元，其中承保 73 亿、保险投资收益 125 亿、BNSF 55 亿、BHE 40 亿、制造／服务／零售 136 亿，其余 16 亿是母公司利息、外汇与权益法等其他项 [src:BRK-RPT1-2026-09-18#p3]。今天的问题不是这台机器会坏，而是 3,647 亿美元现金与国库券——比 3,238 亿美元的股票组合还多——只赚约 4% 的国库券收益 [src:BRK-RPT1-2026-09-18#p1] [src:BRK-RPT1-2026-09-18#p3]。论点靠两条腿：承保继续不亏钱，以及新任 CEO 能在下跌中把现金换成回报足够高的生产性资产，后者是整份判断里证据最薄的一处 [src:BRK-RPT1-2026-09-18#p16]。"
+  pillars:
+    - id: P1
+      claim: "承保不亏钱，浮存金就是没有到期日、没有契约条款、不会被挤兑的负成本资金：2026-06-30 浮存金 1,775 亿美元，过去三年每年承保盈利 [src:BRK-RPT1-2026-09-18#p3]；报告认为造成今天这个形态的 1967 年那个决策，成立的前提就是承保不亏钱，条件一旦不成立，浮存金从负成本变成正成本，剩下的只是一家持有大量证券的普通集团公司 [src:BRK-RPT1-2026-09-18#p4]。"
+      source: BRK-RPT1-2026-09-18#p4
+    - id: P2
+      claim: "GEICO 的低成本直销仍是护城河：眼下的份额流失与成本率上升仍可逆转，走的是“先稳住留存、保单数先回升、综合成本率随后回落”这条路（问题出在人和流程），而不是对手用更细的风险分层挑走低风险客户、GEICO 只能一再涨价的逆向选择螺旋——报告提醒，单靠追上定价技术停不住这个螺旋 [src:BRK-RPT1-2026-09-18#p7] [src:BRK-RPT1-2026-09-18#p9]。它是四条护城河里唯一有硬数据显示变弱的一条：2026 年一季度保单数同比 +2%（Progressive +11%），上半年综合成本率 89.3%（上年同期 81.7%）[src:BRK-RPT1-2026-09-18#p6]。"
+      source: BRK-RPT1-2026-09-18#p7
+    - id: P3
+      claim: "现金是期权而不是拖累：3,647 亿美元现金与国库券会在下跌中、或以私下谈判的条款，被投到年回报 8% 以上的生产性资产上，而不是长期只赚票息 [src:BRK-RPT1-2026-09-18#p11]；四次下跌里只有一次是把现金大规模换成他人股权的干净样本，这是整份判断证据最薄的一条 [src:BRK-RPT1-2026-09-18#p16]。"
+      source: BRK-RPT1-2026-09-18#p16
+    - id: P4
+      claim: "伯克希尔长期坚守的几条约束延续到新任 CEO：只在价格低于保守估计的内在价值时回购、不派现金股息、以股换股时发出的内在价值不多于换回的、总部不给子公司下达业绩目标 [src:BRK-RPT1-2026-09-18#p8] [src:BRK-RPT1-2026-09-18#p14]；其中股息一条，自 1967 年那唯一一次派息之后没有破过 [src:BRK-LTR-2024#p6]。阿贝尔上任后恢复回购，2026 年上半年回购 47.6 亿美元 [src:BRK-RPT1-2026-09-18#p8]，均价约为账面的 1.40 倍 [src:BRK-RPT1-2026-09-18#p14]。"
+      source: BRK-RPT1-2026-09-18#p14
+    - id: P5
+      claim: "受监管子公司与母公司隔离：伯克希尔不担保 BHE、BNSF 及其子公司的借款，母公司在 PacifiCorp 野火上的经济损失上限是它在 PacifiCorp 的权益 [src:BRK-RPT1-2026-09-18#p8]；截至 2026-06-30 野火累计计提 28.53 亿美元、已付 22.81 亿美元，上半年没有增加 [src:BRK-RPT1-2026-09-18#p8]。"
+      source: BRK-RPT1-2026-09-18#p8
+    - id: P6
+      claim: "51 家非保险经营业务不需要总部管理也能持续产生利润和现金：2025 年 BNSF、BHE、制造／服务／零售的税后经营利润分别约 55 亿、40 亿、136 亿美元 [src:BRK-RPT1-2026-09-18#p3]，集团经营活动现金流 460 亿美元 [src:BRK-LTR-2025#p9]；BHE 的数据中心资本开支是新的增长跑道，但管理层给它划了由超大规模客户承担成本、不抬高现有客户电价等硬约束 [src:BRK-RPT1-2026-09-18#p6]。"
+      source: BRK-RPT1-2026-09-18#p3
+  # 芒格反向清单：怎样会永久亏损（取自报告第七节反方论点与第十二节“最可能错在哪”）
+  permanent_loss_paths:
+    - "做得太多：为了证明自己而加快节奏、放松价格纪律 [src:BRK-RPT1-2026-09-18#p11]，把 3,647 亿美元现金以 7%–8% 的回报投出去，伯克希尔就永久性地变成一家中回报的集团公司 [src:BRK-RPT1-2026-09-18#p10]；保险收购尤其危险，买的是卖方对未来赔付的估计，1998 年那笔 220 亿美元的全股票收购之后连续三年承保亏损，2001 年税前承保亏损 36.71 亿美元 [src:BRK-RPT1-2026-09-18#p10]。"
+    - "做得太少：下一次没有政策托底的系统性下跌里，它仍以放贷和回购为主，而不把现金大规模换成他人的股权，这笔钱就长期只赚国库券利息 [src:BRK-RPT1-2026-09-18#p16]；对所有者来说，这是一笔不会回来的机会成本。"
+    - "承保反转：若合并综合成本率长期高于 100% [src:BRK-RPT1-2026-09-18#p14]，浮存金由负成本转为正成本，杠杆优势消失 [src:BRK-RPT1-2026-09-18#p4]；巨灾与超大单笔风险的定价还系于一位 75 岁的保险业务副董事长，接班安排没有披露 [src:BRK-RPT1-2026-09-18#p10]。"
+    - "GEICO 陷入逆向选择螺旋：对手用更细的风险分层挑走低风险客户，留下的客群平均风险上升，只能再涨价，涨价又赶走好客户 [src:BRK-RPT1-2026-09-18#p7]；若 GEICO 综合成本率从 89.3% 走到 100%，每年税后少约 37 亿美元，约为 2025 年经营利润的 8%–9% [src:BRK-RPT1-2026-09-18#p7]。"
+    - "受监管资产的风险外溢到母公司：PacifiCorp 野火诉讼若被恢复原判，最坏情形现在给不出金额 [src:BRK-RPT1-2026-09-18#p8]；更大的损失是母公司破例为受监管子公司出钱，所有受监管子公司的融资成本与总部的谈判地位都要重新定价 [src:BRK-RPT1-2026-09-18#p14]。"
+
+# 报告中的基准事实，供审计与日后申报文件逐条核对
+baseline_facts:
+  - id: F1
+    label: 保险浮存金
+    value: 1775
+    unit: 亿美元
+    as_of: 2026-06-30
+    source: BRK-RPT1-2026-09-18#p3
+    note: "2025 年末为 1,760 亿美元，2015 年末为 880 亿美元 [src:BRK-RPT1-2026-09-18#p4]。"
+  - id: F2
+    label: 现金与美国国库券
+    value: 3647
+    unit: 亿美元
+    as_of: 2026-06-30
+    source: BRK-RPT1-2026-09-18#p3
+    note: "3 月末为 3,802 亿美元 [src:BRK-RPT1-2026-09-18#p8]。"
+  - id: F3
+    label: 股票组合（按市价）
+    value: 3238
+    unit: 亿美元
+    as_of: 2026-06-30
+    source: BRK-RPT1-2026-09-18#p3
+    note: "前五大持仓为 Alphabet、美国运通、苹果、美国银行、可口可乐，合计占 66% [src:BRK-RPT1-2026-09-18#p3]；另有权益法投资 200 亿美元、固定收益 170 亿美元 [src:BRK-RPT1-2026-09-18#p3]。"
+  - id: F4
+    label: 税后经营利润（公司口径，剔除投资损益与减值）
+    value: 445
+    unit: 亿美元
+    period: FY2025
+    as_of: 2025-12-31
+    source: BRK-RPT1-2026-09-18#p3
+    note: "2024 年为 474 亿美元，2026 年上半年为 243 亿美元 [src:BRK-RPT1-2026-09-18#p4]。"
+  - id: F5
+    label: 税后经营利润的构成：承保 / 保险投资收益 / BNSF / BHE / 制造服务零售 / 其他
+    value: [7.3, 12.5, 5.5, 4.0, 13.6, 1.6]
+    unit: 十亿美元
+    period: FY2025
+    as_of: 2025-12-31
+    source: BRK-RPT1-2026-09-18#p3
+    note: "“其他”是母公司利息、外汇与权益法，不属于承保、投资收益或三块非保险经营业务中的任何一块 [src:BRK-RPT1-2026-09-18#p3]。"
+  - id: F6
+    label: 集团财险综合成本率（不含追溯再保险）
+    value: 87.1
+    unit: "%"
+    period: FY2025
+    as_of: 2025-12-31
+    source: BRK-RPT1-2026-09-18#p3
+    note: "五年均值 90.7% [src:BRK-RPT1-2026-09-18#p5]；十年与二十年均值分别为 93.0% 与 92.2% [src:BRK-LTR-2025#p9]。"
+  - id: F7
+    label: 每 A 股账面价值
+    value: 522
+    unit: 千美元
+    as_of: 2026-06-30
+    source: BRK-RPT1-2026-09-18#p4
+    note: "2024 年末 452、2025 年末 499（千美元），2021 年起按股东权益除以 A 股等价股数计 [src:BRK-RPT1-2026-09-18#p4]。"
+  - id: F8
+    label: 分部资本开支 / 其中 BHE / 其中 BNSF / 同期折旧摊销
+    value: [106, 49.5, 17.4, 68]
+    unit: 亿美元
+    period: 1H26
+    as_of: 2026-06-30
+    source: BRK-RPT1-2026-09-18#p5
+    note: "报告估计全年约 210 亿美元资本开支对 137 亿美元折旧，增长性资本开支约 70 亿美元 [src:BRK-RPT1-2026-09-18#p5]。"
+  - id: F9
+    label: PacifiCorp 野火累计计提 / 已付
+    value: [28.53, 22.81]
+    unit: 亿美元
+    as_of: 2026-06-30
+    source: BRK-RPT1-2026-09-18#p8
+    note: "3 月末与 6 月末的累计计提都是 28.53 亿美元 [src:BRK-RPT1-2026-09-18#p7]。"
+  - id: F10
+    label: 母公司票据 / 其中日元债 / BNSF 与 BHE 的无母公司担保债务
+    value: [204, 152, 853]
+    unit: 亿美元
+    as_of: 2026-06-30
+    source: BRK-RPT1-2026-09-18#p9
+    note: "报告第 9 页没有单独注明这三项的时点，这里按封面写明的“资产负债表数据基准 2026-06-30”记录 [src:BRK-RPT1-2026-09-18#p1]，待与 2026Q2 10-Q 的债务附注核对。报告写日元债利率 1.4%、用途是对应日本持仓 [src:BRK-RPT1-2026-09-18#p9]；2025 年致股东信的写法是在日本的借款约等于日元投资的成本（2025 年末五家商社合计成本 15,382 百万美元），平均成本 1.2%、加权平均期限约 5.75 年 [src:BRK-LTR-2025#p16]。两处利率不一致，可能是时点不同，也可能有一处有误，待核对（见 todo）。"
+  - id: F11
+    label: 员工人数（总部二十余人）
+    value: 387815
+    unit: 人
+    source: BRK-RPT1-2026-09-18#p8
+    note: "报告注明出处为 2026 年委托书（2026-03-13）[src:BRK-RPT1-2026-09-18#p8] [src:BRK-RPT1-2026-09-18#p17]，没有写员工人数的截至日期，所以这里不填 as_of，待与 FY2025 10-K 第 1 项的人力资本一节核对（见 todo）。"
+
+tests:
+  # ---------- 林奇 stalwart 模板（三条定量指标与 L-guidance 由本档案替换，理由见各条 note）+ 次类 asset_play 的每股账面与闲置现金 ----------
+  - id: BRK-Q1
+    type: quantitative
+    claim: 需要经营能力的非保险利润仍在增长，增长没有滑出稳定增长型的区间
+    origin: manual
+    severity: watch
+    covers: [growth]
+    pillar: P6
+    metric_def:
+      id: non_insurance_operating_earnings_yoy
+      description: 非保险经营业务（BNSF、BHE、制造／服务／零售三块）税后经营利润之和的滚动四季度同比增速；公司分部口径，剔除投资损益与减值
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: 10-Q／10-K 的 MD&A 中按分部列示的税后利润表（BNSF、BHE、Manufacturing、Service and retailing 各行）
+      formula: sum_4q(bnsf + bhe + msr)_t / sum_4q(bnsf + bhe + msr)_{t-4q} - 1
+    fail_if: 连续 4 个季度低于 5%
+    rule: {op: "<", threshold: 5, unit: "%", consecutive: 4, period: quarter}
+    warn_if: 连续 2 个季度低于 8%
+    warn_rule: {op: "<", threshold: 8, unit: "%", consecutive: 2, period: quarter}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 5.8
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: BRK-RPT1-2026-09-18#p3
+      note: "本档案按两处带出处的读数计算，报告与股东信都没有直接给出：2025 年三块税后经营利润约为 BNSF 55 亿、BHE 40 亿、制造／服务／零售 136 亿美元，合计约 231 亿美元 [src:BRK-RPT1-2026-09-18#p3]；2024 年分别为 5,031、3,730、13,072 百万美元，合计 21,833 百万美元 [src:BRK-LTR-2024#p5]。股东信的 Other controlled businesses 一行对应报告的制造／服务／零售，Non-controlled businesses 与 Other 两行对应报告的“其他” [src:BRK-LTR-2024#p5] [src:BRK-RPT1-2026-09-18#p3]。报告的 2025 年数字四舍五入到 1 亿美元，同比读数因此约在 5.1%–6.5% 之间，这里取中间值 [src:BRK-RPT1-2026-09-18#p3] [src:BRK-LTR-2024#p5]；待从 FY2025 年报取精确数复算（见 todo）。"
+    note: "替代模板 stalwart 的 Q-growth（revenue_yoy）：伯克希尔约 2,150 亿美元的制造／服务／零售收入里包括卡车休息站、食品分销与汽车经销 [src:BRK-RPT1-2026-09-18#p3]，收入规模说明不了利润；保险保费又会在软市场里主动缩量，报告认为那是纪律而不是失去客户 [src:BRK-RPT1-2026-09-18#p6]。收入增速因此说明不了生意在变好还是变坏。改看需要经营能力的三块非保险利润，门槛沿用模板默认值。承保与保险投资收益各有专门的测试：承保由 BRK-Q6、BRK-Q10 跟踪，保险投资收益由 BRK-Q12 跟踪。"
+
+  - id: BRK-Q2
+    type: quantitative
+    claim: 每股账面价值在增长
+    origin: template:asset_play
+    severity: watch
+    covers: [returns_on_capital]
+    pillar: P3
+    metric: book_value_per_share_yoy
+    fail_if: 连续 2 年下降
+    rule: {op: "<", threshold: 0, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: 10.4
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: BRK-RPT1-2026-09-18#p4
+      note: "每 A 股账面由 2024 年末 45.2 万美元升到 2025 年末 49.9 万美元，2026-06-30 为 52.2 万美元 [src:BRK-RPT1-2026-09-18#p4]；同比是本档案按前两项读数计算的（499 ÷ 452 − 1），报告没有直接给出。"
+    note: "替代模板 stalwart 的 Q-returns（roic）：伯克希尔约三分之二的价值按市价计量 [src:BRK-RPT1-2026-09-18#p2]，以“权益加有息负债减现金”为分母的投入资本回报，会把国库券与股票组合的收益率混进经营业务的回报里，衡量不出资本回报。改用次类资产富裕型模板的每股账面测试，门槛沿用模板默认值。每股账面含股票市值波动 [src:BRK-RPT1-2026-09-18#p11]，所以只看连续两年的方向。计算按 A 股等价股数（报告口径）[src:BRK-RPT1-2026-09-18#p4]，XBRL 概念待核实（见 todo）。"
+
+  - id: BRK-Q14
+    type: quantitative
+    claim: 闲置现金没有变成拖累：现金与国库券占总资产的比例没有连续停在高位
+    origin: template:asset_play
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P3
+    metric: cash_and_tbills_to_total_assets
+    fail_if: 连续 2 年高于 30%
+    rule: {op: ">", threshold: 30, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: null
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: BRK-RPT1-2026-09-18#p4
+      note: "2025 年末现金（含美国国库券）3,730 亿美元，2026-06-30 为 3,647 亿美元 [src:BRK-RPT1-2026-09-18#p4] [src:BRK-RPT1-2026-09-18#p3]；报告与两封股东信都没有给总资产，比率待从 FY2025 年报回填（见 todo）。"
+    note: "照搬次类资产富裕型模板的 Q-cash-drag，门槛沿用模板默认值。它是破坏信号 BRK-Q7 的不含价格的对照：BRK-Q7 的分母是市值，公开流水线读不到价格；本条的分母是总资产，可以直接从 10-K 读出，所以在 BRK-Q7 无法判定期间，现金是否在堆积由本条与 BRK-Q13 给出读数。保险集团的总资产里有大量对应浮存金的投资资产，模板门槛是否适合伯克希尔，待总资产读数回填后复核一次，复核结论与日期写进本条 note，保持事先登记。伯克希尔在资产负债表上单列美国国库券，XBRL 里未必落在 ShortTermInvestments 概念下，取不到时把 data 改为 filing_text（见 todo）。"
+
+  - id: BRK-Q3
+    type: quantitative
+    claim: 回购在真正缩减股本，股本没有因以股支付收购而扩大
+    origin: template:stalwart
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P4
+    metric: diluted_shares_yoy
+    fail_if: 连续 2 年大于 0
+    rule: {op: ">", threshold: 0, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: null
+      unit: "%"
+      period: FY2025
+      source: BRK-RPT1-2026-09-18#p9
+      note: "2021 到 2025 年回购合计约 470 亿美元 [src:BRK-RPT1-2026-09-18#p9]；2025 年回购为零 [src:BRK-RPT1-2026-09-18#p4]，2026 年上半年回购 47.6 亿美元 [src:BRK-RPT1-2026-09-18#p8]。平均股数同比待从年报回填。"
+    note: "门槛沿用模板默认值。伯克希尔没有股权激励，公司表示不以股票支付员工 [src:BRK-RPT1-2026-09-18#p8]，所以股数只会因回购减少、因以股支付收购增加；历史上三次大额以股支付里有两次被管理层自认是大错 [src:BRK-RPT1-2026-09-18#p9]。以股换股是否“发出的内在价值多于换回的”，由破坏信号 BRK-L3 判定。"
+
+  - id: BRK-Q4
+    type: quantitative
+    claim: 自由现金流在增长，而不是被资本开支持续吞掉
+    origin: manual
+    severity: watch
+    covers: [free_cash_flow]
+    pillar: P6
+    metric: free_cash_flow_yoy
+    fail_if: 连续 2 年下降
+    rule: {op: "<", threshold: 0, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: null
+      unit: "%"
+      period: FY2025
+      source: BRK-LTR-2025#p9
+      note: "2025 年经营活动现金流 460 亿美元，五年平均逾 400 亿美元 [src:BRK-LTR-2025#p9]；报告估计 2026 年全年资本开支约 210 亿美元、折旧摊销约 137 亿美元 [src:BRK-RPT1-2026-09-18#p5]。FY2024 与 FY2025 的资本开支待从年报回填。"
+    note: "替代模板 stalwart 的 Q-fcf（fcf_conversion，自由现金流除以 GAAP 净利润）：2018 年起会计准则要求把未实现投资损益计入净利润，公司从那年起改以经营利润为主口径 [src:BRK-RPT1-2026-09-18#p4]，这个比率对伯克希尔没有意义。宪法第 2 条的试金石是不断增长的自由现金流，所以改看它是否连续两年下降；模板没有这项指标的默认门槛，“连续两年下降”沿用模板一贯的两年窗口，是本档案事先写下的标准。资本开支的六成在铁路与电力 [src:BRK-RPT1-2026-09-18#p5]，BHE 数据中心的增长性开支会先压低自由现金流，这正是本条要提醒复核的地方。本条按 XBRL 机械计算，不做调整：经营现金流会随大额出售股票所缴的税款与浮存金的变动摆动，这一噪声本档案接受，失败时由复核在结论里说明是否来自这两项。"
+
+  - id: BRK-L1
+    type: qualitative
+    claim: 管理层坦率、说到做到，没有悄然放弃公开过的经营承诺
+    origin: manual
+    severity: watch
+    covers: [management]
+    pillar: P4
+    question: 本期年报或致股东信对 ledger.yml 登记的两条经营承诺——BRK-M1（BNSF 在未来几年大幅改善营业利润率）与 BRK-M2（GEICO 在保持承保纪律的前提下恢复客户留存）——是否撤回、淡化或不再提及，且没有说明原因？“淡化”指不再给出同样可以核对的表述，例如去掉“大幅改善”“恢复留存”这类能落到数字上的说法、改用更笼统的措辞。
+    fail_if: 是
+    judge: independent_model
+    evidence: required
+    where: 年度致股东信（10-K 附件）与 10-K 的 MD&A
+    lookback: 2
+    judge_notes:
+      - 只判定题中列出的两条承诺，清单封闭；本期文件里的其他承诺或表态不在本题之内。
+      - 年会问答不是申报文件，不作判定依据。
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: 2025 年致股东信称 BNSF 与业内最优者的营业利润率差距仍然过大，若未来几年没有大幅改善会感到失望；同一封信承认 GEICO 的提价恢复了利润率，但以留存下降为代价，恢复留存需要时间
+      source: BRK-LTR-2025#p12
+      note: "GEICO 的表述见 [src:BRK-LTR-2025#p10]；BNSF 2025 年营业利润率 34.5%，2024 年为 32.0% [src:BRK-LTR-2025#p12]。两条承诺都已登记进 ledger.yml（BRK-M1、BRK-M2），由账本按期结算。"
+    note: "替代模板 stalwart 的 L-guidance：伯克希尔不给业绩指引、不开季度电话会 [src:BRK-RPT1-2026-09-18#p3]，没有中期财务目标可以下调；等价的检验是公开说过的经营承诺有没有“悄然消失”（言行账本的第四档）。问题只列账本里登记的两条；新增承诺先登记进 ledger.yml，再改本题。报告把现任 CEO 在年会上主动把 GEICO 保单数 +2% 与对手 +11% 并列、把 BNSF 的利润率排在六家一级铁路第五，看作成本最高、最难伪装的坦率信号 [src:BRK-RPT1-2026-09-18#p8]；年会问答不是申报文件，只作背景。"
+
+  # ---------- 报告第十节：论点破坏信号（任何一条成立，本报告的论点作废） ----------
+  - id: BRK-Q5
+    type: quantitative
+    claim: GEICO 的低成本直销护城河还在：保单数没有持续萎缩，同时承保没有亏损
+    origin: report:breaker
+    severity: breaker
+    covers: [moat, pricing_power, competition]
+    pillar: P2
+    metric_def:
+      id: geico_policies_in_force_yoy
+      description: GEICO 自愿车险有效保单数（voluntary auto policies-in-force）同比变化；季度读数取季末对上年同季末，年度读数取年末对上年末
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: 10-Q／10-K 的 MD&A 中 GEICO 一节（有效保单数及其同比变化）
+      formula: policies_in_force_t / policies_in_force_{t-4q} - 1
+    params: {segment: GEICO}
+    fail_if: GEICO 保单数连续两年负增长，且综合成本率高于 100%
+    rule:
+      all_of:
+        - {metric: geico_policies_in_force_yoy, op: "<", threshold: 0, unit: "%", consecutive: 2, period: year}
+        - {metric: combined_ratio, op: ">", threshold: 100, unit: "%", consecutive: 1, period: year}
+      note: 两项在同一个年度判定；保单数取连续两个年度的年末同比，综合成本率取第二个年度 GEICO 的全年读数（params.segment）。
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: 2
+      unit: "%"
+      period: 2026Q1
+      as_of: 2026-03-31
+      source: BRK-RPT1-2026-09-18#p14
+      note: "这是 2026 年一季度的季度同比读数 [src:BRK-RPT1-2026-09-18#p14]；本条按年末同比判定，口径不同，年度读数待回填（见 todo）。二季度 GEICO 综合成本率 91.2% [src:BRK-RPT1-2026-09-18#p14]；上半年 89.3%，上年同期 81.7% [src:BRK-RPT1-2026-09-18#p6]。"
+    note: "报告第十节破坏信号 #1。条件一旦成立，低成本护城河已失，正常化承保利润要下调到 30 亿美元以下，按报告算式四每年税后少约 37 亿美元、占经营利润的 8%–9% [src:BRK-RPT1-2026-09-18#p14]。报告没有给出 2025 年全年的保单数同比：若它为负，最早在 FY2026 年报就可能失败，否则最早是 FY2027 年报；待回填（见 todo）。"
+
+  - id: BRK-Q6
+    type: quantitative
+    claim: 浮存金仍是负成本：集团财险承保整体不亏钱
+    origin: report:breaker
+    severity: breaker
+    covers: [moat, pricing_power, returns_on_capital]
+    pillar: P1
+    metric: combined_ratio
+    params: {segment: 集团全部财产与意外险业务合计（不含追溯再保险）}
+    fail_if: 合并综合成本率（不含追溯再保）连续两年高于 100%
+    rule: {op: ">", threshold: 100, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: 87.1
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: BRK-RPT1-2026-09-18#p14
+      note: "五年均值 90.7% [src:BRK-RPT1-2026-09-18#p5]；公司在 2025 年致股东信里直接给出这一口径，十年与二十年均值分别为 93.0% 与 92.2% [src:BRK-LTR-2025#p9]。"
+    note: "报告第十节破坏信号 #2。条件一旦成立，浮存金由负成本转正，第二节“这个决策在什么条件下成立”的前提不成立 [src:BRK-RPT1-2026-09-18#p14]。读数优先取股东信给出的公司口径；股东信没有给出时，按 10-K 保险分部表中各财险业务的已赚保费加权计算，并剔除追溯再保险。"
+
+  - id: BRK-Q7
+    type: quantitative
+    claim: 现金是期权而不是拖累：现金与国库券没有长期堆积而不被投出
+    origin: report:breaker
+    severity: breaker
+    covers: [capital_allocation, free_cash_flow]
+    pillar: P3
+    metric_def:
+      id: cash_drag
+      description: 现金与国库券是否在年末堆积而不被投出，由两个组成在同一个年末判定：年末余额是否高于私有估值文件登记的破坏线，以及两年合计投出占同期经营现金流的比例
+      unit: "%"
+      frequency: year
+      data: mixed
+      formula: "above_private_line = (cash_and_equivalents + us_treasury_bills)_year_end > private_line_year_end; capital_deployed_to_operating_cash_flow_2y = sum_2y(acquisitions_net_of_cash_acquired + equity_purchases - equity_sales) / sum_2y(operating_cash_flow)"
+      components:
+        above_private_line:
+          description: 年末现金、现金等价物与美国国库券之和高于私有估值文件（valuation.yml）登记的破坏线；这条线以年末价格为输入，门槛与读数按 §H4 只记在私有仓库，公开侧只记是否高于
+          unit: event
+          where: 余额取 10-K 资产负债表及附注中的现金、现金等价物与美国国库券；是否高于破坏线由私有侧判定。公开流水线不抓取股价，私有仓库也只存一个用于价值区间提醒的参考价，没有年末价格，所以这一支目前没有数据来源。私有侧可以用一条由申报文件算出的价格线（现金与国库券 ÷ A 股等价股数 ÷ 私有文件登记的比例门槛），只记录年末价格是否低于这条线；是否这样做、是否需要放宽硬规则 2 允许的用途，待总部决定（见 todo）
+        capital_deployed_to_operating_cash_flow_2y:
+          description: 两年合计投出的资本 ÷ 同期合计经营活动现金流；投出 = 收购业务支付的现金（扣除取得的现金）+ 股票净买入（买入减卖出），不含回购与资本开支
+          unit: "%"
+          where: 10-K 合并现金流量表（收购、股票买入与卖出、经营活动现金流）
+    fail_if: 现金与国库券连续两个年末高于私有估值文件登记的破坏线，且两年合计投出低于同期经营现金流的一半
+    rule:
+      all_of:
+        - {metric: cash_drag.above_private_line, op: event, threshold: 年末现金与国库券高于私有估值文件登记的破坏线, consecutive: 2, period: year}
+        - {metric: cash_drag.capital_deployed_to_operating_cash_flow_2y, op: "<", threshold: 50, unit: "%", consecutive: 1, period: year}
+      note: 两项在同一个年末判定；第二项的两年窗口就是第一项的那两个年度。
+    data: mixed
+    effective_from: FY2026Q3
+    first_readable: 2027-02
+    baseline:
+      value: null
+      unit: "%"
+      as_of: 2026-06-30
+      source: BRK-RPT1-2026-09-18#p3
+      note: "占市值的读数由价格推出，只记在私有仓库（硬规则 4）。分子一侧：2026-06-30 现金与国库券 3,647 亿美元 [src:BRK-RPT1-2026-09-18#p3]；二季度净买入股票 198 亿美元 [src:BRK-RPT1-2026-09-18#p3]，结束了连续十四个季度的净卖出 [src:BRK-RPT1-2026-09-18#p8]。"
+    note: "报告第十节破坏信号 #3。条件一旦成立，“现金是期权”变成“现金是拖累” [src:BRK-RPT1-2026-09-18#p14]。报告原文的第一支以年末市值为分母，门槛与当前读数都以价格为输入，按 §H4 只记在私有估值文件，这里只写“高于私有估值文件登记的破坏线”。报告没有给出不含价格而意思不变的写法：折成美元金额或占总资产的比例，都要先取定某一天的市值，那条线从此不再随市值变动，意思就变了；不含价格的占总资产读数本来由 BRK-Q14 跟踪。报告没有定义“投出”的口径；本档案按第十节前瞻指标 #4 “回购是资本返还，不是资产配置”的区分把回购排除在外，资本开支也不计入，因为本条问的是总部怎样配置新增的现金。第一支需要一个年末价格，在总部定下做法之前记为无法判定（见 todo）；这期间，不含价格的读数由 BRK-Q14（现金与国库券占总资产）与 BRK-Q13（拆出回购后的余额变化）给出。"
+
+  - id: BRK-Q8
+    type: quantitative
+    claim: 回购纪律不变：只在价格低于保守估计的内在价值时回购，季末价格跌到私有估值文件登记的破坏线以下时也不会长期按兵不动 [src:BRK-RPT1-2026-09-18#p14]
+    origin: report:breaker
+    severity: breaker
+    covers: [capital_allocation, management]
+    pillar: P4
+    metric_def:
+      id: buyback_avg_price_to_book
+      description: 当季各月回购均价中的最高值 ÷ 上一个季末的每 A 股账面价值（B 股按 A 股等价折算）；当季没有回购时不计算
+      unit: x
+      frequency: quarter
+      data: mixed
+      where: 10-Q／10-K 第二部分第 2 项的发行人回购表（各月回购股数与均价），以及上一期资产负债表的股东权益与 A 股等价股数
+      formula: max_month(avg_repurchase_price_per_A_equivalent_share) / book_value_per_A_share_prior_quarter_end
+      components:
+        below_private_line:
+          description: 季末价格低于私有估值文件（valuation.yml）登记的破坏线；这条线由季末价格与每 A 股账面比较得出，门槛与读数按 §H4 只记在私有仓库，公开侧只记是否低于
+          unit: event
+          where: 每 A 股账面取 10-Q 的股东权益与 A 股等价股数；是否低于破坏线由私有侧判定。季末价格同样没有数据来源（理由见 BRK-Q7）。私有侧可以用一条由申报文件算出的价格线（季末每 A 股账面 × 私有文件登记的倍数门槛），只记录季末价格是否低于这条线；是否这样做，待总部决定（见 todo）
+    fail_if: 在高于 1.8 倍账面回购；或季末价格低于私有估值文件登记的破坏线时连续四个季度零回购
+    rule:
+      any_of:
+        - {metric: buyback_avg_price_to_book, op: ">", threshold: 1.8, unit: x, consecutive: 1, period: quarter}
+        - all_of:
+            - {metric: buyback_avg_price_to_book.below_private_line, op: event, threshold: 季末价格低于私有估值文件登记的破坏线}
+            - {metric: buyback_amount, op: "==", threshold: 0, unit: USD}
+          consecutive: 4
+          period: quarter
+          note: 两项须在同一季度同时成立，并且连续四个季度。
+    data: mixed
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 1.40
+      unit: x
+      period: 1H26（报告口径）
+      as_of: 2026-06-30
+      source: BRK-RPT1-2026-09-18#p14
+      note: "这是报告的读数，不是本指标口径的读数：报告用上半年回购均价约 486 美元除以 2026-06-30 的每 B 股账面 348 美元 [src:BRK-RPT1-2026-09-18#p14]，本指标用当季单月均价的最高值除以上一个季末的账面。本指标 2026Q1、2026Q2 的读数待从两份 10-Q 的回购表与上一季末账面回填（见 todo）。2026 年上半年回购 47.6 亿美元 [src:BRK-RPT1-2026-09-18#p8]；此前 2024 年 5 月到 2026 年 3 月没有回购 [src:BRK-RPT1-2026-09-18#p8]。"
+    note: "报告第十节破坏信号 #4。条件一旦成立，回购纪律已变，“管理层的回购价是内在价值下限”这条锚失效 [src:BRK-RPT1-2026-09-18#p14]。第一支用公司自己披露的回购均价除以账面，回购均价是公司的事实（§H2 第 3 项），所以照常公开，可以直接从 10-Q 的回购表读出。第二支在报告原文里以季末价格对账面的倍数为条件，门槛与当前读数都以价格为输入，按 §H4 只记在私有估值文件，这里只写“低于私有估值文件登记的破坏线”，门槛没有改动。第二支需要季末价格：公开流水线不抓取股价（硬规则 2），私有仓库也没有季末价格，在总部定下做法之前记为无法判定（见 todo）。"
+
+  - id: BRK-L2
+    type: qualitative
+    claim: 受监管子公司与集团其余部分隔离：伯克希尔母公司及其 BHE 体系以外的子公司不为 PacifiCorp 担保或出钱
+    origin: report:breaker
+    severity: breaker
+    covers: [balance_sheet, regulation, capital_allocation]
+    pillar: P5
+    question: 本期文件是否披露：伯克希尔哈撒韦母公司（Berkshire Hathaway Inc.），或它在 BHE 体系以外的任何子公司（包括保险子公司与融资子公司 BHFC），为 PacifiCorp 的借款或野火赔偿提供担保，或以注资、放款、认购其新发行的债务或股权的方式向 PacifiCorp 出钱（包括先注入 BHE、再由 BHE 转投给 PacifiCorp 的资金）？
+    fail_if: 是
+    judge: independent_model
+    evidence: required
+    where: 伯克希尔 10-Q／10-K 的债务、担保与承诺附注和关联方附注，以及 8-K；BHE 与 PacifiCorp 的 10-Q／10-K
+    lookback: 1
+    judge_notes:
+      - 只看新发生的、以 PacifiCorp 为对象的担保或出钱；此前已有的担保与放款不计入，包括母公司对融资子公司 BHFC 借款的担保、对其他子公司债务的担保，以及保险子公司对 Pilot 的放款。
+      - BHE 用自己的留存利润投资 PacifiCorp 不计入。
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 未发生。现有安排是母公司对全资融资子公司 BHFC 的借款提供完全、无条件担保，另担保约 17 亿美元其他子公司债务；2024 年 3 月由保险子公司借给 Pilot 57 亿美元用于偿还第三方借款；没有做过的是为受监管子公司出钱
+      source: BRK-RPT1-2026-09-18#p8
+    note: "报告第十节破坏信号 #5。条件一旦成立，“不担保受监管子公司借款”这条惯例被打破，所有受监管子公司的融资成本与总部的谈判地位都要重新定价 [src:BRK-RPT1-2026-09-18#p14]。第十节的原文只写“母公司为 PacifiCorp 提供担保或注资” [src:BRK-RPT1-2026-09-18#p14]；放款、认购债务或股权、经 BHE 转投，以及由母公司以外的非 BHE 子公司出钱，是本档案依第 8 页“没做过的是为受监管子公司出钱”所作的扩展：报告在同一页把保险子公司借给 Pilot 的 57 亿美元也列为伯克希尔做过的事，出钱的主体应按集团理解，而不只是母公司法人 [src:BRK-RPT1-2026-09-18#p8]。"
+
+  - id: BRK-L3
+    type: qualitative
+    claim: 报告所说“六十年未破”的另两条股东约束仍然成立：以股换股时发出的内在价值不多于换回的，总部不给子公司下达业绩目标
+    origin: report:breaker
+    severity: breaker
+    covers: [capital_allocation, governance, culture, management]
+    pillar: P4
+    question: 本期文件是否披露以下任一情况：（b）伯克希尔以发行自己的股票支付收购或投资的对价，并且满足下列任一条件——发行的股份超过发行前 A 股等价流通股数的 1%，同时每 A 股等价的发行价格不高于此前四个季度的回购均价（此前四个季度没有回购时，改用上一季末每 A 股账面的 1.2 倍）；或者文件、管理层的说明承认所发股份的内在价值多于换回的价值；（c）伯克希尔总部开始向子公司下达业绩目标（盈利、增长或其他财务指标）？
+    fail_if: 是（两项任一成立）
+    judge: independent_model
+    evidence: required
+    where: 8-K、10-Q／10-K（股东权益变动表、企业合并附注、第二部分第 2 项的回购表）、委托书、年度致股东信
+    lookback: 5
+    judge_notes:
+      - （c）只看总部是否向子公司下达目标；预算不算目标，总部新设管理层级或职位本身也不算。
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 未发生。报告称 2021–2025 年期间没有新发行股票；2025 年致股东信称总部不给 51 家非保险经营业务分配目标或指标
+      source: BRK-RPT1-2026-09-18#p14
+      note: "第十节的当前读数为“未发生” [src:BRK-RPT1-2026-09-18#p14]；没有新发行股票的说法见 [src:BRK-RPT1-2026-09-18#p9]，与 2024 年致股东信所记以 B 股支付 BHE 少数股权的表述待核对（见 todo）；不分配目标的表述见 [src:BRK-LTR-2025#p11]。"
+    note: "报告第十节破坏信号 #6 的后两项；第一项（开始派发现金股息）拆出来由定量测试 BRK-Q15 判定，因为候选公司只跑定量测试，而股息可以直接从申报文件读出。条件一旦成立，报告所说“五条六十年未破的约束”被打破，第六节“优秀生意 × 优秀管理层”的落位失效 [src:BRK-RPT1-2026-09-18#p14]。“六十年未破”是报告的说法：就股息一条而言，现任管理层 1965 年取得控制之后在 1967-01-03 派过唯一一次现金股息，此后没有再派 [src:BRK-LTR-2024#p6]，准确地说是 1967 年以来未破。（b）的真实形态是“发出去的内在价值不能多于换回来的”，不是“不发股”：历史上 1998 年收购通用再保险稀释约 22%，2010 年收购 BNSF 发行约 106 亿美元新股 [src:BRK-RPT1-2026-09-18#p9]。“明显多于”事前无法观测，所以本档案事先写下可观测的触发条件：发行规模超过百分之一的流通股，且发行价不高于公司自己近期的回购均价，因为管理层以回购表明那个价格低于保守估计的内在价值 [src:BRK-RPT1-2026-09-18#p8]；没有回购可比时，改用上一季末每 A 股账面的 1.2 倍 [src:BRK-RPT1-2026-09-18#p14]。发行规模与价格线都是本档案的判定标准，不是报告原文。（c）不把预算和总部设层算作下达目标，依据是报告第 9 页把“不设预算”与“不下达目标”分开写 [src:BRK-RPT1-2026-09-18#p9]；2025 年 12 月总部新设消费品／服务／零售业务总裁与首位总法律顾问，报告认为方向偏向把权力收回总部 [src:BRK-RPT1-2026-09-18#p8]。"
+
+  - id: BRK-Q15
+    type: quantitative
+    claim: 不派现金股息的约束仍然成立：利润全部留存，由总部配置
+    origin: report:breaker
+    severity: breaker
+    covers: [capital_allocation, governance]
+    pillar: P4
+    metric_def:
+      id: common_cash_dividends_declared_or_paid
+      description: 本期宣布或支付的普通股现金股息金额（同一笔只计一次）；现金流量表、股东权益变动表与 8-K 都没有股息记录时记为 0
+      unit: USD
+      frequency: quarter
+      data: filing_text
+      where: 10-Q／10-K 的合并现金流量表（融资活动）与股东权益变动表；8-K 的股息公告
+      formula: "max(dividends_declared_t, dividends_paid_t); 0 if none recorded"
+    fail_if: 宣布或派发任何普通股现金股息
+    rule: {op: ">", threshold: 0, unit: USD, consecutive: 1, period: quarter}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 0
+      unit: USD
+      period: 1H26
+      as_of: 2026-06-30
+      source: BRK-RPT1-2026-09-18#p14
+      note: "第十节的当前读数为“未发生” [src:BRK-RPT1-2026-09-18#p14]。1965–2024 年股东只收到过一次现金股息：1967-01-03 每 A 股 10 美分，合计 101,755 美元 [src:BRK-LTR-2024#p6]；2025 年致股东信重申，只要每一美元留存收益大概率创造一美元以上的市值就不派股息，董事会每年复核这一政策 [src:BRK-LTR-2025#p7]。"
+    note: "报告第十节破坏信号 #6 的第一项（开始派发现金股息）[src:BRK-RPT1-2026-09-18#p14]，从定性测试 BRK-L3 中拆出：候选公司只跑定量测试（DESIGN.md 的成本规则），而股息是否宣布或派发可以直接从申报文件读出。用 filing_text 而不用 XBRL，是因为伯克希尔不派股息，XBRL 里取不到股息概念时不能当作零。条件一旦成立，第六节“优秀生意 × 优秀管理层”的落位失效 [src:BRK-RPT1-2026-09-18#p14]；对应的政策表态登记在 ledger.yml 的 BRK-M4。"
+
+  - id: BRK-Q9
+    type: quantitative
+    claim: 现任 CEO 的大额配置没有被证伪：他任内的大额收购或股票投资没有在完成后几年内大幅减值
+    origin: report:breaker
+    severity: breaker
+    covers: [capital_allocation, returns_on_capital, management]
+    pillar: P3
+    metric_def:
+      id: large_deal_impairment_3y
+      description: 现任 CEO 任内（params.tenure_start 起签约或开始买入）单笔超过 params.min_deal_size_usd 的收购或股票投资，在达到该规模后 params.window_years 年内的累计损失占初始成本的比例，取其中最大者。收购与权益法投资看已计提的商誉、无形资产或投资减值；按公允价值计量的股票投资在会计上不单独计提减值，只计已实现的亏损，或连续两个年末都存在的、相对成本的未实现亏损（取两个年末中较小的那一个）；对同一发行人的股票，按任内累计买入成本判断是否达到单笔规模。没有符合条件的交易时不计算
+      unit: "%"
+      frequency: event
+      data: filing_text
+      where: 8-K 与 10-Q／10-K 的企业合并附注（对价）、商誉与无形资产减值附注、权益法投资附注、股票投资附注，以及年度致股东信的持仓表（按发行人列示的成本与市值）
+      formula: max_over_qualifying_deals(cumulative_loss_within_window / initial_cost)
+    params: {min_deal_size_usd: 30000000000, window_years: 3, tenure_start: "2026-01-01"}
+    fail_if: 单笔超过 300 亿的收购或股票投资在三年内计提超过 30% 的减值
+    rule: {op: ">", threshold: 30, unit: "%", consecutive: 1, period: event}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 无符合条件的交易
+      source: BRK-RPT1-2026-09-18#p15
+      note: "2026 年的几笔大额配置都在门槛以下：97 亿美元的化工收购与约 68 亿美元的 Taylor Morrison 收购 [src:BRK-RPT1-2026-09-18#p3]，以及 Alphabet 定向增发的 100 亿美元 [src:BRK-RPT1-2026-09-18#p6]。"
+    note: "报告第十节破坏信号 #7。条件一旦成立，现任 CEO 作为配置者的评级从“待证明”变为“已证伪” [src:BRK-RPT1-2026-09-18#p15]。下面三点是本档案的操作化，不是报告原文：（1）破坏信号说的是现任 CEO，所以只看他任内的交易，任期从 2026-01-01 起 [src:BRK-RPT1-2026-09-18#p8]；（2）股票常常分几个季度买入，对同一发行人按任内累计买入成本判断是否达到单笔规模；（3）按公允价值计量的股票投资在会计上不计提减值，只计已实现的亏损，或连续两个年末都还在的未实现亏损，免得一次市场下跌就触发破坏信号。收购、商誉、无形资产与权益法投资按报告原文看计提的减值。"
+
+  # ---------- 报告第十节：每季度看的前瞻指标（顺序是结论：先看执行，再看配置的价格纪律，最后才看现金占比） ----------
+  - id: BRK-Q10
+    type: quantitative
+    claim: GEICO 的恢复是真的：保单数回到中个位数增长，同时综合成本率不恶化
+    origin: report:watch
+    severity: watch
+    covers: [moat, pricing_power, competition]
+    pillar: P2
+    metric_def:
+      id: geico_policies_in_force_yoy
+      description: GEICO 自愿车险有效保单数（voluntary auto policies-in-force）同比变化；季度读数取季末对上年同季末，年度读数取年末对上年末
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: 10-Q／10-K 的 MD&A 中 GEICO 一节（有效保单数及其同比变化）
+      formula: policies_in_force_t / policies_in_force_{t-4q} - 1
+    params: {segment: GEICO}
+    fail_if: 保单数同比低于 4%（没有回到中个位数），或当季综合成本率比上年同季恶化
+    rule:
+      any_of:
+        - {metric: geico_policies_in_force_yoy, op: "<", threshold: 4, unit: "%", consecutive: 1, period: quarter}
+        - {metric: combined_ratio, op: increase, threshold: 0, unit: pp, consecutive: 1, period: quarter}
+      note: 综合成本率取 GEICO 当季读数（params.segment），与上年同季比较。
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 91.2
+      unit: "%"
+      period: 2026Q2
+      as_of: 2026-06-30
+      source: BRK-RPT1-2026-09-18#p15
+      note: "这是综合成本率一支的读数，上年同季 83.5% [src:BRK-RPT1-2026-09-18#p15]。保单数同比 +2%、同期 Progressive +11% 是 2026 年一季度的读数 [src:BRK-RPT1-2026-09-18#p6]，第十节表格把它印在二季度那一格里、没有标期间 [src:BRK-RPT1-2026-09-18#p15]；报告没有给二季度的保单数同比，待从 2026Q2 10-Q 回填（见 todo）。"
+    note: "报告第十节前瞻指标 #1：必须同时满足保单数回到中个位数且成本率不恶化，只有前者说明增长是用价格买回来的 [src:BRK-RPT1-2026-09-18#p15]。报告没有给“中个位数”的数值，fail_if 里的判定线取中个位数区间的下沿，是本档案事先写下的操作化。按各自最新的读数（保单数是一季度、综合成本率是二季度），两支都不满足，本条建档时即处于失败（watch 级，即警告）状态，与报告对这条护城河“变弱”的判断一致 [src:BRK-RPT1-2026-09-18#p6]。第五节给了分辨两种走法的办法：保单数先回升、成本率随后回落，说明问题出在人和流程；保单数不动而成本率继续上升，说明问题在定价技术 [src:BRK-RPT1-2026-09-18#p9]。"
+
+  - id: BRK-Q11
+    type: quantitative
+    claim: 新配置守住价格纪律：大额新收购的初始税前收益率不低于报告第九节检验事件所用的水平
+    origin: report:watch
+    severity: watch
+    covers: [capital_allocation, returns_on_capital]
+    pillar: P3
+    metric_def:
+      id: new_acquisition_initial_pretax_yield
+      description: 本期完成的收购（全资或控股）中，单笔对价（含承接的债务）不低于 params.min_deal_size_usd 的每一笔的初始税前收益率 = 被收购业务收购前最近一个完整年度的税前利润 ÷ 收购对价（含承接的债务），取其中最低者；被收购方收购前的税前利润没有公开时，该笔记为无法判定；本期没有达到规模的收购时不计算
+      unit: "%"
+      frequency: event
+      data: filing_text
+      where: 伯克希尔 8-K 与 10-Q／10-K 的企业合并附注（对价与承接债务）；被收购方或卖方的年报与分部附注（税前利润）
+      formula: min_over_qualifying_deals(target_pretax_income_last_full_year / (purchase_consideration + assumed_debt))
+    params: {min_deal_size_usd: 5000000000}
+    fail_if: 本期完成的、达到规模的新收购，初始税前收益率低于 9%
+    rule: {op: "<", threshold: 9, unit: "%", consecutive: 1, period: event}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: null
+      source: BRK-RPT1-2026-09-18#p15
+      note: "报告没有给出 2026 年化工与 Taylor Morrison 两笔收购的初始税前收益率；回购一侧的当前读数是回购均价约为账面的 1.40 倍 [src:BRK-RPT1-2026-09-18#p15]。"
+    note: "报告第十节前瞻指标 #2 只写了看回购发生在几倍账面、新收购的初始税前收益率是多少，没有给门槛。判定线取第九节的检验事件：报告把下一笔按 9% 以上税前回报落地的大额配置当作分辨两种读法的观察点 [src:BRK-RPT1-2026-09-18#p13]；这是本档案事先写下的判定标准，不是报告原文门槛。规模门槛同样是本档案的：报告说伯克希尔要单笔百亿级的机会才移动指针 [src:BRK-RPT1-2026-09-18#p6]，门槛取其一半，使 2026 年 97 亿美元的化工收购与股权价值约 68 亿美元的 Taylor Morrison 这一量级的交易都进入检验 [src:BRK-RPT1-2026-09-18#p3]，零星的小额补强收购不进入。回购倍数由 BRK-Q8 按破坏信号的门槛判定；大额股票买入还没有对应的价格纪律测试，见 todo。"
+
+  - id: BRK-Q12
+    type: quantitative
+    claim: 最大的一条利润线跟着利率走、没有久期配置问题：加息之后保险投资收益同比转正
+    origin: report:watch
+    severity: watch
+    covers: [balance_sheet, returns_on_capital]
+    pillar: P1
+    metric_def:
+      id: insurance_investment_income_yoy_when_rates_up
+      description: 保险投资收益（税后，公司分部口径）的同比增速 g_inc。只在联邦基金目标区间中点的季度平均值高于上年同季时取值，否则不计算；取值的季度里，若投资收益同比下滑、而现金与国库券的季度平均余额（季初与季末的平均）同比降得更多（g_bal < g_inc < 0），下滑可以由现金被投出解释，也不计算
+      unit: "%"
+      frequency: quarter
+      data: mixed
+      where: 10-Q／10-K 的 MD&A 分部税后利润表中 Insurance—investment income 一行；现金与国库券余额取资产负债表及附注；利率条件取 FOMC 声明公布的目标区间（不是申报文件）
+      formula: "g_inc = insurance_investment_income_t / insurance_investment_income_{t-4q} - 1; g_bal = avg_bal(cash_tbills)_t / avg_bal(cash_tbills)_{t-4q} - 1; value = g_inc if avg(fed_funds_target_mid)_t > avg(fed_funds_target_mid)_{t-4q} and not (g_bal < g_inc < 0), else not computed"
+      components:
+        insurance_investment_income:
+          description: 保险投资收益（税后，公司分部口径）
+          unit: USD
+          where: 10-Q／10-K 的 MD&A 分部税后利润表中 Insurance—investment income 一行
+        cash_tbills:
+          description: 现金、现金等价物与美国国库券的余额（季度平均取季初与季末的平均）
+          unit: USD
+          where: 10-Q／10-K 资产负债表及附注
+        fed_funds_target_mid:
+          description: 联邦基金目标区间的中点（取季度平均）
+          unit: "%"
+          where: FOMC 声明公布的目标区间（不是申报文件）
+    fail_if: 短端利率同比上行的季度里，保险投资收益同比仍然下滑，且下滑不能由现金与国库券余额的减少解释
+    rule: {op: "<", threshold: 0, unit: "%", consecutive: 1, period: quarter}
+    data: mixed
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: -10.3
+      unit: "%"
+      period: 2026Q1
+      as_of: 2026-03-31
+      source: BRK-RPT1-2026-09-18#p5
+      note: "这是报告的读数，不是本指标的读数：22.6 亿对 25.19 亿美元，是 2025 年三次降息的滞后效应 [src:BRK-RPT1-2026-09-18#p5]；该季短端利率低于上年同季，按本条定义不计算 [src:BRK-RPT1-2026-09-18#p5]。"
+    note: "报告第十节前瞻指标 #3：加息应当推动它转正，若仍下滑说明久期配置出了问题 [src:BRK-RPT1-2026-09-18#p15]。2026-09-16 FOMC 加息 25 个基点至 3.75%–4.00%，是 2023 年以来第一次 [src:BRK-RPT1-2026-09-18#p5]。报告没有给期数，这里在利率条件下按单季判定。现金被投出同样会压低投资收益，而那正是支柱 P3 希望看到的，所以指标定义把“投资收益下滑、而现金与国库券平均余额降得更多”的季度排除在外，只留下不能由余额减少解释的下滑。报告只写了 2025 年有三次降息、年末目标区间为 3.50%–3.75%，没有写日期 [src:BRK-RPT1-2026-09-18#p5]；除非这三次降息在 2025 年三季度初就已全部完成，2026 年三季度的季度平均目标区间都低于上年同季，2026-11 的读数将是“不计算”，最早可以计算的季度待以 FOMC 公告核对（见 todo）。"
+
+  - id: BRK-Q13
+    type: quantitative
+    claim: 现金没有重新堆积：拆出回购之后，现金与国库券没有回到上升
+    origin: report:watch
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P3
+    metric_def:
+      id: cash_tbills_change_ex_buybacks
+      description: 季末现金、现金等价物与美国国库券余额的环比变化，加回当季回购金额（即拆出回购后的变化；为正表示现金在重新堆积）
+      unit: USD
+      frequency: quarter
+      data: filing_text
+      where: 10-Q 资产负债表及附注（现金、现金等价物与美国国库券）；股东权益变动表或第二部分第 2 项（当季回购金额）
+      formula: (cash_tbills_t - cash_tbills_{t-1q}) + buybacks_t
+    fail_if: 拆出回购之后，现金与国库券连续两个季度上升
+    rule: {op: ">", threshold: 0, unit: USD, consecutive: 2, period: quarter}
+    warn_if: 拆出回购之后，最近一个季度现金与国库券没有下降
+    warn_rule: {op: ">=", threshold: 0, unit: USD, consecutive: 1, period: quarter}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: -11000000000
+      unit: USD
+      period: 2026Q2
+      as_of: 2026-06-30
+      source: BRK-RPT1-2026-09-18#p8
+      note: "约 −110 亿美元，本档案按报告读数计算：3 月末 3,802 亿降到 6 月末 3,647 亿美元 [src:BRK-RPT1-2026-09-18#p8]，加回二季度约 45 亿美元回购 [src:BRK-RPT1-2026-09-18#p15]；回购额是约数，所以本读数也是约数。负值表示拆出回购后仍在下降。"
+    note: "报告第十节前瞻指标 #4 看现金与国库券占市值的方向；占市值的读数以价格为输入，按 §H4 只记在私有估值文件。报告自己的算数口径看的是资产负债表上的余额：连续两个季度下降、且拆出回购金额后仍下降才算数，因为回购是资本返还，不是资产配置 [src:BRK-RPT1-2026-09-18#p15]。所以这里不读价格（硬规则 2），用拆出回购后的余额变化判断方向，意思与报告的算数口径一致：最近一个季度拆出回购后没有下降即警告，连续两个季度上升即失败；报告的好信号（连续两个季度下降）在复核时单独记录。年末的现金破坏线由 BRK-Q7 判定（门槛与读数在私有估值文件），不含价格的占总资产读数见 BRK-Q14。报告还提醒，未来某个十年里现金下降可能是在承接创始人遗产的卖压，而不是买了资产 [src:BRK-RPT1-2026-09-18#p15]。"
+
+  - id: BRK-L4
+    type: qualitative
+    claim: PacifiCorp 野火诉讼的法律路径没有逆转
+    origin: report:watch
+    severity: watch
+    covers: [regulation, balance_sheet]
+    pillar: P5
+    question: 本期 BHE 或 PacifiCorp 的文件是否显示以下任一情况：（a）俄勒冈最高法院恢复了 James 集体诉讼的原判（推翻上诉法院的改判）；（b）此前暂停的其余损害赔偿审判已经恢复；（c）已被豁免的上诉保证金要求被重新施加？
+    fail_if: 是（三项任一成立）
+    warn_if: 野火累计计提比上期增加，或州监管机构否决了 PacifiCorp 的费率申请
+    judge: independent_model
+    evidence: required
+    where: BHE 与 PacifiCorp 的 10-Q／10-K 或有事项附注；俄勒冈最高法院的判决；各州公用事业委员会的费率裁决
+    lookback: 2
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 2026 年 4 月俄勒冈上诉法院以陪审团指示有误为由推翻 James 集体诉讼判决、发回重审，并认定 PacifiCorp 为胜诉方；5 月其余损害赔偿审判暂停、已完成判决的上诉保证金被豁免；俄勒冈最高法院准予审查原告的上诉，口头辩论定在 11 月 3 日；截至 2026-06-30 累计计提 28.53 亿美元、已付 22.81 亿美元，上半年未增加
+      source: BRK-RPT1-2026-09-18#p7
+      note: "计提与已付的读数另见 [src:BRK-RPT1-2026-09-18#p15]；标普在 2025 年 11 月把 PacifiCorp 降到 BBB−，距非投资级只剩一级 [src:BRK-RPT1-2026-09-18#p7]。"
+    note: "报告第十节前瞻指标 #5：看集体判决是否被恢复、暂停的审判何时恢复、保证金要求是否重启。报告认为最坏情形取决于最高法院是否恢复原判，现在给不出金额 [src:BRK-RPT1-2026-09-18#p8]。warn_if 的两项来自报告正文：上半年计提没有增加，俄勒冈监管机构今年已否决过一次临时加价申请 [src:BRK-RPT1-2026-09-18#p6]。母公司是否出钱由破坏信号 BRK-L2 判定。"
+
+  # ---------- 本档案据报告第七、十二节补上的 watch 测试（报告没有把这两件事列进第十节的监测清单） ----------
+  - id: BRK-Q16
+    type: quantitative
+    claim: 下跌时现金会被换成他人的股权，而不是主要用于放贷和回购自己的股票
+    origin: manual
+    severity: watch
+    covers: [capital_allocation, management]
+    pillar: P3
+    metric_def:
+      id: downturn_equity_deployment_share
+      description: 以触发季度为中心的四个季度（触发前一季、触发季度与其后两季）里，投向他人股权的资本占全部资本去向的比例。投向他人股权 = 股票净买入（为负时记 0）+ 收购付现；全部资本去向 = 投向他人股权 + 新增贷款、附认股权证或固定股息的优先股等类债投资 + 回购。触发季度：10-Q 显示股票组合当季的投资损失不低于季初公允价值的 params.trigger_loss_pct。没有触发季度，或分母为零时不计算
+      unit: "%"
+      frequency: event
+      data: filing_text
+      where: 10-Q／10-K 的投资损益附注与股票投资附注（当季损失与季初公允价值）；合并现金流量表（收购、股票买入与卖出、贷款与固定收益投资）；第二部分第 2 项的回购表
+      formula: "(max(0, equity_purchases - equity_sales) + acquisitions_cash) / (max(0, equity_purchases - equity_sales) + acquisitions_cash + new_loans_and_preferreds + buybacks), summed over quarters t-1 .. t+2 around the trigger quarter t"
+    params: {trigger_loss_pct: 15, window_quarters: [-1, 2]}
+    fail_if: 触发后的四个季度里，投向他人股权的资本不到全部资本去向的一半
+    rule: {op: "<", threshold: 50, unit: "%", consecutive: 1, period: event}
+    data: filing_text
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 最近一次下跌（2020 年）：全年对他人股权净卖出，主要的资金用途是回购自己的股票
+      source: BRK-RPT1-2026-09-18#p16
+      note: "报告列出的四次下跌里只有 2022 年一季度是“在下跌中把现金大规模换成他人股权”的干净样本：当季买入股票 511 亿美元、净买入 414 亿美元，另加 116 亿美元的收购承诺 [src:BRK-RPT1-2026-09-18#p10]；2008 年以放贷为主，2011 年三季度约 200 亿美元里含一笔收购交割与一笔银行优先股 [src:BRK-RPT1-2026-09-18#p16]。"
+    note: "报告第十二节“最可能错在哪”的第一条：如果下一次没有政策托底的系统性下跌里它仍以放贷和回购为主，把这笔现金当作期权的理由就不再成立 [src:BRK-RPT1-2026-09-18#p16]。报告没有把它列进第十节的监测清单，本条是本档案补上的可执行版本。触发线取第九节敏感度表里股票投资（10-Q 资产负债表的 Investments in equity securities，按公允价值计量）−15% 的情景 [src:BRK-RPT1-2026-09-18#p12]；窗口从触发前一季算起，因为报告说它往往在下跌的早中段而不是底部出手 [src:BRK-RPT1-2026-09-18#p10]；“一半”的判定线也是本档案事先写下的标准。触发线看的是伯克希尔自己股票组合的损失，不读任何股价。“没有政策托底”与“系统性”无法从伯克希尔的申报文件读出，失败时由复核在结论里说明当期有没有政策托底，报告认为 2020 年那次是被政策抢先的测试 [src:BRK-RPT1-2026-09-18#p10]。"
+
+  - id: BRK-L5
+    type: qualitative
+    claim: 巨灾与超大单笔风险的定价判断没有随一个人的离开而断档
+    origin: manual
+    severity: watch
+    covers: [management, governance]
+    pillar: P1
+    question: 本期 8-K（第 5.02 项）、委托书或致股东信是否披露保险业务副董事长（2025 年致股东信里的 Ajit）已经或即将离任，而没有同时说明由谁接手巨灾与超大单笔风险的定价？
+    fail_if: 是
+    warn_if: 披露了离任，同时公布了接任安排
+    judge: independent_model
+    evidence: required
+    where: 8-K 第 5.02 项、年度委托书、年度致股东信
+    lookback: 1
+    judge_notes:
+      - 离任一经披露即可判定，不必等接班安排另行公布。
+    effective_from: FY2026Q3
+    first_readable: 2026-11
+    baseline:
+      value: 未发生。2026 年年会上被问到他与 CEO 各自的接班安排时，回答是董事会“有方案并在讨论”，没有披露内容
+      source: BRK-RPT1-2026-09-18#p10
+      note: "他现年 75 岁、1986 年加入，在这个位置上积累了近四十年的定价记录 [src:BRK-RPT1-2026-09-18#p10]；2025 年致股东信把保险业务定价与管理风险的标准归功于他 [src:BRK-LTR-2025#p7]。"
+    note: "报告第七节反方论点第三条：保险定价的核心是一位七十五岁的副董事长，没有对冲，只能在每年的委托书与年会上等一个名字 [src:BRK-RPT1-2026-09-18#p10] [src:BRK-RPT1-2026-09-18#p11]。报告测算，若他离任后正常化承保从 50 亿美元退到 30 亿美元，每年税后少约 20 亿美元，约为 2025 年经营利润的 4.5% [src:BRK-RPT1-2026-09-18#p10]；报告认为它不推翻结论，所以本条是 watch 而不是破坏信号。离任由 8-K 第 5.02 项披露，是可以直接判定的事件。候选公司不跑定性测试，本条在伯克希尔成为持仓之前不会被判定（见 todo）。"
+
+  # ---------- _common：时效测试 ----------
+  - id: BRK-S1
+    type: staleness
+    claim: 护城河判断不超过四个季度未复核
+    origin: template:stalwart
+    severity: watch
+    covers: [moat]
+    pillar: P2
+    section: moat
+    max_age_quarters: 4
+    effective_from: FY2026Q3
+
+  - id: BRK-S2
+    type: staleness
+    claim: 管理层判断不超过四个季度未复核
+    origin: template:stalwart
+    severity: watch
+    covers: [management]
+    pillar: P4
+    section: management
+    max_age_quarters: 4
+    effective_from: FY2026Q3
+    note: "报告第六节的“优秀管理层（有条件）”是上一任挣来的，现任属于他一个人的第一批证据最早要到 2028 年前后才看得到 [src:BRK-RPT1-2026-09-18#p9]；那之前每次复核都要重读第五、六节。"
+
+  - id: BRK-S3
+    type: staleness
+    claim: “最可能错在哪”每两个季度重新审视
+    origin: template:stalwart
+    severity: watch
+    covers: [other]
+    pillar: P3
+    section: bear_case
+    max_age_quarters: 2
+    effective_from: FY2026Q3
+    note: "报告第十二节认为最薄的一处是“下跌时它会不会把现金变成股权”，四次下跌里只有一次是干净样本 [src:BRK-RPT1-2026-09-18#p16]，下一次下跌时由 BRK-Q16 判定；其次是估值输入里的一项判断（在私有仓库）；再次是一线读数只是 2026-09-18 的当期快照，不是时间序列 [src:BRK-RPT1-2026-09-18#p16]。"
+
+todo:
+  - 一手申报文件（BRK-10Q-FY2026Q2、BRK-10Q-FY2026Q1、BRK-10K-FY2025、BRK-DEF14A-2026-03-13 与 BHE-10Q-FY2026Q2、BHE-10Q-FY2026Q1、BHE-10K-FY2025）的登记号、filing date 与 BHE 的 CIK 已按 EDGAR 回填进 sources.yml。EDGAR 显示伯克希尔以 8-K 第 2.02 项报送季度业绩，10-Q／10-K 先入库、8-K 随后；filer.earnings_form 由流水线填写（§G8）。下一步把破坏信号的基线（BRK-Q5、BRK-Q6、BRK-Q8、BRK-Q15、BRK-L2、BRK-L4）改指一手文件。
+  - 报告页脚只印“2026 年 9 月”，没有具体日期；reviewed 与来源日期取封面写明的读取截止日 2026-09-18。这是本档案的取法，待总部在决策记录里确认；它不是资金或修宪事项，不需要问主人。
+  - 定性测试的独立判定只对持仓运行；伯克希尔已归档，档案随年报每年刷新一次（docs/decisions/0008），所以定性测试 BRK-L1 到 BRK-L5 都不会被判定，其中包括两条破坏信号 BRK-L2（PacifiCorp）与 BRK-L3（以股换股、总部目标）。能直接读数的股息一项已拆成定量破坏信号 BRK-Q15。请总部决定是否对归档的伯克希尔也运行 BRK-L2、BRK-L3（每份 10-Q 或 8-K 一道是非题，成本很小），或者接受并在决策记录里写明这个缺口。
+  - BRK-Q7 的第一支（年末现金破坏线）与 BRK-Q8 的第二支（季末价格对账面的破坏线）都需要一个期末价格，两条线的门槛与读数都按 §H4 只记在私有估值文件；而硬规则 2 规定价格只用于跨越价值区间时的提醒，私有仓库也只存一个参考价；原先设想的“由私有侧读期末价格、公开侧只记结果”本身就超出硬规则 2。可选的做法：把两个条件改写成由申报文件算出的价格线（BRK-Q7 为现金与国库券 ÷ A 股等价股数 ÷ 私有估值文件登记的比例门槛，BRK-Q8 为季末每 A 股账面 × 私有估值文件登记的倍数门槛），由私有侧的区间提醒只记录期末价格是否低于这两条线，公开侧只读“是否低于”的状态。这等于扩大硬规则 2 允许的用途，需要总部写决策记录；若总部认为这条规则由主人设定，还要主人确认。定下之前两支记为无法判定，不含价格的读数由 BRK-Q13、BRK-Q14 提供。
+  - BRK-Q7 的“投出”报告没有定义口径；本档案按收购付现加股票净买入计，不含回购与资本开支，下次更新时复核。
+  - BRK-Q5 需要 2025 年全年 GEICO 有效保单数的同比，报告没有给出，待从 FY2025 年报回填，以确定“连续两年”从哪一年起算。
+  - BRK-Q10 的“中个位数”报告没有给数值，fail_if 按中个位数区间的下沿操作化，下次更新时复核；报告没有给 2026 年二季度 GEICO 保单数的同比，待从 2026Q2 10-Q 回填。
+  - BRK-Q11 需要 2026 年化工收购与 Taylor Morrison 收购的初始税前收益率，报告没有给出，待从标的方此前的申报文件与伯克希尔的企业合并附注回填。大额股票买入（例如 2026 年二季度的股票净买入与 Alphabet 定向增发）没有对应的价格纪律测试；可考虑补一条看新建大额持仓透视盈利收益率的 watch 测试，口径待定。
+  - BRK-Q8 的基线是报告口径（上半年回购均价 ÷ 2026-06-30 账面），不是本指标口径；2026Q1、2026Q2 的指标读数待从两份 10-Q 的回购表（各月均价）与上一季末账面回填。
+  - BRK-Q1 的基线由报告四舍五入的 2025 年数字与 2024 年致股东信的精确数计算，待从 FY2025 年报取精确数复算；BRK-Q3、BRK-Q4、BRK-Q14 的基线待回填（平均股数同比、FY2024 与 FY2025 的资本开支、总资产）；BRK-Q1、BRK-Q4、BRK-Q14 的门槛在序列回填后按实际水平与波动复核一次。
+  - BRK-Q1、BRK-Q2、BRK-Q13 的基线是本档案按带出处的读数自己算出的，各自的 note 写明了算式；“不在来源里的数字留空”是否允许这类由带出处读数直接算出的数，待总部在决策记录里确认，不允许就改回 null。
+  - 模板测试的替换（BRK-Q1 替 Q-growth、BRK-Q2 替 Q-returns、BRK-Q4 替 Q-fcf、BRK-L1 替 L-guidance）是本档案自己的选择：模板 README 只写了门槛可以改写，没有写指标可以替换。替换是否允许、替换后的 origin 记 manual 还是 template:stalwart（类别变化时要靠 origin 找到模板测试），待规范或总部确认；本档案暂与 AXP、PDD 档案的写法一致，记为 manual 并在 note 里写明替换的是哪一条。
+  - BRK-Q2 用每股账面代替资本回报，含股票组合的市值波动；可考虑补一条不含价格的回报测试（例如非保险分部税后利润 ÷ 分部占用的资本），待分部资本的口径从 10-K 核实后再定。
+  - 核实伯克希尔在 XBRL 中实际使用的概念：股数是 A 股等价股数且没有稀释性证券（BRK-Q2、BRK-Q3），资本开支的标签（BRK-Q4），美国国库券是否落在 ShortTermInvestments 下（BRK-Q14）；取不到时把对应测试的 data 改为 filing_text。
+  - 规范待确认的写法：BRK-Q8 把 consecutive 写在 all_of 节点上，SPEC 没有规定其含义；geico_policies_in_force_yoy 在 BRK-Q5、BRK-Q10 两处就地定义，可考虑登记进 spec/metrics.yml。
+  - BRK-Q12：报告只写了 2025 年有三次降息，没有写日期；以 FOMC 公告核对各次降息与加息的日期，确定最早可以计算的季度（2026-11 的读数可能是“不计算”）。
+  - "股本核对：2024 年致股东信称以约 39 亿美元把 BHE 持股从约 92% 增至 100%，其中 29 亿美元付现金、余额以 B 股支付 [src:BRK-LTR-2024#p4]，而报告写 2021 到 2025 年期间没有新发行股票 [src:BRK-RPT1-2026-09-18#p9]；待从 FY2024 年报核对是否动用了库存股，并据此定 BRK-Q3 与 BRK-L3 的基线。"
+  - "债务与员工人数核对：报告写日元债利率 1.4% [src:BRK-RPT1-2026-09-18#p9]，2025 年致股东信写在日本借款的平均成本 1.2% [src:BRK-LTR-2025#p16]；F10 三项债务的时点按报告封面的资产负债表基准记为 2026-06-30，待与 2026Q2 10-Q 的债务附注核对。F11 员工人数的截至日期待与 FY2025 10-K 核对。"
+  - "创始人遗产约当公司 13.7% 的经济利益、约十年内分配完毕 [src:BRK-RPT1-2026-09-18#p15]；分配开始后，BRK-Q13 的读数要把承接遗产的回购单独标出。"
+  - 一线读数（GEICO、BNSF、NetJets 的员工评价与 GEICO 的客户评价）只是当期快照，平台不给历史曲线，公司也不披露 GEICO 的续保率；本档案不据此设测试，有可复算的序列后再补。
+  - depends_on 暂为空。事先写下的重新评估条件：任一属于已建行业模块（payments-card-networks、non-alcoholic-rtd-beverages、semiconductor-foundry）的单一持仓，在某个年末的市值超过伯克希尔当年末股东权益的十分之一（读 10-K 的股票投资附注、致股东信的持仓表与资产负债表），就在下一次更新里声明对该模块的依赖，或在 note 里写明不声明的理由。

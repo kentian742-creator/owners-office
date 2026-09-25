@@ -1,0 +1,30 @@
+# 版面审查：独立监督之一。逐页看排版后的图像：禁用内容、版面是否符合设计系统（00D）；每条问题附一段可执行的排版指令。
+# reports_to 为 null：独立监督不向任何经理人汇报。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 design_reviewer.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+role: design_reviewer
+name: 版面审查
+model:
+  id: claude-fable-5-1
+  effort: high
+  fallbacks: default
+  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；要逐页读图。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。页面图像（rendered_pages）由 pipeline/llm.py 以图像块交给模型。
+reports_to: null
+can_see:
+  - document                     # 09C：06、07、08 的正文
+  - visual_specs                 # 09C：时间轴、模块、分支图等版面意图
+  - report                       # 12C：完整企业报告
+  - cover
+  - charts
+  - main_visual
+  - rendered_pages               # 排版后每一页的图像
+cannot_see: []                   # 隔离表对版面审查没有额外限制
+outputs:
+  - design_checks
+  - layout_instructions          # 交排版员（19），经 10、13 转交
+  - findings
+  - questions
+decision_rights:
+  - audit                        # L1
+prompts: ["09C", "12C"]
+trust_managed: false

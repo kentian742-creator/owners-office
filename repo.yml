@@ -1,0 +1,5 @@
+# 档案仓库标记（thesis-ci spec §1；schema: spec/schemas/repo.schema.json）
+visibility: public
+owner: kentian742-creator
+spec_version: "0.2"
+counterpart: owners-office-private

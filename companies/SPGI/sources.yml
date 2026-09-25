@@ -1,0 +1,144 @@
+# SPGI 来源标签表（thesis-ci spec §3；schema: spec/schemas/sources.schema.json）
+# 定位符约定：SPGI-RPT1-2026-09-18#pN 中的 N 为报告 PDF 物理页码（与文本抽取的页标记一致，见 decisions/0006）。
+sources:
+  - tag: SPGI-RPT1-2026-09-18
+    kind: report
+    title: 护城河是监管者和第三方替它挖的，这一次得自己挖（S&P Global 完整企业报告，2026 年 9 月）
+    date: 2026-09-18
+    location: private:reports/SPGI.pdf
+    primary: false
+    note: 本人的 02 企业报告，共十二节加附录；财务数据截至 2026 年第二季度（2026-06-30）及 2025 财年年报。全文只存私有仓库，公开档案只引用 PDF 页码。
+
+  - tag: SPGI-10K-FY2025
+    kind: filing
+    title: S&P Global Inc. 2025 财年年度报告（Form 10-K）
+    issuer_cik: "0000064040"
+    form: 10-K
+    period: FY2025
+    accession: 0000064040-26-000013
+    filed: 2026-02-11
+    date: 2026-02-11
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000013/0000064040-26-000013-index.htm
+    primary: true
+    note: 报告附录来源 1；用于业务描述、风险因素、人力资本、资产负债表、现金流量表与分部数据。
+
+  - tag: SPGI-8K-2026-02-10
+    kind: filing
+    title: S&P Global Inc. 2025 年第四季度与全年业绩 8-K（新闻稿及附表）
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: FY2025Q4
+    accession: 0000064040-26-000007
+    filed: 2026-02-10
+    date: 2026-02-10
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000007/0000064040-26-000007-index.htm
+    primary: true
+    note: 报告附录来源 2 与 3（全年财报附表与同日的补充披露；8-K 只附新闻稿 EX-99，补充披露没有随 8-K 报送，在公司投资者关系网站）；用于收入、利润率、调整后每股收益、调整后自由现金流、初始全年指引与市场情报经常性收入占比。
+
+  - tag: SPGI-8K-2026-07-02
+    kind: filing
+    title: S&P Global Inc. 8-K：Mobility 分拆完成
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: null
+    accession: 0001104659-26-080005
+    filed: 2026-07-02
+    date: 2026-07-02
+    url: https://www.sec.gov/Archives/edgar/data/64040/000110465926080005/0001104659-26-080005-index.htm
+    primary: true
+    note: 报告附录来源 5（报告按新闻稿落款写作 2026-07-01）；用于分拆条款与日期。EDGAR 接收时间为美国东部时间 2026-07-01 21:25:43，晚于 17:30，filing date 为 2026-07-02。
+
+  - tag: SPGI-8KA-2026-07-06
+    kind: filing
+    title: S&P Global Inc. 8-K/A 附件 99.1：分拆后的重铸与 pro forma 财务，及分部重组披露
+    issuer_cik: "0000064040"
+    form: 8-K/A
+    period: null
+    accession: 0001104659-26-080571
+    filed: 2026-07-06
+    date: 2026-07-06
+    url: https://www.sec.gov/Archives/edgar/data/64040/000110465926080571/0001104659-26-080571-index.htm
+    primary: true
+    note: 报告附录来源 4；用于四分部口径、收入与利润占比、业务线拆分、市场情报改为两条线。
+
+  - tag: SPGI-8K-2026-07-28
+    kind: filing
+    title: S&P Global Inc. 2026 年第二季度业绩 8-K（新闻稿及附表）
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: FY2026Q2
+    accession: 0000064040-26-000040
+    filed: 2026-07-28
+    date: 2026-07-28
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000040/0000064040-26-000040-index.htm
+    primary: true
+    note: 报告附录来源 6 与 7 的补充披露部分；用于上半年分部收入与利润率、按收入类型的拆分、现金流、指引与调节表、私募市场评级收入、计费发行额与指数收入结构。8-K 只附新闻稿 EX-99.1，补充披露与业绩幻灯片没有随 8-K 报送，在公司投资者关系网站。
+
+  - tag: SPGI-CALL-FY2026Q2
+    kind: transcript
+    title: S&P Global Inc. 2026 年第二季度业绩电话会
+    date: 2026-07-28
+    primary: true
+    note: 报告附录来源 6 所列的业绩会；用于大模型接口的客户数与调用量、超大规模云厂商的计费发行额。
+
+  - tag: SPGI-10Q-FY2026Q2
+    kind: filing
+    title: S&P Global Inc. 2026 年第二季度季报（Form 10-Q，截至 2026-06-30）
+    issuer_cik: "0000064040"
+    form: 10-Q
+    period: FY2026Q2
+    accession: 0000064040-26-000045
+    filed: 2026-07-28
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000045/0000064040-26-000045-index.htm
+    primary: true
+    note: 报告附录来源 7；用于收入分解附注与资产负债表。SPGI-Q3、SPGI-Q4 的基线从这里回填。
+
+  - tag: SPGI-DEF14A-2026-03-31
+    kind: filing
+    title: S&P Global Inc. 2026 年委托书（DEF 14A，年会 2026-05-20）
+    issuer_cik: "0000064040"
+    form: DEF 14A
+    period: "2026"
+    accession: 0001104659-26-037380
+    filed: 2026-03-31
+    url: https://www.sec.gov/Archives/edgar/data/64040/000110465926037380/0001104659-26-037380-index.htm
+    primary: true
+    note: 报告附录来源 9；用于薪酬结构概述、激励指标与 CEO 任职起始。报告只读了薪酬概述，完整的薪酬讨论与分析待读。
+
+  - tag: SPGI-10K-FY2022
+    kind: filing
+    title: S&P Global Inc. 2022 财年年度报告（Form 10-K）
+    issuer_cik: "0000064040"
+    form: 10-K
+    period: FY2022
+    accession: 0000064040-23-000058
+    filed: 2023-02-10
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404023000058/0000064040-23-000058-index.htm
+    primary: true
+    note: 报告附录来源 13；用于 2022 年发行荒中评级分部的收入、营业利润与非交易收入读数，这是报告唯一一次干净的下行周期读数。
+
+  # 以下三条是报告附录列出的非 SEC 一手来源，登记方式与上面的申报文件相同：原件未取得，档案里的数字仍引用报告页码。
+  # 它们是 SPGI-L2、SPGI-L4、SPGI-L5 判定时的起点；判定时读到的新文件逐份另行登记。
+  - tag: NAIC-SVO-2026
+    kind: other
+    title: 全美保险监理官协会（NAIC）证券估值办公室关于豁免申报评级质疑权的决议与会议记录
+    date: null
+    url: null
+    primary: true
+    note: 报告附录来源 24（2026，一手 / 二手）；报告据此写私募评级与该办公室自身评估的对比数，以及 2026 年 1 月 1 日起的质疑权。原件未取得，具体文件、日期与 URL 待核实。
+
+  - tag: ACER-LNG-2025
+    kind: other
+    title: 欧盟能源监管合作署（ACER）关于 LNG 价格评估与基准的公告；REMIT 第 7a–7e 条
+    date: null
+    url: null
+    primary: true
+    note: 报告附录来源 21（2023；2025，一手）；报告据此写 LNG 基准每日发布、转为常设与市场自愿采用。原件未取得，具体文件、日期与 URL 待核实。
+
+  - tag: VANGUARD-2012-10-02
+    kind: press_release
+    title: Vanguard 换指数公告（2012-10-02）
+    date: 2012-10-02
+    url: null
+    primary: true
+    note: 报告附录来源 25（一手）；宽基指数切换的先例，用于 SPGI-L4。原件未取得；报告没有写这次切换的宣布与过渡安排，读到原件后可据此复核 SPGI-L4 把正式宣布算作切换的操作化。

@@ -1,0 +1,30 @@
+# 排版员：把定稿的内容与版面意图按设计系统（00D）排成 PDF；内容冻结，不改文字和数字。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 typesetter.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+role: typesetter
+name: 排版员
+model:
+  id: claude-sonnet-5
+  effort: high
+  why: 排版是按规格制作，不是判断，用中档模型（设计文档默认值，decisions/0003）；成品还要经过版面审查（09C、12C）。
+reports_to: hq_capital_allocator # 各公司共用的制作环节；需要改内容才能解决的版面问题写进 questions 交总部
+can_see:
+  - content
+  - cover
+  - charts
+  - visual_specs
+  - main_visual
+  - layout_instructions
+  - wordmark
+  - reference_designs
+  - series
+cannot_see: []                   # 隔离表对排版员没有额外限制
+outputs:
+  - pdf
+  - rendered_pages               # 每一页的图像，供版面审查与修订环节复审
+  - layout_selfcheck
+  - questions
+decision_rights:
+  - draft                        # L1：排版记在 draft 名下
+prompts: ["19"]
+trust_managed: false

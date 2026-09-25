@@ -1,0 +1,28 @@
+# 判定员：独立监督之一。定性测试交给独立的判定者，而不是写档案的人：按事先写好的标准判定几条是非题。
+# reports_to 为 null：独立监督不向任何经理人汇报；公司经理只能处置判定结果，不能改判。
+# 只对持仓运行；候选公司的定性测试记为 undetermined。
+# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 judge.md。
+# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+role: judge
+name: 判定员
+model:
+  id: claude-fable-5-1
+  effort: high
+  fallbacks: default
+  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；判定结果作为测试结果交公司经理处置，也随 PR 公开，需要稳定地按字面执行事先写好的标准。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。
+reports_to: null
+can_see:
+  - event                        # 本次业绩事件的期间与收口日
+  - qualitative_tests            # 只含 id、question、fail_if、warn_if、baseline 与 judge_notes；带论点措辞的 claim、note 不给
+  - where_documents              # 测试 where 指定、覆盖 lookback 期数的文件
+cannot_see:
+  - thesis
+  - dossier
+  - update
+  - draft_outputs
+outputs:
+  - qualitative_verdicts         # 交公司经理处置（03），也随 PR 公开
+decision_rights:
+  - test                         # L1：定性测试的判定
+prompts: ["14T"]
+trust_managed: false
