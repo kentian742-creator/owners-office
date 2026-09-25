@@ -1,19 +1,20 @@
-# 行业研究员：每个行业一个，维护 industries/<id>/ 的行业模块与路标。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 industry_researcher.md。
-# 还没有编号提示词（第 4 阶段）。can_see / cannot_see 先用最接近的提示词输入名，提示词写成后按它的 front matter 改正。
+# Industry researcher: one per industry; maintains the industry module and signposts in industries/<id>/.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in industry_researcher.md.
+# No numbered prompt yet (phase 4). For now can_see / cannot_see use the closest prompt input names; they will be
+# corrected from the prompt's front matter once it is written.
 role: industry_researcher
-name: 行业研究员
+name: Industry researcher
 model:
   id: claude-sonnet-5
   effort: high
-  why: 起草类角色用中档模型（设计文档默认值，decisions/0003）；行业模块公开之前同样要经过事实审计。
+  why: Drafting roles use the mid-tier model (design document default, decisions/0003); industry modules also go through the fact audit before they are published.
 reports_to: hq_capital_allocator
 can_see:
   - run_date
   - constitution
-  - industries                   # 行业模块本身（01A 以同一个名字读取它们）
-  - sources                      # 行业研究报告与公开的行业数据
-cannot_see:                      # 行业模块不谈持仓：看不到持仓名单、公司档案和私有估值，也就写不进去（C-DEPENDS）
+  - industries                   # the industry modules themselves (01A reads them under the same name)
+  - sources                      # industry research reports and public industry data
+cannot_see:                      # industry modules do not discuss holdings: the role cannot see the holdings list, company archives or private valuations, so it cannot write them in (C-DEPENDS)
   - holdings
   - dossier
   - thesis
@@ -21,13 +22,13 @@ cannot_see:                      # 行业模块不谈持仓：看不到持仓名
   - series_roster
   - ranking
 outputs:
-  - industries                   # industry.yml 与 README.md 的修订，事实带来源标签
-  - signpost_readings            # 路标读数，以及是否越过事先写好的门槛
+  - industries                   # revisions of industry.yml and README.md, with facts carrying source tags
+  - signpost_readings            # signpost readings, and whether a threshold written in advance was crossed
 decision_rights:
   - draft                        # L1
   - fact_revision                # L1
   - signpost_check               # L1
-  - routine_merge                # L1；合并与公开按 trust.routing 分流
-  - publish                      # L2，须审计无误
-prompts: []                      # 尚无编号提示词，见 README.md
+  - routine_merge                # L1; merging and publishing are routed by trust.routing
+  - publish                      # L2, only with a clean audit
+prompts: []                      # no numbered prompt yet; see README.md
 trust_managed: true

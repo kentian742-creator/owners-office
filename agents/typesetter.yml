@@ -1,13 +1,15 @@
-# 排版员：把定稿的内容与版面意图按设计系统（00D）排成 PDF；内容冻结，不改文字和数字。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 typesetter.md。
-# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+# Typesetter: sets finalized content and layout intent into a PDF following the design system (00D); the content is
+# frozen, and it changes no words or numbers.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in typesetter.md.
+# can_see / cannot_see use the input names from the prompts' front matter; the prompts are in the private repository, so
+# only their ids appear here.
 role: typesetter
-name: 排版员
+name: Typesetter
 model:
   id: claude-sonnet-5
   effort: high
-  why: 排版是按规格制作，不是判断，用中档模型（设计文档默认值，decisions/0003）；成品还要经过版面审查（09C、12C）。
-reports_to: hq_capital_allocator # 各公司共用的制作环节；需要改内容才能解决的版面问题写进 questions 交总部
+  why: Typesetting is production to a specification, not judgment, so it uses the mid-tier model (design document default, decisions/0003); the product still goes through the design review (09C, 12C).
+reports_to: hq_capital_allocator # a production step shared by all companies; layout problems that can only be solved by changing content go to HQ in questions
 can_see:
   - content
   - cover
@@ -18,13 +20,13 @@ can_see:
   - wordmark
   - reference_designs
   - series
-cannot_see: []                   # 隔离表对排版员没有额外限制
+cannot_see: []                   # the isolation table sets no extra limits for the typesetter
 outputs:
   - pdf
-  - rendered_pages               # 每一页的图像，供版面审查与修订环节复审
+  - rendered_pages               # an image of every page, for the design review and the revision steps to re-check
   - layout_selfcheck
   - questions
 decision_rights:
-  - draft                        # L1：排版记在 draft 名下
+  - draft                        # L1: typesetting is filed under draft
 prompts: ["19"]
 trust_managed: false

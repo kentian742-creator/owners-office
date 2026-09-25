@@ -1,27 +1,27 @@
-# 版面审查
+# Design review
 
-机器可读定义：[design_reviewer.yml](design_reviewer.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [design_reviewer.yml](design_reviewer.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一。逐页看排版后的图像，而不只读文字：私有报告要像所有者认可的那几份成品一样好读、准确，并且没有混进不该有的内容。
+One of the independent oversight roles. It looks at the typeset pages as images, page by page, rather than reading only the text: the private reports must be as readable and accurate as the finished pieces the owner has approved, with nothing mixed in that does not belong there.
 
-## 做什么
+## What it does
 
-- **09C（深度认知 06、07、08）：** 先查禁用内容——这三份不做估值，出现价值区间、折现率、仓位比例、排名或股价预测即为必须改。再对照 00D 的深度认知清单逐页看版面：logo 色只能用于分隔线、时间轴、模块标签、章节编号这类图形元素，不能铺成色块；标题衬线、正文无衬线；06 的时间轴、07 的四块仪表盘模块、08 的分支路径图与期权性展开图是否到位；有没有只写了几行的尾页。
-- **12C（完整企业报告）：** 对照 00D 的研报清单：衬线到底、不同用途的文字一眼可分；强调色没有一色两义；封面按公司名标题规则，字标用官方图片，字标旁、页眉、页脚不重复公司英文全名；关键数据条只有公司的数字；目录、页眉、页脚、图表齐全；主视觉接成了一条线索；没有修订记录、仓位阶梯或精确买点。
-- 每一条版面问题附一段可以直接交给排版员（19）执行的指令（`layout_instructions`：哪一页、哪个元素、改成什么样），经 10、13 转交。没有页面图像时只做禁用内容检查，版面部分在 `questions` 里要求排版后复审。
+- **09C (deep cognition, 06, 07, 08):** first, banned content — these three documents do no valuation, so a value range, discount rate, position percentage, ranking or share-price forecast is a must fix. Then it checks the layout page by page against 00D's deep-cognition checklist: the logo color may be used only for graphic elements such as rules, timelines, module labels and section numbers, never spread into blocks of color; serif headings and sans-serif body text; whether 06's timeline, 07's four dashboard modules, and 08's branching-path diagram and optionality diagram are in place; whether any final page carries only a few lines.
+- **12C (complete company report):** against 00D's research-report checklist: serif throughout, with text for different purposes distinguishable at a glance; no accent color with two meanings; the cover follows the company-name title rule and uses the official wordmark image, and the company's full English name is not repeated next to the wordmark, in the header or in the footer; the key-data strip carries only the company's own numbers; table of contents, headers, footers and charts are all present; the main visual is tied into one thread; no revision log, position ladder or precise entry point.
+- Every layout problem comes with an instruction the typesetter (19) can carry out directly (`layout_instructions`: which page, which element, what it should become), passed on through 10 and 13. Without page images it checks only for banned content, and in `questions` asks for the layout to be reviewed again after typesetting.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `document`、`visual_specs`、`report`、`cover`、`charts`、`main_visual`、`rendered_pages`。隔离表对版面审查没有额外限制。
+It can see `document`, `visual_specs`, `report`, `cover`, `charts`, `main_visual` and `rendered_pages`. The isolation table sets no extra limits for the design review.
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-同属独立监督，不向任何经理人汇报。
+It is also independent oversight and reports to no manager.
 
-## 决策权
+## Decision rights
 
-决策 L1：审计。
+Decision level L1: audit.
 
-## 提示词与模型
+## Prompts and model
 
-09C、12C（私有仓库，按编号引用）。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退。需要把页面图像传给模型；`pipeline/llm.py` 支持图像之前，这两步只能手动运行，产出只作线索（H5）。
+09C, 12C (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal. The page images have to be passed to the model; until `pipeline/llm.py` supports images, these two steps can only be run by hand, and their output serves only as a lead (H5).

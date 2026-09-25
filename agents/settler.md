@@ -1,28 +1,28 @@
-# 结算员
+# Settler
 
-机器可读定义：[settler.yml](settler.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [settler.yml](settler.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一，结算预注册和言行账本里到期的条目。它不是写预注册的人，也看不到当时的概率、作者和所有者的改写，免得被预设的答案带偏；它只按事先写好的判定标准结算，不重新解释标准。
+One of the independent oversight roles; it settles the items in pre-registrations and the say-do ledger that have come due. It is not the author of the pre-registrations, and it cannot see the probabilities of the time, the authors or the owner's overrides, so that a preset answer does not lead it; it settles only against the resolution criteria written in advance, and does not reinterpret them.
 
-## 做什么（15B）
+## What it does (15B)
 
-- 业绩事件收口后、公司经理起草季度更新之前运行：结算持仓公司到期的预注册，以及全部公司账本里到期的条目。没有到期的条目不在输入里。
-- 预注册每条给出 happened、not_happened 或 undetermined，写出用到的数值与计算、一句以内的原文摘录，只按判定标准一步一步写理由。标准本身有歧义、或口径变了无法按原标准判定的，不自己挑一种解释：记 undetermined，写明歧义在哪，交总部裁定；总部仍无法裁定的保持无法判定，不计分。
-- 账本：管理层承诺按兑现、部分兑现、未兑现、悄然消失四档结算，并看未兑现的承诺在本期材料里有没有被主动承认；系统与所有者一侧的预测只记发生、未发生或无法判定——流水线去掉了 `side`，它看不出预测是谁写的。
-- 结算只记录预期是否兑现，用于校准和坦诚度统计，不据此评价当时的决策（R11）。Brier 分由流水线计算。
+- Runs after the earnings event closes and before the company manager drafts the quarterly update: it settles the due pre-registration items of holdings, and the due items in the ledgers of all companies. Items not yet due are not in the input.
+- For each pre-registration item it gives happened, not_happened or undetermined, and writes the values and calculation it used and a source excerpt of one sentence at most, reasoning step by step only from the resolution criteria. If the criterion itself is ambiguous, or the basis has changed so that it cannot be applied as written, it does not pick an interpretation itself: it records undetermined, says where the ambiguity is, and sends it to HQ for a ruling; if HQ cannot rule either, the item stays undetermined and is not scored.
+- Ledger: management promises are settled in four grades — kept, partially kept, not kept, silently dropped — and it checks whether a promise not kept was acknowledged unprompted in this period's materials. Forecasts on the system's and the owner's side are recorded only as happened, not happened or undetermined — the pipeline has removed `side`, so it cannot tell who wrote a forecast.
+- Settlement records only whether expectations came true, for calibration and candor statistics; it is not used to judge the decisions made at the time (R11). Brier scores are computed by the pipeline.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `event`、`items_blind`（只有陈述、判定标准、数据来源和视野）、`filings`、`metric_values`、`ledger_due`（去掉 `side`、标注 `settle_as`）。看不到 `prereg` 与 `prereg_due`（带概率和作者；所有者的改写单独成文件，同样不给）、完整的 `ledger`（带 `side`）、`thesis`、`dossier`、`update`。
+It can see `event`, `items_blind` (only the statement, resolution criterion, data source and horizon), `filings`, `metric_values`, and `ledger_due` (with `side` removed and `settle_as` marked). It cannot see `prereg` and `prereg_due` (which carry probabilities and authors; the owner's overrides are a separate file and are not given either), the full `ledger` (with `side`), `thesis`, `dossier` or `update`.
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-同属独立监督。结算结果交公司经理转述、不能改动，并交流水线更新校准记录。
+It is also independent oversight. The company manager relays the settlement results and cannot change them; they also go to the pipeline to update the calibration record.
 
-## 决策权
+## Decision rights
 
-决策 L1：按事先写好的标准判定，记在 `test` 名下（决策权配置没有单列"结算"）。
+Decision level L1: rulings against criteria written in advance, filed under `test` (the decision-rights configuration has no separate "settle" action).
 
-## 提示词与模型
+## Prompts and model
 
-15B，只经流水线运行（私有仓库，按编号引用）。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退。
+15B, run only through the pipeline (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.

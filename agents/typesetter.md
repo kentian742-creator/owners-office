@@ -1,30 +1,30 @@
-# 排版员
+# Typesetter
 
-机器可读定义：[typesetter.yml](typesetter.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [typesetter.yml](typesetter.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-把一份已经定稿的内容按设计系统（00D）排成 PDF。内容是冻结的：不改文字、不改数字、不删段落；它负责的是让成品像所有者认可的那几份一样好读、好看、准确。
+Sets finalized content into a PDF following the design system (00D). The content is frozen: it changes no words or numbers and deletes no paragraphs. Its job is to make the product as readable, good-looking and accurate as the finished pieces the owner has approved.
 
-## 做什么（19）
+## What it does (19)
 
-- 02、06–08、11 起草后，05、10、13 修订后，以及收到版面修订指令时运行。
-- 按系列选用研报（D1，衬线到底）或深度认知（D2，标题衬线、正文无衬线）的规则；logo 色只用于设计系统允许的图形元素。
-- 封面按公司名标题规则，字标用官方图片；拿不到官方字标就用中文名作标题并写进 `questions`，不用文字或 CSS 仿造。
-- 图表只画规格里有的数据，不补点、不平滑；来源标签排成指向附录"数据来源"的小号上标；页面收紧到整数页，先调行距、字号、留白和图的尺寸，不删内容。
-- 排完导出每一页的图像，按 00D 的清单逐项自检；页面图像交给版面审查（09C、12C）和修订环节（05、10、13）复审。
-- 公开仓库不存放任何 logo（00D §D6）。
+- Runs after 02, 06–08 and 11 are drafted, after 05, 10 and 13 revise, and when layout revision instructions arrive.
+- Applies, by series, the rules for research reports (D1, serif throughout) or for deep cognition (D2, serif headings, sans-serif body text); the logo color is used only for the graphic elements the design system allows.
+- The cover follows the company-name title rule and uses the official wordmark image; if the official wordmark cannot be obtained, it uses the company's Chinese name as the title and notes this in `questions`, rather than imitating the wordmark in text or CSS.
+- Charts plot only the data in the spec, with no added points and no smoothing; source tags are set as small superscripts pointing to the "Data sources" appendix; pages are tightened to a whole number of pages by adjusting line spacing, font size, white space and figure sizes first, never by deleting content.
+- After typesetting it exports an image of every page and checks them against 00D's checklist item by item; the page images go to the design review (09C, 12C) and the revision steps (05, 10, 13) for re-checking.
+- The public repository stores no logos (00D §D6).
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `content`、`cover`、`charts`、`visual_specs`、`main_visual`、`layout_instructions`、`wordmark`、`reference_designs`、`series`。隔离表对排版员没有额外限制。
+It can see `content`, `cover`, `charts`, `visual_specs`, `main_visual`, `layout_instructions`, `wordmark`, `reference_designs` and `series`. The isolation table sets no extra limits for the typesetter.
 
-## 向谁汇报
+## Reporting line
 
-总部。它是各公司共用的制作环节，接收修订环节和版面审查交来的指令；需要改内容才能解决的版面问题写进 `questions`，交总部。
+HQ. It is a production step shared by all companies and takes instructions from the revision steps and the design review; layout problems that can only be solved by changing content go into `questions`, for HQ.
 
-## 决策权
+## Decision rights
 
-决策 L1：起草（排版记在 `draft` 名下）。
+Decision level L1: drafting (typesetting is filed under `draft`).
 
-## 提示词与模型
+## Prompts and model
 
-19（私有仓库，按编号引用）。需要能执行代码的环境；`pipeline/llm.py` 还不能执行代码，在它支持之前这一步手动运行，H5 对手动产出的限制同样适用。模型 `claude-sonnet-5`，effort high。
+19 (private repository, cited by id). It needs an environment that can execute code. `pipeline/llm.py` cannot execute code yet, so until it can, this step is run by hand, and H5's limits on manual output apply. Model `claude-sonnet-5`, effort high.

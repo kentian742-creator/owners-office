@@ -1,24 +1,26 @@
-# 合成审查：独立监督之一，只审完整企业报告（11）：有没有生产痕迹、有没有真正的新分析、论证的质地。
-# reports_to 为 null：独立监督不向任何经理人汇报。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 synthesis_reviewer.md。
-# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+# Synthesis review: one of the independent oversight roles; it reviews only the complete company report (11): production
+# traces, whether there is real new analysis, and the quality of the argument.
+# reports_to is null: independent oversight reports to no manager.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in synthesis_reviewer.md.
+# can_see / cannot_see use the input names from the prompts' front matter; the prompts are in the private repository, so
+# only their ids appear here.
 role: synthesis_reviewer
-name: 合成审查
+name: Synthesis review
 model:
   id: claude-fable-5-1
   effort: high
   fallbacks: default
-  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；要逐条验算"接起来才出现"的分析。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。
+  why: Oversight roles use the strongest model (design document default, decisions/0003); it has to recompute, one by one, the analyses that "only appear when the pieces are joined". fallbacks is default, meaning that on a refusal the server's default fallback rules apply; the model that actually answered is recorded by pipeline/llm.py.
 reports_to: null
 can_see:
-  - report                       # 11 的完整企业报告
-  - connections                  # 作者列出的连接清单
-  - doc_02                       # 四份研究材料
+  - report                       # the complete company report from 11
+  - connections                  # the list of connections the author made
+  - doc_02                       # the four research documents
   - doc_06
   - doc_07
   - doc_08
-  - sources                      # 验算用的原始材料
-cannot_see: []                   # 隔离表对合成审查没有额外限制；12 的各部分分别独立运行，由 can_see 白名单保证
+  - sources                      # source materials for recomputation
+cannot_see: []                   # the isolation table sets no extra limits for the synthesis review; the parts of 12 run independently of each other, which the can_see allow-list ensures
 outputs:
   - connection_audit
   - answers

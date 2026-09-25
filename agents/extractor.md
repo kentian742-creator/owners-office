@@ -1,26 +1,26 @@
-# 抽取员
+# Extractor
 
-机器可读定义：[extractor.yml](extractor.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [extractor.yml](extractor.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-为事实审计的隔离和从正文读取的指标服务。事实审计员只该看到事实和原文，这就需要有人先把成品拆成一条条干净的事实；很多测试的指标又不在 XBRL 里——分部增速、单位经济、外国发行人的季度数据（如 PDD 的 6-K）——必须从正文读。两件事都交给抽取员。它只做抽取，不做判断：不评价、不补数、不纠错；发现成品或文件自相矛盾的，照实抽出两条并标明，由审计去判断。
+Serves the isolation of the fact audit and the metrics read from the text of filings. The fact auditor should see only facts and source text, so someone has to split the product into clean, separate facts first. And many test metrics are not in XBRL — segment growth, unit economics, the quarterly data of foreign issuers (such as PDD's 6-K) — and must be read from the text. Both jobs go to the extractor. It only extracts and does not judge: it does not evaluate, fill in numbers or correct errors; where a product or filing contradicts itself, it extracts both statements as they stand and flags them, and the audit judges.
 
-## 做什么
+## What it does
 
-- **16A 事实抽取：** 把要被审计的成品——档案、研报、季度更新、深度认知文档、完整企业报告，或 01 生成的 `thesis.yml` 与 `story.md`——里每一条事实性陈述抽成一行：位置、主体、指标或事件、数值、单位、期间、成品在这句里引用的来源标签、只留事实的节选；成品自己算出的数标 `derived` 并附输入和算式；只有日期、人名、事件的陈述也抽。门槛、判定标准、概率、观点和情景不抽。流水线再按来源标签截取原文片段，交给事实审计。
-- **16B 指标抽取：** 按指标定义从本期文件正文读数，写清口径：报告值还是调整后、币种与单位、期间。有公式的写出每个输入再算，没有公式的不自己算；本期与上期口径不一致的照读本期数并注明；找不到写 `not_found` 和原因，不用近似数代替。流水线据此判定测试结果，也交给结算员。
+- **16A fact extraction:** every factual statement in the product to be audited — an archive, research report, quarterly update, deep-cognition document or complete company report, or the `thesis.yml` and `story.md` that 01 generates — becomes one row: location, subject, metric or event, value, unit, period, the source tag the product cites in that sentence, and an excerpt that keeps only the fact. Numbers the product computed itself are marked `derived`, with their inputs and formula; statements with only dates, names and events are extracted too. Thresholds, resolution criteria, probabilities, opinions and scenarios are not extracted. The pipeline then cuts source excerpts by source tag and hands them to the fact audit.
+- **16B metric extraction:** reads values from the text of this period's filings according to the metric definitions, and states the basis clearly: reported or adjusted, currency and unit, period. Where there is a formula, it writes out each input and then computes; where there is none, it does not compute on its own. When this period's basis differs from last period's, it reads this period's number as it stands and notes the difference; when it cannot find a value, it writes `not_found` and the reason, and does not substitute an approximation. The pipeline uses the values to judge test results and also hands them to the settler.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `product`、`filings`、`metric_definitions`、`prior_values`（只用来核对口径，不用来推算本期）。16A 的 `product` 本身就是被抽取的对象，可以是任何成品；除此之外不另给它论点、档案或草稿（`thesis`、`dossier`、`update`、`draft_outputs`）作背景，16B 则完全看不到它们。
+It can see `product`, `filings`, `metric_definitions` and `prior_values` (used only to check the basis, not to estimate this period). In 16A, the `product` itself is what gets extracted, and it can be any product; beyond that, the extractor gets no thesis, dossier or drafts (`thesis`, `dossier`, `update`, `draft_outputs`) as background, and in 16B it cannot see them at all.
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-它的产出原样交给事实审计和流水线，不受成品的作者（公司经理）指挥。
+Its output goes unchanged to the fact audit and the pipeline, and it takes no direction from the product's author (the company manager).
 
-## 决策权
+## Decision rights
 
-决策 L1：解析（抽取记在 `parse` 名下）。
+Decision level L1: parsing (extraction is filed under `parse`).
 
-## 提示词与模型
+## Prompts and model
 
-16A、16B，只经流水线运行（私有仓库，按编号引用）。模型 `claude-sonnet-5`，effort high：抽取是照原文拆分和读数，不是判断，按设计文档"起草用中档、监督用最强"的分工归入起草类。
+16A, 16B, run only through the pipeline (private repository, cited by id). Model `claude-sonnet-5`, effort high: extraction means splitting and reading off the source text, not judging, so under the design document's split of "mid-tier model for drafting, strongest model for oversight" it counts as a drafting role.

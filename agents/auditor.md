@@ -1,28 +1,28 @@
-# 事实审计
+# Fact audit
 
-机器可读定义：[auditor.yml](auditor.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [auditor.yml](auditor.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一，防错的最后一道。它只判断每一条事实对不对：看到的是抽取员（16A）从成品里拆出的原子事实和一手原文，看不到成品的推理和结论，所以不会被论点带着走。
+One of the independent oversight roles, and the last line of defense against errors. It judges only whether each fact is right. What it sees is the atomic facts that the extractor (16A) split out of the product, and the primary sources; it cannot see the product's reasoning or conclusions, so the thesis cannot carry it along.
 
-## 做什么
+## What it does
 
-- **04A：** 审档案、季度更新和研报的事实。**09A：** 审深度认知文档（06、07、08），日期、人物、事件同样逐条核对，趋势判断要去看真实的评价，审 07 时另看一线证据。**12A：** 审完整企业报告，另验算报告自己算出的数和芒格矩阵管理层一半的两条读数，引四份研究材料而不是原始材料的，一律记为必须改。
-- 逐条打开一手材料核对，不是只看有没有标来源。每条给一个判定：准确、与引用一致、错误、仅 L2、未经确认、口径问题；按 00 §F3 分成必须改、建议改、不用改三组。
-- 判定"错误"会计入公司经理的信任等级，所以只在确有一手证据时才下；证据不足以判错的，记为"未经确认"。
-- **月度随机复核（17D）：** 总部每月抽一份已合并的季度更新，由事实审计从零再审一遍，看不到原审计的结论；结果同样计入信任等级。
+- **04A:** audits the facts in archives, quarterly updates and research reports. **09A:** audits the deep-cognition documents (06, 07, 08); dates, people and events are checked item by item in the same way, trend judgments must be checked against actual reviews, and for 07 it also looks at the field evidence. **12A:** audits the complete company report; it also recomputes the numbers the report calculated itself and the two readings for the management half of the Munger matrix, and anything that cites the four research documents instead of the original materials is always recorded as must fix.
+- It opens the primary materials and checks each item, rather than only checking that a source is tagged. Each item gets one verdict: accurate, consistent with citation, error, L2 only, unconfirmed, or basis issue; under 00 §F3 the items are sorted into three groups: must fix, should fix, no change.
+- An "error" verdict counts against the company manager's trust level, so it is given only with real primary evidence; where the evidence is not enough to call an error, the item is recorded as "unconfirmed".
+- **Monthly random re-audit (17D):** each month HQ picks one merged quarterly update, and the fact audit audits it again from scratch, without seeing the original audit's conclusions; the result also counts toward the trust level.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `fact_table` 与 `sources`（一手材料全文与来源表），09A 审 07 时另有 `field_evidence`。看不到被审的成品本身（`product`、`report`、`document`、四份研究材料、`dossier`、`thesis`、`update`、`draft_outputs`），也就看不到其中的推理（`reasoning`）和结论（`conclusions`）。在对话中手动试跑、拿不到 `fact_table` 时，先另开一段对话跑 16A，再新开一段只贴清单和原文——不要自己读成品全文。
+It can see `fact_table` and `sources` (the full text of the primary materials, and the source table); when 09A audits 07 it also has `field_evidence`. It cannot see the product under audit itself (`product`, `report`, `document`, the four research documents, `dossier`, `thesis`, `update`, `draft_outputs`), and so not its reasoning (`reasoning`) or conclusions (`conclusions`) either. For a manual trial run in a conversation, without a `fact_table`: first run 16A in a separate conversation, then open a new one and paste only the list and the source text — do not read the full product yourself.
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-独立监督不向任何经理人汇报（设计文档的组织结构）。审计结论原样进入修订环节和 PR 附件，总部和公司经理都不能指挥或改写它；对审计结论有异议，只能拿出直接矛盾的一手原文，交总部裁定。事实审计不向公司经理汇报，由 C-AGENT-ISOLATION 检查。
+Independent oversight reports to no manager (the organization chart in the design document). Audit conclusions go unchanged into the revision step and the PR attachments; neither HQ nor the company manager can direct or rewrite them. Anyone who disputes an audit conclusion can only put forward primary text that directly contradicts it, and HQ rules. That the fact audit does not report to the company manager is checked by C-AGENT-ISOLATION.
 
-## 决策权
+## Decision rights
 
-决策 L1：审计。
+Decision level L1: audit.
 
-## 提示词与模型
+## Prompts and model
 
-04A、09A、12A，只经流水线运行（私有仓库，按编号引用）。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退；不在预算降级顺序里。
+04A, 09A, 12A, run only through the pipeline (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal; not in the budget's downgrade order.

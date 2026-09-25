@@ -1,32 +1,32 @@
-# 盲推
+# Blind read
 
-机器可读定义：[blind_reader.yml](blind_reader.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [blind_reader.yml](blind_reader.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一，也是反锚定的核心。论点监控工具天然带锚：透过所有者的论点去读新证据，写档案的人和读财报的人被同一个结论牵着走。盲推看不到论点、档案和任何结论，只读新文件，独立回答一组中性问题；公司经理也回答同一组问题，两边不一致的地方，就是复核最该花时间的地方。
+One of the independent oversight roles, and the core of the defense against anchoring. A thesis-monitoring tool is anchored by nature: new evidence is read through the owner's thesis, and the one who writes the archive and the one who reads the filings are pulled along by the same conclusion. The blind read cannot see the thesis, the dossier or any conclusion; it reads only the new filings and answers a set of neutral questions independently. The company manager answers the same questions, and wherever the two disagree is where review time is best spent.
 
-## 做什么（14A）
+## What it does (14A)
 
-- 业绩事件收口后、公司经理起草之前运行；只对持仓公司。
-- 每题只依据新文件回答，附一句以内的原文摘录和来源标签，写出把握（统一的概率语言）；文件没有涉及的答"文件未涉及"，不用常识或记忆补，也不推测这家公司"通常"怎么样。
-- 开放问题认真答：列出一到三件长期所有者最该注意、而清单其他问题没问到的事。它常常能发现档案的盲区，总部在分歧图里把它单列为"盲区候选"。
-- 不评论股价或估值。
+- Runs after the earnings event closes and before the company manager drafts; only for holdings.
+- Answers each question from the new filings only, with a source excerpt of one sentence at most and a source tag, and states its confidence (in the standard probability language). Where the filings do not cover something, it answers "not covered in the filings"; it does not fill the gap from general knowledge or memory, and does not guess what this company "usually" does.
+- It takes the open question seriously: it lists one to three things that a long-term owner should most notice and that the other questions on the list did not ask. This often finds blind spots in the archive; HQ lists them separately in the divergence map as "blind-spot candidates".
+- It does not comment on the share price or valuation.
 
-## 问题清单
+## The question list
 
-由总部在业绩事件之前冻结（14Q）：每个论点支柱一到两个只问可读事实的中性问题，加一个固定的开放问题。交给盲推之前，流水线删去题目与论点支柱的对应关系、打乱顺序（开放问题除外），成为 `question_list_stripped`。定性测试不在清单里，由判定员（14T）独立判定。
+Frozen by HQ before the earnings event (14Q): one or two neutral questions per thesis pillar, asking only for facts that can be read, plus one fixed open question. Before the list reaches the blind read, the pipeline removes the mapping from questions to thesis pillars and shuffles the order (except for the open question); the result is `question_list_stripped`. The qualitative tests are not on the list; the judge (14T) rules on them independently.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `filings`（本事件的新文件）和 `question_list_stripped`。看不到 `thesis`、`dossier`、公司经理的更新与草稿（`update`、`draft_outputs`）、带对应关系的 `question_list`、公司经理的 `question_answers`、`qualitative_verdicts`、`prereg`、`valuation`，也看不到任何结论（`conclusions`）。
+It can see `filings` (the new filings of this event) and `question_list_stripped`. It cannot see `thesis`, `dossier`, the company manager's update and drafts (`update`, `draft_outputs`), the `question_list` with the mapping, the company manager's `question_answers`, `qualitative_verdicts`, `prereg` or `valuation`, nor any conclusion (`conclusions`).
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-独立监督不向任何经理人汇报。盲推的回答原样进入分歧图（14B），由总部先读；复核后仍无法消解、且触及论点的分歧，才进股东信的"待你一看"。盲推不向公司经理汇报，由 C-AGENT-ISOLATION 检查。
+Independent oversight reports to no manager. The blind read's answers go unchanged into the divergence map (14B), which HQ reads first; only divergences that still cannot be resolved after review, and that touch the thesis, go into the "for your attention" section of the letter. That the blind read does not report to the company manager is checked by C-AGENT-ISOLATION.
 
-## 决策权
+## Decision rights
 
-决策 L1：盲推。
+Decision level L1: blind read.
 
-## 提示词与模型
+## Prompts and model
 
-14A，只经流水线运行，API 调用没有记忆（私有仓库，按编号引用）。在 claude.ai 手动试跑必须关闭记忆、项目知识和自定义指令，产出只作线索。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退；不在预算降级顺序里。
+14A, run only through the pipeline, where API calls have no memory (private repository, cited by id). A manual trial run on claude.ai must turn off memory, project knowledge and custom instructions, and its output serves only as a lead. Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal; not in the budget's downgrade order.

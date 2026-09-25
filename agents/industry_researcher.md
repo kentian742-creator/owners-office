@@ -1,28 +1,28 @@
-# 行业研究员
+# Industry researcher
 
-机器可读定义：[industry_researcher.yml](industry_researcher.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [industry_researcher.yml](industry_researcher.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-每个行业一个，维护 `industries/<id>/` 的行业模块与路标。首批三个模块：`payments-card-networks`、`non-alcoholic-rtd-beverages`、`semiconductor-foundry`。
+One per industry; maintains the industry module and signposts in `industries/<id>/`. The first three modules: `payments-card-networks`, `non-alcoholic-rtd-beverages`, `semiconductor-foundry`.
 
-## 做什么
+## What it does
 
-- **行业模块：** 把 Business Library 的行业研究整理成可被引用的模块（`industry.yml` 与 `README.md`），事实带来源标签。
-- **路标：** 每个模块至少三个可观测的路标，各有观测量、事先写好的门槛和检查频率；按频率读数，记录是否越过门槛。路标越过门槛后，由 CI 为在 `depends_on` 里声明依赖这个行业的公司开复核 issue，并重跑相关测试——这一步不需要行业研究员知道是哪些公司。
+- **Industry modules:** turns the industry research in the Business Library into modules that can be cited (`industry.yml` and `README.md`), with facts carrying source tags.
+- **Signposts:** each module has at least three observable signposts, each with a measure, a threshold written in advance and a check frequency; it takes readings at that frequency and records whether a threshold was crossed. When a signpost crosses its threshold, CI opens review issues for the companies that declare a dependency on this industry in `depends_on`, and reruns the related tests — this step does not need the industry researcher to know which companies they are.
 
-## 边界
+## Boundaries
 
-行业模块只描述行业本身：不谈持仓、不给建议、不列出依赖它的公司（C-DEPENDS）。为此它看不到持仓名单、公司档案、私有估值和排名；依赖关系只写在公司一侧。路标写不清楚的行业判断，无法自动监控。
+An industry module describes only the industry itself: it does not discuss holdings, gives no advice and does not list the companies that depend on it (C-DEPENDS). For that reason the role cannot see the holdings list, company archives, private valuations or rankings; dependencies are written only on the company side. An industry judgment that cannot be written as a clear signpost cannot be monitored automatically.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-还没有编号提示词，可见范围先用最接近的输入名：能看到 `industries`、`sources`、`constitution`、`run_date`；看不到 `holdings`、`dossier`、`thesis`、`valuation`、`series_roster`、`ranking`。提示词写成后按它的 front matter 改正。
+There is no numbered prompt yet, so for now the visibility uses the closest input names: it can see `industries`, `sources`, `constitution` and `run_date`; it cannot see `holdings`, `dossier`, `thesis`, `valuation`, `series_roster` or `ranking`. Once the prompt is written, these are corrected from its front matter.
 
-## 决策权与信任等级
+## Decision rights and trust level
 
-- 决策 L1：起草、档案事实修订、路标检查、例行合并。
-- 决策 L2：公开发布（须审计无误）。
-- 和公司经理一样受信任等级管理，从 1 级起步，升降规则相同。等级由流水线计算，记录在 `trust/levels.yml`，抄在 `industry.yml` 的 `trust_level`；行业研究员不能改它（C-TRUST-WRITE）。
+- Decision level L1: drafting, archive fact revisions, signpost checks, routine merges.
+- Decision level L2: publishing (only with a clean audit).
+- Like the company manager, it is managed by trust level, starting at level 1, with the same rules for moving up and down. The level is computed by the pipeline, recorded in `trust/levels.yml` and copied into `trust_level` in `industry.yml`; the industry researcher cannot change it (C-TRUST-WRITE).
 
-## 提示词与模型
+## Prompts and model
 
-尚无编号提示词：路标检查，以及路标触发后对依赖公司的复核，在第 4 阶段编写。模型 `claude-sonnet-5`，effort high。
+No numbered prompt yet: the signpost checks, and the review of dependent companies after a signpost is triggered, will be written in phase 4. Model `claude-sonnet-5`, effort high.

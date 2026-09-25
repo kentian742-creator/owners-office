@@ -1,30 +1,33 @@
-# 盲推：独立监督之一，也是反锚定的核心。只读新文件，独立回答总部冻结的中性问题；看不到论点、档案和任何结论。
-# reports_to 为 null：独立监督不向任何经理人汇报；它的回答和公司经理的回答逐题对比，分歧图先交总部。
-# 只对持仓运行；候选公司不跑，以控制成本。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 blind_reader.md。
-# can_see / cannot_see 用提示词 front matter 的输入名；conclusions 沿用隔离表的说法（C-AGENT-ISOLATION）。
+# Blind read: one of the independent oversight roles, and the core of the defense against anchoring. It reads only the new
+# filings and independently answers the neutral questions HQ froze; it cannot see the thesis, the dossier or any conclusion.
+# reports_to is null: independent oversight reports to no manager; its answers are compared question by question with the
+# company manager's, and the divergence map goes to HQ first.
+# Runs only for holdings; not for candidate companies, to control cost.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in blind_reader.md.
+# can_see / cannot_see use the input names from the prompts' front matter; conclusions keeps the term of the isolation
+# table (C-AGENT-ISOLATION).
 role: blind_reader
-name: 盲推
+name: Blind read
 model:
   id: claude-fable-5-1
   effort: high
   fallbacks: default
-  why: 监督类角色用最强模型：盲推要和起草模型独立作答，用不同的、更强的模型还能减少同源偏差（设计文档默认值，decisions/0003）。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。不在预算降级顺序里。
+  why: Oversight roles use the strongest model. The blind read has to answer independently of the drafting model, and a different, stronger model also reduces shared bias (design document default, decisions/0003). fallbacks is default, meaning that on a refusal the server's default fallback rules apply; the model that actually answered is recorded by pipeline/llm.py. Not in the budget's downgrade order.
 reports_to: null
 can_see:
-  - filings                      # 本次业绩事件的新文件（业绩公告、10-Q 或 6-K、电话会纪要），带来源标签
-  - question_list_stripped       # 流水线删去题目与论点支柱的对应关系、打乱顺序后的问题清单
+  - filings                      # the new filings of this earnings event (earnings release, 10-Q or 6-K, call transcript), with source tags
+  - question_list_stripped       # the question list after the pipeline removed the mapping from questions to thesis pillars and shuffled the order
 cannot_see:
   - thesis
   - dossier
-  - update                       # 公司经理的更新草稿
-  - draft_outputs                # 03 草稿的全部输出
-  - question_list                # 带对应关系的问题清单
-  - question_answers             # 公司经理的逐题回答
+  - update                       # the company manager's draft update
+  - draft_outputs                # all outputs of the 03 draft
+  - question_list                # the question list with the mapping
+  - question_answers             # the company manager's answers, question by question
   - qualitative_verdicts
   - prereg
   - valuation
-  - conclusions                  # 任何结论
+  - conclusions                  # any conclusion
 outputs:
   - blind_answers
   - unprompted_observations

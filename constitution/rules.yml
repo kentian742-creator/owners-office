@@ -1,135 +1,313 @@
-# 宪法规则与对应检查
+# Constitution rules and their checks
 # schema: thesis-ci/spec/schemas/constitution-rules.schema.json
-# 条文以 constitution/owner.md 为准，本文件是它的机器可读索引；两者的编号、标题与条文必须一致。
-# R1–R13 与系列规则 00 §C 的编号、标题、条文一字不差；H1–H5 按 00 §H，其中 H2、H4 里本身就在
-# 禁用清单上的几个用语换成了意思相同的描述（公开文件不能出现它们，见 owner.md「二、硬规则」）。
-# 每条至少引用一个 thesis-ci 登记的检查（C-CONSTITUTION-MAP）。很多条文是判断，机器只能检查它的
-# 记录一侧；how_checked 照实写明检查实际管到哪一步，管不到的也写出来。
+# The rules are defined in constitution/owner.md; this file is its machine-readable index. Numbers, titles and rule
+# text must match between the two.
+# R1–R13 match series rules 00 §C word for word in number, title and text. H1–H5 follow 00 §H, except that in H2 and
+# H4 a few terms that are themselves on the banned list are replaced by descriptions with the same meaning (public
+# files may not contain them; see owner.md, "II. Hard rules").
+# Every rule cites at least one check registered in thesis-ci (C-CONSTITUTION-MAP). Many rules are judgments, and a
+# machine can check only the record they leave; how_checked states plainly how far each check actually reaches, and
+# says so where it does not reach.
 rules:
-  # ---------- 投资宪法（kind: constitution） ----------
+  # ---------- Investment constitution (kind: constitution) ----------
   - id: R1
     kind: constitution
-    title: 顺序与价格观
-    text: '企业质量第一，管理层第二，估值第三。宁可用合理价格买优秀企业，也不用低价买普通企业；合理价格不等于任何价格，仍要有与质量、预期回报和不确定性相称的安全边际；也不机械地等待极端低价——错过优秀企业长期复利的代价，大于把买点再优化一点的好处。'
+    title: Order and price
+    text: >-
+      Business quality first, management quality second, valuation third. Prefers "fair price for an excellent
+      business" over "cheap price for an ordinary business". Fair price does not mean any price: still requires a
+      meaningful margin of safety relative to business quality, future return expectations, and uncertainty. Prefers
+      buying excellent businesses at fair prices rather than requiring extreme undervaluation — the cost of missing a
+      great business's long-term compounding while waiting for a perfect price outweighs the value of further price
+      optimization.
     checks: [C-RATING-ORDER]
-    how_checked: '每家公司的 thesis.yml 必须有生意（business）与管理层（management）评级；私有仓库的系列排名（hq/ranking.yml）每一行必须写排序理由；排序本身按 00 §V13 综合判断，不检查。检查只管分项评级和理由有没有写；"质量第一、管理层第二、估值第三"的分量和"合理价格仍要有安全边际"是判断，由模型审查（04C）与总部排名（17C）落实，机器不判断先后。'
+    how_checked: >-
+      Each company's thesis.yml must have a business grade and a management grade; every row of the series ranking in
+      the private repository (hq/ranking.yml) must give the reason for its place; the order itself is a combined
+      judgment under 00 §V13 and is not checked. The check covers only whether the separate grades and the reasons
+      are written. The weight of "business quality first, management quality second, valuation third" and "still
+      requires a meaningful margin of safety" are judgments, carried out by the model review (04C) and HQ's ranking
+      (17C); the machine does not judge the order.
 
   - id: R2
     kind: constitution
-    title: 质量试金石
-    text: '股市关闭十年，是否仍愿意持有？看持久的护城河、定价权、高资本回报、不断增长的自由现金流。'
+    title: The quality touchstone
+    text: >-
+      "If the stock market closed for 10 years, would I still want to own this business?" — looks for a durable
+      competitive advantage/moat, pricing power, high capital returns, and growing free cash flow.
     checks: [C-TESTS-COVERAGE, C-STALENESS]
-    how_checked: '每家公司 thesis tests 的 covers 合起来必须包含 moat、pricing_power、returns_on_capital、free_cash_flow；时效测试按 reviewed 日期报警过期未复核的部分（C-STALENESS 只报警，不挡合并）。检查保证四个方面都有测试守着、判断按期复核；测试本身写得好不好，由反方（04B）和总部复核。'
+    how_checked: >-
+      Taken together, the covers fields of each company's thesis tests must include moat, pricing_power,
+      returns_on_capital and free_cash_flow; staleness tests warn, by the reviewed date, about parts overdue for review
+      (C-STALENESS only warns and does not block merging). The checks make sure that all four aspects are guarded by
+      tests and that the judgments are reviewed on schedule; whether the tests themselves are well written is reviewed
+      by the red team (04B) and HQ.
 
   - id: R3
     kind: constitution
-    title: 管理层
-    text: '资本配置是否理性、是否像所有者一样思考、是否以长期股东价值为先，回购、分红与再投资是否得当。'
+    title: Management
+    text: >-
+      Management quality test: whether management allocates capital rationally, thinks like owners, prioritizes
+      long-term shareholder value, and uses buybacks/dividends/reinvestment sensibly.
     checks: [C-TESTS-CAPALLOC]
-    how_checked: '每家公司至少一条测试的 covers 含 capital_allocation，至少一条含 management。只检查测试存在；芒格矩阵管理层一半的两条读数（00 §V14）由事实审计（12A）与模型审查（04C）验算，机器不评价管理层。'
+    how_checked: >-
+      For each company, the covers of at least one test include capital_allocation, and of at least one include
+      management. Only the existence of the tests is checked; the two readings for the management half of the Munger
+      matrix (00 §V14) are recomputed by the fact audit (12A) and the model review (04C). The machine does not assess
+      management.
 
   - id: R4
     kind: constitution
-    title: 集中与仓位
-    text: '集中持有约 4–5 家核心企业；不值得占一个有意义仓位的企业，也不值得拥有。10–20% 是入选门槛，不是目标。仓位来自理解深度、企业质量、管理层质量、长期确定性和安全边际，不来自波动率或回撤模型。这是资本配置的框架，不机械套用。仓位由所有者决定。'
+    title: Concentration and position size
+    text: >-
+      Prefers a concentrated portfolio of a small number of high-conviction businesses, typically around 4–5 core
+      holdings, rather than broad diversification; if a business isn't worth a meaningful position, it isn't worth
+      owning at all. Position-sizing rule: 10–20% is a qualification threshold for buying at all, not a mandatory
+      allocation target. Position size should NOT come from historical volatility, max-drawdown math, or generic risk
+      models — it should come from depth of understanding, business quality, management quality, long-term certainty,
+      and valuation margin of safety. These position-sizing principles are a framework for capital allocation, not
+      rigid rules to be applied mechanically. The owner decides position size.
     checks: [C-CONCENTRATION, C-DECISION-RIGHTS]
-    how_checked: 'decision-rights.yml 的 portfolio.max_holdings 是正整数（大于 5 时报警，条文是“约 4–5 家”）、entry_band 等于 [0.10, 0.20]；status 为 holding 的公司多于上限时报警，不报错；私有仓库买入、加仓备忘录的目标仓位低于入选门槛下沿（10%）为错误，高于上沿（20%）允许（确信度更高的企业可以获得更大的仓位），但须在 weight_note 里写明理由，没写时报警；buy、add、trim、sell 只在决策 L3，决定者是所有者。"仓位不来自波动率模型"是方法要求，没有对应的机器检查。'
+    how_checked: >-
+      In decision-rights.yml, portfolio.max_holdings is a positive integer (a value above 5 warns: the rule says
+      "around 4–5") and entry_band equals [0.10, 0.20]. More companies with status holding than the limit warns; it is
+      not an error. In the private repository, a buy or add memo whose target weight is below the bottom of the entry
+      bar (10%) is an error; above the top (20%) is allowed (a higher-conviction business can get a larger position),
+      but weight_note must give the reason, and a missing reason warns. buy, add, trim and sell are decision level L3
+      only, decided by the owner. "Position size should NOT come from historical volatility, max-drawdown math, or
+      generic risk models" is a requirement on method with no machine check.
 
   - id: R5
     kind: constitution
-    title: 估值的位置
-    text: '需要一个明确的近似价值，否则无从判断；但 DCF 只是近似和辅助，不是决策引擎；不把模型推到让企业显得过分高估或低估；估值不压过企业质量；不以市盈率比较代替估值。折现率的细则见 §V1。'
+    title: The place of valuation
+    text: >-
+      Distrusts P/E-based valuation, while still wanting an explicit approximate value, since without one the owner feels
+      lost. DCF is just an approximation/replication of value, not a precise instrument, and shouldn't be pushed to
+      make a business look too over- or under-valued. DCF is a supporting framework, not a decision-making engine —
+      valuation should inform an investment decision but should not override business quality. Details of the
+      discount rate are in §V1.
     checks: [C-DISCOUNT-RATE]
-    how_checked: '私有仓库每个 valuation.yml 的 discount_rate.total 等于 risk_free 加 premium；填了折现率时 discount_rate.note 写明溢价的判断依据，method_note 非空；缺国债收益率的取值日期（risk_free_date）时报警；不在公司之间比较溢价（decisions/0012）。只检查折现率的算术与记录；"DCF 只是辅助、不压过企业质量"由模型审查（04C）逐项检查（重复打折、单一折现率、只给区间），机器不判断。'
+    how_checked: >-
+      In the private repository, every valuation.yml has discount_rate.total equal to risk_free plus premium; once a
+      discount rate is filled in, discount_rate.note states what the premium is based on and method_note is not
+      empty; a missing date for the Treasury yield (risk_free_date) warns; premiums are not compared across companies
+      (decisions/0012). Only the arithmetic and the record of the discount rate are checked. "DCF is a supporting
+      framework" that "should not override business quality" is checked item by item by the model review (04C)
+      (double discounting, a single discount rate, ranges only); the machine does not judge it.
 
   - id: R6
     kind: constitution
-    title: 持有与卖出
-    text: '理想的持有期是无限期——只要基本面、护城河和管理层没有永久恶化就一直持有；1–3 年只是最短的观察窗口。只因永久性恶化或明显更好的机会卖出：护城河永久受损、商业模式根本改变、管理层质量下降、资本配置严重失误、出现明显更好的长期机会。不因价格下跌、衰退、市场恐慌或单季不及预期卖出。'
+    title: Holding and selling
+    text: >-
+      Ideal holding period is indefinite — holds as long as a company's fundamentals, moat, and management haven't
+      permanently deteriorated; treats 1–3 years only as a minimum observation window, not the real target. Sells only
+      for permanent deterioration: a permanently damaged moat, a fundamentally changed business model, declining
+      management quality, seriously bad capital allocation, or finding a clearly better long-term opportunity. Will
+      not sell because of price declines, a recession, market panic, or a short-term earnings miss on an
+      otherwise-sound business.
     checks: [C-SELL-REASONS, C-DEFAULT-HOLD, C-SCHEMA]
-    how_checked: 'memo.sell_reasons 与 memo.schema.json 的 sell_reason 枚举一致，forbidden_sell_reasons 含价格下跌、衰退、恐慌、单季不及预期；私有仓库的减仓、卖出备忘录必须引用允许的理由；默认选项是 maintain、14 天不回复按默认；升级请求的 schema 只接受四种企业内部原因，起草者只能是公司经理，备忘录的起草者只能是总部。检查只看理由填的是哪一种；是否真的"永久恶化"由总部（17B）核对事实后判断、所有者决定。"无限期持有、1–3 年只是观察窗口"没有对应的机器检查。'
+    how_checked: >-
+      memo.sell_reasons matches the sell_reason enum of memo.schema.json, and forbidden_sell_reasons includes price
+      decline, recession, panic and a single-quarter miss; trim and sell memos in the private repository must cite an
+      allowed reason; the default option is maintain, and no reply within 14 days means the default; the
+      escalation-request schema accepts only the four causes inside the business, and only the company manager can
+      draft a request, while only HQ can draft a memo. The check looks only at which reason is filled in; whether the
+      deterioration is really permanent is judged by HQ (17B) after checking the facts, and decided by the owner.
+      "Ideal holding period is indefinite" and "1–3 years only as a minimum observation window" have no machine check.
 
   - id: R7
     kind: constitution
-    title: 机会成本
-    text: '买入或继续持有，长期预期回报与质量都要过得了伯克希尔或 VOO 这条比较线（持仓低于比较线时，由总部在 17C 判断是否构成 R6 的"明显更好的机会"）。新想法和现有持仓、高质量替代品比较，只有质量相当或更高、长期回报更好、价格合理，才替换或新增。宁可长期拥有少数优秀企业，也不不停地寻找新名字。现金是期权，不为凑仓位或消化闲置现金而买。'
+    title: Opportunity cost
+    text: >-
+      Won't buy or hold a position unless its expected long-term return/quality clears Berkshire or VOO as the
+      comparison bar (when a holding falls below the comparison bar, HQ judges in 17C whether this constitutes R6's
+      "clearly better long-term opportunity"). Investment ideas are compared against existing holdings and
+      high-quality alternatives; only replaces or adds a name if it's higher-or-similar quality, better long-term
+      return, and reasonably valued. Prefers owning a small number of excellent businesses for the long run over
+      continuously hunting new names. Won't add capital purely to hit a target position weight, and won't invest
+      simply because cash is sitting idle — treats un-deployed cash as optionality/dry powder rather than a gap that
+      must be filled.
     checks: [C-HURDLE]
-    how_checked: '私有仓库每个 valuation.yml 记录伯克希尔与 VOO 两个参照（hurdles）。门槛次序按 00 §V6 的工程默认：伯克希尔在当前价格下的长期回报测算是第一道门槛，指数的前瞻回报是第二道参照，不取两者中较高者。买入、加仓备忘录的长期预期回报必须高于第一道门槛，也不能自设低于它的门槛，否则为错误；只过第一道、没过 VOO 参照时报警，备忘录写明理由；持仓低于任一条线时报警，交总部判断（报警本身不是升级理由）。质量那一半与"现金是期权"没有对应的机器检查：没有公司过门槛时，总部不写买入备忘录。'
+    how_checked: >-
+      Every valuation.yml in the private repository records two references, Berkshire and VOO (hurdles). The order of
+      the hurdles follows the engineering default of 00 §V6: Berkshire's long-term return estimate at its current
+      price is the first hurdle, and the index's forward return is the second reference; the higher of the two is not
+      taken. A buy or add memo's expected long-term return must be above the first hurdle, and the memo may not set
+      itself a lower hurdle; otherwise it is an error. Clearing the first hurdle but not the VOO reference warns, and
+      the memo gives the reason; a holding below either line warns and goes to HQ for judgment (the warning by itself
+      is not a reason to escalate). The quality half and "treats un-deployed cash as optionality" have no machine
+      check: when no company clears the hurdle, HQ writes no buy memo.
 
   - id: R8
     kind: constitution
-    title: 少交易
-    text: '倾向一次下单建仓，不拆成多笔小单（在所有者的规模下，每笔佣金不可忽略）；不喜欢频繁交易；不追求完美买点。'
+    title: Trade rarely
+    text: >-
+      Prefers building a position in one order rather than several small tranches (per-trade minimum commission is
+      material at the owner's portfolio size); dislikes frequent trading generally. Avoid chasing the "perfect" entry point.
     checks: [C-SINGLE-ORDER]
-    how_checked: 'portfolio.single_order_entry 为 true；买入、加仓备忘录的 order.type 为 single，摘要或说明里写分批方案即报错；同一家公司 31 天内有多份生效的买入、加仓备忘录时报警；每月备忘录数超过 memo.monthly_target_max 时报警。只检查备忘录的写法；原文是"倾向"，所有者本人决定时不受此限，下单由所有者亲手执行。'
+    how_checked: >-
+      portfolio.single_order_entry is true; a buy or add memo has order.type single, and a staged plan in its summary
+      or note is an error; several live buy or add memos for the same company within 31 days warn; more memos in a
+      month than memo.monthly_target_max warns. Only the way memos are written is checked; the original says
+      "prefers", so the owner is not bound by this when deciding personally, and orders are placed by the owner
+      personally.
 
   - id: R9
     kind: constitution
-    title: 下跌不是论点
-    text: '市场或核心企业下跌本身不改变论点；若因此长期预期回报明显上升，是考虑追加资金的情形（由总部提出，所有者决定，决策 L3）。'
+    title: A decline is not a thesis
+    text: >-
+      A market-wide decline is not, by itself, a reason to change the thesis; if the broad market or the core
+      businesses fall meaningfully and long-term expected returns rise, the owner would consider adding fresh capital to increase
+      core positions rather than treating the decline as risk (proposed by HQ, decided by the owner; decision level
+      L3).
     checks: [C-DECISION-RIGHTS, C-SCHEMA]
-    how_checked: 'add 只在决策 L3、决定者是所有者；备忘录 schema 规定起草者只能是总部，升级请求 schema 的理由只有 R6 的四种企业内部原因，公司经理因此无从提出追加资金。"下跌本身不改变论点"是判断，机器不检查；价格静默（H2）让起草者看不到日常股价。'
+    how_checked: >-
+      add is decision level L3 only, decided by the owner; the memo schema allows only HQ as the drafter, and the
+      escalation-request schema accepts as reasons only R6's four causes inside the business, so a company manager has
+      no way to propose adding capital. "A market-wide decline is not, by itself, a reason to change the thesis" is a
+      judgment and is not machine-checked; price silence (H2) keeps daily share prices from the drafters.
 
   - id: R10
     kind: constitution
-    title: 决策前五步
-    text: '理解生意 → 评估护城河与管理层 → 估计长期价值创造 → 与现有持仓比较预期回报 → 判断当前价格是否有合理的安全边际。'
+    title: Five steps before a decision
+    text: >-
+      Understand the business → evaluate moat and management → estimate long-term value creation → compare expected
+      return against existing holdings → decide whether the current price offers a reasonable margin of safety.
     checks: [C-SCHEMA]
-    how_checked: '备忘录 schema 要求至少两个选项且其中一个是 maintain、引用的条款（R 或 H 编号）和起草者；升级请求 schema 要求写明触发的测试（test_ids）、至少一条带来源标签的事实、原因和结论。只检查记录一侧：五步有没有真正走完，由总部起草备忘录时写明、所有者判断。备忘录的 evidence 字段目前是可选的，写了才检查来源标签的格式。'
+    how_checked: >-
+      The memo schema requires at least two options, one of them maintain, the clauses cited (R or H numbers) and the
+      drafter; the escalation-request schema requires the tests triggered (test_ids), at least one fact with a source
+      tag, the cause and the conclusion. Only the record is checked: whether the five steps were really taken is set
+      out by HQ when drafting the memo and judged by the owner. The memo's evidence field is optional for now; the
+      format of its source tags is checked only when it is filled in.
 
   - id: R11
     kind: constitution
-    title: 记录过程，不按结果打分
-    text: '好决策可能有坏结果，坏决策也可能有好结果。决策记录训练的是推理过程。'
+    title: Record the process; don't grade by results
+    text: >-
+      The journal records decisions rather than grading them by results — the aim is to train the reasoning process,
+      since good decisions can produce bad results and bad decisions good results.
     checks: [C-SCHEMA, C-PREREG-TIMING, C-PREREG-IMMUTABLE, C-TEST-FROZEN]
-    how_checked: '决策日志 schema 要求九个字段（日期、决定、公司、原始论点、假设、预期结果、风险、复盘日期、结果）；预注册的截止时间落在发布日之前、合并时间早于截止时间，所有者改写的截止时间与系统文件相同（C-PREREG-TIMING）；截止之后每个条目文件旁边必须有 OpenTimestamps 证明，装有 ots 客户端时证明必须核验通过（C-PREREG-IMMUTABLE）；PR 检查给出基线版本和当期时，当期有效的测试门槛不得改动或删除（C-TEST-FROZEN，没有这两个参数时空过）。机器只能保证判断在结果出来之前写下、事后不被改动；"不按结果打分"靠结算员只记兑现与否、不评价当时的决策（15B），机器不检查。'
+    how_checked: >-
+      The decision-log schema requires nine fields (date, decision, company, original thesis, assumptions, expected
+      outcome, risks, review date, outcome). A pre-registration's deadline falls before the release date, its merge
+      time is earlier than the deadline, and the owner's override has the same deadline as the system's file
+      (C-PREREG-TIMING); after the deadline every items file must have an OpenTimestamps proof next to it, and where
+      the ots client is installed the proof must verify (C-PREREG-IMMUTABLE); when a PR check is given a base version
+      and the current period, test thresholds in force for that period may not be changed or deleted (C-TEST-FROZEN;
+      without these two parameters it passes without checking). The machine can only ensure that judgments are written
+      down before the results are out and are not changed afterwards; "rather than grading them by results" relies on
+      the settler recording only whether an expectation came true, without judging the decision made at the time
+      (15B), and the machine does not check it.
 
   - id: R12
     kind: constitution
-    title: 能力圈
-    text: '保持谦逊；兴趣不等于决策，理解不够就不投。所有者自述最了解的是云与企业软件；半导体仍在学习（周期性强，长期赢家难以预测）。'
+    title: Circle of competence
+    text: >-
+      Maintains general humility about investing outside the owner's circle of competence; interest does not equal an
+      investment decision without sufficient understanding. By the owner's own account: strongest understanding in cloud and
+      enterprise software; semiconductors are an area where the owner continues learning, given their cyclicality and how
+      hard it is to predict long-term winners.
     checks: [C-SCHEMA]
-    how_checked: 'thesis.yml 必须声明校准领域 domain（枚举之一），预注册条目与预测记录同样带 domain，校准按领域统计。只检查领域有没有声明；"理解不够就不投"要等已结算的预测攒够、按领域算出校准分之后才能用数据检验（第 4 阶段），在那之前靠总部排名（17C）参考趋势。'
+    how_checked: >-
+      thesis.yml must declare a calibration domain, domain (one of the enum values); pre-registration items and
+      forecast records carry domain too, and calibration is counted by domain. Only whether the domain is declared is
+      checked. "Interest does not equal an investment decision without sufficient understanding" can be tested with
+      data only once enough settled forecasts have accumulated and calibration scores are computed by domain (phase
+      4); until then HQ's ranking (17C) looks at the trend.
 
   - id: R13
     kind: constitution
-    title: 心性
-    text: '不过度交易；不因价格波动改变长期判断；不追求完美买点；把价格波动与永久性损害分开；保持耐心。'
+    title: Temperament
+    text: >-
+      Avoid over-trading, avoid changing long-term judgment because of price moves, avoid chasing the "perfect" entry
+      point, keep price volatility separate from permanent business impairment, and stay patient.
     checks: [C-SINGLE-ORDER, C-NO-TRADING, C-NO-PRICE-FEED, C-DEFAULT-HOLD]
-    how_checked: '检查的是把这些提醒变成默认值的机制：买入、加仓只写一次下单，每月备忘录不超过目标（C-SINGLE-ORDER）；系统没有任何券商或下单接口（C-NO-TRADING）；不接日常行情（C-NO-PRICE-FEED）；资金事项默认维持现状（C-DEFAULT-HOLD）。心性本身无法检查。'
+    how_checked: >-
+      What is checked are the mechanisms that turn these reminders into defaults: buy and add memos describe a single
+      order, and memos stay within the monthly target (C-SINGLE-ORDER); the system has no broker or order interface of
+      any kind (C-NO-TRADING); no daily market data is connected (C-NO-PRICE-FEED); money matters default to
+      maintaining the status quo (C-DEFAULT-HOLD). Temperament itself cannot be checked.
 
-  # ---------- 硬规则（kind: hard_rule） ----------
+  # ---------- Hard rules (kind: hard_rule) ----------
   - id: H1
     kind: hard_rule
-    title: 出处
-    text: '档案、报告、更新里的每个事实数字都带来源标签（§E1）。没有出处的数字不写进任何交付物。'
+    title: Sources
+    text: >-
+      Every factual number in archives, reports and updates carries a source tag (§E1). A number without a source
+      goes into no deliverable.
     checks: [C-SRC-TAG, C-SRC-FACT, C-SRC-ACCESSION]
-    how_checked: '档案内容里的 Markdown（companies/、industries/、letters/ 与 mistakes.md）中含事实数字的句子都有可解析的 [src:] 标签；YAML 的 source 字段与自由文本里的事实数字能解析到 sources.yml；定期报告来源缺 EDGAR 登记号时报警。检查看标签在不在、能不能解析；数字与原文是否一致，由事实审计（04A、09A、12A）逐条核对。'
+    how_checked: >-
+      In the Markdown of archive content (companies/, industries/, letters/ and mistakes.md), every sentence with a
+      factual number has a parseable [src:] tag; YAML source fields and factual numbers in free text resolve to
+      sources.yml; a periodic-report source without an EDGAR accession number warns. The checks see whether tags are
+      present and resolvable; whether the numbers match the source is checked one by one by the fact audit (04A, 09A,
+      12A).
 
   - id: H2
     kind: hard_rule
-    title: 价格静默
-    text: '不抓取、不展示日常股价，也不凭记忆写任何价格。允许出现的价格只有四类，都带日期和来源：(1) 私有文件（估值、研报、完整企业报告）里的"价格参照"，供对价格的评级、价格 ÷ 中枢和由价格推出的回报测算使用；(2) 五年回测所需的历年年末未复权收盘价，只存私有估值文件；(3) 公司文件披露的历史回购均价——这是公司的事实，可以写进公开的 `ledger.yml`；(4) 跨越事先写好的价值区间时的一次性提醒。(1)(2) 由流水线以 `price_reference`、`year_end_closes` 输入提供；没有提供就不写，登记进未知清单。之所以静默：日常股价会把判断锚在价格上，而这个系统判断的是生意。'
+    title: Price silence
+    text: >-
+      Do not fetch or display daily share prices, and do not write any price from memory. Only four kinds of price
+      may appear, each with a date and a source: (1) the "price reference" in private files (valuations, research
+      reports, complete company reports), used for the grade given to the price, for price ÷ central value, and for
+      return estimates derived from the price; (2) the unadjusted year-end closing prices of past years that the
+      five-year backtest needs, kept only in the private valuation files; (3) historical average buyback prices
+      disclosed in company filings — these are facts about the company and may go into the public `ledger.yml`; (4) a
+      one-time alert when a value range written in advance is crossed. (1) and (2) are supplied by the pipeline as the
+      `price_reference` and `year_end_closes` inputs; if they are not supplied, nothing is written and the gap goes
+      into the unknowns register. The reason for silence: daily share prices anchor judgment to the price, and this
+      system judges the business.
     checks: [C-NO-PRICE-FEED]
-    how_checked: '代码与 workflow 不引用任何行情源（私有仓库的回测取价与价格提醒模块除外）；公开数据文件没有价格类的键；公开档案内容不写股价。"不凭记忆写价格"和四类价格各带日期与来源，由事实审计核对，没有专门的检查。'
+    how_checked: >-
+      Code and workflows reference no market-data source (except the private repository's modules for backtest prices
+      and price alerts); public data files have no price keys; public archive content states no share prices. "Do not
+      write any price from memory" and the date and source on each of the four kinds of price are checked by the fact
+      audit; there is no dedicated check.
 
   - id: H3
     kind: hard_rule
-    title: 不给买卖建议，不执行交易
-    text: '任何输出都不含下单指令。'
+    title: No buy or sell advice, no trading
+    text: >-
+      No output contains an order instruction.
     checks: [C-PUBLIC-NO-ADVICE, C-NO-TRADING]
-    how_checked: '公开档案内容（companies/、industries/、forecasts/、letters/、mistakes.md）与各处 README 不含买卖建议用语；任何代码、notebook 与 workflow 不引用券商或下单接口。'
+    how_checked: >-
+      Public archive content (companies/, industries/, forecasts/, letters/, mistakes.md) and every README contain no
+      buy or sell advice wording; no code, notebook or workflow references a broker or order interface.
 
   - id: H4
     kind: hard_rule
-    title: 公私分离
-    text: '价值区间、中枢、折现率、由价格推出的回报测算、对价格的评级、价格参照、L3 备忘录、升级请求、带金额的决策记录，只存私有仓库。公开文件（包括否定句、注释、YAML 的 note、PR 正文、PR 附件和 issue）里不得出现这些数字，也不得出现禁用用语清单里的任何一个。公开文件也不写以当前股价为输入的倍数或比率（市盈率、市值、自由现金流收益率等）。需要指代私有内容时，只写"估值见私有文件"。资本回报率、利润率、增速、测试门槛等经营数字照常写。'
+    title: Public/private separation
+    text: >-
+      Value ranges, the central value, the discount rate, return estimates derived from the price, the grade given to
+      the price, the price reference, L3 memos, escalation requests and decision records with amounts are kept only
+      in the private repository. Public files (including negative sentences, comments, YAML notes, PR bodies, PR
+      attachments and issues) may not contain these numbers, nor any term on the list of banned terms. Public files
+      also state no multiples or ratios that take the current share price as an input (P/E, market capitalization,
+      free-cash-flow yield, etc.). Where private content must be referred to, write only "valuation: see private
+      files". Operating numbers such as returns on capital, margins, growth rates and test thresholds are written as
+      usual.
     checks: [C-PUBLIC-NO-VALUATION, C-PUBLIC-NO-AMOUNTS]
-    how_checked: '公开仓库没有 valuation 文件、memos/、escalations/、decision-log/；任何 YAML 没有估值、价格参照、由价格推出的回报或对价格的评级一类的键，也没有持仓金额与账户类的键；档案内容（companies/、industries/、forecasts/、letters/、mistakes.md）里没有禁用用语、带数字的价格区间和仓位数字，以股价为输入的倍数或比率与数字同句出现即报错。用语扫描不覆盖 constitution/、agents/（README 除外）与 docs/，这些文件靠写作时自查；PR 正文与 issue 还不在扫描范围内。'
+    how_checked: >-
+      The public repository has no valuation files and no memos/, escalations/ or decision-log/; no YAML file has keys
+      for valuations, price references, returns derived from the price or grades given to the price, nor keys for
+      position amounts or accounts; archive content (companies/, industries/, forecasts/, letters/, mistakes.md)
+      contains no banned terms, no price ranges with numbers and no position figures, and a multiple or ratio that
+      takes the share price as an input, in the same sentence as a number, is an error. The wording scan does not
+      cover constitution/, agents/ (except the README) or docs/; those files rely on self-checking when they are
+      written. PR bodies and issues are not scanned yet.
 
   - id: H5
     kind: hard_rule
-    title: 可复现
-    text: '模型调用只经 `pipeline/llm.py`，它记录模型名、00 的版本、提示词版本（git 哈希）和输入哈希。提示词不指定模型。不经 `llm.py` 产生的内容（包括手动对话的产出）不能直接合并，只能作为线索，由流水线重跑后才能合并。'
+    title: Reproducibility
+    text: >-
+      Model calls go only through `pipeline/llm.py`, which records the model name, the version of 00, the prompt
+      version (git hash) and the input hash. Prompts do not specify models. Content not produced through `llm.py`
+      (including the output of manual conversations) cannot be merged directly; it serves only as a lead and can be
+      merged only after the pipeline has rerun it.
     checks: [C-LLM-ENTRY]
-    how_checked: '除 pipeline/llm.py 外，任何代码、notebook 与 workflow 不导入模型 SDK、不直接调用模型接口。只检查入口唯一；日志字段由 owners-office 的 tests/test_llm.py 覆盖（单独记录 00 的版本要等 llm.py 升级）；"手动产出不能直接合并"由总部放行（17A）把关，没有专门的检查。'
+    how_checked: >-
+      Apart from pipeline/llm.py, no code, notebook or workflow imports a model SDK or calls a model API directly. Only
+      the single entry point is checked; the log fields are covered by owners-office's tests/test_llm.py (recording the
+      version of 00 separately waits for an llm.py upgrade); "cannot be merged directly" for manual output is enforced
+      by HQ's release gate (17A); there is no dedicated check.

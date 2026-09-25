@@ -1,21 +1,24 @@
-# 事实审计：独立监督之一。只判断每一条事实对不对：看抽取员拆出的原子事实和一手原文，看不到成品的推理和结论。
-# reports_to 为 null：独立监督不向任何经理人汇报（DESIGN.md 组织结构）；总部和公司经理都不能指挥或改写审计结论。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 auditor.md。
-# can_see / cannot_see 用提示词 front matter 的输入名；conclusions、reasoning 沿用隔离表的说法（C-AGENT-ISOLATION）。
+# Fact audit: one of the independent oversight roles. It judges only whether each fact is right: it sees the atomic facts
+# the extractor split out and the primary sources, not the product's reasoning or conclusions.
+# reports_to is null: independent oversight reports to no manager (DESIGN.md, organization chart); neither HQ nor the
+# company manager can direct or rewrite audit conclusions.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in auditor.md.
+# can_see / cannot_see use the input names from the prompts' front matter; conclusions and reasoning keep the terms of
+# the isolation table (C-AGENT-ISOLATION).
 role: auditor
-name: 事实审计
+name: Fact audit
 model:
   id: claude-fable-5-1
   effort: high
   fallbacks: default
-  why: 监督类角色用最强模型：审计是防错的最后一道（设计文档默认值，decisions/0003）。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。不在预算降级顺序里。
+  why: Oversight roles use the strongest model, since the audit is the last line of defense against errors (design document default, decisions/0003). fallbacks is default, meaning that on a refusal the server's default fallback rules apply; the model that actually answered is recorded by pipeline/llm.py. Not in the budget's downgrade order.
 reports_to: null
 can_see:
-  - fact_table                   # 16A 从成品里抽出的原子事实，附流水线按来源标签截取的原文片段
-  - sources                      # 一手材料全文与来源表
-  - field_evidence               # 只在 09A 审 07 时给
+  - fact_table                   # the atomic facts 16A extracted from the product, with the source excerpts the pipeline cut by source tag
+  - sources                      # full text of the primary materials, and the source table
+  - field_evidence               # given only when 09A audits 07
 cannot_see:
-  - product                      # 被审的成品本身
+  - product                      # the product under audit itself
   - report
   - document
   - doc_02
@@ -26,8 +29,8 @@ cannot_see:
   - thesis
   - update
   - draft_outputs
-  - reasoning                    # 成品的推理
-  - conclusions                  # 成品的结论与其他审计部分的结果
+  - reasoning                    # the product's reasoning
+  - conclusions                  # the product's conclusions and the results of the other audit parts
 outputs:
   - fact_verdicts
   - findings

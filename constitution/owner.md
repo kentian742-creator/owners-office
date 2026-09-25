@@ -1,263 +1,266 @@
-# 投资宪法
+# Investment constitution
 
-> **本文件是 Owner's Office 里唯一记载投资信念的地方。** 大佬原则（[masters.md](masters.md)）、决策权（[decision-rights.yml](decision-rights.yml)）、角色定义（[agents/](../agents/)）、公司档案和股东信都只能引用这里的条款，不得另立或改写投资信念。
+A Chinese version is in [zh-CN/constitution/owner.md](../zh-CN/constitution/owner.md).
 
-- **版本：** v2，2026-09-24 生效；只能按文末的修宪程序修改。
-- **来源：** 所有者自己的投资宪法（英文笔记，2026-09-16 版；原文存私有仓库，账户金额与持仓快照已删去）。释义逐条忠于原文，不增加信念。
-- **与系列规则 00 的关系：** 00 是驱动全部研究工作的提示词规则书，和各提示词一起放在私有仓库，公开文件只按编号引用它的条款（如 00 §V13）和提示词（如 17C），见 [decisions/0009](../docs/decisions/0009-prompt-set-v3.md)。00 §C 是本文件的逐条摘要：R1–R13 的编号与条文和 §C 一字不差，两者不一致时以 §C 为准，并交总部处理。优先级：硬规则（H）> 投资宪法（R）> 00 的其余条款 > 单个提示词的特有规则。
-- **所有者的角色：** 系统在本宪法之内自治运行，所有者只做两件事：资本配置（买入、加仓、减仓、卖出）和修宪。
-- **结构：** 总纲说明所有者是谁、要什么；十三条投资宪法（R1–R13）是系统据以自治的规则；五条硬规则（H1–H5）是任何角色、任何信任等级都不能越过的边界；最后是修宪程序。每条写四样：条文、释义、系统怎么执行、可执行检查。
-- **执行：** 每条至少对应一项可执行检查，检查定义在 thesis-ci 的 `spec/checks.yml`；条文与检查的对应关系另有机器可读版本 [rules.yml](rules.yml)，规则参数在 [decision-rights.yml](decision-rights.yml)。很多条文是判断，机器只能检查它的记录一侧；`rules.yml` 的 `how_checked` 照实写明每项检查管到哪一步。
-- **读法：** 条文里的数字是规则参数，不是事实，不带来源标签。
+> **This file is the only place in Owner's Office where investment beliefs are written down.** The masters' principles ([masters.md](masters.md)), decision rights ([decision-rights.yml](decision-rights.yml)), role definitions ([agents/](../agents/)), company archives and letters to the owner may only cite the clauses here; they may not set up investment beliefs of their own or rewrite these.
 
-## 总纲：所有者是谁、要什么
+- **Version:** v2, in force from 2026-09-24; it can be changed only through the amendment procedure at the end of this file.
+- **Source:** the owner's own investment constitution (English notes, version of 2026-09-16; the original is kept in the private repository, with account amounts and the holdings snapshot removed). The interpretations follow the original rule by rule and add no beliefs.
+- **Relation to series rules 00:** 00 is the prompt rulebook that drives all research work. It is kept with the prompts in the private repository; public files cite its clauses (e.g. 00 §V13) and the prompts (e.g. 17C) by id only, see [decisions/0009](../docs/decisions/0009-prompt-set-v3.md). 00 §C is a rule-by-rule summary of this file: the numbers and rule text of R1–R13 are identical to §C, word for word. If the two differ, §C prevails and the discrepancy goes to HQ. Priority: hard rules (H) > investment constitution (R) > the rest of 00 > rules specific to a single prompt.
+- **The owner's role:** the system runs itself within this constitution. The owner does only two things: capital allocation (buying, adding, trimming, selling) and amending the constitution.
+- **Structure:** a preamble says who the owner is and what the owner wants; the thirteen rules of the investment constitution (R1–R13) are the rules the system governs itself by; the five hard rules (H1–H5) are boundaries that no role at any trust level may cross; the amendment procedure comes last. Each rule has four parts: the rule, its interpretation, how the system enforces it, and the executable checks.
+- **Enforcement:** each rule maps to at least one executable check; the checks are defined in thesis-ci's `spec/checks.yml`. The mapping from rules to checks also exists in machine-readable form in [rules.yml](rules.yml), and the rule parameters are in [decision-rights.yml](decision-rights.yml). Many rules are judgments, and a machine can check only the record they leave; the `how_checked` field in `rules.yml` states plainly how far each check reaches.
+- **How to read it:** numbers in the rules are rule parameters, not facts, and carry no source tags.
 
-不编号，也不是执行参数；它说明下面十三条从哪里来。
+## Preamble: who the owner is and what the owner wants
 
-- **所有者式的投资者。** 把自己看作长期的、企业所有者式的投资者：买一只股票就是买下一门生意的一部分，而不是交易价格的波动。
-- **借鉴而不照搬。** 借鉴巴菲特与芒格的思想，但不机械套用：用所有者的眼光去用，而不是模仿。
-- **长期目标。** 希望随时间获得约 8–10% 以上的年化复利，同时承认实际回报取决于企业的经营、估值、资本配置和市场环境。这是自我描述，不是估值参数：折现率里不含个人要求回报率（00 §V1），买入和持有的比较线是伯克希尔或 VOO（R7）。
-- **仍在成长。** 把判断力、耐心和情绪控制看作随经验提高的能力，自己的投资纪律与心性仍在锤炼之中。
-- **范围。** 本宪法管的是由少数核心企业组成的集中组合，这个组合有意不放宽基指数基金。组合之外另有一笔按月定投 VOO 的安排，不在本宪法和系统的管理范围之内。
+Not numbered, and not an enforcement parameter; it explains where the thirteen rules below come from.
 
-## 一、投资宪法（R1–R13）
+- **An owner-type investor.** Considers themselves a long-term, business-owner-type investor: buying a stock means buying part of a business, not trading price moves.
+- **Borrowing, not copying.** Draws on Buffett's and Munger's thinking, but not mechanically: applies it through an owner's-mindset lens rather than imitation.
+- **Long-term objective.** Seeks approximately 8–10%+ annualized compounding over time, while recognizing that actual returns depend on business performance, valuation, capital allocation and market conditions. This is a self-description, not a valuation parameter: the discount rate contains no personal required return (00 §V1), and the hurdle for buying and holding is Berkshire or VOO (R7).
+- **Still growing.** Sees judgment, patience and emotional control as abilities that improve with experience; their own investing discipline and temperament are still being forged.
+- **Scope.** This constitution governs a concentrated portfolio of a few core businesses, which deliberately holds no broad-market index funds. Outside that portfolio there is a separate plan that buys VOO every month; it is outside the scope of this constitution and of the system.
 
-### R1 顺序与价格观
+## I. Investment constitution (R1–R13)
 
-**条文：** 企业质量第一，管理层第二，估值第三。宁可用合理价格买优秀企业，也不用低价买普通企业；合理价格不等于任何价格，仍要有与质量、预期回报和不确定性相称的安全边际；也不机械地等待极端低价——错过优秀企业长期复利的代价，大于把买点再优化一点的好处。
+### R1 Order and price
 
-**释义：** 分析的先后是生意、管理层、估值：一门好生意胜过一个便宜的价格。价格影响未来的回报，但长期复利的能力由企业质量决定；不会只因为便宜就买一家自己不尊重的企业。对尊重的企业，也不无限期地等一个完美或极端的低价；但合理价格不等于任何价格，仍要留出与企业质量、预期回报和不确定性相称的安全边际。
+**Rule:** Business quality first, management quality second, valuation third. Prefers "fair price for an excellent business" over "cheap price for an ordinary business". Fair price does not mean any price: still requires a meaningful margin of safety relative to business quality, future return expectations, and uncertainty. Prefers buying excellent businesses at fair prices rather than requiring extreme undervaluation — the cost of missing a great business's long-term compounding while waiting for a perfect price outweighs the value of further price optimization.
 
-**系统怎么执行：**
-- 公司经理建档时（01A、01B）先写生意，再写管理层，分别给出字母评级；芒格矩阵必须直接落位，不和稀泥（00 §M1）。研报（02、11）的总体评级同样从生意、管理层写起，对价格的评级只放在私有文件里。
-- 总部每季排名（17C）按 00 §V13 综合判断：回报与确定性一起看，生意与管理层评级是确定性的一部分；不按任何单一指标，也不按固定的"生意 → 管理层 → 估值"先后顺序机械排序。
-- "合理价格不等于任何价格"：安全边际单列为百分比折扣（00 §V2），由模型审查（04C）逐项检查。"不机械地等待极端低价"：已删去"合理区间内不投新钱"一类的规则，是否投入新钱由总部起草备忘录、所有者决定（[decisions/0010](../docs/decisions/0010-price-grade-rubric.md)）。
+**Interpretation:** The analysis runs from the business to management to valuation: a great business beats a cheap price. Price affects future returns, but business quality determines the ability to compound over the long term; the owner won't buy a business the owner doesn't respect just because it is cheap. For a business the owner does respect, they also won't wait indefinitely for a perfect or extreme low price; but a fair price does not mean any price, and there must still be a margin of safety that matches the business's quality, the expected return and the uncertainty.
 
-**可执行检查：** C-RATING-ORDER
+**How the system enforces it:**
+- When a company manager builds an archive (01A, 01B), the business is written first and management second, each with its own letter grade; the Munger matrix placement must be made directly, without hedging (00 §M1). The overall grades in research reports (02, 11) likewise start from the business and management; the grade given to the price appears only in private files.
+- HQ's quarterly ranking (17C) is a combined judgment under 00 §V13: return and certainty are weighed together, and the business and management grades are part of certainty. It does not sort mechanically by any single metric, nor by a fixed "business → management → valuation" order.
+- "Fair price does not mean any price": the margin of safety is stated separately as a percentage discount (00 §V2) and checked item by item by the model review (04C). "Rather than requiring extreme undervaluation": rules such as "no new money while the price is inside the reasonable range" have been removed; whether to put in new money is decided by the owner, on a memo drafted by HQ ([decisions/0010](../docs/decisions/0010-price-grade-rubric.md)).
 
-### R2 质量试金石
+**Executable checks:** C-RATING-ORDER
 
-**条文：** 股市关闭十年，是否仍愿意持有？看持久的护城河、定价权、高资本回报、不断增长的自由现金流。
+### R2 The quality touchstone
 
-**释义：** 这个问题把价格从判断里拿掉：十年看不到任何报价，回报只能来自企业自己的经营。所有者要找的是持久的竞争优势（护城河）、定价权、高资本回报和不断增长的自由现金流；在所有者看来，股东回报来自盈利增长、自由现金流增长、回购、分红增长，以及不断加强的护城河。
+**Rule:** "If the stock market closed for 10 years, would I still want to own this business?" — looks for a durable competitive advantage/moat, pricing power, high capital returns, and growing free cash flow.
 
-**系统怎么执行：**
-- 公司经理建档时把档案里的论点破坏者写成 breaker 测试、监控仪表盘写成 watch 测试（01B），合起来必须覆盖护城河、定价权、资本回报和自由现金流四个方面。
-- 新文件入库后，流水线算定量测试，判定员（14T）独立判定定性测试，公司经理按 00 §G3 处置结果（03）。
-- 时效测试让护城河等判断按期复核；芒格矩阵的生意一半用这块试金石论证（00 §M2）。
+**Interpretation:** The question takes price out of the judgment: with no quote to look at for ten years, the return can only come from the business's own operations. The owner looks for a durable competitive advantage (a moat), pricing power, high returns on capital and growing free cash flow. In the owner's view, shareholder returns come from earnings growth, free-cash-flow growth, buybacks, dividend growth and a strengthening moat.
 
-**可执行检查：** C-TESTS-COVERAGE、C-STALENESS
+**How the system enforces it:**
+- When building the archive, the company manager turns the thesis breakers in the dossier into breaker tests and the monitoring dashboard into watch tests (01B); together they must cover moat, pricing power, returns on capital and free cash flow.
+- When new filings come in, the pipeline computes the quantitative tests, the judge (14T) rules independently on the qualitative tests, and the company manager handles the results under 00 §G3 (03).
+- Staleness tests put judgments such as the moat on a review schedule; the business half of the Munger matrix is argued with this touchstone (00 §M2).
 
-### R3 管理层
+**Executable checks:** C-TESTS-COVERAGE, C-STALENESS
 
-**条文：** 资本配置是否理性、是否像所有者一样思考、是否以长期股东价值为先，回购、分红与再投资是否得当。
+### R3 Management
 
-**释义：** 评价管理层，主要看他们怎样使用股东的钱：资本配置是否理性，是否像所有者一样思考，是否把长期股东价值放在前面，回购、分红和再投资用得是否得当。这是所有者检验管理层质量的标准，在分析次序里排在企业质量之后、估值之前（R1）。
+**Rule:** Management quality test: whether management allocates capital rationally, thinks like owners, prioritizes long-term shareholder value, and uses buybacks/dividends/reinvestment sensibly.
 
-**系统怎么执行：**
-- 每家公司至少一条测试检验资本配置、一条检验管理层（01B）。
-- 芒格矩阵的管理层一半按两条可计算的标准论证：五年累计非核心或亏损业务损失 ÷ 同期税后营业利润；同期股东回报有没有被新增债务或股权融资抵消（00 §V14）。评判历史回购用当时的价格和盈利；这部分计算只在私有仓库（H4）。
-- 言行账本记下管理层的数字目标、资本开支计划、回购授权和产品时间表，由结算员（15B）按兑现、部分兑现、未兑现、悄然消失四档结算，并看未兑现的承诺有没有被主动承认。
+**Interpretation:** Management is judged mainly by how it uses shareholders' money: whether it allocates capital rationally, whether it thinks like an owner, whether it puts long-term shareholder value first, and whether it uses buybacks, dividends and reinvestment sensibly. This is the owner's test of management quality; in the order of analysis it comes after business quality and before valuation (R1).
 
-**可执行检查：** C-TESTS-CAPALLOC
+**How the system enforces it:**
+- Each company has at least one test of capital allocation and one test of management (01B).
+- The management half of the Munger matrix is argued against two computable criteria: five-year cumulative losses of non-core or loss-making businesses ÷ after-tax operating profit for the same period; and whether shareholder returns in the same period were offset by new debt or equity financing (00 §V14). Past buybacks are judged against the price and earnings of the time; this calculation is done only in the private repository (H4).
+- The say-do ledger records management's numeric targets, capital expenditure plans, buyback authorizations and product timelines. The settler (15B) settles them in four grades — kept, partially kept, not kept, silently dropped — and checks whether promises not kept were acknowledged unprompted.
 
-### R4 集中与仓位
+**Executable checks:** C-TESTS-CAPALLOC
 
-**条文：** 集中持有约 4–5 家核心企业；不值得占一个有意义仓位的企业，也不值得拥有。10–20% 是入选门槛，不是目标。仓位来自理解深度、企业质量、管理层质量、长期确定性和安全边际，不来自波动率或回撤模型。这是资本配置的框架，不机械套用。仓位由所有者决定。
+### R4 Concentration and position size
 
-**释义：** 组合只放少数几家高确信度的企业，通常四五家；不愿在看不透的企业上拿小仓位——不值得占一个有意义的仓位，就不值得拥有。10–20% 是"够不够格买"的门槛（以所有者的组合规模，5% 的仓位没有意义），不是必须配满的目标：实际仓位取决于确信度、估值、组合面对的机会和风险收益的不对称，理解更深、基本面更强、风险收益更有吸引力的企业可以获得更大的仓位。仓位不从历史波动率、最大回撤或通用的风险模型里算出来。这些是资本配置的框架，不是机械套用的规则。
+**Rule:** Prefers a concentrated portfolio of a small number of high-conviction businesses, typically around 4–5 core holdings, rather than broad diversification; if a business isn't worth a meaningful position, it isn't worth owning at all. Position-sizing rule: 10–20% is a qualification threshold for buying at all, not a mandatory allocation target. Position size should NOT come from historical volatility, max-drawdown math, or generic risk models — it should come from depth of understanding, business quality, management quality, long-term certainty, and valuation margin of safety. These position-sizing principles are a framework for capital allocation, not rigid rules to be applied mechanically. The owner decides position size.
 
-**系统怎么执行：**
-- `decision-rights.yml`：`portfolio.max_holdings: 5`，`portfolio.entry_band: [0.10, 0.20]`。
-- 总部每季排名（17C）把最适合成为最大（10–20%）仓位的公司排在前面，取持仓之外的前三家作候选（决策 L2）。
-- 仓位由所有者决定：买入、加仓、减仓、卖出只在决策 L3。总部起草的买入、加仓备忘录写明目标仓位（17B）：低于 10% 的入选门槛就不够格，不写买入备忘录；高于 20% 允许（理解更深、确信度更高的企业可以获得更大的仓位），但要写明理由。持仓多于约 4–5 家时检查只报警，不报错（[decisions/0014](../docs/decisions/0014-r4-r7-checks-follow-owner-text.md)）。
-- 公司层面的交付物不写仓位比例或阶梯，唯一的例外见下文"附：关于仓位"。
+**Interpretation:** The portfolio holds only a few high-conviction businesses, usually four or five. The owner doesn't want small positions in businesses they can't see through: if a business isn't worth a meaningful position, it isn't worth owning. 10–20% is the bar a business must clear to be bought at all (at the owner's portfolio size, a 5% position isn't meaningful), not a target that must be filled. The actual weight depends on conviction, valuation, the opportunities the portfolio faces and the asymmetry of risk and reward; a business that is better understood, fundamentally stronger and more attractive on risk and reward can get a larger position. Position size is not computed from historical volatility, maximum drawdown or generic risk models. This is a framework for capital allocation, not rules to be applied mechanically.
 
-**可执行检查：** C-CONCENTRATION、C-DECISION-RIGHTS
+**How the system enforces it:**
+- `decision-rights.yml`: `portfolio.max_holdings: 5`, `portfolio.entry_band: [0.10, 0.20]`.
+- HQ's quarterly ranking (17C) puts first the companies best suited to be the largest (10–20%) positions and takes the top three outside the holdings as candidates (decision level L2).
+- The owner decides position size: buying, adding, trimming and selling are decision level L3 only. Buy and add memos drafted by HQ state a target weight (17B). Below the 10% entry bar a company does not qualify, and no buy memo is written; above 20% is allowed (a better-understood, higher-conviction business can get a larger position), but the reason must be stated. With more than about 4–5 holdings the check only warns; it does not fail ([decisions/0014](../docs/decisions/0014-r4-r7-checks-follow-owner-text.md)).
+- Company-level deliverables state no position percentages or ladders; the only exception is in "Note: on position size" below.
 
-### R5 估值的位置
+**Executable checks:** C-CONCENTRATION, C-DECISION-RIGHTS
 
-**条文：** 需要一个明确的近似价值，否则无从判断；但 DCF 只是近似和辅助，不是决策引擎；不把模型推到让企业显得过分高估或低估；估值不压过企业质量；不以市盈率比较代替估值。折现率的细则见 §V1。
+### R5 The place of valuation
 
-**释义：** 读过巴菲特和芒格之后，所有者不信任以市盈率为基础的估值，希望估值落在真正的驱动因素——护城河与管理层——上；但仍要一个明确的近似价值，没有它就无从判断。DCF 只是对价值的近似，不是精密仪器，不该被推到让企业显得过分高估或低估；它为投资决策提供信息，却不压过企业质量，最要紧的始终是生意本身。折现率等于当时的长期无风险利率加这家企业特有的风险溢价：一般而言，更可预测、质量更高的企业溢价更低，较难预测或普通的企业更高。约 6–10% 只是当前利率下的实用参考，不是写死的规则（不是"MSFT 永远 6%""普通公司永远 10%"），整个折现率框架随利率、经营状况和不确定性变化。
+**Rule:** Distrusts P/E-based valuation, while still wanting an explicit approximate value, since without one the owner feels lost. DCF is just an approximation/replication of value, not a precise instrument, and shouldn't be pushed to make a business look too over- or under-valued. DCF is a supporting framework, not a decision-making engine — valuation should inform an investment decision but should not override business quality. Details of the discount rate are in §V1.
 
-**系统怎么执行：**
-- 折现率 = 10 年期美国国债收益率（写明取值日期和来源）+ 本公司特定的风险溢价（00 §V1）。溢价只为这家公司现金流穿越完整周期的波动与可预测性定价，依据本公司自己的现金流记录判断：不查表、不套档位、不按评级或芒格矩阵的格子套数，也不在系列内其他公司的溢价之间插值（00 §V10）。"质量更高、溢价一般更低"是倾向，不是跨公司的硬约束（[decisions/0012](../docs/decisions/0012-discount-rate-no-cross-company.md)）。折现率里不含所有者的个人要求回报率。
-- 估值只存在私有仓库（H4），只给区间、不给精确买点，一份报告只用一个折现率，安全边际单列（00 §V2、§V7、§V8）。重算只在建档（01C）、估值刷新（02）和研报修订（05）里发生，结果先是待审版本，经模型审查（04C）批准才生效（决策 L2）。
-- 公开档案的估值一节只写方法与判断，不写由价格推出的数字（[decisions/0004](../docs/decisions/0004-valuation-private-even-for-msft.md)）。
+**Interpretation:** Since reading Buffett and Munger, the owner distrusts valuation based on the price/earnings ratio and wants valuation grounded in the real drivers — the moat and management. But the owner still wants an explicit approximate value; without one there is nothing to judge by. DCF is only an approximation of value, not a precision instrument, and should not be pushed to make a business look too over- or undervalued. It informs the investment decision but does not override business quality: what matters most is always the business itself. The discount rate equals the prevailing long-term risk-free rate plus a risk premium specific to the business: in general, more predictable, higher-quality businesses carry a lower premium, and less predictable or ordinary ones a higher premium. About 6–10% is only a practical reference under current interest rates, not a hard-coded rule (not "MSFT is always 6%" or "an ordinary company is always 10%"); the whole discount-rate framework changes with interest rates, business conditions and uncertainty.
 
-**可执行检查：** C-DISCOUNT-RATE
+**How the system enforces it:**
+- Discount rate = 10-year US Treasury yield (with the date and source of the reading) + a risk premium specific to the company (00 §V1). The premium prices only the volatility and predictability of this company's cash flows through a full cycle, judged from the company's own cash-flow record: no lookup tables, no tiers, no numbers read off grades or Munger matrix cells, and no interpolation between the premiums of other companies in the series (00 §V10). "Higher quality, generally a lower premium" is a tendency, not a hard constraint across companies ([decisions/0012](../docs/decisions/0012-discount-rate-no-cross-company.md)). The discount rate contains no personal required return of the owner.
+- Valuations exist only in the private repository (H4). They give ranges only, never a precise entry point; a report uses one discount rate; the margin of safety is stated separately (00 §V2, §V7, §V8). Recalculation happens only in archive builds (01C), valuation refreshes (02) and report revisions (05). The result is first a pending version and takes effect only when the model review (04C) approves it (decision level L2).
+- The valuation section of the public archive states only the method and judgments, never numbers derived from the price ([decisions/0004](../docs/decisions/0004-valuation-private-even-for-msft.md)).
 
-### R6 持有与卖出
+**Executable checks:** C-DISCOUNT-RATE
 
-**条文：** 理想的持有期是无限期——只要基本面、护城河和管理层没有永久恶化就一直持有；1–3 年只是最短的观察窗口。只因永久性恶化或明显更好的机会卖出：护城河永久受损、商业模式根本改变、管理层质量下降、资本配置严重失误、出现明显更好的长期机会。不因价格下跌、衰退、市场恐慌或单季不及预期卖出。
+### R6 Holding and selling
 
-**释义：** 理想的持有期是无限期：只要基本面、护城河和管理层没有永久恶化，就一直持有；1–3 年只是最短的观察窗口，不是真正的目标。卖出只为永久性恶化——护城河永久受损、商业模式根本改变、管理层质量下降、资本配置严重失误——或找到明显更好的长期机会。价格下跌、衰退、市场恐慌，或一家本来健康的企业短期业绩不及预期，都不是卖出的理由；只要内在价值、基本面和管理层没有永久受损，所有者愿意承受五成以上的深度回撤。
+**Rule:** Ideal holding period is indefinite — holds as long as a company's fundamentals, moat, and management haven't permanently deteriorated; treats 1–3 years only as a minimum observation window, not the real target. Sells only for permanent deterioration: a permanently damaged moat, a fundamentally changed business model, declining management quality, seriously bad capital allocation, or finding a clearly better long-term opportunity. Will not sell because of price declines, a recession, market panic, or a short-term earnings miss on an otherwise-sound business.
 
-**系统怎么执行：**
-- 测试失败不等于卖出（00 §G3）。breaker 测试失败只有两种处置：误触发（附一手证据，修正测试，只对以后生效），或确认触发（该部分投资逻辑作废，写出整个论点怎样调整）；不能用"维持论点"处置。watch 测试失败或任何警告，公司经理写维持、修改或待定。处置都在 7 天内完成（03）。
-- 确认触发后，只有结论触及四种企业内部原因之一——护城河永久受损、商业模式根本改变、管理层质量下降、资本配置严重失误——公司经理才向总部提交升级请求。"明显更好的机会"是跨公司判断，只由总部根据季度排名提出（17B、17C）。
-- 备忘录只由总部起草：卖出理由只能取五种之一，四种不允许的理由登记在 `memo.forbidden_sell_reasons`；默认选项永远是维持现状，所有者 14 天不回复即按默认处理。
+**Interpretation:** The ideal holding period is indefinite: a business is held as long as its fundamentals, moat and management have not permanently deteriorated; 1–3 years is only the minimum observation window, not the real target. The owner sells only for permanent deterioration — a permanently damaged moat, a fundamentally changed business model, declining management quality, seriously bad capital allocation — or on finding a clearly better long-term opportunity. A price decline, a recession, market panic, or a short-term earnings miss at an otherwise healthy business is not a reason to sell. As long as intrinsic value, fundamentals and management are not permanently impaired, the owner is willing to accept deep drawdowns of half or more.
 
-**可执行检查：** C-SELL-REASONS、C-DEFAULT-HOLD、C-SCHEMA
+**How the system enforces it:**
+- A failed test is not a sell (00 §G3). A failed breaker test has only two dispositions: a false trigger (with primary evidence; the test is corrected, effective only going forward), or a confirmed trigger (that part of the investment case is void, and the disposition says how the whole thesis changes); "thesis maintained" is not an allowed disposition. For a failed watch test or any warning, the company manager writes maintain, revise or pending. All dispositions are completed within 7 days (03).
+- After a confirmed trigger, the company manager submits an escalation request to HQ only if the conclusion touches one of four causes inside the business — a permanently damaged moat, a fundamentally changed business model, declining management quality, seriously bad capital allocation. A "clearly better opportunity" is a cross-company judgment, raised only by HQ on the basis of the quarterly ranking (17B, 17C).
+- Memos are drafted only by HQ. The sell reason must be one of the five, and the four reasons that are not allowed are listed in `memo.forbidden_sell_reasons`. The default option is always to maintain the status quo; if the owner does not reply within 14 days, the default applies.
 
-### R7 机会成本
+**Executable checks:** C-SELL-REASONS, C-DEFAULT-HOLD, C-SCHEMA
 
-**条文：** 买入或继续持有，长期预期回报与质量都要过得了伯克希尔或 VOO 这条比较线（持仓低于比较线时，由总部在 17C 判断是否构成 R6 的"明显更好的机会"）。新想法和现有持仓、高质量替代品比较，只有质量相当或更高、长期回报更好、价格合理，才替换或新增。宁可长期拥有少数优秀企业，也不不停地寻找新名字。现金是期权，不为凑仓位或消化闲置现金而买。
+### R7 Opportunity cost
 
-**释义：** 买入或继续持有的前提，是长期预期回报与质量过得了伯克希尔或 VOO 这条比较线。新想法要和现有持仓、高质量的替代品放在一起比：只有质量相当或更高、长期回报更好、价格也合理，才替换或新增；所有者宁可长期拥有少数优秀企业，也不持续寻找新名字。没有投出去的现金是期权和弹药，不是必须填上的缺口：不为凑到目标仓位而追加资金，也不因为现金闲着而投资。
+**Rule:** Won't buy or hold a position unless its expected long-term return/quality clears Berkshire or VOO as the comparison bar (when a holding falls below the comparison bar, HQ judges in 17C whether this constitutes R6's "clearly better long-term opportunity"). Investment ideas are compared against existing holdings and high-quality alternatives; only replaces or adds a name if it's higher-or-similar quality, better long-term return, and reasonably valued. Prefers owning a small number of excellent businesses for the long run over continuously hunting new names. Won't add capital purely to hit a target position weight, and won't invest simply because cash is sitting idle — treats un-deployed cash as optionality/dry powder rather than a gap that must be filled.
 
-**系统怎么执行：**
-- 私有估值记下两个参照锚：伯克希尔与 VOO 的前瞻预期回报，数字取自各自档案的当前版本并带基准日（00 §V6）。门槛次序是工程默认，来自系列报告的做法：伯克希尔在当前价格下的长期回报测算是第一道门槛，指数的前瞻回报是第二道参照。原文只说"伯克希尔或 VOO"，没有规定取两者中较高的一个；所有者可以随时推翻这个默认。
-- 持仓低于比较线时，由总部在季度排名（17C）里判断是否构成 R6 的"明显更好的机会"；门槛报警本身不是升级理由（00 §G3）。
-- 没有公司过门槛时，总部不写买入备忘录，现金留着。
+**Interpretation:** Buying or continuing to hold requires that the expected long-term return and quality clear the comparison bar of Berkshire or VOO. A new idea is compared with existing holdings and with high-quality alternatives: only if its quality is similar or higher, its long-term return better and its price reasonable does it replace a holding or get added. The owner would rather own a few excellent businesses for the long run than keep hunting for new names. Cash not yet invested is optionality and dry powder, not a gap that must be filled: the owner doesn't add money to reach a target weight, and doesn't invest because cash is sitting idle.
 
-**可执行检查：** C-HURDLE（按上面的工程默认执行，不取两者中较高者，[decisions/0014](../docs/decisions/0014-r4-r7-checks-follow-owner-text.md)）
+**How the system enforces it:**
+- Private valuations record two reference anchors: the forward expected returns of Berkshire and of VOO, taken from the current versions of their own archives, with a reference date (00 §V6). The order of the hurdles is an engineering default taken from the practice of the series reports: Berkshire's long-term return estimate at its current price is the first hurdle, and the index's forward return is the second reference. The original says only "Berkshire or VOO" and does not say to take the higher of the two; the owner can overrule this default at any time.
+- When a holding falls below the hurdle, HQ judges in the quarterly ranking (17C) whether this constitutes R6's "clearly better long-term opportunity"; a hurdle alarm by itself is not a reason to escalate (00 §G3).
+- When no company clears the hurdle, HQ writes no buy memo and the cash stays.
 
-### R8 少交易
+**Executable checks:** C-HURDLE (enforced under the engineering default above, not taking the higher of the two; [decisions/0014](../docs/decisions/0014-r4-r7-checks-follow-owner-text.md))
 
-**条文：** 倾向一次下单建仓，不拆成多笔小单（在所有者的规模下，每笔佣金不可忽略）；不喜欢频繁交易；不追求完美买点。
+### R8 Trade rarely
 
-**释义：** 在所有者的组合规模下，每笔交易的最低佣金不可忽略，所以倾向一次下单建好仓位，而不是拆成几笔小单；总体上也不喜欢频繁交易。所有者不追求完美的买点：为等一个更好的价格一再拖延，正是 R1 说的那种得不偿失。
+**Rule:** Prefers building a position in one order rather than several small tranches (per-trade minimum commission is material at the owner's portfolio size); dislikes frequent trading generally. Avoid chasing the "perfect" entry point.
 
-**系统怎么执行：**
-- `portfolio.single_order_entry: true`。总部起草的买入、加仓备忘录只写一次下单（`order.type: single`），不写分批方案，也不写买卖时点的价格（17B）。
-- L3 备忘录目标每月不超过 2 份；超出时不压着不发，总部在股东信里解释原因，并调高升级门槛（决策 L2 报备）。
-- 系统从不下单：所有者在券商里亲手执行后回复"已执行"，系统据此补全决策日志。
+**Interpretation:** At the owner's portfolio size the minimum commission per trade is material, so the owner prefers to build a position in one order rather than split it into several small ones; in general they dislike frequent trading. They do not chase the perfect entry point: putting off a purchase again and again to wait for a better price is exactly the bad trade-off that R1 describes.
 
-**可执行检查：** C-SINGLE-ORDER
+**How the system enforces it:**
+- `portfolio.single_order_entry: true`. Buy and add memos drafted by HQ describe a single order (`order.type: single`), with no staged plan and no prices tied to the timing of buying or selling (17B).
+- The target is no more than 2 L3 memos a month. If there are more, they are not held back: HQ explains the reason in the letter to the owner and raises the escalation threshold (decision level L2, reported).
+- The system never places orders: the owner executes the trade personally at the broker and replies "executed", and the system then completes the decision log.
 
-### R9 下跌不是论点
+**Executable checks:** C-SINGLE-ORDER
 
-**条文：** 市场或核心企业下跌本身不改变论点；若因此长期预期回报明显上升，是考虑追加资金的情形（由总部提出，所有者决定，决策 L3）。
+### R9 A decline is not a thesis
 
-**释义：** 整个市场下跌，本身不是改变论点的理由。如果大盘或核心企业大幅下跌、长期预期回报因此上升，所有者会考虑投入新的资金、加大核心持仓，而不是把下跌当作风险。
+**Rule:** A market-wide decline is not, by itself, a reason to change the thesis; if the broad market or the core businesses fall meaningfully and long-term expected returns rise, the owner would consider adding fresh capital to increase core positions rather than treating the decline as risk (proposed by HQ, decided by the owner; decision level L3).
 
-**系统怎么执行：**
-- 价格静默（H2）：公司经理看不到日常股价，下跌本身进不了季度更新的理由（03）。
-- 追加资金是跨公司判断，只由总部根据季度排名提出备忘录（17B、17C）；公司经理的升级请求不涉及 R9。是否追加由所有者决定（决策 L3），默认仍是维持现状。
+**Interpretation:** A market-wide decline is not, by itself, a reason to change the thesis. If the broad market or the core businesses fall sharply and long-term expected returns rise as a result, the owner would consider putting in fresh money to increase core holdings, rather than treating the decline as risk.
 
-**可执行检查：** C-DECISION-RIGHTS、C-SCHEMA
+**How the system enforces it:**
+- Price silence (H2): company managers cannot see daily share prices, so a decline by itself cannot become a reason in a quarterly update (03).
+- Adding capital is a cross-company judgment; only HQ proposes it, in a memo based on the quarterly ranking (17B, 17C). A company manager's escalation request does not cover R9. Whether to add is decided by the owner (decision level L3), and the default is still to maintain the status quo.
 
-### R10 决策前五步
+**Executable checks:** C-DECISION-RIGHTS, C-SCHEMA
 
-**条文：** 理解生意 → 评估护城河与管理层 → 估计长期价值创造 → 与现有持仓比较预期回报 → 判断当前价格是否有合理的安全边际。
+### R10 Five steps before a decision
 
-**释义：** 做每个决定之前走五步：理解生意；评估护城河与管理层；估计长期的价值创造；把预期回报和现有持仓比较；判断当前价格有没有合理的安全边际。目标不是找到最便宜的股票，而是以合理的价格拥有卓越的企业。
+**Rule:** Understand the business → evaluate moat and management → estimate long-term value creation → compare expected return against existing holdings → decide whether the current price offers a reasonable margin of safety.
 
-**系统怎么执行：**
-- 档案的十二个部分按这个次序展开：从生意本质写起，护城河、资本配置、管理层在前，估值在后（01A）；研报（02）与完整企业报告（11）同样先写生意、后写价格。
-- 总部起草 L3 备忘录时（17B）写明事实与来源、触发的测试、引用的条款、至少两个选项（其中一个是维持现状）、"如果选择默认会错过什么"和"如果行动最可能错在哪"；买入、加仓的备忘录另写与比较线的对照（R7）和目标仓位（R4）。
+**Interpretation:** Every decision goes through five steps first: understand the business; evaluate the moat and management; estimate long-term value creation; compare the expected return with existing holdings; judge whether the current price offers a reasonable margin of safety. The goal is not to find the cheapest stock but to own exceptional businesses at sensible prices.
 
-**可执行检查：** C-SCHEMA
+**How the system enforces it:**
+- The twelve parts of the dossier follow this order: they start with the business, and put moat, capital allocation and management before valuation (01A). The research report (02) and the complete company report (11) likewise put the business first and the price last.
+- When HQ drafts an L3 memo (17B), it states the facts and sources, the tests triggered, the clauses cited, at least two options (one of them maintaining the status quo), "what the default would miss" and "where acting is most likely to be wrong". Buy and add memos also set out the comparison with the hurdle (R7) and the target weight (R4).
 
-### R11 记录过程，不按结果打分
+**Executable checks:** C-SCHEMA
 
-**条文：** 好决策可能有坏结果，坏决策也可能有好结果。决策记录训练的是推理过程。
+### R11 Record the process; don't grade by results
 
-**释义：** 决策日志记录的是决定本身，而不是按结果给决定打分：所有者要训练的是推理过程。每条记录九个字段：日期、决定（买入、卖出、加仓或减仓）、公司、原始论点、假设、预期结果、风险（什么会证明判断错了）、复盘日期，以及事后补填的结果。
+**Rule:** The journal records decisions rather than grading them by results — the aim is to train the reasoning process, since good decisions can produce bad results and bad decisions good results.
 
-**系统怎么执行：**
-- 决策日志只存私有仓库（带金额，H4），九个字段由 schema 固定。L3 备忘录一经决定，系统生成日志草稿并链接 PR。
-- 同一原则用在系统自己的判断上——先写下，后验证：预注册在结果出来之前写下、合并并打时间戳（15A），截止之后条目不可改；测试门槛在业绩文件入库之后冻结（00 §G7）；结算员看不到概率和作者，只记是否兑现，不据此评价当时的决策（15B）；Brier 分由流水线计算。
+**Interpretation:** The decision log records decisions themselves rather than grading them by their results: what the owner wants to train is the reasoning process. Each entry has nine fields: date, decision (buy, sell, add or trim), company, original thesis, assumptions, expected outcome, risks (what would prove the judgment wrong), review date, and the outcome, filled in later.
 
-**可执行检查：** C-SCHEMA、C-PREREG-TIMING、C-PREREG-IMMUTABLE、C-TEST-FROZEN
+**How the system enforces it:**
+- The decision log is kept only in the private repository (it carries amounts, H4), and its nine fields are fixed by the schema. Once an L3 memo is decided, the system generates a draft log entry linked to the PR.
+- The same principle applies to the system's own judgments — write it down first, verify later. Pre-registrations are written, merged and timestamped before the results come out (15A), and their entries cannot change after the deadline; test thresholds are frozen once the earnings filings are in (00 §G7); the settler cannot see probabilities or authors, records only whether an expectation came true, and does not use that to judge the decision made at the time (15B); Brier scores are computed by the pipeline.
 
-### R12 能力圈
+**Executable checks:** C-SCHEMA, C-PREREG-TIMING, C-PREREG-IMMUTABLE, C-TEST-FROZEN
 
-**条文：** 保持谦逊；兴趣不等于决策，理解不够就不投。所有者自述最了解的是云与企业软件；半导体仍在学习（周期性强，长期赢家难以预测）。
+### R12 Circle of competence
 
-**释义：** 所有者自述理解最深的是云与企业软件（以 MSFT 为代表），对能力圈以外的投资保持谦逊。半导体仍在学习之中：周期性强，长期赢家难以预测。所有者关注 AI 应用、物联网、实体 AI 与工厂自动化等主题，但兴趣不等于投资决定，理解不够就不投。
+**Rule:** Maintains general humility about investing outside the owner's circle of competence; interest does not equal an investment decision without sufficient understanding. By the owner's own account: strongest understanding in cloud and enterprise software; semiconductors are an area where the owner continues learning, given their cyclicality and how hard it is to predict long-term winners.
 
-**系统怎么执行：**
-- 每家公司在 `thesis.yml` 里声明校准领域 `domain`，新建时由 01B 选定，此后照抄（00 §G8）；预注册与预测按领域记账。
-- 已结算的预测按领域计算 Brier 分和校准曲线，系统的预测与所有者的改写分两本账。总部排名（17C）参考校准：某个领域的记录明显差的，那个领域的公司不进 10–20% 的候选。样本够之前只看趋势，不下结论。
+**Interpretation:** By the owner's own account, the owner understands cloud and enterprise software best (MSFT is the example), and stays humble about investing outside that circle of competence. Semiconductors are an area where the owner is still learning: they are highly cyclical, and long-term winners are hard to predict. The owner follows themes such as AI applications, the Internet of Things, physical AI and factory automation, but interest is not an investment decision: without enough understanding, the owner does not invest.
 
-**可执行检查：** C-SCHEMA
+**How the system enforces it:**
+- Each company declares a calibration domain, `domain`, in `thesis.yml`. It is chosen by 01B when the company is set up and copied unchanged from then on (00 §G8); pre-registrations and forecasts are booked by domain.
+- Settled forecasts get Brier scores and calibration curves by domain, with the system's forecasts and the owner's overrides kept in separate books. HQ's ranking (17C) takes calibration into account: companies in a domain with a clearly poor record are not put among the 10–20% candidates. Until the sample is large enough, only the trend is read and no conclusions are drawn.
 
-### R13 心性
+**Executable checks:** C-SCHEMA
 
-**条文：** 不过度交易；不因价格波动改变长期判断；不追求完美买点；把价格波动与永久性损害分开；保持耐心。
+### R13 Temperament
 
-**释义：** 这是所有者希望被反复提醒的几件事：不过度交易，不因价格波动改变长期判断，不追求完美的买点，把价格波动与企业的永久性损害分开，保持耐心。所有者一直关注与交易决策有关的认知偏差。
+**Rule:** Avoid over-trading, avoid changing long-term judgment because of price moves, avoid chasing the "perfect" entry point, keep price volatility separate from permanent business impairment, and stay patient.
 
-**系统怎么执行：** 这些提醒被做成系统的默认值，而不是靠自觉：
-- 价格静默（H2），日常股价不进入任何判断；
-- 资金事项默认维持现状，14 天不回复按默认处理；备忘录每月不超过 2 份，买入只写一次下单；
-- 盲推（14A）看不到论点，用来对抗锚定；股东信（18）先写坏消息，改主意算成绩，不算污点。
+**Interpretation:** These are the things the owner wants to be reminded of again and again: don't over-trade, don't change long-term judgments because of price moves, don't chase the perfect entry point, keep price volatility separate from permanent impairment of the business, and stay patient. The owner has a standing interest in the cognitive biases that bear on trading decisions.
 
-**可执行检查：** C-SINGLE-ORDER、C-NO-TRADING、C-NO-PRICE-FEED、C-DEFAULT-HOLD
+**How the system enforces it:** These reminders are built into the system as defaults instead of being left to self-discipline:
+- price silence (H2): daily share prices enter no judgment;
+- money matters default to maintaining the status quo, and no reply within 14 days means the default; no more than 2 memos a month, and a buy is written as a single order;
+- the blind read (14A) cannot see the thesis, which counters anchoring; the letter to the owner (18) puts bad news first, and a change of mind counts as an achievement, not a blemish.
 
-### 附：关于仓位（00 §C）
+**Executable checks:** C-SINGLE-ORDER, C-NO-TRADING, C-NO-PRICE-FEED, C-DEFAULT-HOLD
 
-公司层面的交付物（01–16）不写仓位比例、仓位阶梯或"到价位 X 建 Y% 仓"一类的表格。唯一例外：私有研报（02）和完整企业报告（11）可以写一句"是否够格进入 10–20% 的入选门槛、差在哪里（生意、管理层还是价格）"，不写具体仓位。系列排名的先后不属于仓位建议。
+### Note: on position size (00 §C)
 
-## 二、硬规则（H1–H5）
+Company-level deliverables (01–16) state no position percentages, no position ladders and no tables of the kind "at price X, build a Y% position". The only exception: the private research report (02) and the complete company report (11) may include one sentence on "whether the company qualifies for the 10–20% entry bar, and where it falls short (business, management or price)", without a specific position size. The order of the series ranking is not position advice.
 
-硬规则高于上面的十三条（00 §0），任何角色、任何信任等级都不能越过；它们尽量做成 CI 检查，检查不过的改动不能合并。最早写在设计文档的开工指令里，00 §H 把它们写成了现在的样子；它们同样是所有者条款。
+## II. Hard rules (H1–H5)
 
-> **公开版的写法。** 本文件是公开文件。00 §H2 第 1 类和 §H4 的原句里有几个用语本身就在禁用清单上，按 H4 不能出现在公开文件里（否定句也不行），下面换成了意思相同的描述。禁用用语的完整清单由 thesis-ci 的公开内容检查（C-PUBLIC-NO-VALUATION、C-PUBLIC-NO-ADVICE）维护，须与 00 §H4 一致。
+The hard rules rank above the thirteen rules above (00 §0); no role at any trust level may cross them. As far as possible they are CI checks, and a change that fails them cannot be merged. They were first written in the start instructions of the design document, and 00 §H gave them their present form; they are owner clauses as well.
 
-### H1 出处
+> **Wording in the public version.** This file is public. A few terms in the original sentences of 00 §H2 item 1 and §H4 are themselves on the list of banned terms, and under H4 they may not appear in public files (not even in a negative sentence), so below they are replaced by descriptions with the same meaning. The complete list of banned terms is maintained by thesis-ci's public-content checks (C-PUBLIC-NO-VALUATION, C-PUBLIC-NO-ADVICE) and must match 00 §H4.
 
-**条文：** 档案、报告、更新里的每个事实数字都带来源标签（§E1）。没有出处的数字不写进任何交付物。
+### H1 Sources
 
-**系统怎么执行：** Markdown 写 `[src:TAG#位置]`，YAML 写 `source: TAG#位置`；TAG 登记在对应仓库的 `sources.yml`（00 §E1）。训练记忆里的数字不算来源，查不到就写"找不到／无法核实"并登记进未知清单（00 §E3、§E6）。抽取员（16A）把成品拆成原子事实，事实审计（04A、09A、12A）逐条对照一手原文。
+**Rule:** Every factual number in archives, reports and updates carries a source tag (§E1). A number without a source goes into no deliverable.
 
-**可执行检查：** C-SRC-TAG、C-SRC-FACT、C-SRC-ACCESSION
+**How the system enforces it:** Markdown uses `[src:TAG#LOC]`, YAML uses `source: TAG#LOC`; each TAG is registered in the `sources.yml` of the corresponding repository (00 §E1). Numbers from training memory are not a source: what cannot be found is written as "not found / cannot be verified" and entered in the unknowns register (00 §E3, §E6). The extractor (16A) breaks the product into atomic facts, and the fact audit (04A, 09A, 12A) checks them one by one against the primary sources.
 
-### H2 价格静默
+**Executable checks:** C-SRC-TAG, C-SRC-FACT, C-SRC-ACCESSION
 
-**条文：** 不抓取、不展示日常股价，也不凭记忆写任何价格。允许出现的价格只有四类，都带日期和来源：(1) 私有文件（估值、研报、完整企业报告）里的"价格参照"，供对价格的评级、价格 ÷ 中枢和由价格推出的回报测算使用；(2) 五年回测所需的历年年末未复权收盘价，只存私有估值文件；(3) 公司文件披露的历史回购均价——这是公司的事实，可以写进公开的 `ledger.yml`；(4) 跨越事先写好的价值区间时的一次性提醒。(1)(2) 由流水线以 `price_reference`、`year_end_closes` 输入提供；没有提供就不写，登记进未知清单。之所以静默：日常股价会把判断锚在价格上，而这个系统判断的是生意。
+### H2 Price silence
 
-**系统怎么执行：** 代码和 workflow 不接任何行情源；价格参照与年末收盘价只由流水线作为输入提供，只存私有仓库；公司经理看不到、也不需要日常股价（03）。
+**Rule:** Do not fetch or display daily share prices, and do not write any price from memory. Only four kinds of price may appear, each with a date and a source: (1) the "price reference" in private files (valuations, research reports, complete company reports), used for the grade given to the price, for price ÷ central value, and for return estimates derived from the price; (2) the unadjusted year-end closing prices of past years that the five-year backtest needs, kept only in the private valuation files; (3) historical average buyback prices disclosed in company filings — these are facts about the company and may go into the public `ledger.yml`; (4) a one-time alert when a value range written in advance is crossed. (1) and (2) are supplied by the pipeline as the `price_reference` and `year_end_closes` inputs; if they are not supplied, nothing is written and the gap goes into the unknowns register. The reason for silence: daily share prices anchor judgment to the price, and this system judges the business.
 
-**可执行检查：** C-NO-PRICE-FEED
+**How the system enforces it:** Code and workflows connect to no market-data source. The price reference and year-end closes are supplied only by the pipeline, as inputs, and kept only in the private repository. Company managers cannot see daily share prices and do not need them (03).
 
-### H3 不给买卖建议，不执行交易
+**Executable checks:** C-NO-PRICE-FEED
 
-**条文：** 任何输出都不含下单指令。
+### H3 No buy or sell advice, no trading
 
-**系统怎么执行：** 系统没有任何券商或下单接口，也从不替所有者交易；资金事项只以一页备忘录交给所有者（决策 L3），由所有者在券商里亲手执行。公开内容不含买卖建议用语。
+**Rule:** No output contains an order instruction.
 
-**可执行检查：** C-PUBLIC-NO-ADVICE、C-NO-TRADING
+**How the system enforces it:** The system has no broker or order interface of any kind and never trades on the owner's behalf. Money matters reach the owner only as a one-page memo (decision level L3), and the owner executes the trade personally at the broker. Public content contains no buy or sell advice wording.
 
-### H4 公私分离
+**Executable checks:** C-PUBLIC-NO-ADVICE, C-NO-TRADING
 
-**条文：** 价值区间、中枢、折现率、由价格推出的回报测算、对价格的评级、价格参照、L3 备忘录、升级请求、带金额的决策记录，只存私有仓库。公开文件（包括否定句、注释、YAML 的 note、PR 正文、PR 附件和 issue）里不得出现这些数字，也不得出现禁用用语清单里的任何一个。公开文件也不写以当前股价为输入的倍数或比率（市盈率、市值、自由现金流收益率等）。需要指代私有内容时，只写"估值见私有文件"。资本回报率、利润率、增速、测试门槛等经营数字照常写。
+### H4 Public/private separation
 
-**系统怎么执行：** 每份输出放在哪里由流水线按 00 §F2 决定：估值、备忘录、升级请求、决策日志、排名和大部分审计产出只进私有仓库；季度更新 PR 随附的事实审计结论、反向清单、分歧图和定性测试判定随 PR 公开，同样遵守本条。公开档案的估值一节只写方法（[decisions/0004](../docs/decisions/0004-valuation-private-even-for-msft.md)）。
+**Rule:** Value ranges, the central value, the discount rate, return estimates derived from the price, the grade given to the price, the price reference, L3 memos, escalation requests and decision records with amounts are kept only in the private repository. Public files (including negative sentences, comments, YAML notes, PR bodies, PR attachments and issues) may not contain these numbers, nor any term on the list of banned terms. Public files also state no multiples or ratios that take the current share price as an input (P/E, market capitalization, free-cash-flow yield, etc.). Where private content must be referred to, write only "valuation: see private files". Operating numbers such as returns on capital, margins, growth rates and test thresholds are written as usual.
 
-**可执行检查：** C-PUBLIC-NO-VALUATION、C-PUBLIC-NO-AMOUNTS
+**How the system enforces it:** The pipeline decides where each output goes, under 00 §F2. Valuations, memos, escalation requests, decision logs, rankings and most audit outputs go only into the private repository. The fact-audit conclusions, the inversion list, the divergence map and the qualitative-test verdicts that come with a quarterly-update PR are published with it, and they follow this rule too. The valuation section of the public archive states only the method ([decisions/0004](../docs/decisions/0004-valuation-private-even-for-msft.md)).
 
-### H5 可复现
+**Executable checks:** C-PUBLIC-NO-VALUATION, C-PUBLIC-NO-AMOUNTS
 
-**条文：** 模型调用只经 `pipeline/llm.py`，它记录模型名、00 的版本、提示词版本（git 哈希）和输入哈希。提示词不指定模型。不经 `llm.py` 产生的内容（包括手动对话的产出）不能直接合并，只能作为线索，由流水线重跑后才能合并。
+### H5 Reproducibility
 
-**系统怎么执行：** 各角色用哪个模型写在 `agents/<角色>.yml`；需要隔离的步骤只经流水线运行，API 调用没有记忆（00 §G6）。结论变了，能分清是世界变了，还是提示词变了。
+**Rule:** Model calls go only through `pipeline/llm.py`, which records the model name, the version of 00, the prompt version (git hash) and the input hash. Prompts do not specify models. Content not produced through `llm.py` (including the output of manual conversations) cannot be merged directly; it serves only as a lead and can be merged only after the pipeline has rerun it.
 
-**可执行检查：** C-LLM-ENTRY
+**How the system enforces it:** The model each role uses is written in `agents/<role>.yml`. Steps that need isolation run only through the pipeline, and API calls have no memory (00 §G6). When a conclusion changes, one can tell whether the world changed or the prompt did.
 
-## 三、修宪程序
+**Executable checks:** C-LLM-ENTRY
 
-1. **修宪是决策 L3，只有所有者能决定。** `decision-rights.yml` 只在 L3 列出 `amend_constitution`；任何角色都不能自行修改条文。
-2. **什么算修宪。**
-   - 改动本文件的任何条文（R1–R13、H1–H5）。
-   - 改动系列规则 00 的所有者条款：§H、§C、§E、§P、§V、§M、§W，以及设计系统 00D。它们来自所有者的投资哲学、证据纪律和写作与设计偏好，改动与修宪同级。其中标明"工程默认"的数值是为了可执行而补的默认值：所有者可以随时推翻，系统不能自行改动。
-   - 改动 `decision-rights.yml` 里直接体现条文的参数（`memo`、`portfolio`、`ranking.rule`），以及决定各角色自身权限的 `levels` 与 `trust`：角色不能给自己授权。
-3. **什么不算修宪。** 00 的 §F、§G 与各提示词里非所有者条款的流程和格式修改，是决策 L2（`prompt_change`），在月度股东信里报备。为条文增加或更换检查、修正 `rules.yml` 与本文件措辞不一致之处，是工程决定，记进 `docs/decisions/`，但任何条文都不能因此失去检查。其余运行参数（阶段推进、升级规则、候选数量与轮换节奏）是设计文档替所有者定的默认值，调整要记进 `docs/decisions/` 并在月度股东信里报备；提高预算上限由所有者决定。
-4. **提案用一页备忘录。** 由总部起草（17B），`action: amend_constitution`：写明改哪一条、原文与新文、为什么改（引用错误清单、校准数据或分歧裁定等记录）、哪些检查和参数要跟着变；至少两个选项，其中一个是维持原文。备忘录只存私有仓库。
-5. **默认是维持原文。** 所有者 14 天不回复，按默认处理，条文不变。
-6. **年度信是常规窗口。** 修宪提案原则上攒到年度"致自己的股东信"里一并提出，由所有者一次决定；年中单独提出的，同样走一页备忘录，并计入每月不超过 2 份的备忘录目标。所有者也可以随时主动修宪，总部照所有者的决定整理改动，并在下一封股东信里记一行。
-7. **规则之间的冲突。** 总部遇到所有者先前指示之间的冲突，先在流程上裁定（决策 L2），在股东信里报备，并在下次修订 00 时提交所有者确认（00 §G2）。
-8. **通过后一次改齐。** 本文件、00 的对应条款、`rules.yml` 与 `decision-rights.yml` 在同一次改动里修改，本文件与 00 §C 的编号和条文保持一致；版本号加一，并在下方修订记录里记一行。
+## III. Amendment procedure
 
-**可执行检查：** C-DECISION-RIGHTS、C-CONSTITUTION-MAP
+1. **Amending the constitution is decision level L3, and only the owner can decide it.** `decision-rights.yml` lists `amend_constitution` only under L3; no role may change the rules on its own.
+2. **What counts as an amendment.**
+   - Changing any rule in this file (R1–R13, H1–H5).
+   - Changing the owner clauses of series rules 00 — §H, §C, §E, §P, §V, §M, §W — or the design system 00D. They come from the owner's investment philosophy, evidence discipline, and writing and design preferences, and changing them ranks with an amendment. The values in them marked "engineering default" are defaults added to make the rules executable: the owner can overrule them at any time, and the system cannot change them on its own.
+   - Changing the parameters in `decision-rights.yml` that directly express rules (`memo`, `portfolio`, `ranking.rule`), or `levels` and `trust`, which set each role's own authority: a role cannot grant itself authority.
+3. **What does not count as an amendment.** Changes to process and format in 00 §F and §G, and in the non-owner clauses of the prompts, are decision level L2 (`prompt_change`) and are reported in the monthly letter. Adding or replacing a check for a rule, or fixing wording where `rules.yml` and this file disagree, is an engineering decision recorded in `docs/decisions/`; but no rule may lose its checks as a result. The other operating parameters (phase advancement, escalation rules, the number of candidates and the rotation schedule) are defaults that the design document set on the owner's behalf; a change to them is recorded in `docs/decisions/` and reported in the monthly letter. Raising the budget cap is the owner's decision.
+4. **A proposal is a one-page memo.** HQ drafts it (17B) with `action: amend_constitution`. It states which rule changes, the old and the new text, why (citing records such as the mistakes list, calibration data or divergence rulings), and which checks and parameters must change with it; it gives at least two options, one of which keeps the current text. The memo is kept only in the private repository.
+5. **The default is to keep the current text.** If the owner does not reply within 14 days, the default applies and the rule stays as it is.
+6. **The annual letter is the regular window.** Amendment proposals are, as a rule, saved up and put forward together in the annual letter to the owner, for the owner to decide at one time. A proposal made mid-year also goes through a one-page memo and counts toward the target of no more than 2 memos a month. The owner can also amend the constitution on their own initiative at any time; HQ then carries out the change as the owner decided and records it in one line in the next letter.
+7. **Conflicts between rules.** When HQ finds a conflict between earlier instructions from the owner, it first makes a procedural ruling (decision level L2), reports it in the letter, and submits it to the owner for confirmation at the next revision of 00 (00 §G2).
+8. **Once adopted, everything changes at once.** This file, the corresponding clauses of 00, `rules.yml` and `decision-rights.yml` are changed in the same change, and this file and 00 §C are kept identical in numbering and rule text; the version number goes up by one, and a line is added to the revision record below.
 
-## 修订记录
+**Executable checks:** C-DECISION-RIGHTS, C-CONSTITUTION-MAP
 
-| 版本 | 日期 | 变更 | 依据 |
+## Revision record
+
+| Version | Date | Change | Basis |
 | --- | --- | --- | --- |
-| v1 | 2026-09-24 | 由设计文档的八条宪法要点和五条硬规则整理而成 | 设计文档 |
-| v2 | 2026-09-24 | 按所有者自己的投资宪法全文重建：R1–R13 与 00 §C 的编号、条文一致，H1–H5 按 00 §H；加总纲；修宪程序写明 00 的所有者条款。删去与 00 冲突的旧写法："质量更高的公司溢价不得更高"（见 R5 与 decisions/0012）；R7 以伯克希尔与 VOO 中较高者为门槛（改为 00 §V6 的工程默认）；质量到溢价的映射表写进本条（与 00 §V1 冲突）；排名按固定顺序机械排序（与 00 §V13 冲突）；breaker 失败后可以维持论点、由公司经理提出减仓（与 00 §G3 冲突）；价格只用于跨越区间时的提醒（改为 00 §H2 的四类）。只做对齐，没有新增投资信念 | 所有者的投资宪法原文；所有者 2026-09-24 确认的提示词 v3 |
-| v2.1 | 2026-09-24 | R4、R7 的"系统怎么执行"与检查改为按原文执行：目标仓位低于 10% 为错误，高于 20% 允许、须写明理由，持仓多于约 4–5 家只报警；比较线以伯克希尔为第一道门槛、VOO 为第二道参照，不取两者中较高者。条文与释义未改 | 所有者原文；decisions/0014 |
+| v1 | 2026-09-24 | Compiled from the eight constitution points and five hard rules of the design document | Design document |
+| v2 | 2026-09-24 | Rebuilt from the full text of the owner's own investment constitution: R1–R13 match 00 §C in numbering and rule text, and H1–H5 follow 00 §H; preamble added; the amendment procedure names the owner clauses of 00. Old wording that conflicted with 00 was removed: "a higher-quality company may not have a higher premium" (see R5 and decisions/0012); R7 using the higher of Berkshire and VOO as the hurdle (changed to the engineering default of 00 §V6); a quality-to-premium mapping table written into this rule (conflicted with 00 §V1); a ranking sorted mechanically in a fixed order (conflicted with 00 §V13); allowing the thesis to be maintained after a breaker failure, with the company manager proposing a trim (conflicted with 00 §G3); prices used only for alerts when a range is crossed (changed to the four kinds of 00 §H2). Alignment only; no new investment beliefs | The owner's original investment constitution; prompt set v3, confirmed by the owner on 2026-09-24 |
+| v2.1 | 2026-09-24 | The "how the system enforces it" parts and the checks of R4 and R7 changed to follow the original text: a target weight below 10% is an error, above 20% is allowed with a stated reason, and more than about 4–5 holdings only warns; the hurdle has Berkshire as the first hurdle and VOO as the second reference, not the higher of the two. Rule text and interpretations unchanged | The owner's original text; decisions/0014 |
+| v2.2 | 2026-09-25 | English-first: English text, Chinese in zh-CN/ | owner's instruction |

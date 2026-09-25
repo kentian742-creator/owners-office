@@ -1,28 +1,28 @@
-# 判定员
+# Judge
 
-机器可读定义：[judge.yml](judge.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [judge.yml](judge.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一。定性测试交给一个独立的判定者，而不是写档案的人：它只判定几条事先写好的是非题，按事先写好的标准给出结果，看不到档案和论点。
+One of the independent oversight roles. Qualitative tests go to an independent judge rather than to the author of the archive: it rules only on a few yes-or-no questions written in advance, gives results against criteria written in advance, and cannot see the archive or the thesis.
 
-## 做什么（14T）
+## What it does (14T)
 
-- 业绩事件收口后运行，与盲推互相独立、并行；只对持仓公司，候选公司的定性测试记为 undetermined。
-- 先用肯定句复述问题，只改措辞、不改方向，避免被双重否定带偏；再回答"是""否"或"无法判定"，附一句以内的原文摘录和来源标签。只有测试规定的文件和期数都在输入里，才能答"否"。
-- 严格按 `fail_if`、`warn_if` 的字面给出 pass、warn、fail 或 undetermined；复合条件逐项核对。非一手材料（所有者自有报告、媒体转述、汇总网站）只能指路，不能单独支撑结果；文件不足时记 undetermined，写明缺哪一期的哪份文件。
-- 结果作为测试结果交公司经理处置（03），也随 PR 公开，所以摘录里不带价格（H4）。
+- Runs after the earnings event closes, independently of and in parallel with the blind read; only for holdings, and the qualitative tests of candidate companies are recorded as undetermined.
+- It first restates the question as an affirmative sentence, changing only the wording and not the direction, so that double negatives do not lead it astray; then it answers "yes", "no" or "cannot determine", with a source excerpt of one sentence at most and a source tag. It may answer "no" only when all the documents and periods the test specifies are in the input.
+- It gives pass, warn, fail or undetermined strictly by the letter of `fail_if` and `warn_if`, checking compound conditions part by part. Non-primary material (the owner's own reports, media accounts, aggregator sites) can only point the way and cannot support a result on its own; when the documents are insufficient, it records undetermined and says which document for which period is missing.
+- The results go to the company manager as test results to be disposed of (03) and are also published with the PR, so the excerpts contain no prices (H4).
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `event`、`qualitative_tests`（只含问题、判定标准、基线和判定规则 `judge_notes`；带论点措辞的 `claim`、`note` 不给）和 `where_documents`（测试指定、覆盖规定期数的文件）。看不到 `thesis`、`dossier`、公司经理的更新与草稿（`update`、`draft_outputs`）。
+It can see `event`, `qualitative_tests` (only the question, the criteria, the baseline and the judging rules in `judge_notes`; `claim` and `note`, which carry thesis wording, are not given) and `where_documents` (the documents the test specifies, covering the required periods). It cannot see `thesis`, `dossier`, or the company manager's update and drafts (`update`, `draft_outputs`).
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-同属独立监督。判定结果公司经理只能处置、不能改判；认为读数有误的，写进 `questions` 交总部。
+It is also independent oversight. The company manager can only dispose of a ruling, not overturn it; if it thinks a reading is wrong, it writes that into `questions` for HQ.
 
-## 决策权
+## Decision rights
 
-决策 L1：测试（定性测试的判定）。
+Decision level L1: test (rulings on qualitative tests).
 
-## 提示词与模型
+## Prompts and model
 
-14T，只经流水线运行（私有仓库，按编号引用）。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退。
+14T, run only through the pipeline (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.

@@ -1,28 +1,28 @@
-# 合成审查
+# Synthesis review
 
-机器可读定义：[synthesis_reviewer.yml](synthesis_reviewer.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [synthesis_reviewer.yml](synthesis_reviewer.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一，只审完整企业报告（11）。它查的是事实审计和版面审查都查不到的一类错：报告在谈它自己——露出由几份材料拼成的痕迹，或者只是把几份材料的结论换个顺序重述，没有产生任何新东西。
+One of the independent oversight roles; it reviews only the complete company report (11). It looks for a kind of error that neither the fact audit nor the design review can catch: the report talking about itself — showing the traces of having been assembled from several documents, or merely restating the conclusions of those documents in a new order without producing anything new.
 
-## 做什么（12B）
+## What it does (12B)
 
-- **生产痕迹（最高优先级）：** 正文、目录、章节标题、图注、封面数据条里任何让读者看出是拼起来的措辞；关于报告本身的计数；"原判断 → 改／不改"一类的表格；投资人被当成章节、标签或表格列；材料之间的分歧被陈列出来而不是给出采信结论；估值一节自己算新数或讨论估值该上调、下调（这类内容应当进 `valuation_input_notes`）。
-- **新分析：** 逐条列出"接起来才出现"的分析并验算，剔除伪连接后重新计数，少于 6 处即为必须改；反向找出本来可以接起来、却没有接的两三处。
-- **论证的质地：** 核心论证是不是被压成了表格，有没有纯复述的段落、空话、一边倒，或一个框架把所有证据都解释成同一件事。
-- 最后回答三个问题：哪几段是四份材料里找不到的；如果结论是错的，最可能错在哪一句；读者能不能看出它是拼出来的，第一次在哪里看出来。
+- **Production traces (top priority):** any wording in the body, table of contents, section headings, captions or the cover's data strip that lets a reader see the report was assembled; counts about the report itself; tables of the "original judgment → changed / unchanged" kind; investors turned into sections, labels or table columns; disagreements between the documents put on display instead of resolved with a stated conclusion; a valuation section that computes new numbers itself or discusses whether the valuation should go up or down (such content belongs in `valuation_input_notes`).
+- **New analysis:** lists, one by one, the analyses that "only appear when the pieces are joined" and recomputes them; after removing false connections it counts again, and fewer than 6 is a must fix. In the other direction, it finds two or three places that could have been joined but were not.
+- **Quality of the argument:** whether the core argument has been squeezed into tables, and whether there are paragraphs of pure restatement, empty words, one-sidedness, or a single framework that explains all the evidence as the same thing.
+- Finally it answers three questions: which paragraphs cannot be found in the four documents; if the conclusion is wrong, which sentence it is most likely to be wrong in; and whether a reader can tell the report was assembled, and where they first notice.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `report`、`connections`、四份研究材料（`doc_02`、`doc_06`、`doc_07`、`doc_08`）和验算用的 `sources`。隔离表对它没有额外限制；12 的各部分分别独立运行，互相看不到结果。
+It can see `report`, `connections`, the four research documents (`doc_02`, `doc_06`, `doc_07`, `doc_08`) and `sources` for recomputation. The isolation table sets no extra limits for it; the parts of 12 run independently and cannot see each other's results.
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-同属独立监督，不向任何经理人汇报。
+It is also independent oversight and reports to no manager.
 
-## 决策权
+## Decision rights
 
-决策 L1：审计。
+Decision level L1: audit.
 
-## 提示词与模型
+## Prompts and model
 
-12B，只经流水线运行（私有仓库，按编号引用）。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退。
+12B, run only through the pipeline (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.

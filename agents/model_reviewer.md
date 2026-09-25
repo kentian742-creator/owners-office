@@ -1,35 +1,35 @@
-# 模型审查
+# Model review
 
-机器可读定义：[model_reviewer.yml](model_reviewer.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [model_reviewer.yml](model_reviewer.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一，只审估值：私有估值文件（`valuation.yml` 与 `valuation.md`）、研报的估值一节，以及它们和系列内其他公司的读数是否对称。估值待审版本能不能生效，由它决定。
+One of the independent oversight roles; it reviews only valuations: the private valuation files (`valuation.yml` and `valuation.md`), the valuation section of research reports, and whether they are symmetric with the readings of the other companies in the series. It decides whether a pending valuation version can take effect.
 
-## 做什么（04C）
+## What it does (04C)
 
-逐项检查十五条，每条给出"符合／违规／无法判断"和依据，主要包括：
+It checks fifteen items one by one, giving each "compliant / violation / cannot tell" and the basis. The main ones:
 
-- 折现率是不是"10 年期国债收益率 + 本公司特定溢价"，国债取值有没有日期和来源；溢价是否依据本公司自己的现金流记录，有没有混进个人要求回报率、从别家插值或按评级套档。
-- 安全边际是否单列，同一个质量信号有没有在折现率和安全边际里各计一次；有没有重复打折——列出全部保守假设，估算叠乘后的总影响。
-- 给的是不是区间，各个区间、误差带和敏感度表齐不齐；是否只用一个折现率；有没有可审计的关键假设总表；旧框架下的估值有没有重算。
-- 五年回测是否用未复权年末收盘价、反解折现率并与实际回报对比；两个参照锚是否取自各自档案的当前版本、带基准日。
-- 对价格的评级是否按机械尺；股权激励是否按成本处理；金融公司是否按规则处理；系列排名是否带全、每行有理由；芒格矩阵管理层一半的读数；EBITDA 是否只作辅助。
-- 对称性：对这一家施加的严格程度，是否和系列内其他公司一致。
+- Whether the discount rate is "10-year Treasury yield + a premium specific to this company", and whether the Treasury reading has a date and a source; whether the premium is based on the company's own cash-flow record, or has a personal required return mixed in, is interpolated from other companies or is read off a tier by grade.
+- Whether the margin of safety is stated separately, and whether the same quality signal is counted once in the discount rate and again in the margin of safety; whether there is double discounting — listing all the conservative assumptions and estimating their combined effect when multiplied together.
+- Whether ranges are given, and whether all the ranges, error bands and sensitivity tables are there; whether only one discount rate is used; whether there is an auditable master table of key assumptions; whether valuations made under the old framework have been recalculated.
+- Whether the five-year backtest uses unadjusted year-end closing prices, solves back for the discount rate and compares it with the actual return; whether the two reference anchors are taken from the current versions of their own archives, with a reference date.
+- Whether the grade given to the price follows the mechanical scale; whether stock-based compensation is treated as a cost; whether financial companies are treated by the rules; whether the series ranking is carried in full, with a reason on every row; the readings for the management half of the Munger matrix; whether EBITDA is used only as a supporting measure.
+- Symmetry: whether the strictness applied to this company is the same as for the other companies in the series.
 
-审估值待审版本时给出结论：全部符合（或只有建议改）即批准，待审版本生效，流水线在月度股东信的报备里记一行"估值重算生效"；有必须改的，连同结论退回产出它的环节（01C、02 的估值刷新或 05）。
+When it reviews a pending valuation version, it gives a conclusion. If everything complies (or there are only should-fix items), it approves, the pending version takes effect, and the pipeline records one line, "valuation recalculation in effect", among the reports in the monthly letter. If there is a must fix, the version goes back, with the conclusion, to the step that produced it (01C, the valuation refresh in 02, or 05).
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到 `valuation`、`report_valuation_section`、`series_roster`、`price_reference`、`anchors`、`sources`。隔离表对它没有额外限制；04 的各部分互相看不到彼此的结果，由白名单保证。
+It can see `valuation`, `report_valuation_section`, `series_roster`, `price_reference`, `anchors` and `sources`. The isolation table sets no extra limits for it; the parts of 04 cannot see each other's results, which the allow-list ensures.
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-同属独立监督。估值会影响排名和备忘录，审查它的人不能受起草者或总部指挥。
+It is also independent oversight. Valuations affect the ranking and the memos, so whoever reviews them cannot take direction from the drafter or from HQ.
 
-## 决策权
+## Decision rights
 
-- 决策 L1：审计。
-- 决策 L2：估值重算生效（`valuation_update`）。重算本身是公司经理的起草，待审版本经它批准才生效。
+- Decision level L1: audit.
+- Decision level L2: a recalculated valuation takes effect (`valuation_update`). The recalculation itself is the company manager's drafting; the pending version takes effect only with this role's approval.
 
-## 提示词与模型
+## Prompts and model
 
-04C（私有仓库，按编号引用）。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退。
+04C (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.

@@ -1,27 +1,29 @@
-# 抽取员：为事实审计的隔离和从正文读取的指标服务。只做抽取，不做判断。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 extractor.md。
-# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+# Extractor: serves the isolation of the fact audit, and the metrics that have to be read from the text of filings. It
+# only extracts; it does not judge.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in extractor.md.
+# can_see / cannot_see use the input names from the prompts' front matter; the prompts are in the private repository, so
+# only their ids appear here.
 role: extractor
-name: 抽取员
+name: Extractor
 model:
   id: claude-sonnet-5
   effort: high
-  why: 抽取是照原文拆分和读数，不是判断，用起草类的中档模型（设计文档"起草用中档、监督用最强"的分工，decisions/0003）。
-reports_to: null                 # 产出原样交给事实审计和流水线，不受成品的作者（公司经理）指挥
+  why: Extraction means splitting and reading off the source text, not judging, so it uses the mid-tier drafting model (the design document's split of "mid-tier model for drafting, strongest model for oversight", decisions/0003).
+reports_to: null                 # its output goes unchanged to the fact audit and the pipeline, and it takes no direction from the product's author (the company manager)
 can_see:
-  - product                      # 16A：要被审计的成品及其来源表；它本身就是被抽取的对象，可以是任何成品
-  - filings                      # 16B：本期文件全文
+  - product                      # 16A: the product to be audited and its source table; the product itself is what gets extracted, and it can be any product
+  - filings                      # 16B: full text of this period's filings
   - metric_definitions           # 16B
-  - prior_values                 # 16B：上期读数，只用来核对口径
-cannot_see:                      # 除 16A 的 product 本身之外，不另给论点、档案或草稿作背景；16B 完全看不到它们
+  - prior_values                 # 16B: last period's readings, used only to check the basis
+cannot_see:                      # apart from 16A's product itself, no thesis, dossier or drafts are given as background; 16B sees none of them at all
   - thesis
   - dossier
   - update
   - draft_outputs
 outputs:
-  - fact_table                   # 16A，交事实审计（04A、09A、12A）
-  - metric_values                # 16B，交流水线判定测试，也交结算员
+  - fact_table                   # 16A, to the fact audit (04A, 09A, 12A)
+  - metric_values                # 16B, to the pipeline for judging tests, and to the settler
 decision_rights:
-  - parse                        # L1：抽取记在 parse 名下
+  - parse                        # L1: extraction is filed under parse
 prompts: ["16A", "16B"]
 trust_managed: false

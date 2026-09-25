@@ -1,28 +1,28 @@
-# 反方
+# Red team
 
-机器可读定义：[red_team.yml](red_team.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [red_team.yml](red_team.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-独立监督之一，对应芒格的"反过来想"：站在要写做空报告的一方，不问这家公司为什么好，而问怎样会在它身上永久亏损。
+One of the independent oversight roles, corresponding to Munger's "invert": it takes the side of someone about to write a short report, and asks not why this company is good but how one could lose money on it permanently.
 
-## 做什么
+## What it does
 
-- **04B（两次调用）：** 第一遍的输入删去了成品自己的反方内容——研报第 7 节、档案第 9 部分"不买它的理由"与第 12 部分"论点破坏者"、`thesis.yml` 的 `permanent_loss_paths`。先写自己最强的不拥有论证，从生意本身找，不写"估值偏高"一类谁都能说的话；对每一个论点支柱问：有没有同样说得通、现有证据区分不了的另一种解释；找出证据不足却下了强结论的地方；写 3–5 条永久亏损路径，每条写最先会在哪个读数上露头、哪条测试能抓到，没有的写测试建议；再查写作规则与禁用内容。第二遍才给被删去的反方内容，对比成品有没有打折扣、避重就轻；最后指出最可能错的一句话。
-- **04B-lite：** 持仓公司的每次季度更新，只看这一季新出现的信号和论点最脆弱的地方，写 3–5 条永久亏损路径，附在 PR 上。
-- **09B：** 审深度认知文档（06 只跑一遍）：独立写最不利的读法，检查故事是不是被讲得太漂亮、跨学科模型是不是真的解释了机制；最后指出最可能把所有者带偏的一句话。
-- 月度随机复核（17D）里，04B-lite 同样从零重跑。
+- **04B (two calls):** the input to the first pass has the product's own counter-arguments removed — section 7 of the research report, part 9 of the dossier ("bear case") and part 12 ("thesis breakers"), and `permanent_loss_paths` in `thesis.yml`. It first writes its own strongest case for not owning the company, drawn from the business itself, and not the kind of thing anyone could say, such as "the valuation is high". For each thesis pillar it asks whether there is another explanation that is just as plausible and that the current evidence cannot tell apart; it finds places where a strong conclusion rests on thin evidence; it writes 3–5 permanent-loss paths, each saying which reading would show it first and which test would catch it, with a test proposal where there is none; then it checks the writing rules and banned content. Only the second pass gets the removed counter-arguments, to compare whether the product watered them down or dodged the hard parts; finally it names the one sentence most likely to be wrong.
+- **04B-lite:** for every quarterly update of a holding, it looks only at the signals new this quarter and at the thesis's weakest point, writes 3–5 permanent-loss paths, and attaches them to the PR.
+- **09B:** audits the deep-cognition documents (06 gets only one pass): it writes the least favorable reading independently, and checks whether the story has been told too prettily and whether the cross-disciplinary models really explain the mechanism; finally it names the one sentence most likely to mislead the owner.
+- In the monthly random re-audit (17D), 04B-lite is also rerun from scratch.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-第一遍能看到删去反方内容的成品（`product_without_counter`、`document_without_counter`）、`thesis_without_loss_paths`、`dossier_without_9_12`；04B-lite 另看 `update`、`filings` 和上一季的 `prior_inversion_list`。第二遍才给 `product_counter_section`、`document_counter_section`：这层先后由提示词的分遍输入保证，流水线按遍次给材料，所以这两个词只列在 `can_see` 里。任何一遍都不给它完整的成品、档案和 `thesis.yml`（`cannot_see`）；事实审计的结论和盲推的回答也不给——独立监督各自作答。
+In the first pass it can see the product with the counter-arguments removed (`product_without_counter`, `document_without_counter`), `thesis_without_loss_paths` and `dossier_without_9_12`; for 04B-lite it also sees `update`, `filings` and last quarter's `prior_inversion_list`. Only the second pass gets `product_counter_section` and `document_counter_section`: this ordering is guaranteed by the prompts' pass-by-pass inputs, with the pipeline handing over material pass by pass, so these two names are listed only in `can_see`. No pass gives it the full product, dossier or `thesis.yml` (`cannot_see`); nor the fact audit's conclusions or the blind read's answers — the independent oversight roles each answer separately.
 
-## 为什么 `reports_to` 是 null
+## Why `reports_to` is null
 
-同属独立监督，不向任何经理人汇报。它的测试建议由公司经理逐条采纳或退回（03 的 `patch_decisions`），采纳的只对以后的期间生效；反向清单原样附在 PR 上，清单里的风险由公司经理决定是否写进 `permanent_loss_paths`。
+It is also independent oversight and reports to no manager. The company manager accepts or rejects its test proposals one by one (`patch_decisions` in 03), and accepted ones apply only to later periods; the inversion list is attached to the PR unchanged, and the company manager decides whether the risks on it go into `permanent_loss_paths`.
 
-## 决策权
+## Decision rights
 
-决策 L1：审计。只提供意见和测试建议，不自行改动档案或测试。
+Decision level L1: audit. It only offers opinions and test proposals, and changes no archive or test itself.
 
-## 提示词与模型
+## Prompts and model
 
-04B、04B-lite、09B，只经流水线运行（私有仓库，按编号引用）。在对话中手动试跑时，新开一段关闭了记忆的对话，先只贴第一遍的材料，拿到结果后再贴反方内容；产出只作线索。最强模型 `claude-fable-5-1`，effort high，拒答时按服务端默认规则回退。
+04B, 04B-lite, 09B, run only through the pipeline (private repository, cited by id). For a manual trial run in a conversation, open a new conversation with memory turned off, paste only the first-pass material, and paste the counter-arguments only after getting the result; the output serves only as a lead. Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.

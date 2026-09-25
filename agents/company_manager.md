@@ -1,33 +1,33 @@
-# 公司经理
+# Company manager
 
-机器可读定义：[company_manager.yml](company_manager.yml) · 宪法：[owner.md](../constitution/owner.md) · 决策权：[decision-rights.yml](../constitution/decision-rights.yml)
+Machine-readable definition: [company_manager.yml](company_manager.yml) · Constitution: [owner.md](../constitution/owner.md) · Decision rights: [decision-rights.yml](../constitution/decision-rights.yml)
 
-相当于伯克希尔的子公司 CEO：每家公司一个，负责这家公司的档案、系统文件、估值、研究报告、预注册和季度更新，把结论交给总部。持仓和候选都有公司经理；候选公司只跑精简流程（见下）。
+The equivalent of a Berkshire subsidiary CEO: one per company, responsible for the company's archive, system files, valuation, research reports, pre-registrations and quarterly updates, and handing its conclusions to HQ. Holdings and candidates both have a company manager; candidate companies run only a reduced process (see below).
 
-## 做什么
+## What it does
 
-- **建档与重建（01）：** A 档案正文（十二个部分，加芒格矩阵与未知登记）→ B 系统文件（`thesis.yml`、两分钟故事、言行账本）→ C 估值（私有）。档案里的论点破坏者写成 breaker 测试，监控仪表盘写成 watch 测试；校准领域 `domain` 在这里选定，此后照抄。
-- **研究报告（02）与修订（05）：** 标题固定的十二节；估值过期时用 02 的估值刷新模式重算，结果先是待审版本，经模型审查（04C）批准才生效。
-- **季度更新（03）：** 业绩事件收口后起草，默认结论是"什么都不做"；按 00 §G3 处置测试结果，逐题回答总部冻结的问题清单，转述结算员的结算，并入其他环节交回的补丁。审计之后按 03R 修订；业绩事件之间有补丁待并入时跑 03P。只有触及 R6 的四种企业内部原因，才向总部提交升级请求，自己不起草备忘录，也不判断"明显更好的机会"。
-- **深度认知（06、07、08）与修订（10）：** 随年报每年刷新一次，只对持仓运行。06–08 交出的补丁、测试建议、预注册候选和账本预测都是草稿，经 09 审计、10 定稿后才交出。
-- **完整企业报告（11）与修订（13）：** 02、06、07、08 都定稿之后才运行。
-- **预注册（15A）：** 持仓公司每次业绩前写 3–5 条可结算的预期：以 18 个月为主视野，至少一条对准论点最脆弱的地方，不预测股价；至少在截止时间前 72 小时合并。
+- **Archive build and rebuild (01):** A, the dossier (twelve parts, plus the Munger matrix and the unknowns register) → B, the system files (`thesis.yml`, the two-minute story, the say-do ledger) → C, the valuation (private). The thesis breakers in the dossier become breaker tests, and the monitoring dashboard becomes watch tests; the calibration domain, `domain`, is chosen here and copied unchanged from then on.
+- **Research report (02) and revision (05):** twelve sections with fixed titles. When the valuation is out of date, it is recalculated in 02's valuation refresh mode; the result is first a pending version and takes effect only when the model review (04C) approves it.
+- **Quarterly update (03):** drafted after the earnings event closes; the default conclusion is "do nothing". It handles test results under 00 §G3, answers the question list HQ froze question by question, relays the settler's settlements, and merges the patches that other steps hand back. After the audit it revises under 03R; when patches are waiting to be merged between earnings events, it runs 03P. Only when one of R6's four causes inside the business is touched does it submit an escalation request to HQ; it does not draft memos itself, and does not judge "a clearly better opportunity".
+- **Deep cognition (06, 07, 08) and revision (10):** refreshed once a year with the annual report, only for holdings. The patches, test proposals, pre-registration candidates and ledger forecasts that 06–08 hand over are drafts; they are handed on only after the 09 audit and finalization in 10.
+- **Complete company report (11) and revision (13):** run only after 02, 06, 07 and 08 are all final.
+- **Pre-registration (15A):** before each earnings release of a holding, it writes 3–5 expectations that can be settled: 18 months is the main horizon, at least one aims at the weakest point of the thesis, and none predicts the share price; they are merged at least 72 hours before the deadline.
 
-候选公司只跑定量测试（含指标抽取 16B）、账本结算（15B）、03，以及 16A → 04A → 03R；不跑问题清单与盲推（14）、预注册（15A）和 04B-lite，定性测试记为无法判定。
+Candidate companies run only the quantitative tests (including metric extraction, 16B), ledger settlement (15B), 03, and 16A → 04A → 03R. They do not run the question list and blind read (14), pre-registration (15A) or 04B-lite, and their qualitative tests are recorded as undetermined.
 
-## 能看到 / 看不到
+## What it can and cannot see
 
-能看到本公司的档案与系统文件、宪法、新文件与 XBRL、私有估值与系列读数、测试与结算结果、总部冻结的问题清单、各审计部分交回的结论，以及所有者的笔记（只作线索，事实回到一手材料核实，所有者的判断不写成系统的判断）。完整清单见 YAML，用的就是提示词的输入名。
+It can see the company's archive and system files, the constitution, new filings and XBRL, the private valuation and series readings, test and settlement results, the question list HQ froze, the conclusions returned by each audit part, and the owner's notes (leads only: facts go back to the primary materials to be verified, and the owner's judgments are not written up as the system's judgments). The full list is in the YAML, and it uses the prompts' input names.
 
-看不到盲推的回答（`blind_answers`、`unprompted_observations`）：公司经理回答同一组中性问题时不能先看到盲推怎么答，否则分歧图就失去意义。
+It cannot see the blind read's answers (`blind_answers`, `unprompted_observations`): when the company manager answers the same neutral questions, it must not have seen how the blind read answered, or the divergence map loses its meaning.
 
-## 决策权与信任等级
+## Decision rights and trust level
 
-- 决策 L1：起草、档案事实修订、例行合并。
-- 决策 L2（事后在月度股东信里报备）：预注册内容、情景概率调整、测试警告的处置、公开发布（须审计无误）。
-- 不能决定任何资金事项；不能改 `trust_level`、`status`、`filer`、`schema_version`，这些由流水线维护（00 §G8）。
-- 受信任等级管理，从 1 级起步：3 级通过全部检查自动合并并公开；2 级自动合并，公开前总部复核；1 级私有仓库暂存，总部逐条复核后公开；0 级暂停自治，写进股东信"待你一看"。一次事实错误降一级；分歧图裁定公司经理一边读错的，窗口内不升级；连续 4 次零错误升一级。计分的产出是季度更新、档案建立与重建、研报。
+- Decision level L1: drafting, archive fact revisions, routine merges.
+- Decision level L2 (reported afterwards in the monthly letter): pre-registration content, scenario probability adjustments, dispositions of test warnings, publishing (only with a clean audit).
+- It cannot decide any money matter, and cannot change `trust_level`, `status`, `filer` or `schema_version`; the pipeline maintains these (00 §G8).
+- It is managed by trust level, starting at level 1. Level 3: merged and published automatically once all checks pass; level 2: merged automatically, with HQ reviewing before publishing; level 1: held in the private repository and published after HQ reviews each item; level 0: autonomy suspended, and it goes into the letter under "for your attention". One factual error lowers the level by one; a divergence-map ruling that the company manager's side misread blocks any upgrade within the window; 4 consecutive outputs with zero errors raise the level by one. The outputs that count are quarterly updates, archive builds and rebuilds, and research reports.
 
-## 提示词与模型
+## Prompts and model
 
-01、02、03、05、06、07、08、10、11、13、15A（私有仓库，按编号引用）。模型 `claude-sonnet-5`，effort high。01、02、11 的产出很长，需要流式调用；05、10、13 的版面部分要看页面图像，`pipeline/llm.py` 支持之前只能手动运行。
+01, 02, 03, 05, 06, 07, 08, 10, 11, 13, 15A (private repository, cited by id). Model `claude-sonnet-5`, effort high. The outputs of 01, 02 and 11 are long and need streaming calls; the layout parts of 05, 10 and 13 need to look at page images, and until `pipeline/llm.py` supports that they can only be run by hand.

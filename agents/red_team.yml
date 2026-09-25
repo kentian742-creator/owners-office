@@ -1,48 +1,51 @@
-# 反方：独立监督之一（芒格：反过来想）。站在要写做空报告的一方，写"怎样会永久亏损"的反向清单。
-# reports_to 为 null：独立监督不向任何经理人汇报；反向清单原样附在 PR 上，测试建议由公司经理逐条采纳或退回。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 red_team.md。
-# can_see / cannot_see 用提示词 front matter 的输入名。04B、09B 分两遍调用：第一遍看不到成品自己的反方内容，
-# 第二遍才给。这层先后由提示词的 inputs_pass1／inputs_pass2 保证（流水线按遍次给材料），一张平铺的清单表达不了；
-# 所以 product_counter_section、document_counter_section 只列在 can_see（第二遍要用），cannot_see 列的是
-# 任何一遍都不给的完整成品、档案与 thesis.yml。
+# Red team: one of the independent oversight roles (Munger: invert). It takes the side of someone about to write a short
+# report and writes the inversion list of "how we could lose money permanently".
+# reports_to is null: independent oversight reports to no manager; the inversion list is attached to the PR unchanged,
+# and the company manager accepts or rejects its test proposals one by one.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in red_team.md.
+# can_see / cannot_see use the input names from the prompts' front matter. 04B and 09B are called in two passes: the
+# first pass cannot see the product's own counter-arguments, and only the second gets them. This ordering is guaranteed
+# by the prompts' inputs_pass1 / inputs_pass2 (the pipeline hands over material pass by pass), which a flat list cannot
+# express; so product_counter_section and document_counter_section are listed only in can_see (the second pass needs
+# them), and cannot_see lists the full products, the dossier and thesis.yml, which no pass receives.
 role: red_team
-name: 反方
+name: Red team
 model:
   id: claude-fable-5-1
   effort: high
   fallbacks: default
-  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；和起草模型不同、更强，能减少同源偏差。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。
+  why: Oversight roles use the strongest model (design document default, decisions/0003); a model that is different from and stronger than the drafting model reduces shared bias. fallbacks is default, meaning that on a refusal the server's default fallback rules apply; the model that actually answered is recorded by pipeline/llm.py.
 reports_to: null
 can_see:
-  # 第一遍（04B、09B）与 04B-lite
-  - product_without_counter      # 研报删去第 7 节；档案删去第 9、12 部分
-  - document_without_counter     # 07 删去"竞争生态全景"，08 删去"反过来想"
-  - thesis_without_loss_paths    # thesis.yml 删去 permanent_loss_paths
+  # First pass (04B, 09B) and 04B-lite
+  - product_without_counter      # the research report without section 7; the dossier without parts 9 and 12
+  - document_without_counter     # 07 without its "competitive ecosystem" overview, 08 without its "invert" section
+  - thesis_without_loss_paths    # thesis.yml without permanent_loss_paths
   - dossier_without_9_12
-  - update                       # 04B-lite：03 的更新草稿
-  - filings                      # 04B-lite：本事件的文件
-  - prior_inversion_list         # 04B-lite：上一季的反向清单
-  # 第二遍：自己第一遍的输出，加上第一遍被删去的反方内容（只在第二遍给）
+  - update                       # 04B-lite: the draft update from 03
+  - filings                      # 04B-lite: this event's filings
+  - prior_inversion_list         # 04B-lite: last quarter's inversion list
+  # Second pass: its own first-pass output, plus the counter-argument content removed in the first pass (given only in the second pass)
   - pass1
   - product_counter_section
   - document_counter_section
-cannot_see:                      # 任何一遍都不给
-  - product                      # 带反方内容的完整成品
+cannot_see:                      # not given in any pass
+  - product                      # the full product with its counter-argument content
   - document
-  - dossier                      # 完整档案含第 9 部分"不买它的理由"与第 12 部分"论点破坏者"
-  - thesis                       # 完整 thesis.yml 含 permanent_loss_paths
-  - findings_04A                 # 独立监督各自作答：看不到事实审计的结论
-  - blind_answers                # 也看不到盲推的回答
+  - dossier                      # the full dossier, including part 9, "bear case", and part 12, "thesis breakers"
+  - thesis                       # the full thesis.yml, including permanent_loss_paths
+  - findings_04A                 # independent oversight roles answer separately: it cannot see the fact audit's conclusions
+  - blind_answers                # nor the blind read's answers
 outputs:
   - bear_case                    # 04B
-  - inversion_list               # 04B、04B-lite
-  - test_proposals               # 04B、04B-lite：只对以后生效
+  - inversion_list               # 04B, 04B-lite
+  - test_proposals               # 04B, 04B-lite: effective only going forward
   - weakest_sentence             # 04B
   - counter_case                 # 09B
   - misleading_sentence          # 09B
   - findings
   - questions
 decision_rights:
-  - audit                        # L1；只提供意见和测试建议，不自行改动档案或测试
+  - audit                        # L1; it only offers opinions and test proposals, and changes no archive or test itself
 prompts: ["04B", "04B-lite", "09B"]
 trust_managed: false

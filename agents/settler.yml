@@ -1,33 +1,35 @@
-# 结算员：独立监督之一。按事先写好的判定标准结算到期的预注册与言行账本条目；看不到概率、作者和所有者的改写。
-# reports_to 为 null：独立监督不向任何经理人汇报；歧义交总部裁定。
-# schema: thesis-ci/spec/schemas/agent.schema.json（规范 0.2）；职责说明见 settler.md。
-# can_see / cannot_see 用提示词 front matter 的输入名；提示词在私有仓库，这里只写编号。
+# Settler: one of the independent oversight roles. It settles pre-registration and say-do ledger items that have come due,
+# against the resolution criteria written in advance; it cannot see probabilities, authors or the owner's overrides.
+# reports_to is null: independent oversight reports to no manager; ambiguities go to HQ for a ruling.
+# schema: thesis-ci/spec/schemas/agent.schema.json (spec 0.2); charter in settler.md.
+# can_see / cannot_see use the input names from the prompts' front matter; the prompts are in the private repository, so
+# only their ids appear here.
 role: settler
-name: 结算员
+name: Settler
 model:
   id: claude-fable-5-1
   effort: high
   fallbacks: default
-  why: 监督类角色用最强模型（设计文档默认值，decisions/0003）；结算结果进入校准记录，是能力圈实测的原始数据。fallbacks 为 default，指遇到拒答时按服务端默认规则回退；实际应答的模型由 pipeline/llm.py 记录。
+  why: Oversight roles use the strongest model (design document default, decisions/0003); settlement results go into the calibration record and are the raw data for measuring the circle of competence. fallbacks is default, meaning that on a refusal the server's default fallback rules apply; the model that actually answered is recorded by pipeline/llm.py.
 reports_to: null
 can_see:
   - event
-  - items_blind                  # 到期的预注册条目，只有 id、statement、criterion、data_source、horizon
+  - items_blind                  # due pre-registration items, with only id, statement, criterion, data_source and horizon
   - filings
-  - metric_values                # 流水线取到的数值（XBRL 与 16B），各带来源
-  - ledger_due                   # 到期的账本条目：去掉 side，改标 settle_as
+  - metric_values                # values fetched by the pipeline (XBRL and 16B), each with its source
+  - ledger_due                   # due ledger items: side removed, marked with settle_as instead
 cannot_see:
-  - prereg                       # 带概率、作者；所有者的改写单独成文件，同样不给
-  - prereg_due                   # 带当时的概率
-  - ledger                       # 完整账本带 side，看得出预测是谁写的
+  - prereg                       # carries probabilities and authors; the owner's overrides are a separate file and are not given either
+  - prereg_due                   # carries the probabilities of the time
+  - ledger                       # the full ledger carries side, which shows who wrote a forecast
   - thesis
   - dossier
   - update
 outputs:
-  - prereg_settlement            # 交 03 写进季度更新，并交流水线更新校准记录
+  - prereg_settlement            # to 03 for the quarterly update, and to the pipeline to update the calibration record
   - ledger_settlement
   - questions
 decision_rights:
-  - test                         # L1：按事先写好的标准判定；决策权配置没有单列"结算"
+  - test                         # L1: rulings against criteria written in advance; the decision-rights configuration has no separate "settle" action
 prompts: ["15B"]
 trust_managed: false
