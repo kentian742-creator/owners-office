@@ -37,7 +37,9 @@ docs/decisions/0009):
      tools, no settings files, no MCP servers, no skills, no CLAUDE.md, no auto memory, no session saved (see
      claude_code_command() and claude_code_env()). The binary is OWNERS_OFFICE_CLAUDE_BIN, else claude on PATH,
      else the newest copy the Claude desktop app installed. Its calls cost no API money: they are logged with
-     cost_usd 0 and the CLI's own estimate as notional_cost_usd.
+     cost_usd 0 and the CLI's own estimate as notional_cost_usd. Its output limit is the model's full ceiling
+     (CLAUDE_CODE_MAX_TOKENS), which covers thinking and the reply together; a run the CLI continued into a second
+     turn without any tool is reported as a truncation (LLMTruncated), not as tool use.
    - api: the Anthropic API through the SDK. Requests stream by default
      (client.messages.stream(...).get_final_message()); the output limit is 128000 for 01, 02 and 11 and 64000 for
      the rest. Drafting and oversight models both use adaptive thinking (thinking={"type": "adaptive"}) and
@@ -93,6 +95,11 @@ MAX_TOKENS = 16000  # limit when not streaming
 STREAM_MAX_TOKENS = 64000  # default limit for streaming calls: one v3 output often holds several complete files
 LONG_OUTPUT_PROMPTS = frozenset({"01", "02", "11"})  # prompts README: their output is very long
 LONG_MAX_TOKENS = 128000
+# The claude-code backend gets each model's full output ceiling for every part: the CLI's limit
+# (CLAUDE_CODE_MAX_OUTPUT_TOKENS) covers thinking and the reply together, and at effort xhigh a 04A audit thought for
+# ~48k tokens before a ~12k reply, so 64000 was not enough (docs/decisions/0024). An unused limit costs nothing.
+CLAUDE_CODE_MAX_TOKENS = 128000
+MODEL_MAX_OUTPUT_TOKENS = {"claude-haiku-4-5": 64000}  # models whose output ceiling is below 128000
 LOG_ENV = "OWNERS_OFFICE_LLM_LOG"  # can point the log at a persistent location (e.g. the private repository in CI)
 DEFAULT_LOG_PATH = REPO_ROOT / "logs" / "llm-calls.jsonl"
 # Fallback only: constitution/decision-rights.yml (budget.monthly_usd, $50 since docs/decisions/0021) takes
@@ -269,13 +276,15 @@ class LLMRefusal(LLMError):
 
 class LLMTruncated(LLMError):
     """stop_reason == "max_tokens": the output was truncated. result is still usable; the caller decides whether
-    to retry."""
+    to retry. detail says more when the limit was inferred (the Claude Code CLI continued into a second turn)."""
 
-    def __init__(self, result: LLMResult):
+    def __init__(self, result: LLMResult, detail: str | None = None):
         self.result = result
+        self.detail = detail
         super().__init__(
             f"the output hit max_tokens and was truncated ({result.role} / {result.part_id or result.prompt_id}); "
-            "a truncated draft cannot go into the archive. Pass allow_truncated=True if needed."
+            + (f"{detail}; " if detail else "")
+            + "a truncated draft cannot go into the archive. Pass allow_truncated=True if needed."
         )
 
 
@@ -1323,17 +1332,24 @@ def _claude_code_reply(
                                         f"sets {OAUTH_TOKEN_ENV} from `claude setup-token`", details)
         raise ClaudeCodeError(f"Claude Code reported an error: {message}", details)
     loaded = details.get("cli_loaded") or {}
-    if (isinstance(result.get("num_turns"), int) and result["num_turns"] > 1) or result.get("permission_denials") \
-            or any(loaded.get(k) for k in loaded):
+    if result.get("permission_denials") or any(loaded.get(k) for k in loaded):
         raise ClaudeCodeError("the Claude Code CLI loaded or used tools although none were allowed; the reply is "
                               "not used (check the flags against this CLI version)", details)
+    stop_reason = result.get("stop_reason")
+    turns = result.get("num_turns")
+    if isinstance(turns, int) and turns > 1:
+        # No tool was loaded or asked for, so a second turn is the CLI continuing after its output limit: thinking
+        # plus reply reached CLAUDE_CODE_MAX_OUTPUT_TOKENS. It is a truncation (LLMTruncated), not tool use.
+        details["cli_stop_reason"] = stop_reason
+        details["cli_output_limit"] = (f"the Claude Code CLI ran {turns} turns with no tool loaded or used, so thinking "
+                                       f"and reply most likely reached its output limit of {max_tokens} tokens")
+        stop_reason = "max_tokens"
     usage = _usage_dict(result.get("usage") or {})
     served = _served_model(result, model)
     details["model_usage"] = {name: {k: v for k, v in entry.items() if k in ("inputTokens", "outputTokens",
                                                                             "cacheReadInputTokens",
                                                                             "cacheCreationInputTokens", "costUSD")}
                               for name, entry in (result.get("modelUsage") or {}).items() if isinstance(entry, Mapping)}
-    stop_reason = result.get("stop_reason")
     return _Reply(
         model=served,
         usage=usage,
@@ -1405,7 +1421,8 @@ def complete(
       docs/decisions/0022). client injects an SDK client (or test double) for api and fake; with fake and no client,
       pipeline/fake_client.py answers with placeholders.
     - stream, max_tokens: the API streams by default; the limit is 128000 for 01, 02 and 11 and 64000 for the rest
-      (16000 when not streaming). The claude-code backend always streams and gets the same limits.
+      (16000 when not streaming). The claude-code backend always gets the model's full output ceiling (128000; 64000
+      for claude-haiku-4-5), because its limit covers thinking and the reply together.
     - prompts_dir, schemas_dir: the prompts directory and the thesis-ci schema directory; for the defaults see
       resolve_prompts_dir() and outputs.schema_validator().
 
@@ -1467,9 +1484,10 @@ def complete(
     run = {k: v for k, v in (("part", call.key), ("pass", call.pass_no), ("mode", call.mode)) if v is not None}
     in_hash = input_sha256(prompt.id, "\n\n".join(system_texts), hashed_inputs, run=run)
 
-    if max_tokens is None:
-        streaming = stream or backend == CLAUDE_CODE
-        max_tokens = (LONG_MAX_TOKENS if prompt.id in LONG_OUTPUT_PROMPTS else STREAM_MAX_TOKENS) if streaming \
+    if max_tokens is None and backend == CLAUDE_CODE:
+        max_tokens = min(CLAUDE_CODE_MAX_TOKENS, MODEL_MAX_OUTPUT_TOKENS.get(model_id, CLAUDE_CODE_MAX_TOKENS))
+    elif max_tokens is None:
+        max_tokens = (LONG_MAX_TOKENS if prompt.id in LONG_OUTPUT_PROMPTS else STREAM_MAX_TOKENS) if stream \
             else MAX_TOKENS
     system = [{"type": "text", "text": text, "cache_control": dict(CACHE_CONTROL)} for text in system_texts[:-1]]
     system.append({"type": "text", "text": system_texts[-1]})  # the specific prompt comes after the cache breakpoint
@@ -1618,7 +1636,7 @@ def complete(
         if result.stop_reason == "max_tokens":
             _append_log(log, record)
             if not allow_truncated:
-                raise LLMTruncated(result)
+                raise LLMTruncated(result, record.get("cli_output_limit"))
             return result  # truncated replies are not validated and yield no outputs; the caller handles text itself
 
         parsed, errors = _outputs.parse_reply(
