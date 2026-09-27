@@ -18,14 +18,20 @@ The split also put the weakest model on the roles whose judgment matters most: t
 the archives, and HQ writes the rulings and the letters.
 
 On 2026-09-27 all three models were confirmed callable on the owner's plan, and a comparison was run on the fact audit
-(04A) through the real pipeline path: 20 AXP facts with verified verdicts (errors and correct facts mixed), the same
-inputs for every model, effort `high` (`work/model-eval/`, outside the repositories):
+(04A) through the real pipeline path: 20 AXP facts with verified verdicts (8 wrong, 12 right), about 108k tokens of
+identical input for every model, one `complete()` call per run (`work/model-eval/`, outside the repositories):
 
-| Model | Notional cost per run | Wall time per run | Output valid on the first try |
-| --- | --- | --- | --- |
-| `claude-fable-5-1` | $6.25, $3.15 | 540 s, 324 s | no (one retry), yes |
-| `claude-opus-5-5` | $1.67, $1.31 | 351 s, 273 s | yes, yes |
-| `claude-sonnet-5` | $0.73 | 294 s | yes |
+| Model, effort | Runs | Verdict class right | Errors caught | False alarms | Valid on the first try | Time, all runs | Notional cost, all runs |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5`, high | 2 | 35 of 40 | 13 of 16 | 2 of 24 | 2 of 2 | 10.4 min | $2.98 |
+| `claude-fable-5-1`, high | 2 | 36 of 40 | 12 of 16 | 0 of 24 | 1 of 2 | 14.4 min | $9.40 |
+| `claude-sonnet-5`, high | 1 | 15 of 20 | 4 of 8 | 1 of 12 | 1 of 1 | 4.9 min | $0.73 |
+| `claude-opus-5-5`, xhigh (128k output limit) | 1 | 18 of 20 | 7 of 8 | 1 of 12 | 1 of 1 | 8.7 min | $2.06 |
+
+Opus 5.5's two false alarms were the same fact, a precision point (the ~$230 million settlement also covers the Federal
+Reserve), not a wrong number. At effort xhigh with the pipeline's default 64k output limit, two runs failed after about
+ten minutes; the pipeline misread the CLI's continuation as tool use (being fixed). The comparison is small (20 facts,
+one company, one or two runs per model) and covers only the fact audit.
 
 The fact audits of the AXP, MSFT and PDD archives (2026-09-25 to 09-27), which found every error they reported with
 primary evidence, were also run on Opus 5.5.
@@ -56,8 +62,9 @@ Fable").
 
 - **Quality where it counts.** The company manager and HQ now run on a model at least as strong as the one that audits
   them; the audits of this week, run on Opus 5.5, found real errors with primary evidence.
-- **Price and speed.** On the comparison, Opus 5.5 cost about a third to a half of Fable 5.1 per audit and was faster,
-  with valid output on the first try; on the subscription that means more of the plan left for the work itself.
+- **Accuracy, price and speed.** On the comparison Opus 5.5 matched Fable 5.1 (35 vs 36 of 40 verdicts in the right
+  class, 13 vs 12 of 16 errors caught) at about a third of the notional cost, faster and valid on the first try; Sonnet 5
+  caught half the errors and is not fit for the audit. `xhigh` scored no better than `high`, so effort stays `high`.
 - **One model is simpler to prompt and to maintain.** The prompt set (v3.2) is tuned once; there is one set of model
   behaviours, refusal categories and limits to track.
 
