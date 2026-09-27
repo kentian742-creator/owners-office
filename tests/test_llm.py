@@ -1035,8 +1035,9 @@ def test_retry_note_is_english_and_lists_the_errors(env):
     assert retried.startswith(original)
     assert retried[len(original):] == (
         "\n\n<validation_errors>\n"
-        "The outputs of your previous answer failed the pipeline's validation (00 §F0, §F6). "
-        "Correct the errors below, then hand over all outputs of this part again, as originally asked:\n"
+        "An earlier attempt at this part failed the pipeline's validation (00 §F0, §F6) with the errors below. "
+        "That attempt is not shown here. Produce all outputs of this part again, as originally asked, and avoid "
+        "these errors:\n"
         "- output 'questions' is missing; with no content, write \"none\" instead of leaving it out (00 §F0)\n"
         "</validation_errors>"
     )

@@ -891,8 +891,9 @@ def _content_bytes(content: str | list[dict[str, Any]]) -> int:
 def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str]) -> str | list[dict[str, Any]]:
     """Retry: append the validation errors to the original request."""
     note = (
-        "<validation_errors>\nThe outputs of your previous answer failed the pipeline's validation (00 §F0, §F6). "
-        "Correct the errors below, then hand over all outputs of this part again, as originally asked:\n"
+        "<validation_errors>\nAn earlier attempt at this part failed the pipeline's validation (00 §F0, §F6) with the "
+        "errors below. That attempt is not shown here. Produce all outputs of this part again, as originally asked, "
+        "and avoid these errors:\n"
         + "\n".join(f"- {e}" for e in errors)
         + "\n</validation_errors>"
     )
