@@ -6,7 +6,7 @@ One of the independent oversight roles. It looks at the typeset pages as images,
 
 ## What it does
 
-- **09C (deep cognition, 06, 07, 08):** first, banned content — these three documents do no valuation, so a value range, discount rate, position percentage, ranking or share-price forecast is a must fix. Then it checks the layout page by page against 00D's deep-cognition checklist: the logo color may be used only for graphic elements such as rules, timelines, module labels and section numbers, never spread into blocks of color; serif headings and sans-serif body text; whether 06's timeline, 07's four dashboard modules, and 08's branching-path diagram and optionality diagram are in place; whether any final page carries only a few lines.
+- **09C (deep cognition, 06, 07, 08):** first, banned content — these three documents do no valuation, so a value range, discount rate, position percentage, ranking or share-price forecast is a must fix. Then it checks the layout page by page against 00D's deep-cognition checklist: the logo color may be used only for graphic elements such as rules, timelines, module labels and section numbers, never spread into blocks of color; serif headings and sans-serif body text; whether 06's timeline, 07's four dashboard modules, and 08's branch-path diagram and optionality fan are in place; whether any final page carries only a few lines.
 - **12C (complete company report):** against 00D's research-report checklist: serif throughout, with text for different purposes distinguishable at a glance; no accent color with two meanings; the cover follows the company-name title rule and uses the official wordmark image, and the company's full English name is not repeated next to the wordmark, in the header or in the footer; the key-data strip carries only the company's own numbers; table of contents, headers, footers and charts are all present; the main visual is tied into one thread; no revision log, position ladder or precise entry point.
 - Every layout problem comes with an instruction the typesetter (19) can carry out directly (`layout_instructions`: which page, which element, what it should become), passed on through 10 and 13. Without page images it checks only for banned content, and in `questions` asks for the layout to be reviewed again after typesetting.
 
@@ -24,4 +24,4 @@ Decision level L1: audit.
 
 ## Prompts and model
 
-09C, 12C (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal. The page images have to be passed to the model; until `pipeline/llm.py` supports images, these two steps can only be run by hand, and their output serves only as a lead (H5).
+09C, 12C (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal. `pipeline/llm.py` passes the page images (`rendered_pages`) to the model as image blocks.

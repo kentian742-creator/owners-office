@@ -15,7 +15,7 @@ It checks fifteen items one by one, giving each "compliant / violation / cannot 
 - Whether the grade given to the price follows the mechanical scale; whether stock-based compensation is treated as a cost; whether financial companies are treated by the rules; whether the series ranking is carried in full, with a reason on every row; the readings for the management half of the Munger matrix; whether EBITDA is used only as a supporting measure.
 - Symmetry: whether the strictness applied to this company is the same as for the other companies in the series.
 
-When it reviews a proposed valuation version, it gives a conclusion. If everything complies (or there are only should-fix items), it approves, the proposed version takes effect, and the pipeline records one line, "valuation recalculation in effect", among the reports in the monthly letter. If there is a must fix, the version goes back, with the conclusion, to the step that produced it (01C, the valuation refresh in 02, or 05).
+When it reviews a proposed valuation version, it gives a conclusion. If everything complies (or there are only should-fix items), it approves, the proposed version takes effect, and the pipeline records one line, "recomputed valuation takes effect" (00 §F7), among the reports in the monthly letter. If there is a must fix, the version goes back, with the conclusion, to the step that produced it (01C, the valuation refresh in 02, or 05).
 
 ## What it can and cannot see
 

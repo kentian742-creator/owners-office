@@ -8,7 +8,7 @@ Sets finalized content into a PDF following the design system (00D). The content
 
 - Runs after 02, 06–08 and 11 are drafted, after 05, 10 and 13 revise, and when layout revision instructions arrive.
 - Applies, by series, the rules for research reports (D1, serif throughout) or for deep cognition (D2, serif headings, sans-serif body text); the logo color is used only for the graphic elements the design system allows.
-- The cover follows the company-name title rule and uses the official wordmark image; if the official wordmark cannot be obtained, it uses the company's Chinese name as the title and notes this in `questions`, rather than imitating the wordmark in text or CSS.
+- The cover follows the company-name title rule and uses the official wordmark image; if the official wordmark cannot be obtained, it uses the company's English name as the title (the Chinese name only in a Chinese version) and notes this in `questions`, rather than imitating the wordmark in text or CSS.
 - Charts plot only the data in the spec, with no added points and no smoothing; source tags are set as small superscripts pointing to the "Data sources" appendix; pages are tightened to a whole number of pages by adjusting line spacing, font size, white space and figure sizes first, never by deleting content.
 - After typesetting it exports an image of every page and checks them against 00D's checklist item by item; the page images go to the design review (09C, 12C) and the revision steps (05, 10, 13) for re-checking.
 - The public repository stores no logos (00D §D6).

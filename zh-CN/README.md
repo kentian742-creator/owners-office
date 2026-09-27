@@ -26,7 +26,7 @@ Owner's Office 是一位个人投资者的研究档案，全文称这位投资�
 ## 从这里看起
 
 - **一家公司：** 先读 AppLovin 的[两分钟故事](companies/APP/story.md)，再看完整的[论点和测试](../companies/APP/thesis.yml)。其余档案：[拼多多](../companies/PDD/)、[美国运通](../companies/AXP/)、[微软](../companies/MSFT/)、[标普全球](../companies/SPGI/)、[伯克希尔·哈撒韦](../companies/BRK/)。
-- **规则：** [投资宪法](constitution/owner.md)：十三条规则和五条硬性底线，每一条都对应一项机器能执行的检查。
+- **规则：** [投资宪法](constitution/owner.md)：十四条规则和五条硬性底线，每一条都对应一项机器能执行的检查。
 - **错误：** [错误清单](mistakes.md)，至今发现的每一个错误，以及因此改了什么。
 - **来信：** [写给主人的月度信](letters/2026-09.md)。
 - **进展：** [docs/STATUS.md](../docs/STATUS.md) 和[决策记录](../docs/decisions/)；整体设计见 [DESIGN.md](docs/DESIGN.md)。

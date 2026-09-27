@@ -19,7 +19,7 @@ reports_to: null
 can_see:
   # First pass (04B, 09B) and 04B-lite
   - product_without_counter      # the research report without section 7; the dossier without parts 9 and 12
-  - document_without_counter     # 07 without its "competitive ecosystem" overview, 08 without its "invert" section
+  - document_without_counter     # 07 without "Competitive landscape", 08 without "Invert" (pipeline/isolation.py COUNTER_TITLES)
   - thesis_without_loss_paths    # thesis.yml without permanent_loss_paths
   - dossier_without_9_12
   - update                       # 04B-lite: the draft update from 03

@@ -29,7 +29,7 @@ The isolation table sets no limits for HQ, which can see everything; the YAML's 
 ## Boundaries
 
 - Public files contain no buy or sell advice (H3); valuations, rankings and memos are only in the private repository (H4).
-- It asks the owner no questions in any deliverable: the only things the owner needs to decide are decision level L3 matters, and they reach him as one-page memos.
+- It asks the owner no questions in any deliverable: the only things the owner needs to decide are decision level L3 matters, and they reach the owner as one-page memos.
 
 ## Prompts and model
 

@@ -4,7 +4,7 @@ A Chinese version is in [zh-CN/constitution/masters.md](../zh-CN/constitution/ma
 
 > In Owner's Office these investors' philosophies are **organizing principles, not personas**. The system has no "Buffett agent" or "Munger agent", and nobody imitates their voice to give opinions; there is only an office run the Berkshire way: divided authority, audits, calibration and trust levels. Public descriptions do not use "masters' methodology" or "multi-agent adversarial" as selling points either.
 >
-> Investment beliefs are written only in [owner.md](owner.md) (R1–R13, H1–H5). This page only explains what mechanism each principle became, which constitution or governance clause it rests on, and which check enforces it. The first three columns are copied from the design document. In the "Clauses" column, R and H numbers refer to owner.md, and §G refers to the governance clauses of series rules 00 (private repository, cited by number); checks are defined in thesis-ci's `spec/checks.yml`.
+> Investment beliefs are written only in [owner.md](owner.md) (R1–R14, H1–H5). This page only explains what mechanism each principle became, which constitution or governance clause it rests on, and which check enforces it. The first three columns are copied from the design document. In the "Clauses" column, R and H numbers refer to owner.md, and §G refers to the governance clauses of series rules 00 (private repository, cited by number); checks are defined in thesis-ci's `spec/checks.yml`.
 
 | Source | Principle | Becomes in the system | Clauses | Executable check / mechanism |
 | --- | --- | --- | --- | --- |

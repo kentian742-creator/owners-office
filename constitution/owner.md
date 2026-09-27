@@ -8,21 +8,21 @@ A Chinese version is in [zh-CN/constitution/owner.md](../zh-CN/constitution/owne
 - **Source:** the owner's own investment constitution (English notes, version of 2026-09-16; the original is kept in the private repository, with account amounts and the holdings snapshot removed). The interpretations follow the original rule by rule and add no beliefs.
 - **Relation to series rules 00:** 00 is the prompt rulebook that drives all research work. It is kept with the prompts in the private repository; public files cite its clauses (e.g. 00 §V13) and the prompts (e.g. 17C) by id only, see [decisions/0009](../docs/decisions/0009-prompt-set-v3.md). 00 §C is a rule-by-rule summary of this file: the numbers and rule text of R1–R13 are identical to §C, word for word. If the two differ, §C prevails and the discrepancy goes to HQ. Priority: hard rules (H) > investment constitution (R) > the rest of 00 > rules specific to a single prompt.
 - **The owner's role:** the system runs itself within this constitution. The owner does only two things: capital allocation (buying, adding, trimming, selling) and amending the constitution.
-- **Structure:** a preamble says who the owner is and what the owner wants; the thirteen rules of the investment constitution (R1–R13) are the rules the system governs itself by; the five hard rules (H1–H5) are boundaries that no role at any trust level may cross; the amendment procedure comes last. Each rule has four parts: the rule, its interpretation, how the system enforces it, and the executable checks.
+- **Structure:** a preamble says who the owner is and what the owner wants; the fourteen rules of the investment constitution (R1–R14) are the rules the system governs itself by; the five hard rules (H1–H5) are boundaries that no role at any trust level may cross; the amendment procedure comes last. Each rule has four parts: the rule, its interpretation, how the system enforces it, and the executable checks.
 - **Enforcement:** each rule maps to at least one executable check; the checks are defined in thesis-ci's `spec/checks.yml`. The mapping from rules to checks also exists in machine-readable form in [rules.yml](rules.yml), and the rule parameters are in [decision-rights.yml](decision-rights.yml). Many rules are judgments, and a machine can check only the record they leave; the `how_checked` field in `rules.yml` states plainly how far each check reaches.
 - **How to read it:** numbers in the rules are rule parameters, not facts, and carry no source tags.
 
 ## Preamble: who the owner is and what the owner wants
 
-Not numbered, and not an enforcement parameter; it explains where the thirteen rules below come from.
+Not numbered, and not an enforcement parameter; it explains where the fourteen rules below come from.
 
 - **An owner-type investor.** Considers themselves a long-term, business-owner-type investor: buying a stock means buying part of a business, not trading price moves.
 - **Borrowing, not copying.** Draws on Buffett's and Munger's thinking, but not mechanically: applies it through an owner's-mindset lens rather than imitation.
-- **Long-term objective.** Seeks approximately 8–10%+ annualized compounding over time, while recognizing that actual returns depend on business performance, valuation, capital allocation and market conditions. This is a self-description, not a valuation parameter: the discount rate contains no personal required return (00 §V1), and the hurdle for buying and holding is Berkshire or VOO (R7).
+- **Long-term objective.** Seeks approximately 8–10%+ annualized compounding and accepts deep drawdowns while intrinsic value is intact; the owner made this a rule (R14) on 2026-09-27. It is not a valuation parameter: the discount rate contains no personal required return (00 §V1), and the hurdle for buying and holding is Berkshire or VOO (R7).
 - **Still growing.** Sees judgment, patience and emotional control as abilities that improve with experience; their own investing discipline and temperament are still being forged.
 - **Scope.** This constitution governs a concentrated portfolio of a few core businesses, which deliberately holds no broad-market index funds. Outside that portfolio there is a separate plan that buys VOO every month; it is outside the scope of this constitution and of the system.
 
-## I. Investment constitution (R1–R13)
+## I. Investment constitution (R1–R14)
 
 ### R1 Order and price
 
@@ -94,7 +94,7 @@ Not numbered, and not an enforcement parameter; it explains where the thirteen r
 
 **Rule:** Ideal holding period is indefinite — holds as long as a company's fundamentals, moat, and management haven't permanently deteriorated; treats 1–3 years only as a minimum observation window, not the real target. Sells only for permanent deterioration: a permanently damaged moat, a fundamentally changed business model, declining management quality, seriously bad capital allocation, or finding a clearly better long-term opportunity. Will not sell because of price declines, a recession, market panic, or a short-term earnings miss on an otherwise-sound business.
 
-**Interpretation:** The ideal holding period is indefinite: a business is held as long as its fundamentals, moat and management have not permanently deteriorated; 1–3 years is only the minimum observation window, not the real target. The owner sells only for permanent deterioration — a permanently damaged moat, a fundamentally changed business model, declining management quality, seriously bad capital allocation — or on finding a clearly better long-term opportunity. A price decline, a recession, market panic, or a short-term earnings miss at an otherwise healthy business is not a reason to sell. As long as intrinsic value, fundamentals and management are not permanently impaired, the owner is willing to accept deep drawdowns of half or more.
+**Interpretation:** The ideal holding period is indefinite: a business is held as long as its fundamentals, moat and management have not permanently deteriorated; 1–3 years is only the minimum observation window, not the real target. The owner sells only for permanent deterioration — a permanently damaged moat, a fundamentally changed business model, declining management quality, seriously bad capital allocation — or on finding a clearly better long-term opportunity. A price decline, a recession, market panic, or a short-term earnings miss at an otherwise healthy business is not a reason to sell. As long as intrinsic value, fundamentals and management are not permanently impaired, the owner is willing to accept deep drawdowns of half or more (R14).
 
 **How the system enforces it:**
 - A failed test is not a sell (00 §G3). A failed breaker test has only two dispositions: a false trigger (with primary evidence; the test is corrected, effective only going forward), or a confirmed trigger (that part of the investment case is void, and the disposition says how the whole thesis changes); "thesis maintained" is not an allowed disposition. For a failed watch test or any warning, the company manager writes maintain, revise or pending. All dispositions are completed within 7 days (03).
@@ -190,13 +190,26 @@ Not numbered, and not an enforcement parameter; it explains where the thirteen r
 
 **Executable checks:** C-SINGLE-ORDER, C-NO-TRADING, C-NO-PRICE-FEED, C-DEFAULT-HOLD
 
+### R14 Long-term objective and drawdowns
+
+**Rule:** Seeks approximately 8–10%+ annualized compounding over time, while recognizing that actual returns depend on business performance, valuation, capital allocation, and market conditions. Willing to accept severe drawdowns (50%+) as long as intrinsic value, fundamentals, and management haven't been permanently impaired.
+
+**Interpretation:** The objective describes what the portfolio should compound at over many years. It is a yardstick for the owner's record, not a number any single decision is tuned to, and it is not a valuation parameter: the discount rate contains no personal required return (00 §V1), and the bar a business must clear to be bought or held is Berkshire or VOO (R7). A drawdown, however deep, is not by itself evidence of permanent loss; after a fall the only question is whether intrinsic value, fundamentals or management have been permanently impaired (R6, R9).
+
+**How the system enforces it:**
+- The objective never enters a valuation: the discount rate is the 10-year Treasury yield plus the company's own premium, with the basis written down, and buy and add memos compare the long-term expected return with R7's bar, not with 8–10%.
+- The size of a price decline or drawdown is not an allowed sell reason, and money matters default to maintaining the status quo.
+- Whether the portfolio actually compounds at the objective is the owner's judgment over years; the system computes no portfolio returns, because it holds no daily prices (H2).
+
+**Executable checks:** C-DISCOUNT-RATE, C-HURDLE, C-SELL-REASONS, C-DEFAULT-HOLD
+
 ### Note: on position size (00 §C)
 
 Company-level deliverables (01–16) state no position percentages, no position ladders and no tables of the kind "at price X, build a Y% position". The only exception: the private research report (02) and the complete company report (11) may include one sentence on "whether the company qualifies for the 10–20% entry bar, and where it falls short (business, management or price)", without a specific position size. The order of the series ranking is not position advice.
 
 ## II. Hard rules (H1–H5)
 
-The hard rules rank above the thirteen rules above (00 §0); no role at any trust level may cross them. As far as possible they are CI checks, and a change that fails them cannot be merged. They were first written in the start instructions of the design document, and 00 §H gave them their present form; they are owner clauses as well.
+The hard rules rank above the fourteen rules above (00 §0); no role at any trust level may cross them. As far as possible they are CI checks, and a change that fails them cannot be merged. They were first written in the start instructions of the design document, and 00 §H gave them their present form; they are owner clauses as well.
 
 > **Wording in the public version.** This file is public. A few terms in the original sentences of 00 §H2 item 1 and §H4 are themselves on the list of banned terms, and under H4 they may not appear in public files (not even in a negative sentence), so below they are replaced by descriptions with the same meaning. The complete list of banned terms is maintained by thesis-ci's public-content checks (C-PUBLIC-NO-VALUATION, C-PUBLIC-NO-ADVICE) and must match 00 §H4.
 
@@ -244,7 +257,7 @@ The hard rules rank above the thirteen rules above (00 §0); no role at any trus
 
 1. **Amending the constitution is decision level L3, and only the owner can decide it.** `decision-rights.yml` lists `amend_constitution` only under L3; no role may change the rules on its own.
 2. **What counts as an amendment.**
-   - Changing any rule in this file (R1–R13, H1–H5).
+   - Changing any rule in this file (R1–R14, H1–H5).
    - Changing the owner clauses of series rules 00 — §H, §C, §E, §P, §V, §M, §W — or the design system 00D. They come from the owner's investment philosophy, evidence discipline, and writing and design preferences, and changing them ranks with an amendment. The values in them marked "engineering default" are defaults added to make the rules executable: the owner can overrule them at any time, and the system cannot change them on its own.
    - Changing the parameters in `decision-rights.yml` that directly express rules (`memo`, `portfolio`, `ranking.rule`), or `levels` and `trust`, which set each role's own authority: a role cannot grant itself authority.
 3. **What does not count as an amendment.** Changes to process and format in 00 §F and §G, and in the non-owner clauses of the prompts, are decision level L2 (`prompt_change`) and are reported in the monthly letter. Adding or replacing a check for a rule, or fixing wording where `rules.yml` and this file disagree, is an engineering decision recorded in `docs/decisions/`; but no rule may lose its checks as a result. The other operating parameters (phase advancement, escalation rules, the number of candidates and the rotation schedule) are defaults that the design document set on the owner's behalf; a change to them is recorded in `docs/decisions/` and reported in the monthly letter. Raising the budget cap is the owner's decision.
@@ -264,3 +277,4 @@ The hard rules rank above the thirteen rules above (00 §0); no role at any trus
 | v2 | 2026-09-24 | Rebuilt from the full text of the owner's own investment constitution: R1–R13 match 00 §C in numbering and rule text, and H1–H5 follow 00 §H; preamble added; the amendment procedure names the owner clauses of 00. Old wording that conflicted with 00 was removed: "a higher-quality company may not have a higher premium" (see R5 and decisions/0012); R7 using the higher of Berkshire and VOO as the hurdle (changed to the engineering default of 00 §V6); a quality-to-premium mapping table written into this rule (conflicted with 00 §V1); a ranking sorted mechanically in a fixed order (conflicted with 00 §V13); allowing the thesis to be maintained after a breaker failure, with the company manager proposing a trim (conflicted with 00 §G3); prices used only for alerts when a range is crossed (changed to the four kinds of 00 §H2). Alignment only; no new investment beliefs | The owner's original investment constitution; prompt set v3, confirmed by the owner on 2026-09-24 |
 | v2.1 | 2026-09-24 | The "how the system enforces it" parts and the checks of R4 and R7 changed to follow the original text: a target weight below 10% is an error, above 20% is allowed with a stated reason, and more than about 4–5 holdings only warns; the hurdle has Berkshire as the first hurdle and VOO as the second reference, not the higher of the two. Rule text and interpretations unchanged | The owner's original text; decisions/0014 |
 | v2.2 | 2026-09-25 | English-first: English text, Chinese in zh-CN/ | owner's instruction |
+| v2.3 | 2026-09-27 | R14 added (long-term objective and drawdowns, from the owner's own constitution, until then only in the preamble); 00 §W gains W8 (plain statement). Amended by the owner on their own initiative (III.6); this file, 00 §C and §W, and `rules.yml` changed together | The owner's instruction of 2026-09-27; prompt set v3.2 |

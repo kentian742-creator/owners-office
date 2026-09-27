@@ -38,7 +38,7 @@ close those gaps:
 - **A company:** AppLovin's [two-minute story](companies/APP/story.md), then its full [thesis and tests](companies/APP/thesis.yml).
   The other archives are [PDD](companies/PDD/), [American Express](companies/AXP/), [Microsoft](companies/MSFT/),
   [S&P Global](companies/SPGI/) and [Berkshire Hathaway](companies/BRK/).
-- **The rules:** the [investment constitution](constitution/owner.md): thirteen rules and five hard limits, each
+- **The rules:** the [investment constitution](constitution/owner.md): fourteen rules and five hard limits, each
   mapped to a check a machine can run.
 - **The mistakes:** [mistakes.md](mistakes.md), every error found so far and what changed because of it.
 - **The letter:** [the monthly letter to the owner](letters/2026-09.md).

@@ -1,6 +1,6 @@
 # Three decision levels, trust levels and the release gate
 # schema: thesis-ci/spec/schemas/decision-rights.schema.json (spec 0.2)
-# Basis: constitution/owner.md (R1–R13, H1–H5); §G of series rules 00 (private repository, cited by number);
+# Basis: constitution/owner.md (R1–R14, H1–H5); §G of series rules 00 (private repository, cited by number);
 #        DESIGN.md: decentralized governance, the pipeline for one earnings event, and the defaults in the start instructions.
 # Which changes are amendments: see owner.md, "Amendment procedure". memo, portfolio and ranking.rule directly express
 # owner clauses, and levels and trust set each role's own authority; changing any of them is decision level L3. The rest

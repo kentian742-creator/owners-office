@@ -20,6 +20,11 @@ Owner decisions on 2026-09-25:
 - **Model backend** (`decisions/0022`): model calls run through the Claude Code CLI on the owner's Max plan by default (`claude -p` with a replaced system prompt, no tools, chosen model and effort), still through `pipeline/llm.py`; the API is the fallback. The owner's subscription token is set up and a live call succeeded (T4, done); the API key is optional.
 - **Public history** (`decisions/0023`, delegated by the owner): the history of this repository is not rewritten to remove the line the STATUS hotfix took out; the mistake stays in `mistakes.md`.
 - **Prompt set v3.1** (English) confirmed by the owner.
+
+Owner decisions on 2026-09-27:
+
+- **Constitution v2.3:** R14 "Long-term objective and drawdowns" added (about 8–10%+ annualized compounding over time; drawdowns of 50%+ accepted while intrinsic value, fundamentals and management are not permanently impaired), until then only in the preamble; it is not a valuation parameter and not a hurdle. 00 §W gains W8 "Plain statement". To be reported in one line in the next letter (III.6).
+- **Prompt set v3.2** adopted: the audit against current Claude prompting guidance (a new opening of 00 stating what the system is for and how a call works, the owner's reasons behind §V7, §V17 and §G6, no model-computed deadlines in 15A, 15B's `reasoning` no longer asked "step by step"); front matter, roles and rule text unchanged apart from R14 and W8.
 - **Series rule 00 §E10:** where there is no Form 4, use other official sources; use official data as far as possible (since 2026-03-18 foreign private issuers' insiders file Forms 3/4). Applied in the English prompt set.
 
 ## Earnings calendar (conservative estimates, 2026-09-25)

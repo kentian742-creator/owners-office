@@ -30,4 +30,4 @@ It cannot see the blind read's answers (`blind_answers`, `unprompted_observation
 
 ## Prompts and model
 
-01, 02, 03, 05, 06, 07, 08, 10, 11, 13, 15A (private repository, cited by id). Model `claude-sonnet-5`, effort high. The outputs of 01, 02 and 11 are long and need streaming calls; the layout parts of 05, 10 and 13 need to look at page images, and until `pipeline/llm.py` supports that they can only be run by hand.
+01, 02, 03, 05, 06, 07, 08, 10, 11, 13, 15A (private repository, cited by id). Model `claude-sonnet-5`, effort high. The outputs of 01, 02 and 11 are long and need streaming calls; the layout parts of 05, 10 and 13 look at page images, which `pipeline/llm.py` passes to the model as image blocks.

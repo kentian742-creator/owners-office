@@ -2,7 +2,7 @@
 # schema: thesis-ci/spec/schemas/constitution-rules.schema.json
 # The rules are defined in constitution/owner.md; this file is its machine-readable index. Numbers, titles and rule
 # text must match between the two.
-# R1–R13 match series rules 00 §C word for word in number, title and text. H1–H5 follow 00 §H, except that in H2 and
+# R1–R14 match series rules 00 §C word for word in number, title and text. H1–H5 follow 00 §H, except that in H2 and
 # H4 a few terms that are themselves on the banned list are replaced by descriptions with the same meaning (public
 # files may not contain them; see owner.md, "II. Hard rules").
 # Every rule cites at least one check registered in thesis-ci (C-CONSTITUTION-MAP). Many rules are judgments, and a
@@ -228,6 +228,21 @@ rules:
       order, and memos stay within the monthly target (C-SINGLE-ORDER); the system has no broker or order interface of
       any kind (C-NO-TRADING); no daily market data is connected (C-NO-PRICE-FEED); money matters default to
       maintaining the status quo (C-DEFAULT-HOLD). Temperament itself cannot be checked.
+
+  - id: R14
+    kind: constitution
+    title: Long-term objective and drawdowns
+    text: >-
+      Seeks approximately 8–10%+ annualized compounding over time, while recognizing that actual returns depend on
+      business performance, valuation, capital allocation, and market conditions. Willing to accept severe drawdowns
+      (50%+) as long as intrinsic value, fundamentals, and management haven't been permanently impaired.
+    checks: [C-DISCOUNT-RATE, C-HURDLE, C-SELL-REASONS, C-DEFAULT-HOLD]
+    how_checked: >-
+      What is checked is that the objective stays out of valuations and sell decisions: the discount rate is the
+      Treasury yield plus the company's premium with its basis written down (C-DISCOUNT-RATE); buy and add memos clear
+      R7's bar, not a personal target (C-HURDLE); a price decline or drawdown is not an allowed sell reason
+      (C-SELL-REASONS); money matters default to no action (C-DEFAULT-HOLD). Whether the portfolio compounds at the
+      objective is not checked: the system computes no portfolio returns (H2).
 
   # ---------- Hard rules (kind: hard_rule) ----------
   - id: H1
