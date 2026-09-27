@@ -150,6 +150,7 @@ _LOGIN_RE = re.compile(r"not logged in|/login|invalid api key|authentication|oau
 PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-sonnet-5": (2.0, 10.0),
     "claude-fable-5-1": (10.0, 50.0),
+    "claude-opus-5-5": (4.0, 20.0),
     "claude-opus-5": (5.0, 25.0),
     "claude-opus-4-8": (5.0, 25.0),
     "claude-haiku-4-5": (1.0, 5.0),
@@ -158,7 +159,8 @@ PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
 # 5-minute cache (CACHE_CONTROL).
 # Source: Anthropic's prompt caching prices (the prompt caching section of the Claude API docs, checked 2026-09-25):
 # a 5-minute cache write costs 1.25 times the input price and a cache read 0.1 times; the cache read price of
-# claude-fable-5-1 is listed separately as 0.25 (i.e. 0.025 times). Except for that entry, the numbers in the table
+# claude-fable-5-1 is listed separately as 0.25 (i.e. 0.025 times) and that of claude-opus-5-5 as 0.20 (0.05 times;
+# Claude API skill, model table of 2026-09-27). Except for those two entries, the numbers in the table
 # are computed from PRICES_PER_MTOK with these two multipliers and have not been checked model by model; when prices
 # change, edit this table (tests/test_llm.py checks that it agrees with the multipliers).
 # A model not in this table cannot be called through the API either.
@@ -167,6 +169,7 @@ CACHE_READ_MULTIPLIER = 0.1
 CACHE_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-sonnet-5": (2.5, 0.2),
     "claude-fable-5-1": (12.5, 0.25),
+    "claude-opus-5-5": (5.0, 0.2),
     "claude-opus-5": (6.25, 0.5),
     "claude-opus-4-8": (6.25, 0.5),
     "claude-haiku-4-5": (1.25, 0.1),
@@ -179,13 +182,16 @@ CACHE_CONTROL = {"type": "ephemeral"}
 # uses -2026-06-01.
 FALLBACK_BETA_DEFAULT = "server-side-fallback-2026-07-01"
 FALLBACK_BETA_ARRAY = "server-side-fallback-2026-06-01"
-SERVER_FALLBACK_MODELS = frozenset({"claude-fable-5-1", "claude-opus-5"})
+SERVER_FALLBACK_MODELS = frozenset({"claude-fable-5-1", "claude-opus-5-5", "claude-opus-5"})
 FALLBACKS_OFF = frozenset({"", "none", "off", "false", "no"})
 
 # Thinking: these models are sent adaptive thinking explicitly; budget_tokens is never sent (these models reject it
 # with a 400). Models outside this set (claude-haiku-4-5, used for the budget downgrade) do not support adaptive
 # thinking; thinking is not sent for them.
-ADAPTIVE_THINKING_MODELS = frozenset({"claude-sonnet-5", "claude-fable-5-1", "claude-opus-5", "claude-opus-4-8"})
+# claude-opus-5-5 and claude-fable-5-1 cannot run with thinking off; effort is their only depth control, and
+# claude-opus-5-5 defaults to effort medium, so the pipeline always sends effort explicitly.
+ADAPTIVE_THINKING_MODELS = frozenset({"claude-sonnet-5", "claude-fable-5-1", "claude-opus-5-5", "claude-opus-5",
+                                      "claude-opus-4-8"})
 # Models that do not accept the effort parameter.
 NO_EFFORT_MODELS = frozenset({"claude-haiku-4-5"})
 

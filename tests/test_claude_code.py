@@ -108,6 +108,8 @@ def env(tmp_path, monkeypatch):
     monkeypatch.delenv(llm.CLAUDE_TIMEOUT_ENV, raising=False)
     monkeypatch.delenv(llm.OAUTH_TOKEN_ENV, raising=False)
     monkeypatch.delenv("CLAUDE_CONFIG_DIR", raising=False)
+    # Never read the owner's real workspace .env (it may hold the subscription token): point at a missing file.
+    monkeypatch.setenv("OWNERS_OFFICE_ENV_FILE", str(tmp_path / "no-such.env"))
     monkeypatch.setenv(llm.BACKEND_ENV, "claude-code")
     return make_env(tmp_path)
 

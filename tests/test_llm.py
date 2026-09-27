@@ -956,12 +956,20 @@ def test_fable_cache_reads_use_their_own_listed_rate():
     }
 
 
+def test_opus_5_5_prices():
+    usage = {"input_tokens": 1_000_000, "output_tokens": 1_000_000,
+             "cache_creation_input_tokens": 1_000_000, "cache_read_input_tokens": 1_000_000}
+    assert llm.cost_breakdown("claude-opus-5-5", usage) == {
+        "input": 4.0, "output": 20.0, "cache_write": 5.0, "cache_read": 0.2}
+    assert "claude-opus-5-5" in llm.ADAPTIVE_THINKING_MODELS and "claude-opus-5-5" in llm.SERVER_FALLBACK_MODELS
+
+
 def test_cache_price_table_covers_every_model_and_follows_the_documented_multipliers():
     assert set(llm.CACHE_PRICES_PER_MTOK) == set(llm.PRICES_PER_MTOK)
     for model, (write, read) in llm.CACHE_PRICES_PER_MTOK.items():
         input_price = llm.PRICES_PER_MTOK[model][0]
         assert write == pytest.approx(input_price * llm.CACHE_WRITE_MULTIPLIER), model
-        if model != "claude-fable-5-1":  # the one separately listed read price: 0.25, i.e. 0.025 times the input price
+        if model not in ("claude-fable-5-1", "claude-opus-5-5"):  # separately listed read prices: 0.25 and 0.20
             assert read == pytest.approx(input_price * llm.CACHE_READ_MULTIPLIER), model
 
 
