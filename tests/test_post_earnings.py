@@ -359,7 +359,7 @@ def test_evaluate_needs_16b_when_a_due_test_reads_filing_text(env, shim):
 def test_without_thesis_cis_evaluation_only_a_dry_run_evaluates(env, monkeypatch, tmp_path):
     evaluate_shim.remove(monkeypatch)
     run(env, "16B")
-    with pytest.raises(runner.RunnerError, match="thesis-ci feat/evaluate"):
+    with pytest.raises(runner.RunnerError, match="thesis-ci v0.4.0 or later"):
         evaluate(env)
     bundle, record = evaluate(env, out_root=tmp_path / "dry")
     assert record["client"] == "placeholder" and set(record["results"]) == {"undetermined"}

@@ -3,15 +3,16 @@
 
 The evaluation itself belongs to thesis-ci (the format contract's owner), through this interface:
 
-- thesis_ci.metrics.readings_from_companyfacts(companyfacts, metric_ids, periods, fiscal_year_end) -> [reading]
-  (pure; the pipeline fetches companyfacts through pipeline.edgar, cached);
+- thesis_ci.metrics.readings_from_companyfacts(companyfacts, metric_ids, periods, fiscal_year_end, *, ticker=None,
+  definitions=None, currency=None) -> [reading] (pure; the pipeline fetches companyfacts through pipeline.edgar,
+  cached);
 - thesis_ci.evaluate.evaluate_company(thesis, readings, period, today) -> the ci_results document: per test its id,
   result (pass / warn / fail / undetermined / not_due), the reading {value, unit, period, source, basis}, the
   readings used, threshold, op, fail_if, warn_if, consecutive_count and reason.
 
 A reading is {metric, period, value, unit, source, basis?, note?}. Readings of metrics that are not in XBRL come from
-16B's metric_values (readings_from_metric_values()); readings from XBRL come from thesis-ci. A dry run whose
-thesis-ci does not provide the interface yet uses PlaceholderEvaluator, which reads nothing and records every test as
+16B's metric_values (readings_from_metric_values()); readings from XBRL come from thesis-ci. thesis-ci provides the
+interface from v0.4.0 (requirements.txt); a dry run whose thesis-ci does not provide it uses PlaceholderEvaluator, which reads nothing and records every test as
 undetermined with that reason; the real `evaluate` command never does.
 
 Here, too:
@@ -46,7 +47,7 @@ _NUMBER_RE = re.compile(r"^\(?[-−+]?\$?\s*\d[\d,]*(?:\.\d+)?\)?\s*%?$")
 
 
 class EvaluatorUnavailable(RuntimeError):
-    """thesis-ci does not provide thesis_ci.metrics / thesis_ci.evaluate yet (feat/evaluate)."""
+    """The installed thesis-ci does not provide thesis_ci.metrics / thesis_ci.evaluate (added in v0.4.0)."""
 
 
 # ---------------------------------------------------------------------------------------------------- tests
@@ -449,11 +450,11 @@ def load_evaluator(*, allow_placeholder: bool = False) -> Evaluator:
         judge = getattr(evaluate, "evaluate_company")
     except (ImportError, AttributeError) as exc:
         if allow_placeholder:
-            return placeholder_evaluator(f"{type(exc).__name__}: thesis-ci has no evaluation interface yet")
+            return placeholder_evaluator(f"{type(exc).__name__}: the installed thesis-ci has no evaluation interface")
         raise EvaluatorUnavailable(
             "the installed thesis-ci has no thesis_ci.metrics.readings_from_companyfacts / "
-            "thesis_ci.evaluate.evaluate_company (thesis-ci feat/evaluate); install a thesis-ci that provides them "
-            "(requirements-lint.txt)") from None
+            "thesis_ci.evaluate.evaluate_company (thesis-ci v0.4.0 or later); install the release requirements.txt "
+            "pins") from None
     try:
         import thesis_ci
 
