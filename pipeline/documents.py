@@ -271,9 +271,9 @@ def _periodic_label(filing: edgar.Filing, cal: edgar.FiscalCalendar) -> str | No
 
 def window_start(period: str, lookback: int, cal: edgar.FiscalCalendar) -> dt.date:
     """The first day of the first quarter of the lookback window."""
-    first = lookback_periods(period, lookback)[0]
-    year, quarter = edgar.parse_period(first)
-    return cal.quarter_end(year, quarter or 4) - dt.timedelta(days=92) + dt.timedelta(days=1)
+    before = shift_period(lookback_periods(period, lookback)[0], -1)
+    year, quarter = edgar.parse_period(before)
+    return cal.quarter_end(year, quarter or 4) + dt.timedelta(days=1)  # the day after the quarter before it
 
 
 def select_filings(requests: Sequence[DocRequest], filings: Sequence[edgar.Filing],

@@ -138,6 +138,8 @@ def test_the_lookback_window_and_the_filings_it_selects(env):
     cal = edgar.FiscalCalendar.parse("12-31")
     assert documents.lookback_periods("FY2026Q2", 4) == ["FY2025Q3", "FY2025Q4", "FY2026Q1", "FY2026Q2"]
     assert documents.window_start("FY2026Q2", 4, cal) == dt.date(2025, 7, 1)
+    assert documents.window_start("FY2026Q2", 1, cal) == dt.date(2026, 4, 1)
+    assert documents.window_start("FY2027Q1", 1, edgar.FiscalCalendar.parse("06-30")) == dt.date(2026, 7, 1)
     data = subs(env)
     events = edgar.earnings_events(data.cik, "12-31", filer_type="domestic", client=env.gateway.client, subs=data)
     plan = documents.parse_where(fx.WHERE_L1, foreign=False, owners=["APP"])

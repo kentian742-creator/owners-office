@@ -1749,7 +1749,7 @@ def _where_documents(ctx: RunContext, name: str) -> BuiltInput:
         dump_yaml({"tests": plan_rows}).rstrip(),
         "",
     ]
-    if ctx.rehearsal:
+    if ctx.rehearsal and ctx.results().rehearsal_for:
         header.insert(1, f"Rehearsal: the event has not happened yet; the window ends with {period} instead.")
     ordered = sorted(fetched.values(), key=lambda d: (d.filed, d.accession, d.locator or ""))
     text, sources = render_documents(header, ordered)
