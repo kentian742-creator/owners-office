@@ -326,7 +326,8 @@ def _entries(data: Any) -> list[Any]:
     return []
 
 
-_TAG_RE = re.compile(r"(?:\[?src:\s*)?([A-Z0-9][A-Za-z0-9._-]*(?:#[^\]\s,;]+)?)")
+_SRC_RE = re.compile(r"\[src:([A-Z0-9][A-Za-z0-9._-]*(?:#[^\]\s]+)?)\]")
+_TAG_RE = re.compile(r"(?<![\w.-])([A-Z][A-Z0-9.]*-[A-Z0-9][A-Za-z0-9._-]*(?:#[^\]\s,;]+)?)")  # APP-10Q-..., FRED-X
 _PERIOD_RE = re.compile(r"^FY\s*(\d{4})\s*(?:(Q[1-4]|H[12]))?$", re.I)
 
 
@@ -334,8 +335,8 @@ def source_tag(value: Any) -> str | None:
     """The first source tag in an extractor's source field ("[src:AXP-8K-2026-10-16#EX-99.2]", "AXP-10Q-FY2026Q3,
     Item 2"); None when there is none."""
     for item in value if isinstance(value, list) else [value]:
-        match = _TAG_RE.search(str(item or ""))
-        if match and "-" in match.group(1):
+        match = _SRC_RE.search(str(item or "")) or _TAG_RE.search(str(item or ""))
+        if match:
             return match.group(1)
     return None
 

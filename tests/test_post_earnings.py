@@ -13,6 +13,7 @@ from __future__ import annotations
 import datetime as dt
 import io
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -401,6 +402,9 @@ def test_14t_gets_the_due_tests_without_thesis_wording_and_their_documents(env):
     assert fx.CANARY_TEST not in everything and fx.CANARY_THESIS not in everything
     event = yaml.safe_load(read_input(bundle, "event"))
     assert event["period"] == EVENT and event["closed"] is True
+    recorded = {x["tag"]: x for x in inputs_of(bundle)["where_documents"]["sources"]}
+    # the synthetic 10-Q has no item headings, so the MD&A the clause names cannot be cut out: the whole filing
+    assert recorded["APP-10Q-FY2026Q2"]["note"] == "the whole filing: section(s) not found by heading: MD&A"
 
 
 def test_14t_runs_for_holdings_only(env):
@@ -681,10 +685,14 @@ def test_a_dry_run_of_a_candidates_event_goes_end_to_end_outside_the_repositorie
     code, result = event(env, dry_run=True, out_root=tmp_path / "dry")
     assert code == 0, [(s.stage, s.state, s.detail) for s in result]
     assert [s.stage for s in result] == ["16B", "ci", "15B", "03-draft", "stop:draft", "16A", "04A", "stop:audit",
-                                         "03R", "stop:placement", "place"]
+                                         "03R", "16A-r2", "04A-r2", "17A", "03R-r2", "17A-r2", "stop:placement",
+                                         "place"]
     assert states((code, result)) == {"16B": "ran", "ci": "ran", "15B": "skipped", "03-draft": "ran",
                                       "stop:draft": "passed", "16A": "ran", "04A": "ran", "stop:audit": "passed",
-                                      "03R": "ran", "stop:placement": "passed", "place": "checked"}
+                                      "03R": "ran", "16A-r2": "skipped", "04A-r2": "skipped", "17A": "ran",
+                                      "03R-r2": "skipped", "17A-r2": "skipped", "stop:placement": "passed",
+                                      "place": "checked"}
+    assert next(s.detail for s in result if s.stage == "17A") == "gate decision: hold"
     assert not (env.private / "runs" / "APP").exists() and fx.git(env.public, "status", "--porcelain") == ""
     assert "staged in owners-office-private" in result[-1].detail
 
@@ -711,13 +719,15 @@ def test_the_chain_stops_for_review_and_resumes_without_running_anything_twice(e
     review = yaml.safe_load((env.private / "runs/APP/2026-10-20-03-draft" / chain.REVIEW_RECORD).read_text())
     assert review["stop"] == "draft" and review["approved_at"]
     revise = event(env, backend="api", client_factory=factory, lint=False, approve_stops=["audit"])
-    assert states(revise)["stop:placement"] == "waiting"
+    assert states(revise)["stop:placement"] == "waiting" and states(revise)["16A-r2"] == "skipped"
+    assert next(s.detail for s in revise[1] if s.stage == "stop:placement").startswith("HQ's gate: hold; review")
     done = event(env, backend="api", client_factory=factory, lint=False, approve_stops=["placement"])
     assert done[0] == 0 and states(done)["place"] == "placed"
-    assert "03R: 9 file(s), staged" in done[1][-1].detail
+    assert "2026-10-20-03R: 9 file(s), staged" in done[1][-1].detail
     final = event(env, backend="api", client_factory=factory, lint=False)
     assert final[0] == 0 and states(final)["place"] == "placed" and final[1][-1].detail == "everything was placed already"
-    assert executed == ["2026-10-20-16B", "2026-10-20-03-draft", "2026-10-20-16A", "2026-10-20-04A", "2026-10-20-03R"]
+    assert executed == ["2026-10-20-16B", "2026-10-20-03-draft", "2026-10-20-16A", "2026-10-20-04A", "2026-10-20-03R",
+                        "2026-10-20-17A-APP"]
 
 
 def valid_factory(env):
@@ -743,7 +753,7 @@ def test_a_failed_step_stops_the_chain_until_retry(env, shim):
     assert states(retried)["16B"] == "ran" and states(retried)["stop:draft"] == "waiting"
 
 
-def test_a_holdings_chain_includes_the_judge_and_the_blind_read(env, shim, tmp_path):
+def test_a_holdings_chain_runs_every_step_of_the_prompts_scope(env, shim, tmp_path):
     run_dir = env.private / "runs" / "APP" / "2026-07-01-14Q"
     fx.write_yaml(run_dir / runner.MANIFEST, {"manifest_version": 1, "step": "14Q", "company": "APP", "period": EVENT})
     fx.write_yaml(run_dir / runner.RUN_RECORD, {"status": "succeeded"})
@@ -751,10 +761,12 @@ def test_a_holdings_chain_includes_the_judge_and_the_blind_read(env, shim, tmp_p
                                                   {"id": "Q02", "question": "open", "kind": "open", "maps_to": []}])
     code, result = event(env, dry_run=True, out_root=tmp_path / "dry")
     got = states((code, result))
-    assert (got["14T"], got["14A"], got["15B"], got["03-draft"], got["16A"], got["04A"]) == (
-        "ran", "ran", "skipped", "ran", "ran", "ran")
-    assert got["04B-lite"] == "failed" and code == 1
-    assert "no step 04B-lite yet" in next(s.detail for s in result if s.stage == "04B-lite")
+    assert code == 0, [(s.stage, s.state, s.detail) for s in result]
+    assert (got["14T"], got["14A"], got["15B"], got["03-draft"], got["16A"], got["04A"], got["04B-lite"], got["14B"],
+            got["03R"], got["17A"]) == ("ran", "ran", "skipped", "ran", "ran", "ran", "ran", "ran", "ran", "ran")
+    placed = result[-1].detail
+    assert "2026-10-20-14B: 2 file(s)" in placed and "2026-10-20-17A-APP: 5 file(s)" in placed
+    assert "14Q" not in placed  # the question list is not a step of the chain
 
 
 def test_the_event_command_prints_states_not_content(env, shim, tmp_path, monkeypatch, capsys):
@@ -767,3 +779,290 @@ def test_the_event_command_prints_states_not_content(env, shim, tmp_path, monkey
     printed = "".join(capsys.readouterr())
     assert code == 0 and "chain complete" in printed and "16B             ran" in printed
     assert not [canary for canary in (*fx.CANARIES, fx.CANARY_TEST) if canary in printed]
+
+
+# ---------------------------------------------------------------------------------------------------- phase B
+
+
+FORM4 = b"""<?xml version="1.0"?>
+<ownershipDocument><documentType>4</documentType><periodOfReport>2026-08-20</periodOfReport>
+<reportingOwner><reportingOwnerId><rptOwnerName>Founder Jane</rptOwnerName></reportingOwnerId>
+<reportingOwnerRelationship><isDirector>1</isDirector><isOfficer>1</isOfficer><officerTitle>CEO</officerTitle>
+</reportingOwnerRelationship></reportingOwner>
+<nonDerivativeTable>
+<nonDerivativeTransaction><securityTitle><value>Class A Common Stock</value></securityTitle>
+<transactionDate><value>2026-08-20</value></transactionDate><transactionCoding><transactionCode>S</transactionCode>
+</transactionCoding><transactionAmounts><transactionShares><value>1000</value></transactionShares>
+<transactionPricePerShare><value>512.34</value><footnoteId id="F1"/></transactionPricePerShare>
+<transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode></transactionAmounts>
+<postTransactionAmounts><sharesOwnedFollowingTransaction><value>9000</value></sharesOwnedFollowingTransaction>
+</postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership>
+</ownershipNature></nonDerivativeTransaction>
+<nonDerivativeTransaction><securityTitle><value>Class A Common Stock</value></securityTitle>
+<transactionDate><value>2026-08-20</value></transactionDate><transactionCoding><transactionCode>S</transactionCode>
+</transactionCoding><transactionAmounts><transactionShares><value>500</value></transactionShares>
+<transactionPricePerShare><value>513.00</value><footnoteId id="F2"/></transactionPricePerShare>
+<transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode></transactionAmounts>
+<postTransactionAmounts><sharesOwnedFollowingTransaction><value>8500</value></sharesOwnedFollowingTransaction>
+</postTransactionAmounts><ownershipNature><directOrIndirectOwnership><value>D</value></directOrIndirectOwnership>
+</ownershipNature></nonDerivativeTransaction></nonDerivativeTable>
+<footnotes><footnote id="F1">Weighted average price; prices ranged from $511.90 to $512.80.</footnote>
+<footnote id="F2">Sold under a Rule 10b5-1 trading plan adopted on 2026-03-01.</footnote></footnotes>
+</ownershipDocument>"""
+
+
+def test_ownership_reports_are_rendered_in_a_few_lines_without_prices():
+    text = documents.render_ownership(FORM4)
+    assert "Reporting owner: Founder Jane (director, officer, CEO)" in text
+    assert "code S (open-market sale); 2 transaction(s), 1,500 shares disposed; owned after 8500; direct" in text
+    assert "Footnote F2: Sold under a Rule 10b5-1 trading plan" in text and "1 footnote(s) stating prices left out" in text
+    assert "512" not in text and "$" not in text
+    assert documents.render_ownership(b"<not xml") is None
+
+
+TENQ_TEXT = "\n".join([
+    "PART I", "Item 1.", "Item 2.", "PART II", "Item 1.", "Item 1A.",  # the table of contents
+    "PART I – FINANCIAL INFORMATION", "Item 1. Financial Statements", "Condensed balance sheet",
+    "1. Description of Business", "What the company does.", "5. Commitments and Contingencies",
+    "A lawsuit is pending.", "6. Subsequent Events", "A deal was signed after the quarter.",
+    "ITEM 2. MANAGEMENT'S DISCUSSION AND ANALYSIS", "Revenue grew.", "Margins held.",
+    "ITEM 3. MARKET RISK", "Rates.", "PART II – OTHER INFORMATION", "ITEM 1. LEGAL PROCEEDINGS", "See note 5.",
+    "ITEM 1A. RISK FACTORS", "Competition is intense.", "Regulation may change.", "ITEM 6. EXHIBITS", "31.1"])
+
+
+@pytest.mark.parametrize("wanted, kept, dropped", [
+    ({"mdna"}, ["Revenue grew.", "Margins held."], ["A lawsuit is pending.", "Competition is intense."]),
+    ({"risk_factors", "legal_proceedings"}, ["Competition is intense.", "See note 5."], ["Revenue grew."]),
+    ({"mdna", "note:subsequent events"}, ["A deal was signed after the quarter.", "Revenue grew."],
+     ["A lawsuit is pending."]),
+    ({"note:contingencies"}, ["A lawsuit is pending."], ["Revenue grew.", "A deal was signed"]),
+])
+def test_sections_named_by_where_are_cut_by_the_filings_own_headings(wanted, kept, dropped):
+    text, found, missing = documents.extract_sections(TENQ_TEXT, "10-Q", frozenset(wanted))
+    assert missing == [] and sorted(found) == sorted(wanted)
+    assert all(k in text for k in kept) and not any(d in text for d in dropped)
+    assert text.startswith("--- section: ")
+
+
+def test_a_section_that_cannot_be_found_keeps_the_whole_filing_and_an_absent_note_is_skipped():
+    text, found, missing = documents.extract_sections(TENQ_TEXT, "10-Q", frozenset({"mdna", "business"}))
+    assert text == TENQ_TEXT and missing == ["business"]
+    no_note = TENQ_TEXT.replace("6. Subsequent Events\nA deal was signed after the quarter.\n", "")
+    text, found, missing = documents.extract_sections(no_note, "10-Q", frozenset({"mdna", "note:subsequent events"}))
+    assert missing == [] and "Revenue grew." in text and "not in this filing: note: subsequent events" in text
+    assert documents.section_requests("the MD&A and subsequent-events notes of the 10-Q and 10-K") == frozenset(
+        {"mdna", "note:subsequent events"})
+    assert documents.section_requests("20-F Item 3.D risk factors and Item 16I") == frozenset(
+        {"risk_factors", "item:3", "item:16I"})
+    assert documents.section_requests("8-K Item 5.02 and the 10-K") is None
+
+
+def holding_draft(env) -> Path:
+    """APP (a holding) up to its 03 draft for FY2026Q2: a frozen question list, 16B, ci, 14T, 14A and the draft."""
+    run_dir = env.private / "runs" / "APP" / "2026-07-01-14Q"
+    fx.write_yaml(run_dir / runner.MANIFEST, {"manifest_version": 1, "step": "14Q", "company": "APP", "period": EVENT})
+    fx.write_yaml(run_dir / runner.RUN_RECORD, {"status": "succeeded"})
+    fx.write_yaml(run_dir / "question_list.yml", [{"id": "Q01", "question": "q", "kind": "pillar", "maps_to": ["P1"]},
+                                                  {"id": "Q02", "question": "open", "kind": "open", "maps_to": []}])
+    run(env, "16B")
+    evaluate(env)
+    run(env, "14T")
+    run(env, "14A")
+    return run(env, "03-draft")
+
+
+def test_the_red_team_and_the_divergence_map_get_their_inputs_only(env, shim):
+    holding_draft(env)
+    red = env.assemble("04B-lite", period=EVENT)
+    assert list(inputs_of(red)) == ["update", "filings", "thesis_without_loss_paths"]
+    assert manifest_of(red)["omitted"][0]["name"] == "prior_inversion_list"
+    assert "permanent_loss_paths" not in read_input(red, "thesis_without_loss_paths")
+    assert manifest_of(red)["role"] == "red_team" and manifest_of(red)["variables"]["subject"] == "quarterly update"
+    divergence = env.assemble("14B", period=EVENT)
+    assert list(inputs_of(divergence)) == ["question_list", "question_answers", "blind_answers",
+                                           "unprompted_observations", "filings", "thesis", "dossier", "update"]
+    answers = yaml.safe_load(read_input(divergence, "question_answers"))
+    assert [a["id"] for a in answers] == ["Q01", "Q02"]
+    assert inputs_of(divergence)["blind_answers"]["sources"][0]["run"] == "runs/APP/2026-10-20-14A"
+
+
+def due_predictions(env) -> None:
+    """A FY2026Q2 pre-registration of APP, merged, with a system and an owner item due, and a system forecast in the
+    ledger due at the end of the quarter."""
+    item = {"statement": "Synthetic statement.", "probability": 0.7, "criterion": "Synthetic criterion.",
+            "data_source": "The FY2026Q2 10-Q MD&A", "horizon": "quarter", "resolves_by": "2026-08-31",
+            "domain": "digital_advertising", "added_by": "system"}
+    fx.write_yaml(env.public / "companies" / "APP" / "prereg" / f"{EVENT}.yml", {
+        "company": "APP", "event": {"period": EVENT, "expected_release": "2026-08-05", "form": "8-K",
+                                    "placeholder": False},
+        "deadline": "2026-08-04T23:59:59-04:00", "author": "system", "horizon": "quarter",
+        "items": [{"id": f"APP-{EVENT}-1", **item},
+                  {"id": f"APP-{EVENT}-2", **item, "resolves_by": "2027-12-31", "horizon": "18m"}]})
+    fx.write_yaml(env.public / "companies" / "APP" / "prereg" / f"{EVENT}-owner.yml", {
+        "company": "APP", "author": "owner", "items": [{"id": f"APP-{EVENT}-3", **item, "probability": 0.2,
+                                                        "added_by": "owner"}]})
+    ledger = yaml.safe_load((env.public / "companies" / "APP" / "ledger.yml").read_text(encoding="utf-8"))
+    ledger["entries"].append({"id": "APP-S-2026-01", "side": "system", "kind": "prediction", "probability": 0.6,
+                              "statement": "Synthetic forecast.", "made_at": "2026-05-06", "due": "2026-Q2",
+                              "source": "APP-8K-2026-08-05#EX-99.1", "status": "pending", "note": "Criterion."})
+    fx.write_yaml(env.public / "companies" / "APP" / "ledger.yml", ledger)
+    fx.commit_all(env.public, "due predictions")
+
+
+def test_the_settler_sees_neither_probabilities_nor_authors(env, shim):
+    due_predictions(env)
+    run(env, "16B")
+    evaluate(env)
+    bundle = env.assemble("15B", period=EVENT)
+    assert list(inputs_of(bundle)) == ["event", "items_blind", "filings", "metric_values", "ledger_due"]
+    items = yaml.safe_load(read_input(bundle, "items_blind"))["items"]
+    assert [i["id"] for i in items] == [f"APP-{EVENT}-1", f"APP-{EVENT}-3"]  # -2 resolves in 2027
+    assert all(set(i) == set(registry.BLIND_ITEM_FIELDS) for i in items)
+    (entry,) = yaml.safe_load(read_input(bundle, "ledger_due"))["entries"]
+    assert entry["settle_as"] == "binary" and "side" not in entry and "probability" not in entry
+    everything = "".join((bundle / e["file"]).read_text(encoding="utf-8") for e in manifest_of(bundle)["inputs"])
+    assert "probability" not in everything and "added_by" not in everything and "owner" not in everything.lower()
+    values = yaml.safe_load(read_input(bundle, "metric_values"))
+    assert values["readings"][0]["metric"] == "revenue_yoy" and "extracted_16B" in values
+    filings = read_input(bundle, "filings")
+    assert "The documents the due items' data_source names" in filings and "[src:APP-10Q-FY2026Q2]" in filings
+
+
+def test_settlements_are_written_as_the_pipelines_settlement_files(env, shim):
+    due_predictions(env)
+    run(env, "16B")
+    evaluate(env)
+    bundle = run(env, "15B")
+    fx.rewrite_output(bundle, "prereg_settlement", yaml.safe_dump([
+        {"id": f"APP-{EVENT}-1", "outcome": "happened", "values": {"growth": 12}, "calculation": "12 >= 10",
+         "evidence": "Revenue grew 12% [src:APP-8K-2026-08-05#EX-99.1].", "reasoning": "The criterion holds."},
+        {"id": f"APP-{EVENT}-3", "outcome": "undetermined", "evidence": None, "reasoning": "The data is missing."}],
+        sort_keys=False))
+    report = place(env, bundle)
+    path = env.public / "companies" / "APP" / "prereg" / f"{EVENT}.settlement.yml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert (data["company"], data["period"], data["accession"]) == ("APP", EVENT, "0001751008-26-000057")
+    assert data["merged_at"] and data["ots_proof"] is None
+    results = {r["id"]: r for r in data["results"]}
+    assert results[f"APP-{EVENT}-1"] == {"id": f"APP-{EVENT}-1", "outcome": "happened", "values": {"growth": 12},
+                                         "calculation": "12 >= 10", "evidence": "Revenue grew 12% "
+                                         "[src:APP-8K-2026-08-05#EX-99.1].", "reasoning": "The criterion holds.",
+                                         "source": "APP-8K-2026-08-05#EX-99.1", "settled_at": "2026-10-20"}
+    assert report["public_branch"] == "pipeline/APP-2026-10-20-15B" and report["routing"] is None
+    assert registry.settled_predictions(env.public)  # the calibration record reads the new file
+    fx.commit_all(env.public, "settlement")
+    again = run(env, "15B", run_date=dt.date(2026, 10, 27), today=dt.date(2026, 10, 27))
+    fx.rewrite_output(again, "prereg_settlement", yaml.safe_dump([
+        {"id": f"APP-{EVENT}-1", "outcome": "not_happened", "evidence": None, "reasoning": "x"}]))
+    with pytest.raises(runner.RunnerError, match="was settled happened before; a settlement is never rewritten"):
+        place(env, again)
+
+
+def test_hq_gets_the_revision_the_audit_and_what_the_gate_checks(env, shim):
+    set_thesis(env, status="candidate")
+    draft_chain(env)
+    run(env, "16A")
+    audit = run(env, "04A")
+    fx.rewrite_output(audit, "findings", yaml.safe_dump([
+        {"id": "04A-01", "group": "must fix", "type": "fact_error", "location": "2", "quote": "q", "evidence": "e",
+         "fix": "f"}], sort_keys=False))
+    revision = run(env, "03R")
+    fx.rewrite_output(revision, "revision_notes", yaml.safe_dump([{"finding_id": "04A-01", "action": "not fixed",
+                                                                   "how": "the evidence is disputed"}]))
+    bundle = env.assemble("17A", "APP", EVENT, run_date=RUN)
+    assert bundle == env.private / "runs" / "hq" / "2026-10-20-17A-APP"
+    manifest = manifest_of(bundle)
+    assert (manifest["role"], manifest["company"], manifest["scope"]) == ("hq_capital_allocator", "APP", "hq")
+    entries = inputs_of(bundle)
+    assert entries["inversion_list"]["empty"] and entries["divergence_map"]["empty"]
+    gate = yaml.safe_load(read_input(bundle, "gate_rules"))
+    assert gate["gate"]["blocking"] if gate["gate"] else True
+    assert gate["pipeline_checks"]["open_04A_must_fix"] == [{"finding": "04A-01", "round": 1,
+                                                             "revision_notes": "not fixed"}]
+    assert gate["pipeline_checks"]["trust_level"] == 1
+    assert yaml.safe_load(read_input(bundle, "trust_level"))["trust_level"] == 1
+    raised = yaml.safe_load(read_input(bundle, "questions"))["raised"]
+    assert {r["step"] for r in raised} >= {"03-draft", "04A", "03R"}
+    assert "===== output: revision_notes" in read_input(bundle, "update_outputs")
+    assert manifest["context"]["run_dir"] == "2026-10-20-17A-APP"
+
+
+def test_the_second_audit_round_reads_only_what_the_revision_changed(env, shim):
+    set_thesis(env, status="candidate")
+    draft = draft_chain(env)
+    run(env, "16A")
+    run(env, "04A")
+    revision = run(env, "03R")
+    before = (draft / "outputs" / "update.md").read_text(encoding="utf-8")
+    fx.rewrite_output(revision, "update", before.replace("DRY-RUN placeholder", "Installs grew to 1,234 million. "
+                                                                               "DRY-RUN placeholder"))
+    product = env.assemble("16A", period=EVENT, round_=2)
+    assert product.name == "2026-10-20-16A-r2" and manifest_of(product)["round"] == 2
+    text = read_input(product, "product")
+    assert "===== changes: update (draft -> revision) =====" in text and "+" in text
+    assert "changes: thesis" not in text and "generated_by" not in text
+    env.execute(product)
+    audit = env.assemble("04A", period=EVENT, round_=2)
+    assert inputs_of(audit)["fact_table"]["sources"][0]["run"] == "runs/APP/2026-10-20-16A-r2"
+    with pytest.raises(runner.RunnerError, match="15B has no round 2"):
+        env.assemble("15B", period=EVENT, round_=2)
+    with pytest.raises(runner.RunnerError, match="16A has no round 3"):
+        env.assemble("16A", period=EVENT, round_=3)
+
+
+def scripted_factory(env, replies: dict[str, dict[str, str]]):
+    """valid_factory, with some outputs of some bundles replaced (bundle directory name -> output -> text)."""
+    base = valid_factory(env)
+
+    def build(bundle: Path) -> fake_client.FakeClient:
+        client = base(bundle)
+        for name, text in replies.get(bundle.name, {}).items():
+            client.reply = re.sub(rf'(<output name="{name}">\n).*?(\n</output>)',
+                                  lambda m: m.group(1) + text.rstrip("\n") + m.group(2), client.reply, flags=re.S)
+        return client
+
+    return build
+
+
+RETURN = {"gate_decision": "decision: return\nreasons: [the must-fix finding is open]\n",
+          "returns": "- issue: fix finding 04A-01\n"}
+
+
+def test_hq_returns_the_update_once_then_the_loop_stops(env, shim, monkeypatch):
+    set_thesis(env, status="candidate")
+    real_place = runner.place
+    monkeypatch.setattr(runner, "place", lambda bundle, **kw: real_place(bundle, **{**kw, "allow_fake": True}))
+    factory = scripted_factory(env, {"2026-10-20-17A-APP": RETURN})
+    event(env, backend="api", client_factory=factory, lint=False, approve_stops=["draft"])
+    code, result = event(env, backend="api", client_factory=factory, lint=False, approve_stops=["audit"])
+    got = states((code, result))
+    assert (got["17A"], got["03R-r2"], got["17A-r2"], got["stop:placement"]) == ("ran", "ran", "ran", "waiting")
+    revision = env.private / "runs" / "APP" / "2026-10-20-03R-r2"
+    assert list(inputs_of(revision)) == ["draft_outputs", "findings_04A", "returns_17A", "sources"]
+    assert "the revision runs/APP/2026-10-20-03R" in read_input(revision, "draft_outputs")
+    assert "fix finding 04A-01" in read_input(revision, "returns_17A")
+    gate2 = env.private / "runs" / "hq" / "2026-10-20-17A-APP-r2"
+    assert "runs/APP/2026-10-20-03R-r2" in read_input(gate2, "update_outputs")
+
+    env2 = fx.make_env(env.workspace.parent / "second")
+    evaluate_shim.install(monkeypatch)
+    set_thesis(env2, status="candidate")
+    both = scripted_factory(env2, {"2026-10-20-17A-APP": RETURN, "2026-10-20-17A-APP-r2": RETURN})
+    for stop in ("draft", "audit"):
+        event(env2, backend="api", client_factory=both, lint=False, approve_stops=[stop])
+    code, result = event(env2, backend="api", client_factory=both, lint=False, approve_stops=["placement"])
+    assert code == 1 and states((code, result))["stop:placement"] == "failed"
+    assert "returned the update again in round 2" in next(s.detail for s in result if s.stage == "stop:placement")
+    assert not (env2.private / "runs" / "APP" / "2026-10-20-03R-r2" / runner.PLACEMENT_RECORD).exists()
+
+
+def test_the_pr_body_carries_every_audit_round(env, shim):
+    bundle = revision(env, level=2)
+    second = env.private / "runs" / "APP" / "2026-10-20-04A-r2"
+    fx.write_yaml(second / runner.MANIFEST, {"manifest_version": 1, "step": "04A", "company": "APP", "period": EVENT,
+                                             "round": 2})
+    fx.write_yaml(second / runner.RUN_RECORD, {"status": "succeeded"})
+    fx.write(second / "outputs" / "findings.yml", "- id: 04A-2-01\n  group: no change\n  type: null\n")
+    place(env, bundle)
+    body = (bundle / "pr_body.md").read_text(encoding="utf-8")
+    assert "## Audit findings (04A)" in body and "## Audit findings (04A, round 2)\n\n```yaml\n- id: 04A-2-01" in body

@@ -10,3 +10,7 @@ opentimestamps-client==0.7.2
 # CA certificates: pipeline/edgar.py uses them to verify TLS when accessing the SEC (the python.org macOS Python ships
 # without CA certificates; docs/decisions/0017).
 certifi
+# thesis-ci: the pipeline imports it at run time (the evaluation of the quantitative tests, the output schemas, the
+# lint before placing, the section H4 wording of PR bodies; docs/decisions/0024). The same release tag as
+# requirements-lint.txt; change both together.
+thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@v0.4.0

@@ -694,7 +694,7 @@ class Destination:
 
     visibility: str  # public | private | split (sources_additions: entries split between the repos by visibility)
     path: str | None
-    action: str = "write"  # write | append | patch | merge | front_matter | pr_body | pr_attachment
+    action: str = "write"  # write | append | patch | merge | front_matter | pr_body | pr_attachment | settlement
     when: Mapping[str, frozenset[str]] = dataclasses.field(default_factory=dict)
     note: str = ""
 
@@ -724,6 +724,11 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
     "ledger": (_d(PUBLIC, "companies/{company}/ledger.yml"),),
     "prereg": (_d(PUBLIC, "companies/{company}/prereg/{period}.yml",
                   note="the items file; the timestamp and the settlement are separate files (SPEC §2.1)"),),
+    # 15B: one settlement file per pre-registration period of the items settled, <period>.settlement.yml (SPEC §2.1,
+    # thesis-ci prereg-settlement.schema.json); the pipeline writes its header fields (docs/decisions/0024)
+    "prereg_settlement": (_d(PUBLIC, "companies/{company}/prereg/", "settlement",
+                             "one <period>.settlement.yml per pre-registration period of the items settled",
+                             part_id={"15B"}),),
     "update": (_d(PUBLIC, "companies/{company}/updates/{run_date}.md"),),
     "reviewed_sections": (
         _d(PUBLIC, "companies/{company}/updates/{run_date}.md", "front_matter",

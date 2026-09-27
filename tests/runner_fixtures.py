@@ -206,6 +206,25 @@ METRICS_YML = {"metrics": [
      "frequency": "quarter", "data": "filing_text", "where": "segment note or earnings press release"},
 ]}
 PERMISSIVE_SCHEMAS = ("thesis", "ledger", "story", "escalation")
+# The settlement file's schema, trimmed from thesis-ci's prereg-settlement.schema.json.
+SETTLEMENT_SCHEMA: dict[str, Any] = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object",
+    "required": ["company", "period", "results"],
+    "properties": {
+        "company": {"type": "string"}, "period": {"type": "string", "pattern": "^FY\\d{4}Q[1-4]$"},
+        "acceptance_datetime": {"type": ["string", "null"]}, "accession": {"type": ["string", "null"]},
+        "merged_at": {"type": ["string", "null"]}, "ots_proof": {"type": ["string", "null"]},
+        "results": {"type": "array", "items": {
+            "type": "object", "required": ["id", "outcome"],
+            "properties": {"id": {"type": "string"}, "outcome": {"enum": ["happened", "not_happened", "undetermined"]},
+                           "values": {}, "calculation": {"type": ["string", "null"]},
+                           "evidence": {"type": ["string", "null"]}, "source": {"type": ["string", "null"]},
+                           "reasoning": {"type": ["string", "null"]}, "settled_at": {"type": ["string", "null"]},
+                           "hq_ruling": {}},
+            "additionalProperties": False}},
+    },
+    "additionalProperties": False,
+}
 SOURCES_SCHEMA = {"$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object", "required": ["sources"],
                   "properties": {"sources": {"type": "array"}}}
 THESIS_AXP = {"schema_version": "0.2", "company": "AXP", "name": "Synthetic candidate", "status": "candidate",
@@ -416,6 +435,7 @@ def make_env(tmp_path: Path) -> Env:
     for name in PERMISSIVE_SCHEMAS:
         write(schemas / f"{name}.schema.json", json.dumps({"$schema": PREREG_SCHEMA["$schema"], "type": "object"}))
     write(schemas / "sources.schema.json", json.dumps(SOURCES_SCHEMA))
+    write(schemas / "prereg-settlement.schema.json", json.dumps(SETTLEMENT_SCHEMA))
     write_yaml(tmp_path / "metrics.yml", METRICS_YML)
     roots = runner.Roots(public=public, private=private, workspace=workspace)
     return Env(workspace=workspace, public=public, private=private, schemas=schemas, roots=roots,

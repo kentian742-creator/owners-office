@@ -8,26 +8,28 @@ failure, or its end. It is resumable: a bundle that succeeded is never run again
 assembled bundle is executed, a failed one stops the chain until --retry, and a stop is passed only once someone has
 approved it (--approve writes review.yml into the bundle under review). New bundles take --run-date.
 
-Stages, from the prompts' scopes (candidates get the quantitative tests and the company manager's draft; holdings
-also get the blind read, the independent judge, the red team, the divergence map, the settlement and the gate):
+Stages, from the prompts' scopes (candidates get the quantitative tests, the company manager's update, its audit and
+HQ's gate; holdings also get the blind read, the independent judge, the red team and the divergence map):
 
-    16B      metric extraction          when a due test reads a metric from filing text
-    ci       evaluation (no model)       ci_results: readings and results of the quantitative tests
-    14T      qualitative tests           holdings, when a qualitative test is due
-    14A      blind read                  holdings
-    15B      settlement                  when a pre-registration item or a ledger entry is due
-    03-draft quarterly update draft
+    16B        metric extraction          when a due test reads a metric from filing text
+    ci         evaluation (no model)       ci_results: readings and results of the quantitative tests
+    14T        qualitative tests           holdings, when a qualitative test is due
+    14A        blind read                  holdings
+    15B        settlement                  when a pre-registration item or a ledger entry is due
+    03-draft   quarterly update draft
     -- stop "draft": review the draft --
-    16A      fact extraction (update mode)
-    04A      fact audit
-    04B-lite inversion list              holdings
-    14B      divergence map              holdings
+    16A, 04A   fact extraction (update mode) and fact audit
+    04B-lite   inversion list              holdings
+    14B        divergence map              holdings
     -- stop "audit": review the audit --
-    03R      revision after the audit
-    17A      HQ review and release gate  holdings
-    -- stop "placement": review the revision before anything is placed --
-    place    every bundle of the chain (not the draft or ci); a quarterly update below trust level 2 is staged in the
-             private repository (section G9) until `place --publish`
+    03R        revision after the audit
+    16A-r2, 04A-r2   the audit's second round, on the revision's new and changed facts (skipped when it changed none)
+    17A        HQ review and release gate
+    03R-r2, 17A-r2   when HQ returned the update: a second revision (with HQ's returns as must-fix) and a second gate;
+               a second return stops the chain for HQ to resolve by hand
+    -- stop "placement": review the revision (and HQ's gate decision) before anything is placed --
+    place      every bundle of the chain (not the draft, ci or a superseded revision); a quarterly update below trust
+               level 2 is staged in the private repository (section G9) until `place --publish`
 
 A dry run (--dry-run) runs the same chain with the fake backend into a directory outside both repositories, as a
 rehearsal when the event has not happened yet; its stops are passed without review and its placement is a check
@@ -57,6 +59,7 @@ class Stage:
     holdings_only: bool = False
     skip: Callable[[registry.RunContext], str | None] | None = None  # returns why the stage is not due, or None
     review: str | None = None  # for a stop: the step whose bundle is reviewed
+    round: int = 1  # the round of the step in the event (registry.ROUNDS)
 
     @property
     def kind(self) -> str:
@@ -65,6 +68,10 @@ class Stage:
         if self.name.startswith("stop:"):
             return "stop"
         return "place" if self.name == "place" else "model"
+
+    @property
+    def label(self) -> str:
+        return f"{self.name}-r{self.round}" if self.round > 1 else self.name
 
 
 def _no_text_metrics(ctx: registry.RunContext) -> str | None:
@@ -83,6 +90,34 @@ def _nothing_to_settle(ctx: registry.RunContext) -> str | None:
     return None if items or registry.ledger_entries_due(ctx) else "no pre-registration item or ledger entry is due"
 
 
+def _revision_unchanged(ctx: registry.RunContext) -> str | None:
+    draft = ctx.latest_run("03-draft", period=ctx.period)
+    revision = ctx.latest_run("03R", period=ctx.period, round_=1)
+    if draft is None or revision is None:
+        return "no draft and revision to compare"
+    return None if registry.changed_outputs(draft, revision) else \
+        "the revision changed no fact-carrying output of the draft"
+
+
+def _no_second_extraction(ctx: registry.RunContext) -> str | None:
+    return None if ctx.latest_run("16A", period=ctx.period, round_=2) else "no second extraction to audit"
+
+
+def gate_decision(ctx: registry.RunContext, round_: int | None = None) -> tuple[str | None, int | None]:
+    """HQ's decision in 17A (release, return or hold) and its round; (None, None) before 17A has run."""
+    run = ctx.latest_run("17A", period=ctx.period, round_=round_)
+    if run is None:
+        return None, None
+    data = registry.load_yaml_file(run.output_file("gate_decision")) if run.output_file("gate_decision") else None
+    decision = data.get("decision") if isinstance(data, dict) else None
+    return (str(decision) if decision else None), run.round
+
+
+def _not_returned(ctx: registry.RunContext) -> str | None:
+    decision, _ = gate_decision(ctx, 1)
+    return None if decision == "return" else f"HQ's gate did not return the update ({decision or 'no decision'})"
+
+
 CHAIN: tuple[Stage, ...] = (
     Stage("16B", skip=_no_text_metrics),
     Stage(registry.CI_STEP),
@@ -97,11 +132,16 @@ CHAIN: tuple[Stage, ...] = (
     Stage("14B", holdings_only=True),
     Stage("stop:audit", review="04A"),
     Stage("03R"),
-    Stage("17A", holdings_only=True),
+    Stage("16A", skip=_revision_unchanged, round=2),
+    Stage("04A", skip=_no_second_extraction, round=2),
+    Stage("17A"),
+    Stage("03R", skip=_not_returned, round=2),
+    Stage("17A", skip=_not_returned, round=2),
     Stage("stop:placement", review="03R"),
     Stage("place"),
 )
 NOT_PLACED = frozenset({registry.CI_STEP, "03-draft"})
+PLACED = frozenset(s.name for s in CHAIN if s.kind == "model") - NOT_PLACED  # the chain's own steps only
 
 
 @dataclasses.dataclass
@@ -163,15 +203,16 @@ def run_event(company: str, period: str, *, run_date: dt.date, roots: runner.Roo
     code = 0
     for stage in chain_for(status):
         if code:
-            states.append(StageState(stage.name, "not reached"))
+            states.append(StageState(stage.label, "not reached"))
             continue
+        ctx.memo.pop("runs", None)  # the stages before this one may have added runs
         try:
             state = _run_stage(stage, ctx, roots=roots, base=base, ticker=ticker, period=period, run_date=run_date,
                                dry_run=dry_run, backend=backend, log=log, approve_stops=approve_stops, retry=retry,
                                allow_dirty=allow_dirty, gateway=gateway, offline=offline, schemas_dir=schemas_dir,
                                today=today, client_factory=client_factory, lint=lint, env=env)
         except (runner.RunnerError, registry.MissingInput, edgar.EdgarError) as exc:
-            state = StageState(stage.name, "failed", str(exc))
+            state = StageState(stage.label, "failed", str(exc))
         states.append(state)
         if state.state == "failed":
             code = 1
@@ -201,15 +242,11 @@ def _context(roots: runner.Roots, ticker: str, period: str, run_date: dt.date, b
                                runs_roots=(base,) if dry_run else (), rehearsal=dry_run)
 
 
-def _existing(base: Path, step: str, ticker: str, period: str) -> list[registry.PriorRun]:
-    """The chain's bundles of a step for this event, oldest first (any run date), in the chain's own directory."""
+def _existing(base: Path, step: str, ticker: str, period: str, round_: int | None = 1) -> list[registry.PriorRun]:
+    """The chain's bundles of a step (and round) for this event, oldest first (any run date), in the chain's own
+    directory."""
     return [r for r in registry.index_runs(base) if r.manifest and r.step == step and r.company == ticker
-            and r.period == period]
-
-
-def _bundle_path(base: Path, step: str, ticker: str, run_date: dt.date) -> Path:
-    spec = runner.CI_SPEC if step == registry.CI_STEP else registry.step_spec(step)
-    return base / "runs" / spec.storage_scope(ticker) / spec.bundle_name(run_date, ticker)
+            and r.period == period and (round_ is None or r.round == round_)]
 
 
 def _run_stage(stage: Stage, ctx: registry.RunContext, *, roots: runner.Roots, base: Path, ticker: str, period: str,
@@ -218,21 +255,21 @@ def _run_stage(stage: Stage, ctx: registry.RunContext, *, roots: runner.Roots, b
                schemas_dir: Any, today: dt.date, client_factory: Callable[[Path], Any] | None,
                lint: bool, env: Mapping[str, str] | None) -> StageState:
     if stage.kind == "stop":
-        return _stop(stage, base=base, ticker=ticker, period=period, dry_run=dry_run, approve_stops=approve_stops,
-                     root=roots.private)
+        return _stop(stage, ctx, base=base, ticker=ticker, period=period, dry_run=dry_run,
+                     approve_stops=approve_stops, root=roots.private)
     if stage.kind == "place":
         return _place_all(ctx, roots=roots, base=base, ticker=ticker, period=period, dry_run=dry_run,
                           gateway=gateway, schemas_dir=schemas_dir, lint=lint)
-    runs = _existing(base, stage.name, ticker, period)
+    runs = _existing(base, stage.name, ticker, period, stage.round)
     done = [r for r in runs if r.status == "succeeded"]
     if done:
-        return StageState(stage.name, "done", bundle=done[-1].rel)
+        return StageState(stage.label, "done", _outcome(done[-1].record or {}, done[-1]), bundle=done[-1].rel)
     if stage.skip is not None:
         why = stage.skip(ctx)
         if why:
-            return StageState(stage.name, "skipped", why)
+            return StageState(stage.label, "skipped", why)
     if stage.kind == "model" and stage.name not in registry.STEPS:
-        return StageState(stage.name, "failed", f"the pipeline has no step {stage.name} yet (docs/decisions/0024)")
+        return StageState(stage.label, "failed", f"the pipeline has no step {stage.name} yet (docs/decisions/0024)")
     if stage.kind == "evaluate":
         pending = runs[-1] if runs else None
         if pending is not None and pending.status == "failed" and not retry:
@@ -241,35 +278,40 @@ def _run_stage(stage: Stage, ctx: registry.RunContext, *, roots: runner.Roots, b
                                              roots=roots, out_root=base if dry_run else None, edgar_gateway=gateway,
                                              offline=offline, allow_dirty=allow_dirty, schemas_dir=schemas_dir,
                                              today=today, retry=pending is not None, out=_Quiet())
-        return _result(stage.name, bundle_dir, record)
+        return _result(stage.label, bundle_dir, record)
     pending = runs[-1] if runs else None
     if pending is not None and pending.status == "failed" and not retry:
-        return StageState(stage.name, "failed", f"{pending.rel} failed ({_error_type(pending)}); --retry runs it again",
-                          pending.rel)
+        return StageState(stage.label, "failed", f"{pending.rel} failed ({_error_type(pending)}); --retry runs it "
+                                                 "again", pending.rel)
     if pending is not None:
         bundle_dir = pending.path
     else:
         bundle_dir = runner.assemble(stage.name, ticker, period, run_date=run_date, roots=roots,
                                      out_root=base if dry_run else None, edgar_gateway=gateway, offline=offline,
                                      allow_dirty=allow_dirty or dry_run, schemas_dir=schemas_dir, today=today,
-                                     rehearsal=dry_run and registry.step_spec(stage.name).post_event)
+                                     rehearsal=dry_run and registry.step_spec(stage.name).post_event,
+                                     round_=stage.round)
     client = client_factory(bundle_dir) if client_factory else None
     record = runner.execute(bundle_dir, roots=roots, backend=backend, log_path=log, client=client,
                             retry=pending is not None and pending.status == "failed", schemas_dir=schemas_dir,
                             allow_unpinned=dry_run or allow_dirty, env={} if dry_run else env, out=_Quiet())
-    return _result(stage.name, bundle_dir, record)
+    return _result(stage.label, bundle_dir, record)
 
 
 def _result(name: str, bundle_dir: Path, record: Mapping[str, Any]) -> StageState:
     rel = "/".join(bundle_dir.parts[-3:])
     if record.get("status") == "succeeded":
-        return StageState(name, "ran", _outcome(record), rel)
+        return StageState(name, "ran", _outcome(record, None, bundle_dir), rel)
     return StageState(name, "failed", f"{(record.get('error') or {}).get('type')}; details in {rel}/run.yml", rel)
 
 
-def _outcome(record: Mapping[str, Any]) -> str:
+def _outcome(record: Mapping[str, Any], run: registry.PriorRun | None = None, bundle_dir: Path | None = None) -> str:
     if record.get("results"):
         return ", ".join(f"{k} {v}" for k, v in sorted(record["results"].items()))
+    path = (run.path if run else bundle_dir) or Path()
+    if record.get("step") == "17A":
+        data = registry.load_yaml_file(path / runner.OUTPUTS_DIR / "gate_decision.yml")
+        return f"gate decision: {data.get('decision') if isinstance(data, dict) else 'unreadable'}"
     written = [k for k, v in (record.get("outputs") or {}).items() if v.get("status") == "written"]
     return f"{len(written)} output(s); {record.get('requests', 0)} request(s)"
 
@@ -278,22 +320,30 @@ def _error_type(run: registry.PriorRun) -> str:
     return str(((run.record or {}).get("error") or {}).get("type") or "unknown error")
 
 
-def _stop(stage: Stage, *, base: Path, ticker: str, period: str, dry_run: bool, approve_stops: Sequence[str],
-          root: Path) -> StageState:
+def _stop(stage: Stage, ctx: registry.RunContext, *, base: Path, ticker: str, period: str, dry_run: bool,
+          approve_stops: Sequence[str], root: Path) -> StageState:
     name = stage.name.split(":", 1)[1]
-    runs = [r for r in _existing(base, str(stage.review), ticker, period) if r.status == "succeeded"]
+    runs = sorted((r for r in _existing(base, str(stage.review), ticker, period, None) if r.status == "succeeded"),
+                  key=lambda r: (r.round, r.run_date, r.rel))
     if not runs:
         return StageState(stage.name, "failed", f"no succeeded {stage.review} bundle to review")
-    bundle = runs[-1]
+    bundle = runs[-1]  # the latest round
+    gate = ""
+    if name == "placement":
+        decision, round_ = gate_decision(ctx)
+        if decision == "return" and round_ and round_ >= registry.ROUNDS["17A"]:
+            return StageState(stage.name, "failed", f"HQ returned the update again in round {round_}; the loop stops "
+                                                    "here and HQ resolves it by hand (17A rulings)", bundle.rel)
+        gate = f"HQ's gate: {decision}; " if decision else ""
     if dry_run:
-        return StageState(stage.name, "passed", "a dry run passes its stops without review", bundle.rel)
+        return StageState(stage.name, "passed", f"{gate}a dry run passes its stops without review", bundle.rel)
     if approved(bundle.path, name):
-        return StageState(stage.name, "passed", "approved", bundle.rel)
+        return StageState(stage.name, "passed", f"{gate}approved", bundle.rel)
     if name in approve_stops:
         record = approve(bundle.path, name, root=root)
-        return StageState(stage.name, "passed", f"approved now by {record['approved_by']}", bundle.rel)
-    return StageState(stage.name, "waiting", f"review {bundle.rel} (inputs/, outputs/, run.yml), then run again with "
-                                             f"--approve {name}", bundle.rel)
+        return StageState(stage.name, "passed", f"{gate}approved now by {record['approved_by']}", bundle.rel)
+    return StageState(stage.name, "waiting", f"{gate}review {bundle.rel} (inputs/, outputs/, run.yml), then run again "
+                                             f"with --approve {name}", bundle.rel)
 
 
 def _place_all(ctx: registry.RunContext, *, roots: runner.Roots, base: Path, ticker: str, period: str,
@@ -301,14 +351,16 @@ def _place_all(ctx: registry.RunContext, *, roots: runner.Roots, base: Path, tic
     """Place every bundle of the chain that is not placed yet (the draft and ci are not placed). A dry run checks the
     plan only."""
     runs = [r for r in registry.index_runs(base) if r.succeeded and r.company == ticker and r.period == period
-            and r.step not in NOT_PLACED]
+            and r.step in PLACED]
+    final = max((r.round for r in runs if r.step == "03R"), default=1)
+    runs = [r for r in runs if r.step != "03R" or r.round == final]  # a superseded revision is not placed
     placed, checked = [], []
     for run in sorted(runs, key=lambda r: (r.step == "03R", r.run_date, r.rel)):  # 03R last: its PR body attaches
         if (run.path / runner.PLACEMENT_RECORD).is_file():
             continue
         report = runner.place(run.path, roots=roots, check=dry_run, allow_fake=dry_run, lint=lint and not dry_run,
                               edgar_gateway=gateway, schemas_dir=schemas_dir, out=_Quiet())
-        (checked if dry_run else placed).append(f"{run.step}: {len(report['files'])} file(s)"
+        (checked if dry_run else placed).append(f"{run.path.name}: {len(report['files'])} file(s)"
                                                 + (f", {report['routing']['route']}" if report.get("routing") else ""))
     if dry_run:
         return StageState("place", "checked", "; ".join(checked) or "nothing to place")

@@ -258,6 +258,9 @@ def _question_ids(context: Mapping[str, Any], name: str) -> list[str]:
 
 def _answers(source: str) -> Any:
     def build(context: Mapping[str, Any]) -> str:
+        carried = carried_over(context, "question_answers") if source == "question_list" else None
+        if carried is not None:  # a revision hands the draft's answers back unchanged
+            return _carry("question_answers")(context)
         ids = _question_ids(context, source)
         if not ids:
             return _outputs.EMPTY_MARK  # a candidate has no question list, so no answers (prompt 03)

@@ -11,6 +11,10 @@ data it is given, and pipeline/registry.py fetches what it selects.
   cannot fetch is always reported, even when the company's own filings in it are supplied.
 - lookback_periods() and select_filings() pick the filings of a lookback window: periodic reports by fiscal period,
   the annual report and the proxy statement in force as of the event, current reports by filing date.
+- extract_sections() keeps, of a 10-K, 10-Q or 20-F, only the sections a clause names (MD&A, risk factors, legal
+  proceedings, the business section, the financial statements, a named note, a 20-F item), found by the filing's own
+  item and note headings; when a named section cannot be found, the whole filing is kept, and the caller records
+  which sections were cut.
 - tag_with_ordinal() gives a filing its archive tag (thesis-ci SPEC 3.3), numbering current reports of one form
   filed on the same day (-2, -3, ...), as SPEC 3.3 does.
 - cut_excerpt() finds the sentence of a document that contains a value: 04A's source_excerpt, cut by the pipeline
@@ -53,8 +57,6 @@ MAX_FILINGS_PER_KIND = 40  # ownership reports can run to hundreds a year; the m
 
 NOT_ON_EDGAR = "earnings call materials, transcripts and investor-day materials are not on EDGAR, and the pipeline has " \
                "no source for them yet (STATUS T17)"
-SECTION_NOTE = "where `where` names a section of a filing (MD&A, risk factors, legal proceedings, a note), the whole " \
-               "filing is supplied"
 
 _SENTENCE_BREAK_RE = re.compile(r"(?:(?<=[a-z0-9)\]])|(?<=\d-[A-Z]))\.\s+(?=[A-Z])")  # "... the 10-K. Press"
 _FORMS_RES: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -121,6 +123,7 @@ class DocRequest:
     items: frozenset[str] = frozenset()  # 8-K items; empty means any
     exhibits: frozenset[str] = frozenset()  # EX-99.x exhibits; empty means the primary document and every EX-99
     clause: str = ""
+    sections: frozenset[str] | None = None  # periodic reports: the sections the clause names; None: the whole filing
 
 
 @dataclasses.dataclass
@@ -208,7 +211,8 @@ def parse_clause(clause: str, *, foreign: bool, owners: Iterable[str]) -> tuple[
             requests.append(DocRequest(CURRENT_REPORT, frozenset(), exhibits, clause))
     for kind, pattern in _FORMS_RES:
         if pattern.search(clause):
-            requests.append(DocRequest(kind, clause=clause))
+            sections = section_requests(clause) if kind in PERIODIC_KINDS else None
+            requests.append(DocRequest(kind, clause=clause, sections=sections))
     if _PRESS_RE.search(clause) and (own_marker or not (third_party or others)):
         if earnings and not any(r.kind == EARNINGS_RELEASE for r in requests):
             requests.append(DocRequest(EARNINGS_RELEASE, frozenset({"2.02"}) if not foreign else frozenset(),
@@ -254,6 +258,15 @@ class Selection:
     exhibits: bool
     only_exhibits: frozenset[str] = frozenset()  # when exhibits is True: these EX-99.x only (empty = every EX-99)
     kind: str = ""
+    sections: frozenset[str] | None = None  # a periodic report's sections to keep; None: the whole filing
+
+    def merged(self, other: Selection) -> Selection:
+        """The union of two selections of one filing (another clause, another test)."""
+        only = frozenset() if (not self.only_exhibits or not other.only_exhibits) else \
+            self.only_exhibits | other.only_exhibits
+        sections = None if self.sections is None or other.sections is None else self.sections | other.sections
+        return Selection(self.filing, self.primary or other.primary, self.exhibits or other.exhibits, only,
+                         self.kind, sections)
 
 
 def _in(day: dt.date, start: dt.date, end: dt.date) -> bool:
@@ -293,13 +306,10 @@ def select_filings(requests: Sequence[DocRequest], filings: Sequence[edgar.Filin
     notes: list[str] = []
 
     def add(filing: edgar.Filing, *, primary: bool, exhibits: bool, only: frozenset[str] = frozenset(),
-            kind: str) -> None:
+            kind: str, sections: frozenset[str] | None = None) -> None:
+        new = Selection(filing, primary, exhibits, only, kind, sections)
         old = chosen.get(filing.accession)
-        if old is not None:
-            only = frozenset() if (not old.only_exhibits or not only) else old.only_exhibits | only
-            primary, exhibits = primary or old.primary, exhibits or old.exhibits
-            kind = old.kind
-        chosen[filing.accession] = Selection(filing, primary, exhibits, only, kind)
+        chosen[filing.accession] = old.merged(new) if old is not None else new
 
     for request in requests:
         found = 0
@@ -323,7 +333,7 @@ def select_filings(requests: Sequence[DocRequest], filings: Sequence[edgar.Filin
         elif request.kind == QUARTERLY_REPORT:
             for f in known:
                 if f.form in FORMS[QUARTERLY_REPORT] and _periodic_label(f, cal) in periods:
-                    add(f, primary=True, exhibits=False, kind=request.kind)
+                    add(f, primary=True, exhibits=False, kind=request.kind, sections=request.sections)
                     found += 1
         elif request.kind in (ANNUAL_REPORT, PROXY):
             forms = FORMS[request.kind]
@@ -332,7 +342,8 @@ def select_filings(requests: Sequence[DocRequest], filings: Sequence[edgar.Filin
                                                  else _in(f.filing_date, start, as_of))]
             latest = [max(matching, key=lambda f: (f.filing_date, f.accession))] if matching else []
             for f in {x.accession: x for x in [*in_window, *latest]}.values():
-                add(f, primary=True, exhibits=False, kind=request.kind)
+                add(f, primary=True, exhibits=False, kind=request.kind,
+                    sections=request.sections if request.kind == ANNUAL_REPORT else None)
                 found += 1
         else:
             forms = FORMS[request.kind]
@@ -351,6 +362,256 @@ def select_filings(requests: Sequence[DocRequest], filings: Sequence[edgar.Filin
     ordered = sorted(chosen.values(), key=lambda s: (s.filing.filing_date, s.filing.acceptance_datetime or "",
                                                      s.filing.accession))
     return ordered, notes
+
+
+# ---------------------------------------------------------------------------------------------------- sections
+
+PERIODIC_KINDS = frozenset({QUARTERLY_REPORT, ANNUAL_REPORT})
+# What a clause of `where` calls a section of a periodic report -> the section's key.
+SECTION_WORDS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("mdna", re.compile(r"MD&A|management['\u2019]s discussion|operating (?:and financial )?review|Item 5 operating",
+                        re.I)),
+    ("risk_factors", re.compile(r"risk factors", re.I)),
+    ("legal_proceedings", re.compile(r"legal proceedings|legal and regulatory", re.I)),
+    ("business", re.compile(r"business overview|regulat\w+ section|supervision and regulation|legal and regulatory",
+                            re.I)),
+    ("financial_statements", re.compile(r"statements? of (?:income|operations|cash flows)|cash flow statement|"
+                                        r"balance sheet|financial statements|notes to the", re.I)),
+)
+# Named notes to the financial statements: (key, how a clause names it, how the note's heading reads).
+NOTE_WORDS: tuple[tuple[str, re.Pattern[str], re.Pattern[str]], ...] = (
+    ("note:subsequent events", re.compile(r"subsequent[- ]events?", re.I), re.compile(r"subsequent event", re.I)),
+    ("note:contingencies", re.compile(r"contingenc", re.I), re.compile(r"contingenc", re.I)),
+    ("note:revenue", re.compile(r"revenue note", re.I), re.compile(r"^revenue", re.I)),
+    ("note:equity method", re.compile(r"equity[- ]method", re.I), re.compile(r"equity[- ]method|investments", re.I)),
+    ("note:credit losses", re.compile(r"credit losses", re.I), re.compile(r"credit loss", re.I)),
+    ("note:inventory", re.compile(r"inventory note", re.I), re.compile(r"inventor", re.I)),
+)
+_ITEM_REF_RE = re.compile(r"\bItems?\s+(\d{1,2}[A-Z]?)(?:\.[A-Z])?(?![.\d])")  # 20-F "Item 3.D", "Item 16I"; not "5.02"
+# The item that holds a section, by form: (part, item); part None means any part.
+ITEM_OF: dict[str, dict[str, tuple[str | None, str]]] = {
+    "10-K": {"mdna": (None, "7"), "risk_factors": (None, "1A"), "legal_proceedings": (None, "3"),
+             "business": (None, "1"), "financial_statements": (None, "8")},
+    "10-Q": {"mdna": ("I", "2"), "risk_factors": ("II", "1A"), "legal_proceedings": ("II", "1"),
+             "financial_statements": ("I", "1")},
+    "20-F": {"mdna": (None, "5"), "risk_factors": (None, "3"), "legal_proceedings": (None, "8"),
+             "business": (None, "4"), "financial_statements": (None, "18")},
+}
+SECTION_TITLES = {"mdna": re.compile(r"management['\u2019]s discussion and analysis|operating and financial review", re.I),
+                  "risk_factors": re.compile(r"^(?:item\s+\w+\W+)?risk factors", re.I),
+                  "legal_proceedings": re.compile(r"^(?:item\s+\w+\W+)?legal proceedings", re.I)}
+SECTION_LABELS = {"mdna": "MD&A", "risk_factors": "risk factors", "legal_proceedings": "legal proceedings",
+                  "business": "business", "financial_statements": "financial statements and notes"}
+_ITEM_LINE_RE = re.compile(r"^\s*ITEM\s+(\d{1,2}[A-Z]?)\s*[.:\u2013\u2014-]?\s*(.*)$", re.I)
+_PART_LINE_RE = re.compile(r"^\s*PART\s+(IV|I{1,3})\b", re.I)
+_NOTE_LINE_RE = re.compile(r"^\s*(?:NOTE\s+)?(\d{1,2})\s*[.:\u2013\u2014-]\s*(\S.{2,120})$", re.I)
+
+
+def section_requests(clause: str) -> frozenset[str] | None:
+    """The sections of a periodic report a clause names ("the MD&A and subsequent-events notes of the 10-Q"); None
+    when it names none, which means the whole filing."""
+    keys = {key for key, pattern in SECTION_WORDS if pattern.search(clause)}
+    keys |= {key for key, pattern, _ in NOTE_WORDS if pattern.search(clause)}
+    keys |= {f"item:{m.group(1).upper()}" for m in _ITEM_REF_RE.finditer(clause)}
+    return frozenset(keys) or None
+
+
+def form_family(form: str) -> str | None:
+    key = edgar.form_key(form)
+    return {"10K": "10-K", "10KA": "10-K", "10Q": "10-Q", "10QA": "10-Q", "20F": "20-F", "20FA": "20-F",
+            "40F": "20-F"}.get(key)
+
+
+@dataclasses.dataclass(frozen=True)
+class _Heading:
+    line: int
+    part: str | None
+    item: str
+    text: str
+
+
+def _headings(lines: Sequence[str]) -> list[_Heading]:
+    found, part = [], None
+    for i, line in enumerate(lines):
+        if len(line) > 200:
+            continue
+        match = _PART_LINE_RE.match(line)
+        if match:
+            part = match.group(1).upper()
+            continue
+        match = _ITEM_LINE_RE.match(line)
+        if match:
+            found.append(_Heading(i, part, match.group(1).upper(), line.strip()))
+    return found
+
+
+def _longest(candidates: Sequence[tuple[int, int, str]]) -> tuple[int, int, str] | None:
+    """Of (start, end, heading) candidates, the body section: the longest (a table of contents entry is short)."""
+    return max(candidates, key=lambda c: c[1] - c[0]) if candidates else None
+
+
+def _item_span(lines: Sequence[str], heads: Sequence[_Heading], part: str | None,
+               item: str) -> tuple[int, int, str] | None:
+    candidates = []
+    for n, head in enumerate(heads):
+        if head.item == item and (part is None or head.part == part):
+            end = heads[n + 1].line if n + 1 < len(heads) else len(lines)
+            candidates.append((head.line, end, head.text))
+    return _longest(candidates)
+
+
+def _title_span(lines: Sequence[str], heads: Sequence[_Heading], title: re.Pattern[str]) -> tuple[int, int, str] | None:
+    starts = [i for i, line in enumerate(lines) if len(line) <= 150 and title.search(line.strip())]
+    candidates = []
+    for start in starts:
+        end = next((h.line for h in heads if h.line > start), len(lines))
+        candidates.append((start, end, lines[start].strip()))
+    return _longest(candidates)
+
+
+def _note_span(lines: Sequence[str], heads: Sequence[_Heading], title: re.Pattern[str]) -> tuple[int, int, str] | None:
+    notes = [(i, m.group(1), m.group(2)) for i, line in enumerate(lines) if (m := _NOTE_LINE_RE.match(line))]
+    candidates = []
+    for n, (start, number, text) in enumerate(notes):
+        if not title.search(text.strip()):
+            continue
+        following = [i for i, num, _ in notes[n + 1:] if num != number]
+        end = min([*following[:1], *(h.line for h in heads if h.line > start), len(lines)])
+        candidates.append((start, end, lines[start].strip()))
+    return _longest(candidates)
+
+
+def extract_sections(text: str, form: str, wanted: frozenset[str]) -> tuple[str, list[str], list[str]]:
+    """(text, sections found, sections not found) of a 10-K, 10-Q or 20-F: each named section under a
+    "--- section: <heading> ---" line, in document order. A named note that has no heading of its own (a filing
+    without a subsequent-events note, or a heading the reader does not recognize) is replaced by the whole financial
+    statements with their notes. When any other named section is not found, the whole text comes back (with the
+    missing ones listed), so the reader never gets less than the clause asked for."""
+    family = form_family(form)
+    lines = text.split("\n")
+    heads = _headings(lines)
+    spans: list[tuple[int, int, str, str]] = []
+    missing: list[str] = []
+    absent: list[str] = []
+
+    def span_of(key: str) -> tuple[int, int, str] | None:
+        if key.startswith("item:"):
+            return _item_span(lines, heads, None, key[5:])
+        if key.startswith("note:"):
+            title = next((t for k, _, t in NOTE_WORDS if k == key), None)
+            found = _note_span(lines, heads, title) if title else None
+            if found is None and title is not None and not any(title.search(line.strip()) for line in lines):
+                absent.append(key)  # the filing never names it: nothing to supply
+                return (0, 0, "")
+            return found or span_of("financial_statements")
+        where = ITEM_OF.get(family or "", {}).get(key)
+        span = _item_span(lines, heads, *where) if where else None
+        if span is None and key in SECTION_TITLES:
+            span = _title_span(lines, heads, SECTION_TITLES[key])
+        return span
+
+    for key in sorted(wanted):
+        span = span_of(key)
+        if key in absent:
+            continue
+        if span is None or span[1] - span[0] < 2:
+            missing.append(key)
+        else:
+            spans.append((span[0], span[1], span[2], key))
+    if missing or not spans:
+        return text, sorted({s[3] for s in spans}), missing or sorted(set(wanted) - set(absent)) or sorted(wanted)
+    spans.sort()
+    kept: list[tuple[int, int, str, str]] = []
+    for span in spans:  # a note inside a kept item (the financial statements) is not repeated
+        if kept and span[0] < kept[-1][1]:
+            last = kept[-1]
+            kept[-1] = (last[0], max(last[1], span[1]), last[2], last[3])
+            continue
+        kept.append(span)
+    parts = [f"--- section: {heading} ---\n" + "\n".join(lines[start + 1:end]).strip() for start, end, heading, _ in kept]
+    parts += [f"--- not in this filing: {', '.join(describe_sections(absent))} (the filing never names it) ---"
+              ] if absent else []
+    return "\n\n".join(parts) + "\n", sorted({s[3] for s in spans}), []
+
+
+TRANSACTION_CODES = {"P": "open-market purchase", "S": "open-market sale", "A": "grant or award", "M": "option exercise",
+                     "F": "shares withheld for tax", "G": "gift", "C": "conversion", "D": "disposition to the issuer",
+                     "J": "other", "X": "exercise of an in-the-money derivative"}
+
+
+_MONEY_RE = re.compile(r"\$\s*\d")
+
+
+def render_ownership(xml: bytes) -> str | None:
+    """A Form 3, 4 or 5 in a few lines, from its XML: who reported and their relationship to the issuer; the
+    transactions summed by day, security, code and direction (a sale executed in many tranches is one line); holdings;
+    and the footnotes that state no price. Transaction prices and price footnotes are left out (00 section H2 names
+    the prices a document may show). None when the XML cannot be read."""
+    import xml.etree.ElementTree as ET
+
+    try:
+        root = ET.fromstring(xml)
+    except ET.ParseError:
+        return None
+
+    def text(node: Any, path: str) -> str:
+        found = node.find(path) if node is not None else None
+        return " ".join((found.text or "").split()) if found is not None and found.text else ""
+
+    def number(value: str) -> float | None:
+        try:
+            return float(value)
+        except ValueError:
+            return None
+
+    footnotes = {f.get("id"): " ".join("".join(f.itertext()).split()) for f in root.findall("footnotes/footnote")}
+    kept = {fid for fid, body in footnotes.items() if not _MONEY_RE.search(body)}
+    lines = [f"Form {text(root, 'documentType') or '?'}; period of report {text(root, 'periodOfReport') or '?'}"]
+    for owner in root.findall("reportingOwner"):
+        rel = owner.find("reportingOwnerRelationship")
+        roles = [label for tag, label in (("isDirector", "director"), ("isOfficer", "officer"),
+                                          ("isTenPercentOwner", "10% owner"), ("isOther", "other"))
+                 if text(rel, tag) in ("1", "true")]
+        title = text(rel, "officerTitle") or text(rel, "otherText")
+        lines.append(f"Reporting owner: {text(owner, 'reportingOwnerId/rptOwnerName')} ("
+                     + ", ".join(roles + ([title] if title else [])) + ")")
+    groups: dict[tuple[str, ...], dict[str, Any]] = {}
+    for table, kind in (("nonDerivativeTable", "non-derivative"), ("derivativeTable", "derivative")):
+        node = root.find(table)
+        for row in list(node) if node is not None else []:
+            security = text(row, "securityTitle/value")
+            owned = text(row, "postTransactionAmounts/sharesOwnedFollowingTransaction/value")
+            nature = {"D": "direct", "I": "indirect"}.get(text(row, "ownershipNature/directOrIndirectOwnership/value"),
+                                                          "")
+            if row.tag.endswith("Holding"):
+                lines.append(f"Holding ({kind}): {security}; shares owned {owned or '?'}; {nature}")
+                continue
+            code = text(row, "transactionCoding/transactionCode")
+            direction = "acquired" if text(row, "transactionAmounts/transactionAcquiredDisposedCode/value") == "A" \
+                else "disposed"
+            key = (kind, text(row, "transactionDate/value"), security, code, direction, nature)
+            group = groups.setdefault(key, {"count": 0, "shares": 0.0, "unknown": False, "owned": "", "notes": []})
+            shares = number(text(row, "transactionAmounts/transactionShares/value"))
+            group["count"] += 1
+            group["shares"] += shares or 0.0
+            group["unknown"] |= shares is None
+            group["owned"] = owned or group["owned"]
+            group["notes"] += [f.get("id") for f in row.iter() if f.tag == "footnoteId" and f.get("id") in kept
+                               and f.get("id") not in group["notes"]]
+    for (kind, day, security, code, direction, nature), g in groups.items():
+        shares = "?" if g["unknown"] else f"{g['shares']:,.0f}"
+        lines.append(f"Transaction ({kind}) {day}: {security}; code {code} ({TRANSACTION_CODES.get(code, 'see the form')})"
+                     f"; {g['count']} transaction(s), {shares} shares {direction}; owned after {g['owned'] or '?'}; "
+                     f"{nature}" + (f"; footnotes {', '.join(g['notes'])}" if g["notes"] else ""))
+    lines += [f"Footnote {fid}: {footnotes[fid]}" for fid in footnotes if fid in kept]
+    if len(kept) < len(footnotes):
+        lines.append(f"({len(footnotes) - len(kept)} footnote(s) stating prices left out)")
+    return "\n".join(lines) + "\n"
+
+
+def describe_sections(keys: Sequence[str]) -> list[str]:
+    return [SECTION_LABELS.get(k) or (f"item {k[5:]}" if k.startswith("item:") else k.replace("note:", "note: "))
+            for k in keys]
 
 
 # ---------------------------------------------------------------------------------------------------- tags

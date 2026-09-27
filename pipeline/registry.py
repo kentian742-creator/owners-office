@@ -3,10 +3,12 @@
 A step is one prompt part run by one role. Before an earnings event: 14Q (question list, HQ), 15A (pre-registration,
 company manager); once a month: 18 (monthly letter, HQ). After an earnings event (docs/decisions/0024): 16B (metric
 extraction), 03-draft (quarterly update draft, company manager), 16A (fact extraction from the draft), 04A (fact
-audit), 03R (revision after the audit); for holdings also 14T (qualitative tests, judge) and 14A (blind read), with
-04B-lite, 14B, 15B and 17A to come. The deterministic evaluation of the quantitative tests (ci_results) is not a
-prompt part; the runner records it like a run (the `ci` step, pipeline/evaluation.py), and pipeline/chain.py runs the
-whole chain of one event.
+audit), 03R (revision after the audit), 15B (settlement of what is due) and 17A (HQ review and release gate); for
+holdings also 14T (qualitative tests, judge), 14A (blind read), 04B-lite (inversion list) and 14B (divergence map).
+16A, 04A, 03R and 17A may run a second round in one event (ROUNDS): the audit of the revision's new and changed facts,
+and the revision after HQ returns an update. The deterministic evaluation of the quantitative tests (ci_results) is
+not a prompt part; the runner records it like a run (the `ci` step, pipeline/evaluation.py), and pipeline/chain.py
+runs the whole chain of one event.
 
 The prompt's front matter is the only list of a part's inputs; this module maps every input name to an assembler
 that builds that document from the two repositories, EDGAR (through pipeline.edgar and pipeline/documents.py), the
@@ -117,9 +119,12 @@ class StepSpec:
     post_event: bool = False  # reads an earnings event that must be on EDGAR (and closed) by the run date
     about_company: bool = False  # an HQ step about one company: runs/hq/<run_date>-<step>-<TICKER>/
 
-    def bundle_name(self, run_date: dt.date, company: str | None) -> str:
-        """The run directory's name: <run_date>-<step>, plus -<TICKER> for an HQ step about one company."""
+    def bundle_name(self, run_date: dt.date, company: str | None, round_: int = 1) -> str:
+        """The run directory's name: <run_date>-<step>, plus -<TICKER> for an HQ step about one company, plus -r<n>
+        for the second and later round of a step in one event (the audit after 03R, the revision after HQ returns
+        an update)."""
         suffix = f"-{company}" if self.about_company and company else ""
+        suffix += f"-r{round_}" if round_ > 1 else ""
         return f"{run_date.isoformat()}-{self.step}{suffix}"
 
     def storage_scope(self, company: str | None) -> str:
@@ -154,6 +159,8 @@ class FilingText:
     url: str
     raw_sha256: str
     text: str
+    sections: tuple[str, ...] = ()  # the sections kept of a periodic report (14T); empty: the whole document
+    note: str | None = None  # how the text was cut or rendered
 
     @property
     def cite(self) -> str:
@@ -253,6 +260,12 @@ class PriorRun:
         return str(self.manifest.get("period")) if self.manifest and self.manifest.get("period") else None
 
     @property
+    def round(self) -> int:
+        """The round of the step in its event (1 unless the manifest says otherwise)."""
+        value = self.manifest.get("round") if self.manifest else None
+        return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else 1
+
+    @property
     def succeeded(self) -> bool:
         return self.manifest is not None and self.status == "succeeded"
 
@@ -285,6 +298,7 @@ class RunContext:
     memo: dict[str, Any] = dataclasses.field(default_factory=dict)
     runs_roots: tuple[Path, ...] = ()  # directories searched for upstream runs before the private repository (dry runs)
     rehearsal: bool = False  # dry run before the event: the last reported quarter's filings stand in
+    round: int = 1  # the round of this step in its event (2: the audit after 03R, the revision after HQ returns)
     @property
     def scope(self) -> str:
         return self.step.storage_scope(self.company) if self.company else "hq"
@@ -333,16 +347,24 @@ class RunContext:
         """Runs under the dry-run directories (if any) and the private repository, oldest first."""
         return self.remember("runs", lambda: index_run_roots([*self.runs_roots, self.private_root]))
 
-    def latest_run(self, step: str, *, period: str | None = None, company: str | None = None) -> PriorRun | None:
-        """The latest succeeded run of a step for this company (and period, when given). Runs of a dry-run directory
-        come first, so a rehearsal reads its own chain."""
+    def latest_run(self, step: str, *, period: str | None = None, company: str | None = None,
+                   round_: int | None = None) -> PriorRun | None:
+        """The latest succeeded run of a step for this company (and period and round, when given): the highest round
+        first, then the latest run date. Runs of a dry-run directory come first, so a rehearsal reads its own chain."""
         company = company if company is not None else self.company
         found = [r for r in self.runs() if r.succeeded and r.step == step and r.company == company
-                 and (period is None or r.period == period)]
+                 and (period is None or r.period == period) and (round_ is None or r.round == round_)]
         if not found:
             return None
         preferred = [r for r in found if any(_inside(r.path, root) for root in self.runs_roots)] or found
-        return max(preferred, key=lambda r: (r.run_date, r.rel))
+        return max(preferred, key=lambda r: (r.round, r.run_date, r.rel))
+
+    def event_runs(self, step: str) -> list[PriorRun]:
+        """Every succeeded run of a step for this company and period, in round order (dry-run directory first)."""
+        found = [r for r in self.runs() if r.succeeded and r.step == step and r.company == self.company
+                 and r.period == self.period]
+        preferred = [r for r in found if any(_inside(r.path, root) for root in self.runs_roots)] or found
+        return sorted(preferred, key=lambda r: (r.round, r.run_date, r.rel))
 
     def require_run(self, step: str, name: str, *, why: str = "") -> PriorRun:
         run = self.latest_run(step, period=self.period)
@@ -420,6 +442,8 @@ STEPS: dict[str, StepSpec] = {
     "14A": StepSpec("14A", "14", "A", "company", "quarter", True,
                     "blind read of the event's filings against the frozen question list (blind reader)",
                     post_event=True),
+    "15B": StepSpec("15B", "15", "B", "company", "quarter", False,
+                    "settlement of the due pre-registration items and ledger entries (settler)", post_event=True),
     "03-draft": StepSpec("03-draft", "03", "draft", "company", "quarter", False,
                          "quarterly update draft (company manager)", _update_fields, post_event=True),
     "16A": StepSpec("16A", "16", "A", "company", "quarter", False,
@@ -427,10 +451,18 @@ STEPS: dict[str, StepSpec] = {
     "04A": StepSpec("04A", "04", "A", "company", "quarter", False,
                     "fact audit of the quarterly update draft (auditor)",
                     variables={"subject": QUARTERLY_UPDATE}, post_event=True),
+    "04B-lite": StepSpec("04B-lite", "04", "B_lite", "company", "quarter", True,
+                         "inversion list for the quarterly update (red team)",
+                         variables={"subject": QUARTERLY_UPDATE}, post_event=True),
+    "14B": StepSpec("14B", "14", "B", "company", "quarter", True,
+                    "divergence map between the blind read and the company manager (HQ)", post_event=True),
     "03R": StepSpec("03R", "03", "revise", "company", "quarter", False,
                     "revision of the quarterly update after the audit (company manager)", _update_fields,
                     post_event=True),
+    "17A": StepSpec("17A", "17", "A", "hq", "quarter", False,
+                    "review and release gate of the quarterly update (HQ)", post_event=True, about_company=True),
 }
+ROUNDS = {"16A": 2, "04A": 2, "03R": 2, "17A": 2}  # steps that may run a second time in one event (docs/decisions/0024)
 
 
 def step_spec(step: str) -> StepSpec:
@@ -473,7 +505,7 @@ def placement_context(ctx: RunContext) -> dict[str, Any]:
         "doc": None,
         "subject": ctx.step.variables.get(llm.VAR_SUBJECT),
         "scope": ctx.scope,
-        "run_dir": ctx.step.bundle_name(ctx.run_date, ctx.company),
+        "run_dir": ctx.step.bundle_name(ctx.run_date, ctx.company, ctx.round),
     }
 
 
@@ -848,8 +880,23 @@ class EdgarGateway:
         filing = selection.filing
         tag = known_tags.get(filing.accession) or documents.tag_with_ordinal(ticker, filing, cal, subs.filings)
         out: list[FilingText] = []
+        if selection.primary and filing.primary_document and selection.kind == documents.OWNERSHIP:
+            rendered = self._ownership(ticker, cal, filing, known_tags, tag)
+            if rendered is not None:
+                return [rendered]
         if selection.primary and filing.primary_document:
-            out.append(self._document(ticker, cal, filing, filing.primary_document, known_tags, tag=tag))
+            doc = self._document(ticker, cal, filing, filing.primary_document, known_tags, tag=tag)
+            if selection.sections and documents.form_family(filing.form):
+                text, found, missing = documents.extract_sections(doc.text, filing.form, selection.sections)
+                if missing:
+                    doc = dataclasses.replace(doc, note=f"the whole filing: section(s) not found by heading: "
+                                                        f"{', '.join(documents.describe_sections(missing))}")
+                else:
+                    doc = dataclasses.replace(
+                        doc, text=text, sections=tuple(documents.describe_sections(found)),
+                        note=f"sections kept: {', '.join(documents.describe_sections(found))} "
+                             f"({len(text):,} of {len(doc.text):,} characters)")
+            out.append(doc)
         if selection.exhibits:
             docs = edgar.filing_documents(filing.cik, filing.accession, client=self.client,
                                           primary_document=filing.primary_document)
@@ -879,6 +926,27 @@ class EdgarGateway:
         if not filing.primary_document:
             return []
         return [self._document(ticker, cal, filing, filing.primary_document, known)]
+
+    def _ownership(self, ticker: str, cal: edgar.FiscalCalendar, filing: edgar.Filing, known_tags: Mapping[str, str],
+                   tag: str) -> FilingText | None:
+        """A Form 3, 4 or 5 from its XML in a few lines (documents.render_ownership), or None to fall back to the
+        rendered page. The primary document xslF345X06/<name>.xml is the rendering; <name>.xml is the data."""
+        name = filing.primary_document.rsplit("/", 1)[-1]
+        if not name.lower().endswith(".xml"):
+            return None
+        url = f"{filing.folder_url}/{name}"
+        try:
+            raw = self.client.get_bytes(url)
+        except edgar.EdgarError:
+            return None
+        text = documents.render_ownership(raw)
+        if text is None:
+            return None
+        return FilingText(tag=known_tags.get(filing.accession) or tag, locator=None,
+                          registered=filing.accession in known_tags, form=filing.form, items=filing.items,
+                          accession=filing.accession, filed=filing.filing_date, document=name, url=url,
+                          raw_sha256=sha256_bytes(raw), text=text,
+                          note="rendered from the form's XML; transaction prices left out (00 section H2)")
 
     def _document(self, ticker: str, cal: edgar.FiscalCalendar, filing: edgar.Filing, name: str,
                   known_tags: Mapping[str, str], exhibit: str | None = None, *, tag: str | None = None) -> FilingText:
@@ -1047,10 +1115,17 @@ def render_documents(lines: list[str], docs: Iterable[FilingText]) -> tuple[str,
     for doc in docs:
         items = f" (Items {', '.join(doc.items)})" if doc.items else ""
         lines += [f"===== [src:{doc.cite}] {doc.form}{items} | accession {doc.accession} | filed {doc.filed} | "
-                  f"{doc.document} =====", f"url: {doc.url}", "", doc.text.strip(), ""]
-        sources.append({"kind": "edgar", "tag": doc.cite, "registered": doc.registered, "form": doc.form,
-                        "accession": doc.accession, "filed": doc.filed.isoformat(), "document": doc.document,
-                        "url": doc.url, "sha256": doc.raw_sha256, "text_sha256": sha256_text(doc.text)})
+                  f"{doc.document} =====", f"url: {doc.url}"]
+        lines += [f"note: {doc.note}"] if doc.note else []
+        lines += ["", doc.text.strip(), ""]
+        source = {"kind": "edgar", "tag": doc.cite, "registered": doc.registered, "form": doc.form,
+                  "accession": doc.accession, "filed": doc.filed.isoformat(), "document": doc.document,
+                  "url": doc.url, "sha256": doc.raw_sha256, "text_sha256": sha256_text(doc.text)}
+        if doc.sections:
+            source["sections"] = list(doc.sections)
+        if doc.note:
+            source["note"] = doc.note
+        sources.append(source)
     return "\n".join(lines), sources
 
 
@@ -1286,6 +1361,10 @@ def _letter_entries(data: Any) -> list[Any] | None:
 
 @assembler("divergence_map")
 def _divergence_map(ctx: RunContext, name: str) -> BuiltInput:
+    """18: what the month's divergence maps flag for the letter. 17A: this event's divergence map."""
+    if ctx.step.step == "17A":
+        return _event_output(ctx, name, "14B", "divergence_map",
+                             "the divergence map (14B) runs only for holdings' quarterly updates (prompt 14 scope)")
     runs = [r for r in _runs_in_month(ctx) if r.part == "14B"]
     maps = []
     for run in runs:
@@ -1604,7 +1683,15 @@ def _filings(ctx: RunContext, name: str) -> BuiltInput:
         *[f"Note: {note}." for note in results.notes],
         "",
     ]
-    text, sources = render_documents(lines, results.documents)
+    documents_ = list(results.documents)
+    if ctx.step.step == "15B":
+        extra, rows = settlement_filings(ctx)
+        have = {(d.accession, d.document) for d in documents_}
+        documents_ += [d for d in extra if (d.accession, d.document) not in have]
+        if rows:
+            lines[-1:-1] = ["The documents the due items' data_source names follow the event's own:",
+                            dump_yaml({"items": rows}).rstrip()]
+    text, sources = render_documents(lines, documents_)
     built = BuiltInput(text, "txt", sources, note="; ".join(results.notes) or None)
     if results.rehearsal_for:
         built.substitute = "filings"
@@ -1724,18 +1811,26 @@ def _where_documents(ctx: RunContext, name: str) -> BuiltInput:
     owners = documents.owner_names(company, thesis.get("name"), short_name(thesis.get("name"), company))
     foreign = filer.type == edgar.FOREIGN
     period, as_of = _event_period(ctx), _as_of(ctx)
-    fetched: dict[tuple[str, str], FilingText] = {}
-    plan_rows = []
+    merged: dict[str, documents.Selection] = {}  # one selection per filing, over every test
+    per_test = []
+    context = None
     for test in due:
         lookback = int(test.get("lookback") or 1)
         plan = documents.parse_where(test.get("where"), foreign=foreign, owners=owners)
         selections, notes, subs, cal, _, ticker = gateway.where_filings(filer, period, as_of, lookback, plan)
-        supplied: list[str] = []
+        context = (subs, cal, ticker)
         for selection in selections:
-            for doc in gateway.selection_documents(selection, ticker=ticker, cal=cal, subs=subs, known_tags=known):
-                fetched.setdefault((doc.accession, doc.document), doc)
-                if doc.cite not in supplied:
-                    supplied.append(doc.cite)
+            old = merged.get(selection.filing.accession)
+            merged[selection.filing.accession] = old.merged(selection) if old else selection
+        per_test.append((test, lookback, plan, selections, notes, cal))
+    fetched: dict[str, list[FilingText]] = {}
+    for accession, selection in merged.items():
+        subs, cal, ticker = context  # type: ignore[misc]  # set by the loop above: due is not empty
+        fetched[accession] = gateway.selection_documents(selection, ticker=ticker, cal=cal, subs=subs,
+                                                         known_tags=known)
+    plan_rows = []
+    for test, lookback, plan, selections, notes, cal in per_test:
+        supplied = list(dict.fromkeys(doc.cite for s in selections for doc in fetched[s.filing.accession]))
         plan_rows.append({"test_id": test.get("id"), "where": plan.where, "lookback": lookback,
                           "periods": documents.lookback_periods(period, lookback),
                           "window": f"{documents.window_start(period, lookback, cal)} to {as_of}",
@@ -1743,7 +1838,9 @@ def _where_documents(ctx: RunContext, name: str) -> BuiltInput:
     header = [
         f"Documents for the qualitative tests of {company} due in {ctx.period}, as of {as_of}.",
         "For each test: what its `where` names, the fiscal quarters its `lookback` covers, the documents supplied below "
-        f"and what the pipeline could not supply. {documents.SECTION_NOTE[0].upper()}{documents.SECTION_NOTE[1:]}.",
+        "and what the pipeline could not supply. Where `where` names sections of a 10-K, 10-Q or 20-F, only those "
+        "sections are supplied (each document's note says which); where they cannot be found by the filing's headings, "
+        "the whole filing is.",
         CITE_NOTE,
         "",
         dump_yaml({"tests": plan_rows}).rstrip(),
@@ -1751,11 +1848,13 @@ def _where_documents(ctx: RunContext, name: str) -> BuiltInput:
     ]
     if ctx.rehearsal and ctx.results().rehearsal_for:
         header.insert(1, f"Rehearsal: the event has not happened yet; the window ends with {period} instead.")
-    ordered = sorted(fetched.values(), key=lambda d: (d.filed, d.accession, d.locator or ""))
+    ordered = sorted((d for docs in fetched.values() for d in docs), key=lambda d: (d.filed, d.accession,
+                                                                                    d.locator or ""))
     text, sources = render_documents(header, ordered)
     missing = sum(len(row["not_supplied"]) for row in plan_rows)
-    return BuiltInput(text, "txt", sources, note=f"{len(ordered)} document(s) for {len(plan_rows)} test(s); "
-                                                 f"{missing} part(s) of `where` not supplied",
+    cut = sum(1 for d in ordered if d.sections)
+    return BuiltInput(text, "txt", sources, note=f"{len(ordered)} document(s) for {len(plan_rows)} test(s), {cut} cut "
+                                                 f"to the sections named; {missing} part(s) of `where` not supplied",
                       substitute=name if ctx.rehearsal and ctx.results().rehearsal_for else None)
 
 
@@ -2016,11 +2115,67 @@ def draft_outputs_names(run: PriorRun) -> list[str]:
     return [name for name, entry in entries.items() if isinstance(entry, dict) and entry.get("status") == "written"]
 
 
+def content_of(text: str | None) -> str:
+    """An output's content without generated_by (which differs between any two calls), for comparing a revision with
+    what it revised."""
+    if not text:
+        return ""
+    parts = _outputs.split_front_matter(text)
+    if parts is not None:
+        front = yaml.safe_load(parts[0]) or {}
+        if isinstance(front, dict) and "generated_by" in front:
+            front.pop("generated_by")
+            return f"---\n{dump_yaml(front)}---\n{parts[1]}"
+        return text
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError:
+        return text
+    if isinstance(data, dict) and "generated_by" in data:
+        data.pop("generated_by")
+        return dump_yaml(data)
+    return text
+
+
+def changed_outputs(before: PriorRun, after: PriorRun) -> list[str]:
+    """The fact-carrying outputs (and thesis, ledger) a revision changed, generated_by aside."""
+    return [n for n in (*PRODUCT_OUTPUTS, *DIFF_OUTPUTS)
+            if content_of(before.read_output(n)) != content_of(after.read_output(n))]
+
+
+def _revision_product(ctx: RunContext, name: str) -> BuiltInput:
+    """16A's second round: only what the revision (03R) changed in the draft's fact-carrying outputs, as unified diffs
+    (00: "04A runs once more, on the new and changed facts only")."""
+    company = _need_company(ctx, name)
+    draft = ctx.require_run("03-draft", name)
+    revision = ctx.latest_run("03R", period=ctx.period, round_=1)
+    if revision is None:
+        raise MissingInput(f"{name}: no succeeded 03R run for {company} {ctx.period} (the second audit round follows it)")
+    chunks = [f"The product under audit: what the revision {revision.rel} changed in the quarterly update draft "
+              f"{draft.rel} of {company} for {ctx.period}, as unified diffs. Extract the facts on the added and changed "
+              "lines only; the rest was audited in the first round.", ""]
+    sources: list[dict[str, Any]] = []
+    for output in changed_outputs(draft, revision):
+        old, new = content_of(draft.read_output(output)), content_of(revision.read_output(output))
+        chunks.append(f"===== changes: {output} (draft -> revision) =====\n{_diff(old, new, output)}\n")
+        sources += revision.outputs_used([output])
+    if not sources:
+        built = empty_document(ctx, name, f"the revision {revision.rel} changed no fact-carrying output of the draft")
+        built.sources = revision.outputs_used(["update"])
+        return built
+    table, table_sources = source_table(ctx)
+    chunks.append(f"===== source table (public and private sources.yml) =====\n{table}")
+    return BuiltInput("\n".join(chunks), "txt", sources + table_sources,
+                      note=f"second round: the changes of {revision.rel}")
+
+
 @assembler("product")
 def _product(ctx: RunContext, name: str) -> BuiltInput:
     """16A in update mode: the 03 draft's outputs that carry facts, the changes to thesis.yml and ledger.yml as diffs
-    against the current files, and the source table."""
+    against the current files, and the source table. In the second round, the revision's changes only."""
     company = _need_company(ctx, name)
+    if ctx.round > 1:
+        return _revision_product(ctx, name)
     run = ctx.require_run("03-draft", name, why="16A extracts the facts of the draft before the audit")
     text, sources = run_outputs_text(
         run, [n for n in PRODUCT_OUTPUTS if run.output_file(n) is not None],
@@ -2133,7 +2288,10 @@ def _report_page(text: str, locator: str) -> str:
 def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
     """16A's facts, each with the source excerpt the pipeline cut from the cited document by the value
     (source_excerpt), or excerpt_missing when none was found (prompt 04A)."""
-    run, text = _run_output(ctx, name, "16A", "fact_table", why="16A extracts the facts before the audit")
+    run = ctx.latest_run("16A", period=ctx.period, round_=ctx.round)
+    text = run.read_output("fact_table") if run else None
+    if run is None or text is None:
+        raise MissingInput(f"{name}: no succeeded 16A run (round {ctx.round}) for {ctx.company} {ctx.period}")
     data = yaml.safe_load(text)
     facts = _fact_rows(data)
     tags = [t for f in facts if isinstance(f, dict) for t in _tags_of(f.get("source"))]
@@ -2182,12 +2340,12 @@ def _sources(ctx: RunContext, name: str) -> BuiltInput:
              table.rstrip(), ""]
     tags: list[str] = []
     if ctx.step.step == "04A":
-        run = ctx.latest_run("16A", period=ctx.period)
+        run = ctx.latest_run("16A", period=ctx.period, round_=ctx.round)
         text = run.read_output("fact_table") if run else None
         tags = [t for f in _fact_rows(yaml.safe_load(text) if text else None) if isinstance(f, dict)
                 for t in _tags_of(f.get("source"))]
     elif ctx.step.step == "03R":
-        draft = ctx.latest_run("03-draft", period=ctx.period)
+        draft = revised_outputs(ctx)
         audit = ctx.latest_run("04A", period=ctx.period)
         additions = draft.read_output("sources_additions") if draft else None
         if additions and not _outputs.is_empty_mark(additions):
@@ -2214,13 +2372,24 @@ def _sources(ctx: RunContext, name: str) -> BuiltInput:
                       substitute=name if ctx.results().rehearsal_for else None)
 
 
+def revised_outputs(ctx: RunContext) -> PriorRun | None:
+    """What a revision revises: the draft in the first round, the previous revision after HQ returned it."""
+    if ctx.round > 1:
+        return ctx.latest_run("03R", period=ctx.period, round_=ctx.round - 1)
+    return ctx.latest_run("03-draft", period=ctx.period)
+
+
 @assembler("draft_outputs")
 def _draft_outputs(ctx: RunContext, name: str) -> BuiltInput:
-    """03R: every output of the 03 draft, as written before the audit."""
-    run = ctx.require_run("03-draft", name)
+    """03R: every output of the 03 draft, as written before the audit; in the second round (after HQ returned the
+    update), every output of the first revision."""
+    run = revised_outputs(ctx)
+    if run is None:
+        raise MissingInput(f"{name}: no succeeded {'03R' if ctx.round > 1 else '03-draft'} run for {ctx.company} "
+                           f"{ctx.period}")
+    what = "the revision" if ctx.round > 1 else "the quarterly update draft"
     text, sources = run_outputs_text(run, draft_outputs_names(run),
-                                     f"The outputs of the quarterly update draft {run.rel}, as written before the "
-                                     "audit, one block per output.")
+                                     f"The outputs of {what} {run.rel}, one block per output.")
     return BuiltInput(text, "txt", sources)
 
 
@@ -2245,3 +2414,275 @@ def _returns_17a(ctx: RunContext, name: str) -> BuiltInput:
     if run is None or text is None or not text.strip() or _outputs.is_empty_mark(text):
         raise Omit("HQ has not returned this update (no 17A returns for this period)")
     return BuiltInput(text, "yml", run.outputs_used(["returns"]))
+
+
+# ---- holdings' steps and HQ's gate (04B-lite, 14B, 15B, 17A)
+
+
+def _event_output(ctx: RunContext, name: str, step: str, output: str, candidate_reason: str | None = None) -> BuiltInput:
+    """An output of an earlier step of this event; for a candidate, when the step runs only for holdings, an explicit
+    document that says so."""
+    company = _need_company(ctx, name)
+    if candidate_reason and not ctx.is_holding():
+        return empty_document(ctx, name, f"{company} is a candidate: {candidate_reason}")
+    run, text = _run_output(ctx, name, step, output, why=f"{step} runs earlier in the event")
+    return BuiltInput(text, "yml" if output != "update" else "md", run.outputs_used([output]))
+
+
+@assembler("update")
+def _update(ctx: RunContext, name: str) -> BuiltInput:
+    """04B-lite and 14B: the 03 draft's update record."""
+    run, text = _run_output(ctx, name, "03-draft", "update", why="the draft comes first")
+    return BuiltInput(text, "md", run.outputs_used(["update"]))
+
+
+@assembler("question_answers")
+def _question_answers(ctx: RunContext, name: str) -> BuiltInput:
+    """14B: the company manager's answers to the frozen question list, from the 03 draft."""
+    return _event_output(ctx, name, "03-draft", "question_answers")
+
+
+@assembler("blind_answers", "unprompted_observations")
+def _blind_read(ctx: RunContext, name: str) -> BuiltInput:
+    """14B: the blind read's answers and observations (14A)."""
+    return _event_output(ctx, name, "14A", name)
+
+
+@assembler("prior_inversion_list")
+def _prior_inversion_list(ctx: RunContext, name: str) -> BuiltInput:
+    """04B-lite: the previous period's inversion list, so this quarter's does not repeat it."""
+    company = _need_company(ctx, name)
+    now = documents.period_index(ctx.period)
+    earlier = [r for r in ctx.runs() if r.succeeded and r.step == "04B-lite" and r.company == company
+               and -1 < _period_key(r.period) < now and r.output_file("inversion_list") is not None]
+    if not earlier:
+        raise Omit(f"no earlier inversion list for {company}: this is the first 04B-lite")
+    run = max(earlier, key=lambda r: (_period_key(r.period), r.round, r.run_date))
+    return BuiltInput(run.read_output("inversion_list") or "", "yml", run.outputs_used(["inversion_list"]),
+                      note=f"inversion list of {run.period} ({run.rel})")
+
+
+# 15B: what the settler may see of a due pre-registration item (prompt 15B: no probability, no author).
+BLIND_ITEM_FIELDS = ("id", "statement", "criterion", "data_source", "horizon")
+# ...and of a due ledger entry: the side is replaced by how it is settled, the probability is removed.
+LEDGER_HIDDEN = ("side", "probability", "acknowledged_next_letter", "acknowledged_source", "settlement_source", "status")
+SETTLE_AS = {"management": "four_tier", "system": "binary", "owner": "binary"}
+ITEM_ID_RE = re.compile(r"^(?P<company>[A-Z][A-Z0-9.]*)-(?P<period>FY\d{4}Q[1-4])-\d+$")
+
+
+@assembler("items_blind")
+def _items_blind(ctx: RunContext, name: str) -> BuiltInput:
+    """15B: the pre-registration items due by the end of the month in which the event closes, with only id,
+    statement, criterion, data source and horizon (the settler cannot see probabilities or authors)."""
+    company = _need_company(ctx, name)
+    due = prereg_items_due(ctx) if ctx.is_holding() else []
+    rows = sorted({str(i["id"]): {k: i[k] for k in BLIND_ITEM_FIELDS if k in i} for i in due}.values(),
+                  key=lambda row: str(row["id"]))
+    sources = _prereg_sources(ctx) + [{"kind": "generated", "detail": "probability, author and book removed"}]
+    if not rows:
+        why = "candidates do not pre-register" if not ctx.is_holding() else \
+            f"no pre-registration item is due by {_event_month_end(ctx)}"
+        built = empty_document(ctx, name, f"{company}: {why}")
+        built.sources = sources
+        return built
+    data = {"company": company, "due_by": _event_month_end(ctx).isoformat(), "items": rows}
+    return BuiltInput(dump_yaml(data), "yml", sources, note=f"{len(rows)} item(s) due")
+
+
+@assembler("ledger_due")
+def _ledger_due(ctx: RunContext, name: str) -> BuiltInput:
+    """15B: the ledger entries due this period, the side replaced by how each is settled (settle_as: four_tier for
+    management's commitments, binary for the system's and the owner's forecasts) and the probability removed."""
+    company = _need_company(ctx, name)
+    path = ctx.public_root / "companies" / company / "ledger.yml"
+    sources = [repo_file_source(ctx.public_root, path, PUBLIC_REPO) | {"transform": "side, probability and status "
+                                                                                    "removed; settle_as added"}] \
+        if path.is_file() else []
+    rows = [{"settle_as": SETTLE_AS.get(str(e.get("side")), "four_tier"),
+             **{k: v for k, v in e.items() if k not in LEDGER_HIDDEN}} for e in ledger_entries_due(ctx)]
+    if not rows:
+        built = empty_document(ctx, name, f"no pending ledger entry of {company} is due by the end of {ctx.period}")
+        built.sources = sources
+        return built
+    return BuiltInput(dump_yaml({"company": company, "period": ctx.period, "entries": rows}), "yml", sources,
+                      note=f"{len(rows)} entr(y/ies) due")
+
+
+@assembler("metric_values")
+def _metric_values(ctx: RunContext, name: str) -> BuiltInput:
+    """15B: the values the pipeline fetched for this event: the readings the evaluation used (XBRL companyfacts and
+    16B, each with its source) and 16B's extraction of this period as written."""
+    company = _need_company(ctx, name)
+    ci = ctx.require_run(CI_STEP, name, why="the evaluation runs before the settlement")
+    readings_file = ci.path / "inputs" / "readings.yml"
+    readings = load_yaml_file(readings_file) or {}
+    sources = [{"kind": "run_output", "run": ci.rel, "output": "inputs/readings.yml",
+                "sha256": sha256_bytes(readings_file.read_bytes()) if readings_file.is_file() else None}]
+    data: dict[str, Any] = {"company": company, "period": ctx.period, "readings": readings.get("readings") or [],
+                            "not_usable": readings.get("not_usable") or []}
+    extraction = ctx.latest_run("16B", period=ctx.period)
+    if extraction is not None and extraction.read_output("metric_values"):
+        data["extracted_16B"] = yaml.safe_load(extraction.read_output("metric_values") or "")
+        sources += extraction.outputs_used(["metric_values"])
+    return BuiltInput(dump_yaml(data), "yml", sources, note=f"{len(data['readings'])} reading(s)")
+
+
+def settlement_filings(ctx: RunContext) -> tuple[list[FilingText], list[dict[str, Any]]]:
+    """15B: the documents each due item's data_source names, over the quarters from its registration to this event
+    (at most eight), besides the event's own filings."""
+    company = _need_company(ctx, "filings")
+    items = prereg_items_due(ctx) if ctx.is_holding() else []
+    if not items:
+        return [], []
+    thesis = ctx.thesis()
+    filer, gateway = ctx.filer(), ctx.gateway()
+    known = known_filing_tags((ctx.public_root, ctx.private_root), company)
+    owners = documents.owner_names(company, thesis.get("name"), short_name(thesis.get("name"), company))
+    period, as_of = _event_period(ctx), _as_of(ctx)
+    merged: dict[str, documents.Selection] = {}
+    rows, context = [], None
+    for item in items:
+        match = ITEM_ID_RE.match(str(item.get("id")))
+        registered = match.group("period") if match else period
+        lookback = max(1, min(8, documents.period_index(period) - documents.period_index(registered) + 1))
+        plan = documents.parse_where(item.get("data_source"), foreign=filer.type == edgar.FOREIGN, owners=owners)
+        selections, notes, subs, cal, _, ticker = gateway.where_filings(filer, period, as_of, lookback, plan)
+        context = (subs, cal, ticker)
+        for selection in selections:
+            old = merged.get(selection.filing.accession)
+            merged[selection.filing.accession] = old.merged(selection) if old else selection
+        rows.append({"item": item.get("id"), "data_source": plan.where, "lookback": lookback,
+                     "accessions": [s.filing.accession for s in selections],
+                     "not_supplied": [*plan.not_supplied, *notes]})
+    docs: list[FilingText] = []
+    for selection in merged.values():
+        subs, cal, ticker = context  # type: ignore[misc]
+        docs += gateway.selection_documents(selection, ticker=ticker, cal=cal, subs=subs, known_tags=known)
+    return docs, rows
+
+
+@assembler("update_outputs")
+def _update_outputs(ctx: RunContext, name: str) -> BuiltInput:
+    """17A: every output of the latest revision (03R) of this event."""
+    run = ctx.latest_run("03R", period=ctx.period)
+    if run is None:
+        raise MissingInput(f"{name}: no succeeded 03R run for {ctx.company} {ctx.period} (HQ reviews the revision)")
+    text, sources = run_outputs_text(run, draft_outputs_names(run),
+                                     f"The outputs of the quarterly update's revision {run.rel}, one block per output.")
+    return BuiltInput(text, "txt", sources)
+
+
+@assembler("inversion_list")
+def _inversion_list(ctx: RunContext, name: str) -> BuiltInput:
+    return _event_output(ctx, name, "04B-lite", "inversion_list",
+                         "the inversion list (04B-lite) runs only for holdings' quarterly updates (prompt 04)")
+
+
+@assembler("trust_level")
+def _trust_level(ctx: RunContext, name: str) -> BuiltInput:
+    """17A: the company manager's trust level, from both places the pipeline keeps it, and its route (section G9)."""
+    company = _need_company(ctx, name)
+    thesis_level = ctx.thesis().get("trust_level")
+    levels_path = ctx.public_root / "trust" / "levels.yml"
+    levels = load_yaml_file(levels_path) or {}
+    listed = ((levels.get("companies") or {}) if isinstance(levels, dict) else {}).get(company)
+    rights = load_yaml_file(ctx.public_root / "constitution" / "decision-rights.yml") or {}
+    routing = ((rights.get("trust") or {}).get("routing") or {}) if isinstance(rights, dict) else {}
+    found = [v for v in (thesis_level, listed) if isinstance(v, int) and not isinstance(v, bool)]
+    level = min(found) if found else None
+    data = {"company": company, "role": "company_manager", "trust_level": level,
+            "thesis_yml": thesis_level, "trust_levels_yml": listed,
+            "route": routing.get(str(level)) if level is not None else None, "rule": "00 section G9"}
+    sources = [repo_file_source(ctx.public_root, ctx.thesis_path(), PUBLIC_REPO) | {"field": "trust_level"}]
+    if levels_path.is_file():
+        sources.append(repo_file_source(ctx.public_root, levels_path, PUBLIC_REPO))
+    return BuiltInput(dump_yaml(data), "yml", sources)
+
+
+@assembler("decision_rights")
+def _decision_rights(ctx: RunContext, name: str) -> BuiltInput:
+    path = ctx.public_root / "constitution" / "decision-rights.yml"
+    if not path.is_file():
+        raise MissingInput(f"constitution/decision-rights.yml does not exist in {PUBLIC_REPO}")
+    return BuiltInput(path.read_text(encoding="utf-8"), "yml", [repo_file_source(ctx.public_root, path, PUBLIC_REPO)])
+
+
+def _rows(text: str | None) -> list[dict[str, Any]]:
+    data = yaml.safe_load(text) if text else None
+    rows = data if isinstance(data, list) else _letter_entries(data) or []
+    return [r for r in rows if isinstance(r, dict)]
+
+
+@assembler("gate_rules")
+def _gate_rules(ctx: RunContext, name: str) -> BuiltInput:
+    """17A: the release gate (decision-rights.yml gate.blocking, trust.routing) and what the pipeline can already
+    tell about each condition for this update: open must-fix findings, failed breaker tests, divergences touching a
+    pillar, the trust route. Lint runs when the update is placed."""
+    company = _need_company(ctx, name)
+    path = ctx.public_root / "constitution" / "decision-rights.yml"
+    rights = load_yaml_file(path) or {}
+    audits = ctx.event_runs("04A")
+    revision = ctx.latest_run("03R", period=ctx.period)
+    notes = {str(r.get("finding_id")): r.get("action") for r in _rows(revision.read_output("revision_notes"))} \
+        if revision else {}
+    must_fix = [{"finding": r.get("id"), "round": run.round, "revision_notes": notes.get(str(r.get("id")), "none")}
+                for run in audits for r in _rows(run.read_output("findings")) if r.get("group") == "must fix"]
+    breakers = {str(t.get("id")) for t in ctx.thesis().get("tests") or [] if isinstance(t, dict)
+                and t.get("severity") == "breaker"}
+    ci = ctx.latest_run(CI_STEP, period=ctx.period)
+    failed = [r.get("id") for r in evaluation.result_rows(yaml.safe_load(ci.read_output("ci_results") or "")
+                                                          if ci else None)
+              if r.get("result") == "fail" and str(r.get("id")) in breakers]
+    judge = ctx.latest_run("14T", period=ctx.period)
+    failed += [r.get("test_id") for r in _rows(judge.read_output("qualitative_verdicts") if judge else None)
+               if r.get("verdict") == "fail" and str(r.get("test_id")) in breakers]
+    divergence = ctx.latest_run("14B", period=ctx.period)
+    pillar = [{"question": r.get("id"), "resolution": r.get("resolution"), "to_owner_letter": r.get("to_owner_letter")}
+              for r in _rows(divergence.read_output("divergence_map") if divergence else None)
+              if r.get("mark") == "diverge" and r.get("touches_pillar")]
+    level = ctx.thesis().get("trust_level")
+    data = {
+        "company": company, "period": ctx.period,
+        "gate": (rights.get("gate") if isinstance(rights, dict) else None) or {},
+        "routing": ((rights.get("trust") or {}).get("routing") if isinstance(rights, dict) else None) or {},
+        "pipeline_checks": {
+            "lint_errors": "checked when the update is placed (thesis-ci lint on both repositories)",
+            "open_04A_must_fix": must_fix or "none",
+            "failed_breakers": sorted(str(x) for x in failed) or "none",
+            "divergences_touching_a_pillar": pillar or ("none" if ctx.is_holding() else
+                                                        "no divergence map: the company is a candidate"),
+            "trust_level": level,
+        },
+    }
+    sources = [repo_file_source(ctx.public_root, path, PUBLIC_REPO)] if path.is_file() else []
+    for run in [*audits, revision, ci, judge, divergence]:
+        if run is not None:
+            sources.append({"kind": "run_output", "run": run.rel, "output": "outputs"})
+    return BuiltInput(dump_yaml(data), "yml", sources)
+
+
+@assembler("questions")
+def _questions(ctx: RunContext, name: str) -> BuiltInput:
+    """17A: every question raised in this event, by run."""
+    company = _need_company(ctx, name)
+    found, used = [], []
+    for run in ctx.runs():
+        if not (run.succeeded and run.company == company and run.period == ctx.period):
+            continue
+        text = run.read_output("questions")
+        if text is None or not text.strip() or _outputs.is_empty_mark(text):
+            continue
+        found.append({"run": run.rel, "step": run.step, "questions": yaml.safe_load(text)})
+        used += run.outputs_used(["questions"])
+    if not found:
+        return empty_document(ctx, name, f"no step of {company}'s {ctx.period} event raised a question")
+    return BuiltInput(dump_yaml({"company": company, "period": ctx.period, "raised": found}), "yml", used)
+
+
+@assembler("valuation_input_notes")
+def _valuation_input_notes(ctx: RunContext, name: str) -> BuiltInput:
+    run = ctx.latest_run("03R", period=ctx.period)
+    text = run.read_output("valuation_input_notes") if run else None
+    if run is None or text is None or not text.strip() or _outputs.is_empty_mark(text):
+        raise Omit("the revision wrote no valuation_input_notes")
+    return BuiltInput(text, "yml", run.outputs_used(["valuation_input_notes"]))

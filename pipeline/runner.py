@@ -325,7 +325,7 @@ def read_inputs(bundle_dir: Path, manifest: Mapping[str, Any]) -> dict[str, str]
 
 def _normalize_company(spec: registry.StepSpec, company: str) -> str | None:
     text = str(company).strip()
-    if spec.scope == "hq":
+    if spec.scope == "hq" and not spec.about_company:
         if text.lower() != "hq":
             raise RunnerError(f"{spec.step} is an HQ step: pass hq as the company")
         return None
@@ -376,12 +376,13 @@ def _estimate(prompt: Any, rules: Any, design: Any, call: Any, variables: Mappin
 def assemble(step: str, company: str, period: str, *, run_date: dt.date | None = None, roots: Roots | None = None,
              out_root: str | os.PathLike[str] | None = None, edgar_gateway: Any = None, offline: bool = False,
              allow_dirty: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
-             today: dt.date | None = None, rehearsal: bool = False) -> Path:
+             today: dt.date | None = None, rehearsal: bool = False, round_: int = 1) -> Path:
     """Build the input bundle of one step and return its directory. Nothing is written when anything is missing.
 
     Upstream runs are looked up under `out_root` first when it is not the private repository (a dry run reads its own
     chain). `rehearsal` (dry runs only) lets the last reported quarter's filings stand in for an event that has not
-    happened yet."""
+    happened yet. `round_` 2 assembles the second round of a step in one event (registry.ROUNDS): the bundle is
+    <run_date>-<step>-r2 and its inputs are the round's."""
     roots = roots or resolve_roots()
     try:
         spec = registry.step_spec(step)
@@ -403,6 +404,8 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         raise RunnerError(f"{step}: {exc}") from None
     if call.label != spec.step:
         raise RunnerError(f"{step}: prompt {spec.prompt_id} part {spec.part} resolves to {call.label}")
+    if round_ != 1 and not 1 < round_ <= registry.ROUNDS.get(step, 1):
+        raise RunnerError(f"{step} has no round {round_} (rounds: {registry.ROUNDS.get(step, 1)})")
     if not role.prompts or (prompt.id not in role.prompts and call.label not in role.prompts):
         raise RunnerError(f"{step}: agents/{role.path.name} does not register {call.label} for role {role.role}")
     schemas = Path(schemas_dir) if schemas_dir else None
@@ -415,6 +418,7 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         private_root=roots.private, workspace_root=roots.workspace, call=call, formats=formats,
         edgar=edgar_gateway if edgar_gateway is not None else registry.EdgarGateway(offline=offline),
         schemas_dir=schemas, runs_roots=(base,) if base != roots.private else (), rehearsal=rehearsal,
+        round=round_,
     )
     notes: list[str] = []
     if ticker:
@@ -442,7 +446,7 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         notes.append(f"pin: commit {commit[:12]} is on no remote branch yet; the Actions route (pipeline-step.yml) "
                      "can only check out pushed commits")
 
-    rel = f"runs/{ctx.scope}/{spec.bundle_name(run_date, ticker)}"
+    rel = f"runs/{ctx.scope}/{spec.bundle_name(run_date, ticker, round_)}"
     bundle_dir = base / rel
     if bundle_dir.exists():
         raise RunnerError(f"{rel} already exists under {base}; bundles are never overwritten")
@@ -538,6 +542,8 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         "estimate": estimate,
         "notes": notes,
     }
+    if round_ > 1:
+        manifest["round"] = round_
     if rehearsal:
         manifest["rehearsal"] = True
         notes.append("rehearsal: a dry run before the event; inputs marked substitute stand in for the event's")
@@ -1430,19 +1436,91 @@ def h4_hits(text: str) -> list[str]:
 
 def compose_pr_body(text: str, manifest: Mapping[str, Any], base: Path) -> tuple[str, list[dict[str, Any]]]:
     """03's pr_body followed by the attachments 00 section F2 puts on the quarterly-update pull request: the audit
-    findings, the rulings on the qualitative tests, the inversion list and the divergence map of the same event."""
+    findings (every round), the rulings on the qualitative tests, the inversion list and the divergence map of the
+    same event."""
     runs = registry.index_run_roots([base])
     parts, used = [text.rstrip()], []
     for step, output, title in PR_ATTACHMENTS:
-        found = [r for r in runs if r.succeeded and r.step == step and r.company == manifest.get("company")
-                 and r.period == manifest.get("period")]
-        run = max(found, key=lambda r: (r.run_date, r.rel)) if found else None
-        body = run.read_output(output) if run else None
-        if body is None or not body.strip() or _outputs.is_empty_mark(body):
-            continue
-        parts.append(f"## {title}\n\n```yaml\n{body.rstrip()}\n```")
-        used += run.outputs_used([output])
+        found = sorted((r for r in runs if r.succeeded and r.step == step and r.company == manifest.get("company")
+                        and r.period == manifest.get("period")), key=lambda r: (r.round, r.run_date, r.rel))
+        chosen = found if step == "04A" else found[-1:]
+        for run in chosen:
+            body = run.read_output(output)
+            if body is None or not body.strip() or _outputs.is_empty_mark(body):
+                continue
+            label = title if run.round == 1 else title.replace(")", f", round {run.round})")
+            parts.append(f"## {label}\n\n```yaml\n{body.rstrip()}\n```")
+            used += run.outputs_used([output])
     return "\n\n".join(parts) + "\n", used
+
+
+SETTLEMENT_RESULT_KEYS = ("id", "outcome", "values", "calculation", "evidence", "source", "reasoning", "settled_at",
+                          "hq_ruling")
+SETTLEMENT_SCHEMA = "prereg-settlement"
+
+
+def _first_commit_time(root: Path, rel: str) -> str | None:
+    """When a file first entered the repository's history (committer time, ISO 8601 with offset): the merged_at of a
+    pre-registration items file."""
+    out = registry.git_output(root, "log", "--diff-filter=A", "--format=%cI", "--", rel)
+    lines = [line for line in (out or "").splitlines() if line.strip()]
+    return lines[-1] if lines else None
+
+
+def settlement_files(text: str, manifest: Mapping[str, Any], bundle_dir: Path, roots: Roots,
+                     writes: list[PlannedWrite], schemas_dir: Path | None) -> tuple[list[tuple[str, str]], list[str]]:
+    """15B's prereg_settlement as settlement files (SPEC 2.1): one companies/<T>/prereg/<period>.settlement.yml per
+    pre-registration period of the items settled, with the pipeline's header (company, period, the results filing's
+    acceptance time and accession, when the items file was merged, its timestamp proof) and each result with its
+    settled_at. A result already settled happened or not_happened is never rewritten; an undetermined one may be.
+    Returns ([(path, content)], problems)."""
+    company = str(manifest["company"])
+    event = registry.load_yaml_file(bundle_dir / INPUTS_DIR / "event.yml") or {}
+    rows = _outputs.load_yaml_text(text)
+    rows = rows if isinstance(rows, list) else []
+    problems: list[str] = []
+    by_period: dict[str, list[Mapping[str, Any]]] = {}
+    for row in rows:
+        match = registry.ITEM_ID_RE.match(str(row.get("id")))
+        if not match or match.group("company") != company:
+            problems.append(f"prereg_settlement: {row.get('id')!r} is not an item id of {company}")
+            continue
+        by_period.setdefault(match.group("period"), []).append(row)
+    try:
+        validator = _outputs.schema_validator(SETTLEMENT_SCHEMA, schemas_dir)
+    except _outputs.SchemaUnavailable as exc:
+        return [], problems + [f"prereg_settlement: {exc}"]
+    files = []
+    for period, results in sorted(by_period.items()):
+        path = f"companies/{company}/prereg/{period}.settlement.yml"
+        items_rel = f"companies/{company}/prereg/{period}.yml"
+        current = _current_text(writes, roots, registry.PUBLIC_REPO, path)
+        doc = (yaml.safe_load(current) if current else None) or {"company": company, "period": period}
+        doc.setdefault("acceptance_datetime", event.get("acceptance_datetime"))
+        doc.setdefault("accession", event.get("accession"))
+        doc["merged_at"] = doc.get("merged_at") or _first_commit_time(roots.public, items_rel)
+        proof = f"{items_rel}.ots"
+        doc["ots_proof"] = proof if (roots.public / proof).is_file() else doc.get("ots_proof")
+        existing = {str(r.get("id")): r for r in doc.get("results") or [] if isinstance(r, dict)}
+        for row in results:
+            rid = str(row.get("id"))
+            old = existing.get(rid)
+            if old is not None and old.get("outcome") in registry.RESOLVED:
+                if old.get("outcome") != row.get("outcome"):
+                    problems.append(f"{path}: {rid} was settled {old.get('outcome')} before; a settlement is never "
+                                    "rewritten")
+                continue
+            new = {k: row[k] for k in SETTLEMENT_RESULT_KEYS if k in row and k != "settled_at"}
+            if not new.get("source"):
+                new["source"] = evaluation.source_tag(row.get("evidence"))
+            new["settled_at"] = str(manifest["run_date"])
+            existing[rid] = new
+        doc["results"] = list(existing.values())
+        problems += [f"{path}: {e}" for e in _outputs.schema_errors(validator, doc, SETTLEMENT_SCHEMA)]
+        header = (f"# Settlement of {company}'s {period} pre-registration (15B), written by the pipeline "
+                  "(SPEC 2.1; docs/decisions/0024)\n")
+        files.append((path, header + registry.dump_yaml(_outputs.jsonable(doc))))
+    return files, problems
 
 
 def _replace_guard(write: PlannedWrite, manifest: Mapping[str, Any], base: Path, root: Path) -> str | None:
@@ -1618,7 +1696,8 @@ def _upsert(writes: list[PlannedWrite], new: PlannedWrite) -> None:
 
 def plan_actions(name: str, text: str, placements: Sequence[_outputs.Placement], manifest: Mapping[str, Any],
                  roots: Roots, base: Path, writes: list[PlannedWrite], problems: list[str], warnings: list[str],
-                 attachments: list[dict[str, Any]]) -> None:
+                 attachments: list[dict[str, Any]], bundle_dir: Path | None = None,
+                 schemas: Path | None = None) -> None:
     """The writes one output makes under 00 section F2: write, front_matter, append, merge, patch, pr_body and
     pr_attachment. Each planned write holds the destination's complete new content."""
     context = manifest.get("context") or {}
@@ -1679,6 +1758,12 @@ def plan_actions(name: str, text: str, placements: Sequence[_outputs.Placement],
             writes.append(PlannedWrite(name, registry.PRIVATE_REPO, _outputs.PRIVATE, path, body.encode("utf-8"),
                                        note=f"the pull request's body, with {len(used)} attachment(s)",
                                        action="pr_body", public_bound=True))
+        elif p.action == "settlement":
+            files, trouble = settlement_files(text, manifest, bundle_dir, roots, writes, schemas)
+            problems += trouble
+            for path, content in files:
+                _upsert(writes, PlannedWrite(name, p.repo, p.visibility, path, content.encode("utf-8"),
+                                             note=p.note, action="settlement"))
         elif p.action == "pr_attachment":
             attachments.append({"output": name, "attached": "to the body of the quarterly update's pull request, "
                                                             "when the 03R bundle is placed"})
@@ -1766,7 +1851,7 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
     warnings: list[str] = []
     attachments: list[dict[str, Any]] = []
     merged_prereg: Any = None
-    order = ("write", "front_matter", "append", "merge", "patch", "pr_body", "pr_attachment")
+    order = ("write", "front_matter", "append", "merge", "patch", "settlement", "pr_body", "pr_attachment")
     planned: list[tuple[int, str, str, list[_outputs.Placement]]] = []
     for name, entry in entries.items():
         data = (bundle_dir / str(entry["file"])).read_bytes()
@@ -1788,7 +1873,8 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
         planned.append((rank, name, text, placements))
     for _, name, text, placements in sorted(planned, key=lambda row: row[0]):
         try:
-            plan_actions(name, text, placements, manifest, roots, base, writes, problems, warnings, attachments)
+            plan_actions(name, text, placements, manifest, roots, base, writes, problems, warnings, attachments,
+                         bundle_dir, schemas)
         except (ValueError, yaml.YAMLError) as exc:
             problems.append(f"{name}: {exc}")
     routing = route_by_trust(writes, manifest, roots, publish=publish, warnings=warnings, problems=problems)
