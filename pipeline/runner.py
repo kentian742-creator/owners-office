@@ -1349,7 +1349,9 @@ def merge_sources(current: str | None, entries: Sequence[Mapping[str, Any]]) -> 
         known[tag] = entry
     if not added:
         return current, 0, problems
-    block = "\n".join("\n".join("  " + line for line in registry.dump_yaml([e]).rstrip("\n").split("\n"))
+    first = re.search(r"^( *)- ", current or "", re.M)  # the file's own indentation of the sources list
+    indent = first.group(1) if first else "  "
+    block = "\n".join("\n".join(indent + line for line in registry.dump_yaml([e]).rstrip("\n").split("\n"))
                       for e in added)
     text = (current.rstrip("\n") + "\n\n" + block + "\n") if current else "sources:\n" + block + "\n"
     if _outputs.jsonable(yaml.safe_load(text)) != _outputs.jsonable({**(data or {}), "sources": old + added}):

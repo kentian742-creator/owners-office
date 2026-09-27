@@ -392,7 +392,7 @@ def make_env(tmp_path: Path) -> Env:
     write_yaml(public / "companies" / "AXP" / "thesis.yml", THESIS_AXP)
     write_yaml(public / "trust" / "levels.yml", {"as_of": "2026-09-24", "companies": {"APP": 1, "AXP": 1},
                                                   "industries": {}})
-    write(public / "mistakes.md", "# Mistakes\n\n## List\n\n### 2026-09-25 · APP · fact error\n\n- Synthetic.\n")
+    write(public / "mistakes.md", "# Mistakes\n\n## The list\n\n### 2026-09-25 · APP · fact error\n\n- Synthetic.\n")
     write(public / "docs" / "STATUS.md", "# Status\n\n- Current phase: synthetic phase 1\n")
     write(public / "docs" / "acceptance" / "phase-0.md", "# Phase 0 acceptance\n\nPASS\n")
     write_yaml(public / "forecasts" / "2026.yml", {"year": 2026, "forecasts": []})

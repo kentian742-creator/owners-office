@@ -139,10 +139,11 @@ def run_event(company: str, period: str, *, run_date: dt.date, roots: runner.Roo
               approve_stops: Sequence[str] = (), retry: bool = False, allow_dirty: bool = False,
               edgar_gateway: Any = None, offline: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
               today: dt.date | None = None, client_factory: Callable[[Path], Any] | None = None,
-              lint: bool = True, out: TextIO | None = None) -> tuple[int, list[StageState]]:
+              lint: bool = True, env: Mapping[str, str] | None = None,
+              out: TextIO | None = None) -> tuple[int, list[StageState]]:
     """Run the chain of one event as far as it can go. Returns (exit status, the state of every stage): 0 when the
-    chain is complete, WAITING (3) at a stop, 1 on a failure. `client_factory` injects a model test double per
-    bundle; `approve_stops` approves stops before running."""
+    chain is complete, WAITING (3) at a stop, 1 on a failure. `approve_stops` approves stops before running;
+    `client_factory` (a model test double per bundle) and `env` (the environment execute checks) are for tests."""
     roots = roots or runner.resolve_roots()
     out = out or sys.stdout
     today = today or dt.date.today()
@@ -168,7 +169,7 @@ def run_event(company: str, period: str, *, run_date: dt.date, roots: runner.Roo
             state = _run_stage(stage, ctx, roots=roots, base=base, ticker=ticker, period=period, run_date=run_date,
                                dry_run=dry_run, backend=backend, log=log, approve_stops=approve_stops, retry=retry,
                                allow_dirty=allow_dirty, gateway=gateway, offline=offline, schemas_dir=schemas_dir,
-                               today=today, client_factory=client_factory, lint=lint)
+                               today=today, client_factory=client_factory, lint=lint, env=env)
         except (runner.RunnerError, registry.MissingInput, edgar.EdgarError) as exc:
             state = StageState(stage.name, "failed", str(exc))
         states.append(state)
@@ -215,15 +216,13 @@ def _run_stage(stage: Stage, ctx: registry.RunContext, *, roots: runner.Roots, b
                run_date: dt.date, dry_run: bool, backend: str | None, log: Path | None,
                approve_stops: Sequence[str], retry: bool, allow_dirty: bool, gateway: Any, offline: bool,
                schemas_dir: Any, today: dt.date, client_factory: Callable[[Path], Any] | None,
-               lint: bool) -> StageState:
+               lint: bool, env: Mapping[str, str] | None) -> StageState:
     if stage.kind == "stop":
         return _stop(stage, base=base, ticker=ticker, period=period, dry_run=dry_run, approve_stops=approve_stops,
                      root=roots.private)
     if stage.kind == "place":
         return _place_all(ctx, roots=roots, base=base, ticker=ticker, period=period, dry_run=dry_run,
                           gateway=gateway, schemas_dir=schemas_dir, lint=lint)
-    if stage.kind == "model" and stage.name not in registry.STEPS:
-        return StageState(stage.name, "failed", f"the pipeline has no step {stage.name} yet (docs/decisions/0024)")
     runs = _existing(base, stage.name, ticker, period)
     done = [r for r in runs if r.status == "succeeded"]
     if done:
@@ -232,6 +231,8 @@ def _run_stage(stage: Stage, ctx: registry.RunContext, *, roots: runner.Roots, b
         why = stage.skip(ctx)
         if why:
             return StageState(stage.name, "skipped", why)
+    if stage.kind == "model" and stage.name not in registry.STEPS:
+        return StageState(stage.name, "failed", f"the pipeline has no step {stage.name} yet (docs/decisions/0024)")
     if stage.kind == "evaluate":
         pending = runs[-1] if runs else None
         if pending is not None and pending.status == "failed" and not retry:
@@ -255,7 +256,7 @@ def _run_stage(stage: Stage, ctx: registry.RunContext, *, roots: runner.Roots, b
     client = client_factory(bundle_dir) if client_factory else None
     record = runner.execute(bundle_dir, roots=roots, backend=backend, log_path=log, client=client,
                             retry=pending is not None and pending.status == "failed", schemas_dir=schemas_dir,
-                            allow_unpinned=dry_run, env={} if dry_run else None, out=_Quiet())
+                            allow_unpinned=dry_run or allow_dirty, env={} if dry_run else env, out=_Quiet())
     return _result(stage.name, bundle_dir, record)
 
 

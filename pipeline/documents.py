@@ -56,7 +56,7 @@ NOT_ON_EDGAR = "earnings call materials, transcripts and investor-day materials 
 SECTION_NOTE = "where `where` names a section of a filing (MD&A, risk factors, legal proceedings, a note), the whole " \
                "filing is supplied"
 
-_SENTENCE_BREAK_RE = re.compile(r"(?<=[a-z0-9)\]])\.\s+(?=[A-Z])")
+_SENTENCE_BREAK_RE = re.compile(r"(?:(?<=[a-z0-9)\]])|(?<=\d-[A-Z]))\.\s+(?=[A-Z])")  # "... the 10-K. Press"
 _FORMS_RES: tuple[tuple[str, re.Pattern[str]], ...] = (
     (QUARTERLY_REPORT, re.compile(r"(?<![\w-])10-Qs?(?![\w-])")),
     (ANNUAL_REPORT, re.compile(r"(?<![\w-])(?:10-Ks?|20-Fs?|40-F)(?![\w-])")),
@@ -213,7 +213,7 @@ def parse_clause(clause: str, *, foreign: bool, owners: Iterable[str]) -> tuple[
         if earnings and not any(r.kind == EARNINGS_RELEASE for r in requests):
             requests.append(DocRequest(EARNINGS_RELEASE, frozenset({"2.02"}) if not foreign else frozenset(),
                                        exhibits, clause))
-        elif not earnings:
+        elif not earnings and not any(r.kind == CURRENT_REPORT for r in requests):  # current reports hold them
             requests.append(DocRequest(PRESS_RELEASE, clause=clause))
     call = _CALL_RE.search(clause)
     if call:
