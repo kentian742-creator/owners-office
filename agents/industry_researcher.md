@@ -25,4 +25,4 @@ There is no numbered prompt yet, so for now the visibility uses the closest inpu
 
 ## Prompts and model
 
-No numbered prompt yet: the signpost checks, and the review of dependent companies after a signpost is triggered, will be written in phase 4. Model `claude-sonnet-5`, effort high.
+No numbered prompt yet: the signpost checks, and the review of dependent companies after a signpost is triggered, will be written in phase 4. Model `claude-opus-5-5` (decisions/0025), effort high.

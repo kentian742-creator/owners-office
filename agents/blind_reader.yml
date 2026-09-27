@@ -9,10 +9,10 @@
 role: blind_reader
 name: Blind read
 model:
-  id: claude-fable-5-1
+  id: claude-opus-5-5
   effort: high
   fallbacks: default
-  why: Oversight roles use the strongest model. The blind read has to answer independently of the drafting model, and a different, stronger model also reduces shared bias (design document default, decisions/0003). fallbacks is default, meaning that on a refusal the server's default fallback rules apply; the model that actually answered is recorded by pipeline/llm.py. Not in the budget's downgrade order.
+  why: "Every role runs on Claude Opus 5.5, the owner's choice (decisions/0025). The blind read must answer independently of the drafting role; with one model for all roles, that independence rests on what it may see (never the thesis) and on a separate call with no shared context. fallbacks is default: on a refusal (API backend only) the server's default fallback rules apply, and pipeline/llm.py records the model that actually answered."
 reports_to: null
 can_see:
   - filings                      # the new filings of this earnings event (earnings release, 10-Q or 6-K, call transcript), with source tags

@@ -8,10 +8,10 @@
 role: auditor
 name: Fact audit
 model:
-  id: claude-fable-5-1
+  id: claude-opus-5-5
   effort: high
   fallbacks: default
-  why: Oversight roles use the strongest model, since the audit is the last line of defense against errors (design document default, decisions/0003). fallbacks is default, meaning that on a refusal the server's default fallback rules apply; the model that actually answered is recorded by pipeline/llm.py. Not in the budget's downgrade order.
+  why: "Every role runs on Claude Opus 5.5, the owner's choice (decisions/0025). The fact audit is the last line of defense against errors. fallbacks is default: on a refusal (API backend only) the server's default fallback rules apply, and pipeline/llm.py records the model that actually answered."
 reports_to: null
 can_see:
   - fact_table                   # the atomic facts 16A extracted from the product, with the source excerpts the pipeline cut by source tag

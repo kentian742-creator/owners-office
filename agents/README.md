@@ -24,19 +24,19 @@ flowchart TD
 
 | Role | Definition | Reports to | Model | Prompts | Trust level |
 | --- | --- | --- | --- | --- | --- |
-| Company manager `company_manager` | [yml](company_manager.yml) · [charter](company_manager.md) | HQ | `claude-sonnet-5` | 01 02 03 05 06 07 08 10 11 13 15A | levels 0–3, starting at 1 |
-| Industry researcher `industry_researcher` | [yml](industry_researcher.yml) · [charter](industry_researcher.md) | HQ | `claude-sonnet-5` | none yet (phase 4) | levels 0–3, starting at 1 |
-| HQ: capital allocator `hq_capital_allocator` | [yml](hq_capital_allocator.yml) · [charter](hq_capital_allocator.md) | the owner | `claude-sonnet-5` | 14Q 14B 17A 17B 17C 17D 18 | not applicable |
-| Extractor `extractor` | [yml](extractor.yml) · [charter](extractor.md) | nobody (it serves the isolation of the audit) | `claude-sonnet-5` | 16A 16B | not applicable |
-| Typesetter `typesetter` | [yml](typesetter.yml) · [charter](typesetter.md) | HQ | `claude-sonnet-5` | 19 | not applicable |
-| Fact audit `auditor` | [yml](auditor.yml) · [charter](auditor.md) | nobody (independent oversight) | `claude-fable-5-1` | 04A 09A 12A | not applicable |
-| Model review `model_reviewer` | [yml](model_reviewer.yml) · [charter](model_reviewer.md) | nobody (independent oversight) | `claude-fable-5-1` | 04C | not applicable |
-| Red team `red_team` | [yml](red_team.yml) · [charter](red_team.md) | nobody (independent oversight) | `claude-fable-5-1` | 04B 04B-lite 09B | not applicable |
-| Synthesis review `synthesis_reviewer` | [yml](synthesis_reviewer.yml) · [charter](synthesis_reviewer.md) | nobody (independent oversight) | `claude-fable-5-1` | 12B | not applicable |
-| Design review `design_reviewer` | [yml](design_reviewer.yml) · [charter](design_reviewer.md) | nobody (independent oversight) | `claude-fable-5-1` | 09C 12C | not applicable |
-| Blind read `blind_reader` | [yml](blind_reader.yml) · [charter](blind_reader.md) | nobody (independent oversight) | `claude-fable-5-1` | 14A | not applicable |
-| Judge `judge` | [yml](judge.yml) · [charter](judge.md) | nobody (independent oversight) | `claude-fable-5-1` | 14T | not applicable |
-| Settler `settler` | [yml](settler.yml) · [charter](settler.md) | nobody (independent oversight) | `claude-fable-5-1` | 15B | not applicable |
+| Company manager `company_manager` | [yml](company_manager.yml) · [charter](company_manager.md) | HQ | `claude-opus-5-5` | 01 02 03 05 06 07 08 10 11 13 15A | levels 0–3, starting at 1 |
+| Industry researcher `industry_researcher` | [yml](industry_researcher.yml) · [charter](industry_researcher.md) | HQ | `claude-opus-5-5` | none yet (phase 4) | levels 0–3, starting at 1 |
+| HQ: capital allocator `hq_capital_allocator` | [yml](hq_capital_allocator.yml) · [charter](hq_capital_allocator.md) | the owner | `claude-opus-5-5` | 14Q 14B 17A 17B 17C 17D 18 | not applicable |
+| Extractor `extractor` | [yml](extractor.yml) · [charter](extractor.md) | nobody (it serves the isolation of the audit) | `claude-opus-5-5` | 16A 16B | not applicable |
+| Typesetter `typesetter` | [yml](typesetter.yml) · [charter](typesetter.md) | HQ | `claude-opus-5-5` | 19 | not applicable |
+| Fact audit `auditor` | [yml](auditor.yml) · [charter](auditor.md) | nobody (independent oversight) | `claude-opus-5-5` | 04A 09A 12A | not applicable |
+| Model review `model_reviewer` | [yml](model_reviewer.yml) · [charter](model_reviewer.md) | nobody (independent oversight) | `claude-opus-5-5` | 04C | not applicable |
+| Red team `red_team` | [yml](red_team.yml) · [charter](red_team.md) | nobody (independent oversight) | `claude-opus-5-5` | 04B 04B-lite 09B | not applicable |
+| Synthesis review `synthesis_reviewer` | [yml](synthesis_reviewer.yml) · [charter](synthesis_reviewer.md) | nobody (independent oversight) | `claude-opus-5-5` | 12B | not applicable |
+| Design review `design_reviewer` | [yml](design_reviewer.yml) · [charter](design_reviewer.md) | nobody (independent oversight) | `claude-opus-5-5` | 09C 12C | not applicable |
+| Blind read `blind_reader` | [yml](blind_reader.yml) · [charter](blind_reader.md) | nobody (independent oversight) | `claude-opus-5-5` | 14A | not applicable |
+| Judge `judge` | [yml](judge.yml) · [charter](judge.md) | nobody (independent oversight) | `claude-opus-5-5` | 14T | not applicable |
+| Settler `settler` | [yml](settler.yml) · [charter](settler.md) | nobody (independent oversight) | `claude-opus-5-5` | 15B | not applicable |
 
 Steps that belong to no role: fetching, XBRL parsing and quantitative tests are run by deterministic code in `pipeline/`, without calling a model; the consistency of the complete company report's valuation and ranking (12V) is also compared item by item by the pipeline. They are all decision level L1.
 
@@ -68,8 +68,8 @@ Steps that belong to no role: fetching, XBRL parsing and quantitative tests are 
 
 ## Models, budget and records
 
-- Drafting roles (company manager, industry researcher, HQ, extractor, typesetter) use `claude-sonnet-5`. Oversight roles (fact audit, model review, red team, synthesis review, design review, blind read, judge, settler) use `claude-fable-5-1` and, on a refusal, fall back under the server's default rules (`fallbacks: default`). Effort is `high` for all of them. The basis is the design document's "mid-tier model for drafting, strongest model for audits and the blind read" and [decisions/0003](../docs/decisions/0003-model-assignment-and-budget.md).
-- Model selection is HQ's decision level L2, reported in the monthly letter. For the budget, see `budget` in `decision-rights.yml`: near the cap, candidate companies are paused first and the drafting model is downgraded next; oversight roles are not downgraded.
+- Every role runs on `claude-opus-5-5` at effort `high`, the owner's choice of 2026-09-27 ([decisions/0025](../docs/decisions/0025-one-model-opus-5-5.md)); on a refusal, API calls fall back under the server's default rules (`fallbacks: default`). The design document's split (a mid-tier model for drafting, the strongest model for oversight, [decisions/0003](../docs/decisions/0003-model-assignment-and-budget.md)) no longer applies: the oversight roles stay independent through what they may see and through separate calls, not through a different model.
+- Model selection is HQ's decision level L2, reported in the monthly letter. For the budget, see `budget` in `decision-rights.yml`: near the cap, candidate companies are paused first and the drafting roles' effort is lowered from `high` to `medium` next; oversight roles are not downgraded.
 - Prompts do not specify models (H5). `pipeline/llm.py` uses this directory as its only role table: it takes the model from `agents/<role>.yml`, checks against `prompts` which prompts and parts a role may run, and uses `can_see` / `cannot_see` to refuse inputs that must not be given before any request is sent; it records the model that actually answered, the versions of 00 and of the prompt, and the input hash. All thirteen roles can be called, with two exceptions: the industry researcher has no prompt yet, and the typesetter's 19 has to deliver a PDF and page images, which needs an environment that can execute code (see [decisions/0015](../docs/decisions/0015-llm-entry-point-v3.md)).
 
 ## Choices made here

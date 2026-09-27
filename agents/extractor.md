@@ -23,4 +23,4 @@ Decision level L1: parsing (extraction is filed under `parse`).
 
 ## Prompts and model
 
-16A, 16B, run only through the pipeline (private repository, cited by id). Model `claude-sonnet-5`, effort high: extraction means splitting and reading off the source text, not judging, so under the design document's split of "mid-tier model for drafting, strongest model for oversight" it counts as a drafting role.
+16A, 16B, run only through the pipeline (private repository, cited by id). Model `claude-opus-5-5` (decisions/0025), effort high: the completeness of the fact table decides what the audit can catch.

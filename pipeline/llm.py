@@ -186,7 +186,7 @@ SERVER_FALLBACK_MODELS = frozenset({"claude-fable-5-1", "claude-opus-5-5", "clau
 FALLBACKS_OFF = frozenset({"", "none", "off", "false", "no"})
 
 # Thinking: these models are sent adaptive thinking explicitly; budget_tokens is never sent (these models reject it
-# with a 400). Models outside this set (claude-haiku-4-5, used for the budget downgrade) do not support adaptive
+# with a 400). Models outside this set (claude-haiku-4-5) do not support adaptive
 # thinking; thinking is not sent for them.
 # claude-opus-5-5 and claude-fable-5-1 cannot run with thinking off; effort is their only depth control, and
 # claude-opus-5-5 defaults to effort medium, so the pipeline always sends effort explicitly.

@@ -5,9 +5,10 @@
 role: company_manager
 name: Company manager
 model:
-  id: claude-sonnet-5
+  id: claude-opus-5-5
   effort: high
-  why: Drafting roles use the mid-tier model (design document default, decisions/0003); everything it produces goes through the fact audit and the red team, so errors can be caught. HQ can adjust it by error rate and cost (decision level L2, model_selection); near the budget cap it is downgraded following budget.degrade_order.
+  fallbacks: default
+  why: "Every role runs on Claude Opus 5.5, the owner's choice (decisions/0025). It drafts and revises archives, updates and reports; everything it produces goes through the fact audit and the red team. fallbacks is default: on a refusal (API backend only) the server's default fallback rules apply, and pipeline/llm.py records the model that actually answered."
 reports_to: hq_capital_allocator
 can_see:
   # Run parameters and rules

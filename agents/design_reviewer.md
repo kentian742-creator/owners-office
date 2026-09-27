@@ -24,4 +24,4 @@ Decision level L1: audit.
 
 ## Prompts and model
 
-09C, 12C (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal. `pipeline/llm.py` passes the page images (`rendered_pages`) to the model as image blocks.
+09C, 12C (private repository, cited by id). Model `claude-opus-5-5` (decisions/0025), effort high, falling back under the server's default rules on a refusal (API backend). `pipeline/llm.py` passes the page images (`rendered_pages`) to the model as image blocks.

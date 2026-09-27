@@ -32,4 +32,4 @@ It is also independent oversight. Valuations affect the ranking and the memos, s
 
 ## Prompts and model
 
-04C (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.
+04C (private repository, cited by id). Model `claude-opus-5-5` (decisions/0025), effort high, falling back under the server's default rules on a refusal (API backend).

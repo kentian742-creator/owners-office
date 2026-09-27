@@ -435,11 +435,10 @@ def test_role_table_has_the_thirteen_roles_from_agents_yml():
         assert effort == "high", name
 
 
-def test_role_table_models_follow_decision_0003():
-    for name in DRAFTING:
-        assert llm.resolve_model(name) == ("claude-sonnet-5", "high", None), name
-    for name in OVERSIGHT:
-        assert llm.resolve_model(name) == ("claude-fable-5-1", "high", "default"), name
+def test_role_table_models_follow_decision_0025():
+    """Every role runs on Claude Opus 5.5 at effort high, with the server's default refusal fallback."""
+    for name in (*DRAFTING, *OVERSIGHT):
+        assert llm.resolve_model(name) == ("claude-opus-5-5", "high", "default"), name
 
 
 def test_unknown_role_and_unpriced_model_are_rejected(env):

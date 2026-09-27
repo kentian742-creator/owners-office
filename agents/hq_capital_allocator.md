@@ -33,4 +33,4 @@ The isolation table sets no limits for HQ, which can see everything; the YAML's 
 
 ## Prompts and model
 
-14Q, 14B, 17A, 17B, 17C, 17D, 18 (private repository, cited by id). Model `claude-sonnet-5`, effort high.
+14Q, 14B, 17A, 17B, 17C, 17D, 18 (private repository, cited by id). Model `claude-opus-5-5` (decisions/0025), effort high.

@@ -25,4 +25,4 @@ Decision level L1: rulings against criteria written in advance, filed under `tes
 
 ## Prompts and model
 
-15B, run only through the pipeline (private repository, cited by id). Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.
+15B, run only through the pipeline (private repository, cited by id). Model `claude-opus-5-5` (decisions/0025), effort high, falling back under the server's default rules on a refusal (API backend).

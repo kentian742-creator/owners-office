@@ -5,9 +5,10 @@
 role: industry_researcher
 name: Industry researcher
 model:
-  id: claude-sonnet-5
+  id: claude-opus-5-5
   effort: high
-  why: Drafting roles use the mid-tier model (design document default, decisions/0003); industry modules also go through the fact audit before they are published.
+  fallbacks: default
+  why: "Every role runs on Claude Opus 5.5, the owner's choice (decisions/0025). Industry modules also go through the fact audit before they are published. fallbacks is default: on a refusal (API backend only) the server's default fallback rules apply, and pipeline/llm.py records the model that actually answered."
 reports_to: hq_capital_allocator
 can_see:
   - run_date

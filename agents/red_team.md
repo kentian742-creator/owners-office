@@ -25,4 +25,4 @@ Decision level L1: audit. It only offers opinions and test proposals, and change
 
 ## Prompts and model
 
-04B, 04B-lite, 09B, run only through the pipeline (private repository, cited by id). For a manual trial run in a conversation, open a new conversation with memory turned off, paste only the first-pass material, and paste the counter-arguments only after getting the result; the output serves only as a lead. Strongest model, `claude-fable-5-1`, effort high, falling back under the server's default rules on a refusal.
+04B, 04B-lite, 09B, run only through the pipeline (private repository, cited by id). For a manual trial run in a conversation, open a new conversation with memory turned off, paste only the first-pass material, and paste the counter-arguments only after getting the result; the output serves only as a lead. Model `claude-opus-5-5` (decisions/0025), effort high, falling back under the server's default rules on a refusal (API backend).

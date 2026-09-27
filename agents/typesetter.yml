@@ -6,9 +6,10 @@
 role: typesetter
 name: Typesetter
 model:
-  id: claude-sonnet-5
+  id: claude-opus-5-5
   effort: high
-  why: Typesetting is production to a specification, not judgment, so it uses the mid-tier model (design document default, decisions/0003); the product still goes through the design review (09C, 12C).
+  fallbacks: default
+  why: "Every role runs on Claude Opus 5.5, the owner's choice (decisions/0025). Typesetting is production to a specification; the product still goes through the design review (09C, 12C) before release. fallbacks is default: on a refusal (API backend only) the server's default fallback rules apply, and pipeline/llm.py records the model that actually answered."
 reports_to: hq_capital_allocator # a production step shared by all companies; layout problems that can only be solved by changing content go to HQ in questions
 can_see:
   - content

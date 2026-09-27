@@ -59,8 +59,8 @@ close those gaps:
 
 Thirteen roles do the work: an analyst for each company (the "company manager"), an industry researcher, a
 coordinator ("HQ"), an extractor and a typesetter, plus eight independent oversight roles: fact audit, valuation-model
-review, red team, synthesis review, design review, blind reader, judge and settler. They run on Anthropic's Claude
-models; each role's model, what it may read and what it must never see are set in [agents/](agents/). A role that makes
+review, red team, synthesis review, design review, blind reader, judge and settler. They all run on Anthropic's Claude
+Opus 5.5; what each role may read and what it must never see are set in [agents/](agents/). A role that makes
 factual errors loses autonomy until its work needs the owner's review, and a clean record wins it back. Money and
 constitutional amendments always go to the owner.
 

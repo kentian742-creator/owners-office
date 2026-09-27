@@ -24,6 +24,7 @@ Owner decisions on 2026-09-25:
 Owner decisions on 2026-09-27:
 
 - **Constitution v2.3:** R14 "Long-term objective and drawdowns" added (about 8–10%+ annualized compounding over time; drawdowns of 50%+ accepted while intrinsic value, fundamentals and management are not permanently impaired), until then only in the preamble; it is not a valuation parameter and not a hurdle. 00 §W gains W8 "Plain statement". To be reported in one line in the next letter (III.6).
+- **One model** (`decisions/0025`): every role runs on Claude Opus 5.5 at effort high; the budget's second degrade step lowers the drafting roles' effort instead of changing model.
 - **Prompt set v3.2** adopted: the audit against current Claude prompting guidance (a new opening of 00 stating what the system is for and how a call works, the owner's reasons behind §V7, §V17 and §G6, no model-computed deadlines in 15A, 15B's `reasoning` no longer asked "step by step"); front matter, roles and rule text unchanged apart from R14 and W8.
 - **Series rule 00 §E10:** where there is no Form 4, use other official sources; use official data as far as possible (since 2026-03-18 foreign private issuers' insiders file Forms 3/4). Applied in the English prompt set.
 

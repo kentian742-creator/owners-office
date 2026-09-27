@@ -27,4 +27,4 @@ Decision level L1: drafting (typesetting is filed under `draft`).
 
 ## Prompts and model
 
-19 (private repository, cited by id). It needs an environment that can execute code. `pipeline/llm.py` cannot execute code yet, so until it can, this step is run by hand, and H5's limits on manual output apply. Model `claude-sonnet-5`, effort high.
+19 (private repository, cited by id). It needs an environment that can execute code. `pipeline/llm.py` cannot execute code yet, so until it can, this step is run by hand, and H5's limits on manual output apply. Model `claude-opus-5-5` (decisions/0025), effort high.

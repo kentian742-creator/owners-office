@@ -6,9 +6,10 @@
 role: hq_capital_allocator
 name: "HQ: capital allocator"
 model:
-  id: claude-sonnet-5
+  id: claude-opus-5-5
   effort: high
-  why: Drafting work (question lists, divergence maps, memos, letters) uses the mid-tier model, and the strongest model is kept for the oversight roles (design document default, decisions/0003). Choosing models is itself HQ's decision level L2, adjusted by error rate and cost and reported in the monthly letter.
+  fallbacks: default
+  why: "Every role runs on Claude Opus 5.5, the owner's choice (decisions/0025). Question lists, divergence maps, memos and letters to the owner. fallbacks is default: on a refusal (API backend only) the server's default fallback rules apply, and pipeline/llm.py records the model that actually answered."
 reports_to: owner                # the owner (chairman)
 can_see:
   # The isolation table sets no limits for HQ, which can see everything; the list below gives the inputs its parts (14Q, 14B, 17A–17D, 18) actually receive

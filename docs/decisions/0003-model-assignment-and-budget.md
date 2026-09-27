@@ -1,6 +1,7 @@
 # 0003 Model assignment and budget
 
-> **Partly superseded by [0021](0021-model-budget-50.md) (2026-09-25):** the monthly cap is $50, decided by the owner. The rest of this record stands.
+> **Partly superseded by [0021](0021-model-budget-50.md) (2026-09-25):** the monthly cap is $50, decided by the owner.
+> **Partly superseded by [0025](0025-one-model-opus-5-5.md) (2026-09-27):** every role runs on `claude-opus-5-5`; the downgrade step lowers effort instead of changing model. The rest of this record stands.
 
 ## Background
 

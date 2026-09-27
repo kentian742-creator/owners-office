@@ -6,9 +6,10 @@
 role: extractor
 name: Extractor
 model:
-  id: claude-sonnet-5
+  id: claude-opus-5-5
   effort: high
-  why: Extraction means splitting and reading off the source text, not judging, so it uses the mid-tier drafting model (the design document's split of "mid-tier model for drafting, strongest model for oversight", decisions/0003).
+  fallbacks: default
+  why: "Every role runs on Claude Opus 5.5, the owner's choice (decisions/0025). Extraction splits and reads off the source text; the completeness of the fact table decides what the audit can catch. fallbacks is default: on a refusal (API backend only) the server's default fallback rules apply, and pipeline/llm.py records the model that actually answered."
 reports_to: null                 # its output goes unchanged to the fact audit and the pipeline, and it takes no direction from the product's author (the company manager)
 can_see:
   - product                      # 16A: the product to be audited and its source table; the product itself is what gets extracted, and it can be any product

@@ -91,7 +91,7 @@ ranking:
 
 budget:
   monthly_usd: 50                # raised from the design document's 20 by the owner on 2026-09-25 (decisions/0021); API calls only
-  degrade_order: [pause_candidates, downgrade_drafting_model]   # first pause the candidate companies, then downgrade the drafting model; oversight roles are not downgraded
+  degrade_order: [pause_candidates, downgrade_drafting_model]   # first pause the candidate companies, then lower the drafting roles' effort from high to medium (decisions/0025); oversight roles are not downgraded
 
 gate:                            # the release gate (17A's gate_rules): if any of these holds, nothing is released; other issues are reviewed after merging and do not block it
   blocking:
