@@ -9,8 +9,8 @@
 
 Phase 0 is complete: acceptance A1–A7 PASS, and the Phase 0 letter to the owner is written (`letters/2026-09.md`). The three repositories have been created on GitHub and pushed (2026-09-25), and CI passed everywhere after the push:
 
-- thesis-ci (public), release tags `v0.2.0` and `v0.2.1`: https://github.com/kentian742-creator/thesis-ci
-- owners-office (public), CI pinned to thesis-ci `v0.2.1`: https://github.com/kentian742-creator/owners-office
+- thesis-ci (public), release tags `v0.2.0`, `v0.2.1` and `v0.3.0` (English first, `C-LANGUAGE`): https://github.com/kentian742-creator/thesis-ci
+- owners-office (public), CI pinned to thesis-ci `v0.3.0`: https://github.com/kentian742-creator/owners-office
 - owners-office-private (private): https://github.com/kentian742-creator/owners-office-private
 
 Owner decisions on 2026-09-25:
