@@ -1,5 +1,9 @@
 # SPGI source tag table (thesis-ci spec §3; schema: spec/schemas/sources.schema.json)
 # Locator convention: N in SPGI-RPT1-2026-09-18#pN is the report's physical PDF page number (matching the page markers of the text extraction; see decisions/0006).
+# For 10-K and 10-Q filings #pN is the filing's printed page; an earnings release is located as #EX99.1-pN (its own page) or #EX99.1-Exh7 (its schedule "Exhibit 7").
+# Added 2026-09-27 after the first fact audit (16A → 04A), under HQ rulings S1–S2: the primary documents the corrected facts rest on.
+# Every EDGAR entry was checked on 2026-09-27 against its EDGAR filing index page (form, filing date, acceptance time, period of report,
+# filer, CIK, items, exhibit); pages outside EDGAR were read on the dates their notes give.
 sources:
   - tag: SPGI-RPT1-2026-09-18
     kind: report
@@ -7,7 +11,7 @@ sources:
     date: 2026-09-18
     location: private:reports/SPGI.pdf
     primary: false
-    note: The owner's 02 research report, in twelve sections plus an appendix; financial data through Q2 2026 (2026-06-30) and the fiscal 2025 annual report. The full text is kept only in the private repository; the public archive cites PDF page numbers only.
+    note: The owner's 02 research report, in twelve sections plus an appendix; financial data through Q2 2026 (2026-06-30) and the fiscal 2025 annual report. The full text is kept only in the private repository; the public archive cites PDF page numbers only. Since 2026-09-27 the archive cites it only for its own views, estimates, scenarios and thresholds, and for facts that no primary document carries (labelled where used).
 
   - tag: SPGI-10K-FY2025
     kind: filing
@@ -20,7 +24,7 @@ sources:
     date: 2026-02-11
     url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000013/0000064040-26-000013-index.htm
     primary: true
-    note: Source 1 in the report's appendix; used for the business description, risk factors, human capital, balance sheet, cash flow statement and segment data.
+    note: "Source 1 in the report's appendix; used for the business description, the ratings regulation discussion in MD&A (#p55), human capital, the income statement (#p78), balance sheet (#p80), cash flow statement (#p81), Market Intelligence's FY2024 growth (#p50), the billed issuance table (#p53), acquisitions and divestitures (#Note2, OSTTRA and With Intelligence), equity and repurchases (#Note9), earnings per share (#Note10), restructuring (#Note11) and S&P Global's December 2025 notes (#p66). Accepted 2026-02-10 after 17:30, so EDGAR's filing date is 2026-02-11."
 
   - tag: SPGI-8K-2026-02-10
     kind: filing
@@ -33,7 +37,7 @@ sources:
     date: 2026-02-10
     url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000007/0000064040-26-000007-index.htm
     primary: true
-    note: Sources 2 and 3 in the report's appendix (the full-year results schedules and the supplementary disclosure of the same day; the 8-K attaches only the press release, EX-99, and the supplementary disclosure was not furnished with the 8-K but is on the company's investor relations website); used for revenue, margins, adjusted EPS, adjusted free cash flow, the initial full-year guidance and Market Intelligence's share of recurring revenue.
+    note: "Source 2 in the report's appendix (the full-year results and schedules, EX-99 with Exhibits 1–7); used for Executive Leadership Team transition costs (#EX99-Exh4), FY2025 adjusted net income, deal-related amortization and Market Intelligence's adjusted margin before the recast (#EX99-Exh5), revenue by type (#EX99-Exh6), adjusted free cash flow and segment organic growth (#EX99-Exh7), the FY2025 return of 113% of adjusted free cash flow (#EX99-p1), the 2026 outlook and monthly billed issuance releases (#EX99-Outlook) and the capital return target and dividend (#EX99-CapitalReturn). The supplemental disclosure of the same day (source 3) was not furnished with the 8-K; it is registered as SPGI-WEB-2026-02-10-1."
 
   - tag: SPGI-8K-2026-07-02
     kind: filing
@@ -46,7 +50,7 @@ sources:
     date: 2026-07-02
     url: https://www.sec.gov/Archives/edgar/data/64040/000110465926080005/0001104659-26-080005-index.htm
     primary: true
-    note: Source 5 in the report's appendix (the report dates it 2026-07-01, following the dateline of the press release); used for the spin-off terms and dates. EDGAR's acceptance time is 2026-07-01 21:25:43 US Eastern, after 17:30, so the filing date is 2026-07-02.
+    note: "Source 5 in the report's appendix (the report dates it 2026-07-01, following the dateline of the press release); used for the spin-off terms and dates (#Item2.01: separation completed on the distribution date, 2026-07-01). EDGAR's acceptance time is 2026-07-01 21:25:43 US Eastern, after 17:30, so the filing date is 2026-07-02; the release dateline, the 8-K's signature and the company's own 8-K/A give 2026-07-01, and both dates are right for what they state."
 
   - tag: SPGI-8KA-2026-07-06
     kind: filing
@@ -59,7 +63,7 @@ sources:
     date: 2026-07-06
     url: https://www.sec.gov/Archives/edgar/data/64040/000110465926080571/0001104659-26-080571-index.htm
     primary: true
-    note: Source 4 in the report's appendix; used for the four-segment basis, the revenue and profit shares, the breakdown by business line, and Market Intelligence's reorganization into two lines.
+    note: "Source 4 in the report's appendix; used for the four-division shares and margins as the company rounds them (#EX99.1-p1), the ratings and Energy business lines (#EX99.1-p2), Market Intelligence's two business lines and its LLM-ready and MCP-connected products (#EX99.1-p3), the recast FY2025 segment table from which this archive computes the combined shares (#EX99.1-p13), FY2025 pro forma adjusted EPS (#EX99.1-p16), and, in the Article 11 pro forma statements of EX-99.2, the $1.974 billion cash distribution from Mobility Global (#EX99.2-noteb)."
 
   - tag: SPGI-8K-2026-07-28
     kind: filing
@@ -72,14 +76,15 @@ sources:
     date: 2026-07-28
     url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000040/0000064040-26-000040-index.htm
     primary: true
-    note: The supplementary disclosure parts of sources 6 and 7 in the report's appendix; used for first-half segment revenue and margins, the breakdown by revenue type, cash flow, guidance and reconciliations, private markets ratings revenue, billed issuance and the structure of index revenue. The 8-K attaches only the press release, EX-99.1; the supplementary disclosure and the earnings slides were not furnished with the 8-K and are on the company's investor relations website.
+    note: "The results-and-schedules part of source 6 in the report's appendix (EX-99.1, the Q2 2026 release with Exhibits 1–9); the earnings call (also source 6) and the supplemental disclosure (source 7) are not part of this 8-K and are registered as SPGI-CALL-FY2026Q2 and SPGI-WEB-2026-07-28-2. Used for the 2026 buyback expectation (#EX99.1-p1), the full-year 2026 outlook (#EX99.1-p3), segment revenue and first-half cash flow (#EX99.1-Exh4, #EX99.1-Exh8), pro forma revenue (#EX99.1-Exh5), segment adjusted margins (#EX99.1-Exh6), revenue by type (#EX99.1-Exh7) and organic constant-currency growth (#EX99.1-Exh8). Billed issuance comes from SPGI-10Q-FY2026Q2 (#p49); private markets ratings revenue is in neither this release nor the 10-Q (see SPGI-CALL-FY2026Q2). The 8-K attaches only the press release, EX-99.1, and incorporates EX-99.2 by reference from the 8-K/A of 2026-07-06."
 
   - tag: SPGI-CALL-FY2026Q2
     kind: transcript
-    title: S&P Global Inc. Q2 2026 earnings call
+    title: "S&P Global Inc. Q2 2026 earnings call of 2026-07-28, as carried by two third-party transcripts"
     date: 2026-07-28
-    primary: true
-    note: The earnings call listed as source 6 in the report's appendix; used for the number of customers and call volumes on the large-model interfaces, and for hyperscalers' billed issuance.
+    url: null
+    primary: false
+    note: "The earnings call listed as source 6 in the report's appendix. S&P posts no transcript: its event page (https://investor.spglobal.com/investor-presentations/event-details/2026/Earnings-Announcement--SP-Globals-Second-Quarter-2026-Earnings-Announcement-Conference-Call-on-July-28th/) offers only a webcast replay, which needs registration (https://events.q4inc.com/attendee/701230512). The two carriers are the Investing.com transcript (https://www.investing.com/news/transcripts/earnings-call-transcript-sp-global-q2-2026-profit-miss-weighs-on-shares-93CH-4817134, published 2026-07-28) and the Equibles transcript (https://equibles.com/stocks/spgi/calls/2026-q2), both read on 2026-09-27. They agree on the statements the archive uses: private markets ratings revenue up 60% year on year in Q2 2026; about $169 billion of first-half billed issuance from the hyperscalers against an initial full-year assumption of about $200 billion; a full-year hyperscaler assumption of $250 billion to $300 billion; asset-linked fees' fourth consecutive record quarter; second-half adjusted free cash flow of $2.9 billion to $3.1 billion excluding Mobility; and about $2 billion of additional debt in the second half to fund buybacks. They differ in wording and speaker attribution in places (Investing.com prints “build issuance” for “billed issuance”). Statements resting only on them are labelled wherever used and stay out of test baselines (HQ ruling S2; APP ruling H1)."
 
   - tag: SPGI-10Q-FY2026Q2
     kind: filing
@@ -91,7 +96,7 @@ sources:
     filed: 2026-07-28
     url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000045/0000064040-26-000045-index.htm
     primary: true
-    note: Source 7 in the report's appendix; used for the revenue disaggregation note and the balance sheet. The baselines of SPGI-Q3 and SPGI-Q4 are backfilled from here.
+    note: "Source 7 in the report's appendix; used for the shares outstanding on the cover (#cover), the income statement and diluted shares (#p4), the cash flow statement (#p7), the basis of presentation (#Note1: Mobility included through 2026-06-30), divestitures (#Note2), debt, including Mobility Global's notes of 2026-05-19 (#Note4), diluted shares (#Note9), restructuring (#Note10), revenue by segment and type (#Note11), the Ratings discussion (#p47, #p48), the billed issuance table (#p49), the Energy discussion (#p51) and the Indices discussion (#p55)."
 
   - tag: SPGI-DEF14A-2026-03-31
     kind: filing
@@ -103,7 +108,7 @@ sources:
     filed: 2026-03-31
     url: https://www.sec.gov/Archives/edgar/data/64040/000110465926037380/0001104659-26-037380-index.htm
     primary: true
-    note: Source 9 in the report's appendix; used for the overview of the compensation structure, the incentive metrics and the start of the CEO's tenure. The report read only the compensation overview; the full Compensation Discussion and Analysis is still to be read.
+    note: "Source 9 in the report's appendix. The full Compensation Discussion and Analysis was read on 2026-09-27: the 2025 PSU awards and their single metric, three-year cumulative non-GAAP ICP adjusted EPS (#p64), the statement that the company does not use relative TSR (#PayVersusPerformance), the CEO's appointment effective 2024-11-01 (#CEO) and the CFO's start on 2025-02-19 (#CFO)."
 
   - tag: SPGI-10K-FY2022
     kind: filing
@@ -115,25 +120,25 @@ sources:
     filed: 2023-02-10
     url: https://www.sec.gov/Archives/edgar/data/64040/000006404023000058/0000064040-23-000058-index.htm
     primary: true
-    note: Source 13 in the report's appendix; used for the ratings segment's revenue, operating profit and non-transaction revenue readings in the 2022 issuance drought, the report's only clean reading of a downturn.
+    note: "Source 13 in the report's appendix; used for the ratings segment's revenue, operating profit and non-transaction revenue in the 2022 issuance drought (#p49, #p50), the report's only clean reading of a downturn, the total debt of 2021-12-31 (#p77), the IHS Markit merger terms (#Note2) and the 2021 diluted share count (#Note10)."
 
-  # The three entries below are non-SEC primary sources listed in the report's appendix, registered the same way as the filings above: the originals have not been obtained, and the archive's numbers still cite report pages.
+  # The three entries below are non-SEC primary sources listed in the report's appendix. Since 2026-09-27 each points to the original document read.
   # They are the starting points for judging SPGI-L2, SPGI-L4 and SPGI-L5; new documents read during a judgment are registered separately, one by one.
   - tag: NAIC-SVO-2026
     kind: other
-    title: Resolutions and meeting records of the Securities Valuation Office of the National Association of Insurance Commissioners (NAIC) on the power to challenge filing-exempt ratings
-    date: null
-    url: null
+    title: "NAIC Valuation of Securities (E) Task Force (the Securities Valuation Office is its staff), minutes of the meeting of 2025-12-10 (draft pending adoption): staff report on the filing-exemption discretion project"
+    date: 2025-12-10
+    url: https://content.naic.org/sites/default/files/national_meeting/27_Minutes-VOSTF_0.pdf
     primary: true
-    note: Source 24 in the report's appendix (2026, primary / secondary); the report relies on it for the comparison between private ratings and the office's own assessments, and for the power to challenge from January 1, 2026. The original has not been obtained; the specific documents, dates and URL are still to be verified.
+    note: "Source 24 in the report's appendix (2026, primary / secondary), which the report relies on for the power to challenge filing-exempt ratings from 2026-01-01. These minutes are the NAIC record found: NAIC staff stated that the authority granted as part of the discretion project becomes effective 2026-01-01, that the systems and data agreements needed to run the process were still being built, and that regulators make the final decision on whether a rating keeps filing-exemption eligibility (#p5, the minutes' printed page). The Task Force was replaced on 2026-01-01 by the Invested Assets (E) Task Force and its working groups. Read on 2026-09-27 (the NAIC site refuses scripted requests; a copy is in the workspace cache). The NAIC's issue brief is registered as NAIC-BRIEF-2026-03; the amendment of the Purposes and Procedures Manual itself and the NAIC analysis behind the report's “97% of 109” have not been obtained."
 
   - tag: ACER-LNG-2025
-    kind: other
-    title: Announcements by the EU Agency for the Cooperation of Energy Regulators (ACER) on LNG price assessments and benchmarks; REMIT Articles 7a–7e
+    kind: web
+    title: "EU Agency for the Cooperation of Energy Regulators (ACER), LNG Price Assessment/Benchmarks (web page)"
     date: null
-    url: null
+    url: https://www.acer.europa.eu/gas/lng-price-assessment
     primary: true
-    note: Source 21 in the report's appendix (2023; 2025, primary); the report relies on it for the LNG benchmark being published daily, being made permanent and being adopted voluntarily by the market. The original has not been obtained; the specific documents, dates and URL are still to be verified.
+    note: "Source 21 in the report's appendix (2023; 2025, primary); the report relies on it for the LNG benchmark being published daily, being made permanent and being available for voluntary use without, so far, replacing Platts (the last is the report's own judgment). The page, which prints no date, says ACER has published an LNG price assessment every weekday since 2023-01-13 and an LNG benchmark since 2023-03-31, that since 2025-01-01, after Regulation (EU) 2022/2576 expired, it has collected the data under REMIT Articles 7a–7e, and that “Stakeholders may use the LNG benchmark voluntarily”. Read on 2026-09-27. The legal basis is registered as EU-REG-2024-1106."
 
   - tag: VANGUARD-2012-10-02
     kind: press_release
@@ -141,4 +146,325 @@ sources:
     date: 2012-10-02
     url: null
     primary: true
-    note: Source 25 in the report's appendix (primary); the precedent for switching a broad-market index, used for SPGI-L4. The original has not been obtained; the report does not describe how this switch was announced or the transition arrangements, and once the original has been read, it can be used to review SPGI-L4's operationalization of counting a formal announcement as a switch.
+    note: "Source 25 in the report's appendix (primary); the precedent for switching a broad-market index, used for SPGI-L4. The release is not on vanguard.com, and third-party copies are secondary, so it has not been obtained; the fund count and assets it is reported to give (22 funds, about $537 billion) are L2 only. Vanguard's own prospectus supplements filed on EDGAR the same day stand in for it (VANGUARD-497-2012-10-02 and following): each fund announced a board-approved change of target index and withheld the timing of the transition."
+
+  # ---------- Added 2026-09-27 (fact audit 16A → 04A; HQ rulings S1 and S2) ----------
+  - tag: SPGI-8K-2025-11-13
+    kind: filing
+    title: "S&P Global Inc. 8-K: Investor Day 2025 press release (medium-term financial targets; new share repurchase program)"
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: null
+    accession: 0000064040-25-000175
+    filed: 2025-11-13
+    date: 2025-11-13
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404025000175/0000064040-25-000175-index.htm
+    primary: true
+    note: "Items 7.01 and 9.01; EX-99 (a2025investordaypressrelea.htm). Non-GAAP medium-term targets on an average annual basis, excluding Mobility and assuming issuance (Ratings) and market appreciation (Indices) in line with historical annual averages: organic constant-currency revenue growth of 7% to 9% for the company, and Market Intelligence 6% to 8%, Ratings 6% to 9%, Energy 6% to 8%, S&P Dow Jones Indices 10% to 12%; the capital return framework of returning approximately 85% of adjusted free cash flow (#EX99). The report's appendix does not list it; its target table cites source 10, the 2015 settlement documents."
+
+  - tag: SPGI-8K-2025-04-29
+    kind: filing
+    title: "S&P Global Inc. 8-K: Q1 2025 results, and the announcement of the intent to separate Mobility (EX-99.2)"
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: FY2025Q1
+    accession: 0000064040-25-000122
+    filed: 2025-04-29
+    date: 2025-04-29
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404025000122/0000064040-25-000122-index.htm
+    primary: true
+    note: "Items 2.02, 7.01 and 9.01. EX-99.2 (finalprojectmetropolispres.htm) announces the intent to separate Mobility into a standalone public company, expected within 12 to 18 months, subject to approvals (#EX99.2). Used for the spin-off timetable in pillar P6."
+
+  - tag: SPGI-8K-2015-02-03
+    kind: filing
+    title: "McGraw Hill Financial, Inc. (now S&P Global Inc.) 8-K: settlements with the Justice Department, 19 states and the District of Columbia, and CalPERS"
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: null
+    accession: 0000950103-15-000841
+    filed: 2015-02-03
+    date: 2015-02-03
+    url: https://www.sec.gov/Archives/edgar/data/64040/000095010315000841/0000950103-15-000841-index.htm
+    primary: true
+    note: "Items 1.01, 2.02, 7.01 and 9.01; EX-99.1 dp53146_ex9901.htm. $687.5 million to the United States and $687.5 million in aggregate to the states over 2004–2007 RMBS and CDO ratings, with no findings of violations of law (#Item1.01); the settlements to be reflected in the fourth-quarter and full-year 2014 financial statements (#Item2.02); $125 million to CalPERS over ratings on three structured investment vehicles (#Item7.01); press release (#EX99.1). Same CIK as S&P Global Inc."
+
+  - tag: SPGI-8K-2023-02-09
+    kind: filing
+    title: S&P Global Inc. Q4 and full-year 2022 earnings 8-K (press release and schedules)
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: FY2022Q4
+    accession: 0000064040-23-000055
+    filed: 2023-02-09
+    date: 2023-02-09
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404023000055/0000064040-23-000055-index.htm
+    primary: true
+    note: "Items 2.02, 7.01 and 9.01; EX-99.1 a4q2022earningsrelease.htm. Used for 2022 pro forma adjusted diluted EPS, down 4% to $11.19 from $11.63 (#EX99.1)."
+
+  - tag: SPGI-10K-FY2009
+    kind: filing
+    title: The McGraw-Hill Companies, Inc. (now S&P Global Inc.) annual report for fiscal year 2009 (Form 10-K), Exhibit 13 (2009 Annual Report)
+    issuer_cik: "0000064040"
+    form: 10-K
+    period: FY2009
+    accession: 0000950123-10-016328
+    filed: 2010-02-24
+    date: 2010-02-24
+    url: https://www.sec.gov/Archives/edgar/data/64040/000095012310016328/0000950123-10-016328-index.htm
+    primary: true
+    note: "EX-13 (y80741exv13.htm), page 44 of the annual report (#EX13-p44): Credit Market Services, the ratings business of the time, had revenue of $2,264.1 million in 2007, $1,754.8 million in 2008 (−22.5%) and $1,748.2 million in 2009 (−0.4%); in 2009 declines in structured-finance issuance were partly offset by higher corporate and sovereign ratings revenue. Same CIK as S&P Global Inc."
+
+  - tag: SPGI-10K-FY2023
+    kind: filing
+    title: S&P Global Inc. annual report for fiscal year 2023 (Form 10-K)
+    issuer_cik: "0000064040"
+    form: 10-K
+    period: FY2023
+    accession: 0000064040-24-000071
+    filed: 2024-02-09
+    date: 2024-02-09
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404024000071/0000064040-24-000071-index.htm
+    primary: true
+    note: "Accepted 2024-02-08 at 21:12 US Eastern, after 17:30, so EDGAR's filing date is 2024-02-09. Used for the $3,301 million of shares repurchased in 2023 (cash flow statement, #p79); the private sources.yml also cites it for the repurchase settled in 2023."
+
+  - tag: SPGI-8K-2024-02-08
+    kind: filing
+    title: S&P Global Inc. Q4 and full-year 2023 earnings 8-K (press release and schedules)
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: FY2023Q4
+    accession: 0000064040-24-000061
+    filed: 2024-02-08
+    date: 2024-02-08
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404024000061/0000064040-24-000061-index.htm
+    primary: true
+    note: "Items 2.02, 7.01 and 9.01; EX-99.1 a4q2023earningsrelease.htm. Used for Market Intelligence's FY2023 pro forma revenue growth (#EX99-Exh5)."
+
+  - tag: SPGI-8K-2026-04-28
+    kind: filing
+    title: S&P Global Inc. Q1 2026 earnings 8-K (press release and schedules)
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: FY2026Q1
+    accession: 0000064040-26-000019
+    filed: 2026-04-28
+    date: 2026-04-28
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000019/0000064040-26-000019-index.htm
+    primary: true
+    note: "Items 2.02, 7.01 and 9.01; EX-99 spgi1q2026-earningsrelease.htm. The company “now expects to return 100% or more of adjusted Free Cash Flow through dividends and share repurchases in 2026” (#EX99-p1), replacing the February target of 85% or more; it still expected adjusted free cash flow, including Mobility, to grow mid-single digits (#EX99-Outlook)."
+
+  - tag: SPGI-8K-2026-05-07
+    kind: filing
+    title: "S&P Global Inc. 8-K: public filing of the Form 10 registration statement for Mobility Global"
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: null
+    accession: 0001104659-26-057215
+    filed: 2026-05-07
+    date: 2026-05-07
+    url: https://www.sec.gov/Archives/edgar/data/64040/000110465926057215/0001104659-26-057215-index.htm
+    primary: true
+    note: "Items 7.01 and 9.01; EX-99.1 tm2613574d1_ex99-1.htm. Read on 2026-09-27 as one of the later filings that do not restate the medium-term targets (SPGI-L1)."
+
+  - tag: SPGI-8K-2026-05-12
+    kind: filing
+    title: "S&P Global Inc. 8-K: Mobility Global Investor Day 2026 presentation"
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: null
+    accession: 0001104659-26-058908
+    filed: 2026-05-12
+    date: 2026-05-12
+    url: https://www.sec.gov/Archives/edgar/data/64040/000110465926058908/0001104659-26-058908-index.htm
+    primary: true
+    note: "Items 7.01 and 9.01; EX-99.1 tm2613574d2_ex99-1.htm. Read on 2026-09-27 as one of the later filings that do not restate S&P Global's medium-term targets (SPGI-L1)."
+
+  - tag: SPGI-8K-2026-05-26
+    kind: filing
+    title: "S&P Global Inc. 8-K: departure of the President of S&P Global Market Intelligence"
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: null
+    accession: 0000064040-26-000031
+    filed: 2026-05-26
+    date: 2026-05-26
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404026000031/0000064040-26-000031-index.htm
+    primary: true
+    note: "Items 5.02, 7.01 and 9.01; period of report 2026-05-19; EX-99.1 sspr052526.htm. Saugata Saha gave notice on 2026-05-19 of his departure as President, S&P Global Market Intelligence, effective 2026-07-30 (#Item5.02)."
+
+  - tag: SPGI-8K-2026-07-06
+    kind: filing
+    title: "S&P Global Inc. 8-K: new Market Intelligence operating model and executive leadership changes"
+    issuer_cik: "0000064040"
+    form: 8-K
+    period: null
+    accession: 0001104659-26-080751
+    filed: 2026-07-06
+    date: 2026-07-06
+    url: https://www.sec.gov/Archives/edgar/data/64040/000110465926080751/0001104659-26-080751-index.htm
+    primary: true
+    note: "Items 5.02, 7.01 and 9.01; period of report 2026-07-01; EX-99.1 tm2619719d1_ex99-1.htm. Market Intelligence organized into two verticals, Kensho Data & Platforms and Enterprise Solutions (#EX99.1). A separate filing from the 8-K/A of the same day (SPGI-8KA-2026-07-06)."
+
+  - tag: SPGI-WEB-2026-07-28-1
+    kind: presentation
+    title: "S&P Global Quarterly Update, 2Q 2026 (earnings call slides, 2026-07-28)"
+    date: 2026-07-28
+    url: https://s29.q4cdn.com/690959130/files/doc_financials/2026/q2/S-P-Global-2Q-2026-Earnings-Call-Slides-7-28-2026.pdf
+    primary: true
+    note: "Company-hosted on the investor relations site, not furnished with the 8-K; primary for what is on the slides (APP ruling H1). Used for trailing-twelve-month division revenue and profit shares (#p7), hyperscaler-related billed issuance of $169 billion in the first half of 2026 and the five companies counted (#p8), the S&P DJI-linked ETF asset bridge over the year to 2026-06-30 (#p10), the factors weighing on Energy's growth (#p11) and Market Intelligence's Q2 margin (#p19). Read on 2026-09-27."
+
+  - tag: SPGI-WEB-2026-07-28-2
+    kind: presentation
+    title: 2Q 2026 Earnings Supplemental Disclosure (S&P Global, 2026-07-28)
+    date: 2026-07-28
+    url: https://s29.q4cdn.com/690959130/files/doc_financials/2026/q2/S-P-Global-2Q-2026-Earnings-Supplemental-Disclosure-7-27-2026.pdf
+    primary: true
+    note: "Source 7 in the report's appendix (the supplemental part); company-hosted, not furnished with the 8-K (the file name carries 7-27, the document is dated 2026-07-28). Used for debt of $13,170 million at 2026-06-30 excluding the $2.0 billion of Mobility Global bonds, and adjusted leverage (#p9), Market Intelligence's recurring revenue share (#p14) and the 2026 division guidance before and after the July update (#p18). Read on 2026-09-27."
+
+  - tag: SPGI-WEB-2026-02-10-1
+    kind: presentation
+    title: 4Q and Full-Year 2025 Earnings Supplemental Disclosure (S&P Global, 2026-02-10)
+    date: 2026-02-10
+    url: https://s29.q4cdn.com/690959130/files/doc_financials/2025/q4/S-P-Global-4Q-FY-2025-Earnings-Supplemental-Disclosure-2-10-2026.pdf
+    primary: true
+    note: "Source 3 in the report's appendix; company-hosted, not furnished with the 8-K. Used for Market Intelligence's recurring revenue as a share of revenue, 96.4% in Q4 2025 on the segment definition before the July 2026 recast (#p12). Read on 2026-09-27."
+
+  - tag: SEC-PR-2015-10
+    kind: press_release
+    title: "U.S. Securities and Exchange Commission press release 2015-10: SEC Announces Charges Against Standard & Poor's for Fraudulent Ratings Misconduct"
+    date: 2015-01-21
+    url: https://www.sec.gov/news/pressrelease/2015-10.html
+    primary: true
+    note: "S&P agreed to pay more than $58 million to settle the SEC's charges, plus $19 million to the New York ($12 million) and Massachusetts ($7 million) attorneys general; in the order on its 2011 conduit fusion CMBS methodology, in which S&P made certain admissions, it agreed to take a one-year timeout from rating conduit fusion CMBS. Read on 2026-09-27."
+
+  - tag: SEC-PR-2022-205
+    kind: press_release
+    title: "U.S. Securities and Exchange Commission press release 2022-205: SEC Charges S&P Global Ratings with Conflict of Interest Violations"
+    date: 2022-11-14
+    url: https://www.sec.gov/newsroom/press-releases/2022-205
+    primary: true
+    note: "The settled order (Exchange Act Release No. 96308, Administrative Proceeding File No. 3-21240, https://www.sec.gov/files/litigation/admin/2022/34-96308.pdf) finds that in August 2017 S&P commercial employees became participants in rating a jumbo RMBS transaction, in violation of the NRSRO conflict-of-interest rules; S&P had self-reported the conduct and, without admitting or denying the findings, paid a $2.5 million penalty and agreed to a cease-and-desist order, a censure and undertakings. Read on 2026-09-27."
+
+  - tag: SEC-OCR-2024-02
+    kind: other
+    title: "U.S. Securities and Exchange Commission, Office of Credit Ratings, Staff Report on Nationally Recognized Statistical Rating Organizations (February 2024)"
+    date: null
+    url: https://www.sec.gov/files/feb-2024-ocr-staff-report.pdf
+    primary: true
+    note: "Dated February 2024 on the cover (no day given); ratings outstanding at 2022-12-31. The three largest NRSROs held 94.0% of all ratings outstanding (#p24) and, excluding government securities, S&P 34.3%, Moody's 27.0% and Fitch 20.2% (Chart 6, #p25). Printed page numbers. Source 18 in the report's appendix. Read on 2026-09-27."
+
+  - tag: SEC-OCR-2025-01
+    kind: other
+    title: "U.S. Securities and Exchange Commission, Office of Credit Ratings, Staff Report on Nationally Recognized Statistical Rating Organizations (January 2025)"
+    date: null
+    url: https://www.sec.gov/files/jan-2025-ocr-staff-report.pdf
+    primary: true
+    note: "Dated January 2025 on the cover (no day given); ratings outstanding at 2023-12-31. KBRA's outstanding ratings −12.22% in 2023 (Chart 2, #p20); the three largest held 94.15% of all ratings (#p21) and, excluding government securities, S&P 32.8%, Moody's 25.8% and Fitch 20.0% (Chart 6, #p23); the reclassification of DBRS ratings from the government category to asset-backed securities (#p26). Printed page numbers. Source 18 in the report's appendix. Read on 2026-09-27."
+
+  - tag: SEC-OCR-2026-04
+    kind: other
+    title: "U.S. Securities and Exchange Commission, Office of Credit Ratings, Staff Report on Nationally Recognized Statistical Rating Organizations (April 2026)"
+    date: null
+    url: https://www.sec.gov/files/2025-ocr-staff-report-compliant-4-24-26.pdf
+    primary: true
+    note: "Dated April 2026 on the cover (no day given; the file name carries 4-24-26); ratings outstanding at 2024-12-31. The three largest held 93.38% of all ratings, down from 94.15% a year earlier (#p18, printed page). The breakdown excluding government securities is given only as a chart image and has not been read. Read on 2026-09-27."
+
+  - tag: SEC-STMT-2023-06-07
+    kind: other
+    title: "U.S. Securities and Exchange Commission, Commissioner Mark T. Uyeda: Statement on the Adoption of Rule 939A Amendments to Regulation M"
+    date: 2023-06-07
+    url: https://www.sec.gov/newsroom/speeches-statements/uyeda-statement-credit-ratings-060723
+    primary: true
+    note: "“with today's adoption, the Commission will have removed all references to credit rating reliance in its rules”. The adopting release is Release No. 34-97657, Removal of References to Credit Ratings from Regulation M (88 FR 39962, 2023-06-20, effective 2023-08-21; https://www.sec.gov/files/rules/final/2023/34-97657.pdf). Read on 2026-09-27."
+
+  - tag: SEC-939F-2012-12
+    kind: other
+    title: "U.S. Securities and Exchange Commission staff, Report to Congress on Assigned Credit Ratings, as required by section 939F of the Dodd-Frank Act (December 2012)"
+    date: null
+    url: https://www.sec.gov/files/assigned-credit-ratings-study.pdf
+    primary: true
+    note: "Dated December 2012 on the cover (no day given); prepared by the staff of the Division of Trading and Markets. Read on 2026-09-27. A quick search found no later SEC proposal or rule for an assigned-ratings system or another alternative to issuer-pays."
+
+  - tag: SEC-RT-2013-05-14
+    kind: web
+    title: "U.S. Securities and Exchange Commission, Credit Ratings Roundtable, 2013-05-14 (archived event page)"
+    date: 2013-05-14
+    url: https://www.sec.gov/spotlight/credit-ratings-roundtable.shtml
+    primary: true
+    note: "Three panels: an assignment system for asset-backed ratings, an unsolicited-ratings system, and alternatives to issuer-pays. No transcript is posted; the webcast page is https://www.sec.gov/news/otherwebcasts/2013/credit-ratings-roundtable-051413.shtml and public comments are in file 4-661. Read on 2026-09-27."
+
+  - tag: NAIC-BRIEF-2026-03
+    kind: other
+    title: "National Association of Insurance Commissioners, How Insurance Regulators Ensure Insurers Have Enough Money to Pay Claims: Leveraging Credit Ratings for Regulatory Use (issue brief, March 2026)"
+    date: null
+    url: https://content.naic.org/sites/default/files/svo-discretion-issue-brief.pdf
+    primary: true
+    note: "Dated March 2026 (no day given). “The NAIC cannot unilaterally reject or override a rating” (#p1); the review process: the SVO Credit Committee may place a filing-exempt security under review, and if its own designation differs from the filing-exempt one by at least three notches the SVO may ask for the rating's removal from filing exemption, which an investment review group of regulators decides; the SVO will publish an anonymized summary within 45 days of each removal, and the SVO Director summarizes the year's actions at each Spring National Meeting (#p2). Read on 2026-09-27 (the NAIC site refuses scripted requests; a copy is in the workspace cache)."
+
+  - tag: EU-REG-2024-1106
+    kind: other
+    title: "Regulation (EU) 2024/1106 of the European Parliament and of the Council of 11 April 2024 amending Regulations (EU) No 1227/2011 and (EU) 2019/942 as regards improving the Union's protection against market manipulation on the wholesale energy market"
+    date: 2024-04-11
+    url: https://eur-lex.europa.eu/eli/reg/2024/1106/oj
+    primary: true
+    note: "Official Journal L, 2024/1106, 17.4.2024. Article 1, point (10), inserts Articles 7a to 7e into REMIT (Regulation (EU) No 1227/2011): ACER's tasks on LNG price assessments and benchmarks, their publication, the provision of LNG market data, data quality and business continuity (#Art1-10); under Article 3(2)(b) these apply from 2025-01-01. Read on 2026-09-27."
+
+  - tag: UST-PARYIELD-2026-09-16
+    kind: web
+    title: "U.S. Department of the Treasury, Daily Treasury Par Yield Curve Rates: the 10-year yield, 2000 to 2026-09-16"
+    date: 2026-09-16
+    url: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&field_tdr_date_value_month=202609
+    primary: true
+    note: "The 10-year par yield was 5.01% on 2026-09-16, its first close above 5% since 2007. Read from the Treasury's yearly files for 2000 and 2006–2026 (CSV download, daily-treasury-rates.csv/<year>/all): above 5% on every trading day of 2000, on 66 trading days of 2006 and 29 of 2007, and on no trading day from 2008 through 2025. Read on 2026-09-27."
+
+  - tag: VANGUARD-497-2012-10-02
+    kind: filing
+    title: "Vanguard Index Funds, prospectus supplement (Form 497): new target indexes for ten index funds, including Vanguard Total Stock Market Index Fund"
+    issuer_cik: "0000036405"
+    form: "497"
+    period: null
+    accession: 0000932471-12-005511
+    filed: 2012-10-02
+    date: 2012-10-02
+    url: https://www.sec.gov/Archives/edgar/data/36405/000093247112005511/0000932471-12-005511-index.htm
+    primary: true
+    note: "Registrant as EDGAR shows it: VANGUARD INDEX FUNDS. The board of trustees approved CRSP US indexes as the funds' new target indexes (for example, the CRSP US Total Market Index replacing the MSCI US Broad Market Index for Total Stock Market Index Fund), and the exact timing of the index change and portfolio transition “will not be disclosed to investors” to protect the funds from front running."
+
+  - tag: VANGUARD-497-2012-10-02-2
+    kind: filing
+    title: "Vanguard International Equity Index Funds, prospectus supplement (Form 497): new target indexes for the Emerging Markets, European and Pacific Stock Index Funds"
+    issuer_cik: "0000857489"
+    form: "497"
+    period: null
+    accession: 0000932471-12-005512
+    filed: 2012-10-02
+    date: 2012-10-02
+    url: https://www.sec.gov/Archives/edgar/data/857489/000093247112005512/0000932471-12-005512-index.htm
+    primary: true
+    note: "Registrant as EDGAR shows it: VANGUARD INTERNATIONAL EQUITY INDEX FUNDS; accession 0000932471-12-005512 (the second Vanguard 497 of 2012-10-02 registered here). FTSE indexes replace MSCI indexes, and the ETF share class known as Vanguard MSCI Emerging Markets ETF “will change its name to Vanguard FTSE Emerging Markets ETF”."
+
+  - tag: VANGUARD-497-2012-10-02-3
+    kind: filing
+    title: "Vanguard World Fund, prospectus supplement (Form 497): new target index and new name for the Mega Cap 300 index funds"
+    issuer_cik: "0000052848"
+    form: "497"
+    period: null
+    accession: 0000932471-12-005514
+    filed: 2012-10-02
+    date: 2012-10-02
+    url: https://www.sec.gov/Archives/edgar/data/52848/000093247112005514/0000932471-12-005514-index.htm
+    primary: true
+    note: "Registrant as EDGAR shows it: VANGUARD WORLD FUND; accession 0000932471-12-005514 (the third Vanguard 497 of 2012-10-02 registered here). The CRSP US Mega Cap Index replaces the MSCI US Large Cap 300 Index, and “Vanguard Mega Cap 300 Index Fund will change its name to Vanguard Mega Cap Index Fund” (the Value and Growth funds likewise)."
+
+  - tag: VANGUARD-497-2013-01-31
+    kind: filing
+    title: "Vanguard World Fund, prospectus supplement (Form 497): Vanguard Mega Cap 300 Index Fund begins tracking its new target index"
+    issuer_cik: "0000052848"
+    form: "497"
+    period: null
+    accession: 0000932471-13-000605
+    filed: 2013-01-31
+    date: 2013-01-31
+    url: https://www.sec.gov/Archives/edgar/data/52848/000093247113000605/0000932471-13-000605-index.htm
+    primary: true
+    note: "Registrant as EDGAR shows it: VANGUARD WORLD FUND. “Effective immediately, Vanguard Mega Cap 300 Index Fund has begun tracking its new target index, the CRSP US Mega Cap Index”: one example of the switches carried out during 2013."
