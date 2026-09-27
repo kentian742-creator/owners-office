@@ -1159,17 +1159,20 @@ def _prereg_candidates(ctx: RunContext, name: str) -> BuiltInput:
 
 
 def _frozen_question_list(ctx: RunContext, name: str) -> tuple[PriorRun, str]:
-    """The question list HQ froze for this company and period: the placed output of the latest 14Q run."""
+    """The question list HQ froze for this company and period: the placed output of the latest 14Q run. A rehearsal
+    also takes the unplaced output of a 14Q dry run in its own directory (dry runs are never placed)."""
     company = _need_company(ctx, name)
     runs = [r for r in ctx.runs() if r.scope == company and r.part == "14Q" and r.period == ctx.period
             and r.placed_file("question_list") is not None]
-    if not runs:
-        raise MissingInput(f"no placed 14Q question list for {company} {ctx.period} (run 14Q, merge it, then place it)")
-    run = runs[-1]
-    path = run.placed_file("question_list")
-    if path is None:  # pragma: no cover - filtered above
-        raise MissingInput(f"{run.rel} has no placed question_list")
-    return run, path.read_text(encoding="utf-8")
+    if runs:
+        path = runs[-1].placed_file("question_list")
+        return runs[-1], path.read_text(encoding="utf-8") if path else ""
+    rehearsed = [r for r in ctx.runs() if ctx.rehearsal and r.succeeded and r.step == "14Q" and r.company == company
+                 and r.period == ctx.period and any(_inside(r.path, root) for root in ctx.runs_roots)
+                 and r.output_file("question_list") is not None]
+    if rehearsed:
+        return rehearsed[-1], rehearsed[-1].read_output("question_list") or ""
+    raise MissingInput(f"no placed 14Q question list for {company} {ctx.period} (run 14Q, merge it, then place it)")
 
 
 @assembler("question_list")

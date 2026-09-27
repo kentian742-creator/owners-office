@@ -591,7 +591,8 @@ def test_lint_errors_that_were_there_before_do_not_block_a_placement(env, monkey
 # ---------------------------------------------------------------------------------------------------- repository rules
 
 
-@pytest.mark.parametrize("module", ["runner.py", "registry.py", "fake_client.py"])
+@pytest.mark.parametrize("module", ["runner.py", "registry.py", "fake_client.py", "chain.py", "documents.py",
+                                    "evaluation.py"])
 def test_the_runner_modules_import_no_model_sdk(module):
     tree = ast.parse((fx.REPO_ROOT / "pipeline" / module).read_text(encoding="utf-8"))
     imported = {alias.name.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.Import)
@@ -604,7 +605,9 @@ def test_the_runner_modules_import_no_model_sdk(module):
 @pytest.mark.parametrize("path", [*sorted(p.relative_to(fx.REPO_ROOT).as_posix()
                                           for p in (fx.REPO_ROOT / "pipeline").glob("*.py")),
                                   "tests/test_runner.py", "tests/runner_fixtures.py", "tests/test_claude_code.py",
-                                  "docs/decisions/0019-pipeline-runner.md", "docs/decisions/0022-claude-code-backend.md"])
+                                  "tests/test_post_earnings.py", "tests/evaluate_shim.py",
+                                  "docs/decisions/0019-pipeline-runner.md", "docs/decisions/0022-claude-code-backend.md",
+                                  "docs/decisions/0024-post-earnings-steps.md"])
 def test_the_pipeline_files_are_english_only(path):
     """Owner policy 2026-09-25: the public repositories are English-first (no CJK text in the pipeline code)."""
     target = fx.REPO_ROOT / path

@@ -1,6 +1,7 @@
 """Pipeline runner: one prompt part at a time, from an input bundle to placed outputs.
 
-Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/decisions/0019.
+Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/decisions/0019 and, for the steps
+after an earnings event, 0024.
 
     python -m pipeline.runner steps
     python -m pipeline.runner assemble 15A APP FY2026Q3 --run-date 2026-10-20
@@ -33,7 +34,17 @@ Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/
    owners-office, never on main), runs thesis-ci lint on both repositories and rolls back on errors. Committing,
    pushing and opening pull requests stay with the operator.
 4. dry-run (local). assemble + execute with the fake backend into work/pipeline-dry-run/ in the workspace, outside
-   both repositories, so the whole path can be tested without any model access.
+   both repositories, so the whole path can be tested without any model access. A post-event step whose event is not
+   on EDGAR yet runs as a rehearsal: the last reported quarter's filings stand in, marked as such.
+5. evaluate (local; docs/decisions/0024). The quantitative tests of one event, evaluated by thesis-ci's
+   evaluate_company() on readings from XBRL companyfacts and from 16B, recorded like a run (the ci step:
+   runs/<TICKER>/<run_date>-ci/ with manifest.yml, inputs, outputs/ci_results.yml and run.yml). No model.
+6. event (local; pipeline/chain.py). The post-earnings chain of one event, step by step, resumable, with stops for
+   human review after the draft, after the audit and before placement.
+
+place knows the actions of 00 section F2 (write, front_matter, append, merge, patch, pr_body, pr_attachment) and
+routes a quarterly update by trust level (section G9): below level 2 its public files are staged in the private
+repository until HQ has reviewed them, and `place --publish` writes them to the public branch.
 
 This module imports no model SDK: the only model call is llm.complete() (C-LLM-ENTRY).
 """
