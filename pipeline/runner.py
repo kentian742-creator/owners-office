@@ -1,6 +1,7 @@
 """Pipeline runner: one prompt part at a time, from an input bundle to placed outputs.
 
-Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/decisions/0019.
+Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/decisions/0019 and, for the steps
+after an earnings event, 0024.
 
     python -m pipeline.runner steps
     python -m pipeline.runner assemble 15A APP FY2026Q3 --run-date 2026-10-20
@@ -9,6 +10,8 @@ Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/
     python -m pipeline.runner place runs/APP/2026-10-20-15A [--announced 2026-11-05] [--check]
     python -m pipeline.runner dry-run 15A APP FY2026Q3 --run-date 2026-10-20
     python -m pipeline.runner pr-body runs/APP/2026-10-20-15A
+    python -m pipeline.runner evaluate AXP FY2026Q3 --run-date 2026-10-21
+    python -m pipeline.runner event AXP FY2026Q3 --run-date 2026-10-21 [--dry-run] [--approve draft|audit|placement]
 
 1. assemble (local). Builds exactly the inputs the prompt part declares, through the input registry
    (pipeline/registry.py), checks them against the role's visibility (llm.check_inputs, 00 section G6) and writes a
@@ -31,7 +34,17 @@ Phase 1 of docs/DESIGN.md (STATUS T4, T7, T11, T12); design and reasons in docs/
    owners-office, never on main), runs thesis-ci lint on both repositories and rolls back on errors. Committing,
    pushing and opening pull requests stay with the operator.
 4. dry-run (local). assemble + execute with the fake backend into work/pipeline-dry-run/ in the workspace, outside
-   both repositories, so the whole path can be tested without any model access.
+   both repositories, so the whole path can be tested without any model access. A post-event step whose event is not
+   on EDGAR yet runs as a rehearsal: the last reported quarter's filings stand in, marked as such.
+5. evaluate (local; docs/decisions/0024). The quantitative tests of one event, evaluated by thesis-ci's
+   evaluate_company() on readings from XBRL companyfacts and from 16B, recorded like a run (the ci step:
+   runs/<TICKER>/<run_date>-ci/ with manifest.yml, inputs, outputs/ci_results.yml and run.yml). No model.
+6. event (local; pipeline/chain.py). The post-earnings chain of one event, step by step, resumable, with stops for
+   human review after the draft, after the audit and before placement.
+
+place knows the actions of 00 section F2 (write, front_matter, append, merge, patch, pr_body, pr_attachment) and
+routes a quarterly update by trust level (section G9): below level 2 its public files are staged in the private
+repository until HQ has reviewed them, and `place --publish` writes them to the public branch.
 
 This module imports no model SDK: the only model call is llm.complete() (C-LLM-ENTRY).
 """
@@ -54,7 +67,7 @@ from typing import Any, TextIO
 
 import yaml
 
-from . import edgar, fake_client, llm, registry
+from . import documents, edgar, evaluation, fake_client, isolation, llm, registry
 from . import outputs as _outputs
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -74,7 +87,7 @@ DRY_RUN_DIR = Path("work") / "pipeline-dry-run"  # under the workspace root, out
 BACKENDS = llm.BACKENDS  # claude-code, api, fake
 DEFAULT_BACKEND = llm.DEFAULT_BACKEND  # owner decision 2026-09-25: the Claude Code CLI on the owner's subscription
 REAL_BACKENDS = (llm.CLAUDE_CODE, llm.API)
-BUNDLE_REL_RE = re.compile(r"^runs/([A-Z][A-Z0-9.]{0,9}|hq)/(\d{4}-\d{2}-\d{2})-(\d{2}[A-Za-z0-9-]*)$")
+BUNDLE_REL_RE = re.compile(r"^runs/([A-Z][A-Z0-9.]{0,9}|hq)/(\d{4}-\d{2}-\d{2})-(\d{2}[A-Za-z0-9.-]*|[a-z][a-z0-9]*)$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 # Public paths whose uncommitted changes would make the pinned commit misstate the code and roles that run.
 PIN_PATHS = ("pipeline", "agents", "constitution/decision-rights.yml", "requirements.txt", "requirements-lint.txt")
@@ -363,8 +376,12 @@ def _estimate(prompt: Any, rules: Any, design: Any, call: Any, variables: Mappin
 def assemble(step: str, company: str, period: str, *, run_date: dt.date | None = None, roots: Roots | None = None,
              out_root: str | os.PathLike[str] | None = None, edgar_gateway: Any = None, offline: bool = False,
              allow_dirty: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
-             today: dt.date | None = None) -> Path:
-    """Build the input bundle of one step and return its directory. Nothing is written when anything is missing."""
+             today: dt.date | None = None, rehearsal: bool = False) -> Path:
+    """Build the input bundle of one step and return its directory. Nothing is written when anything is missing.
+
+    Upstream runs are looked up under `out_root` first when it is not the private repository (a dry run reads its own
+    chain). `rehearsal` (dry runs only) lets the last reported quarter's filings stand in for an event that has not
+    happened yet."""
     roots = roots or resolve_roots()
     try:
         spec = registry.step_spec(step)
@@ -389,11 +406,15 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
     if not role.prompts or (prompt.id not in role.prompts and call.label not in role.prompts):
         raise RunnerError(f"{step}: agents/{role.path.name} does not register {call.label} for role {role.role}")
     schemas = Path(schemas_dir) if schemas_dir else None
+    base = Path(out_root).resolve() if out_root else roots.private
+    if rehearsal and not (out_root and not _inside(base, roots.private) and not _inside(base, roots.public)):
+        raise RunnerError("a rehearsal (the last reported quarter standing in for the event) is for dry runs only, "
+                          "outside both repositories")
     ctx = registry.RunContext(
         step=spec, company=ticker, period=period, run_date=run_date, public_root=roots.public,
         private_root=roots.private, workspace_root=roots.workspace, call=call, formats=formats,
         edgar=edgar_gateway if edgar_gateway is not None else registry.EdgarGateway(offline=offline),
-        schemas_dir=schemas,
+        schemas_dir=schemas, runs_roots=(base,) if base != roots.private else (), rehearsal=rehearsal,
     )
     notes: list[str] = []
     if ticker:
@@ -421,8 +442,7 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         notes.append(f"pin: commit {commit[:12]} is on no remote branch yet; the Actions route (pipeline-step.yml) "
                      "can only check out pushed commits")
 
-    rel = f"runs/{ctx.scope}/{run_date.isoformat()}-{call.label}"
-    base = Path(out_root).resolve() if out_root else roots.private
+    rel = f"runs/{ctx.scope}/{spec.bundle_name(run_date, ticker)}"
     bundle_dir = base / rel
     if bundle_dir.exists():
         raise RunnerError(f"{rel} already exists under {base}; bundles are never overwritten")
@@ -447,7 +467,7 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         except edgar.EdgarError as exc:
             problems.append(f"{name}: EDGAR: {exc}")
     if problems:
-        raise RunnerError(f"cannot assemble {step} for {ctx.scope} {period}; missing or unreadable inputs:\n- "
+        raise RunnerError(f"cannot assemble {step} for {ticker or ctx.scope} {period}; missing or unreadable inputs:\n- "
                           + "\n- ".join(problems))
     try:
         llm.check_inputs(call, role, list(built))  # 00 section G6, before anything is written
@@ -518,6 +538,9 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         "estimate": estimate,
         "notes": notes,
     }
+    if rehearsal:
+        manifest["rehearsal"] = True
+        notes.append("rehearsal: a dry run before the event; inputs marked substitute stand in for the event's")
     bundle_dir.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=".assemble-", dir=bundle_dir.parent))
     try:
@@ -672,6 +695,11 @@ def _write_outputs(bundle_dir: Path, call: Any, result: llm.LLMResult) -> dict[s
     return entries
 
 
+def _prompt_id(manifest: Mapping[str, Any]) -> str:
+    """The prompt id of a bundle; a deterministic step (ci) has none and goes by its step."""
+    return str((manifest.get("prompt") or {}).get("id") or manifest["step"])
+
+
 def planned_placements(manifest: Mapping[str, Any], entries: Mapping[str, Mapping[str, Any]]) -> list[dict[str, Any]]:
     """Where each written output goes under 00 section F2 (outputs.place), as recorded in run.yml and the PR."""
     rows = []
@@ -679,7 +707,7 @@ def planned_placements(manifest: Mapping[str, Any], entries: Mapping[str, Mappin
         if entry.get("status") != "written":
             continue
         try:
-            placements = _outputs.place(name, prompt_id=str(manifest["prompt"]["id"]), part_id=str(manifest["step"]),
+            placements = _outputs.place(name, prompt_id=_prompt_id(manifest), part_id=str(manifest["step"]),
                                         fmt=str(entry["format"]), **(manifest.get("context") or {}))
         except _outputs.PlacementError as exc:
             rows.append({"output": name, "error": str(exc)})
@@ -699,7 +727,8 @@ def _fake_context(manifest: Mapping[str, Any], inputs: Mapping[str, str]) -> dic
         if isinstance(data, dict) and data.get("domain"):
             domain = str(data["domain"])
     return {"company": manifest.get("company"), "period": manifest.get("period"), "run_date": manifest["run_date"],
-            "label": manifest.get("step"), "domain": domain, "pipeline_fields": manifest.get("pipeline_fields") or {}}
+            "label": manifest.get("step"), "domain": domain, "pipeline_fields": manifest.get("pipeline_fields") or {},
+            "inputs": inputs}
 
 
 def _archive_failed_attempt(bundle_dir: Path) -> int:
@@ -742,6 +771,8 @@ def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backe
     bundle_dir = resolve_bundle(bundle, roots.private)
     manifest = load_manifest(bundle_dir)
     rel = manifest["bundle"]
+    if manifest.get("role") == PIPELINE_BACKEND:
+        raise RunnerError(f"{rel} is a deterministic step (no model); `evaluate` runs it")
     backend_args = backend_kwargs(backend)
     check_environment(backend, env, roots.private)
     executed = (bundle_dir / RUN_RECORD).exists() or (bundle_dir / OUTPUTS_DIR).exists()
@@ -845,6 +876,216 @@ def _print_execution(record: Mapping[str, Any], failure: BaseException | None, o
               file=out)
 
 
+# ---------------------------------------------------------------------------------------------------- evaluate (ci)
+
+CI_OUTPUT = "ci_results"
+PIPELINE_BACKEND = "pipeline"  # the backend of deterministic steps: no model is called
+CI_SPEC = registry.StepSpec(registry.CI_STEP, "", None, "company", "quarter", False,
+                            "evaluation of the quantitative tests: readings and results (deterministic, no model)",
+                            post_event=True)
+
+
+def _pin(roots: Roots, allow_dirty: bool) -> tuple[str | None, list[str], bool, list[str]]:
+    """(commit, dirty paths, pushed, notes): the public commit whose code runs; refuses local changes unless allowed."""
+    commit = git_head(roots.public)
+    dirty = git_dirty(roots.public, PIN_PATHS)
+    pushed = git_pushed(roots.public) if commit else False
+    problems = []
+    if commit is None:
+        problems.append(f"{registry.PUBLIC_REPO} has no commit to pin (git rev-parse HEAD failed)")
+    if dirty:
+        problems.append(f"uncommitted changes in {len(dirty)} path(s): {_paths_summary(dirty)}")
+    if problems and not allow_dirty:
+        raise RunnerError("cannot pin the pipeline code:\n- " + "\n- ".join(problems))
+    notes = [f"pin: {p}" for p in problems]
+    if commit and not pushed:
+        notes.append(f"pin: commit {commit[:12]} is on no remote branch yet")
+    return commit, dirty, pushed, notes
+
+
+def collect_readings(ctx: registry.RunContext, evaluator: evaluation.Evaluator) -> tuple[
+        list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    """(readings, not usable, sources, notes): XBRL readings from companyfacts (through thesis-ci) and filing-text
+    readings from every succeeded 16B run of the company up to this period, the latest run of a period winning."""
+    thesis = ctx.thesis()
+    metrics, _ = registry.metric_registry(ctx)
+    filer = ctx.filer()
+    sources: list[dict[str, Any]] = []
+    notes: list[str] = []
+    groups: list[list[dict[str, Any]]] = []
+    xbrl_ids = evaluation.xbrl_metric_ids(thesis, metrics)
+    if xbrl_ids and not evaluator.placeholder:
+        try:
+            facts, source = ctx.gateway().companyfacts(filer.cik)
+        except edgar.EdgarNotFound:
+            facts, source = None, None
+            notes.append("EDGAR has no XBRL companyfacts for this issuer; XBRL metrics have no readings")
+        if facts is not None:
+            readings = evaluator.xbrl_readings(facts, xbrl_ids, evaluation.reading_periods(ctx.period),
+                                               filer.fiscal_year_end or "12-31", ticker=str(ctx.company), thesis=thesis)
+            groups.append(readings)
+            sources.append({**source, "metrics": xbrl_ids, "readings": len(readings)})
+    elif xbrl_ids:
+        notes.append(f"placeholder evaluator: no XBRL reading taken for {len(xbrl_ids)} metric(s)")
+    now = documents.period_index(ctx.period)
+    runs = sorted((r for r in ctx.runs() if r.succeeded and r.step == "16B" and r.company == ctx.company
+                   and -1 < registry._period_key(r.period) <= now), key=lambda r: (registry._period_key(r.period),
+                                                                                    r.run_date))
+    unusable: list[dict[str, Any]] = []
+    for run in runs:
+        text = run.read_output("metric_values")
+        if text is None:
+            continue
+        names = evaluation.text_metrics(thesis, str(run.period), run.run_date, metrics).names
+        readings, bad = evaluation.readings_from_metric_values(yaml.safe_load(text), run=run.rel, names=names)
+        groups.append(readings)
+        if run.period == ctx.period:
+            unusable += bad
+        sources += run.outputs_used(["metric_values"])
+    due_text, _, _ = evaluation.text_metric_definitions(thesis, ctx.period, ctx.run_date, metrics)
+    if due_text and not any(r.period == ctx.period for r in runs):
+        raise registry.MissingInput(f"{len(due_text)} due metric(s) are read from filing text and no 16B run for "
+                                    f"{ctx.company} {ctx.period} succeeded (run 16B first)")
+    return evaluation.latest_readings(groups), unusable, sources, notes
+
+
+def evaluate(company: str, period: str, *, run_date: dt.date | None = None, roots: Roots | None = None,
+             out_root: str | os.PathLike[str] | None = None, edgar_gateway: Any = None, offline: bool = False,
+             allow_dirty: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
+             today: dt.date | None = None, retry: bool = False, evaluator: evaluation.Evaluator | None = None,
+             out: TextIO | None = None) -> tuple[Path, dict[str, Any]]:
+    """Evaluate the quantitative tests of one earnings event and record it like a run (the ci step):
+    runs/<TICKER>/<run_date>-ci/ with inputs/thesis.yml and inputs/readings.yml, manifest.yml, outputs/ci_results.yml
+    and run.yml. Deterministic, no model: thesis-ci's evaluate_company() applies each test's rule to the readings.
+
+    In a dry run (`out_root` outside both repositories) the event may be rehearsed and, while thesis-ci lacks the
+    evaluation interface, the placeholder evaluator records every test as undetermined. A succeeded bundle is final;
+    `retry` evaluates a failed one again on the inputs recorded at its first attempt."""
+    roots = roots or resolve_roots()
+    out = out or sys.stdout
+    today = today or dt.date.today()
+    run_date = run_date or today
+    ticker = _normalize_company(CI_SPEC, company)
+    _check_period(CI_SPEC, period)
+    base = Path(out_root).resolve() if out_root else roots.private
+    dry = base != roots.private
+    if dry:
+        dry_run_base(roots, base)
+    ctx = registry.RunContext(
+        step=CI_SPEC, company=ticker, period=period, run_date=run_date, public_root=roots.public,
+        private_root=roots.private, workspace_root=roots.workspace, call=None, formats={},
+        edgar=edgar_gateway if edgar_gateway is not None else registry.EdgarGateway(offline=offline),
+        schemas_dir=Path(schemas_dir) if schemas_dir else None, runs_roots=(base,) if dry else (), rehearsal=dry,
+    )
+    rel = f"runs/{ctx.scope}/{CI_SPEC.bundle_name(run_date, ticker)}"
+    bundle_dir = base / rel
+    attempt = 1
+    if bundle_dir.exists():
+        record = registry.load_yaml_file(bundle_dir / RUN_RECORD)
+        status = record.get("status") if isinstance(record, dict) else None
+        if status != "failed" or not retry:
+            raise RunnerError(f"{rel} was already evaluated (status {status}); a succeeded evaluation is final, --retry "
+                              "evaluates a failed one again")
+        attempt = _archive_failed_attempt(bundle_dir) + 1
+        manifest = load_manifest(bundle_dir)
+        verify_bundle(bundle_dir, manifest)
+    else:
+        try:
+            evaluator = evaluator or evaluation.load_evaluator(allow_placeholder=dry)
+            thesis_text = ctx.thesis_path().read_text(encoding="utf-8") if ctx.thesis_path().is_file() else None
+            ctx.thesis()
+            readings, unusable, reading_sources, reading_notes = collect_readings(ctx, evaluator)
+        except (registry.MissingInput, evaluation.EvaluatorUnavailable) as exc:
+            raise RunnerError(f"cannot evaluate {ticker} {period}: {exc}") from None
+        except edgar.EdgarError as exc:
+            raise RunnerError(f"cannot evaluate {ticker} {period}: EDGAR: {exc}") from None
+        commit, dirty, pushed, notes = _pin(roots, allow_dirty or dry)
+        if run_date > today:
+            notes.append(f"run_date {run_date} is later than the evaluation date {today}")
+        texts = {"thesis": thesis_text or "",
+                 "readings": registry.dump_yaml({"company": ticker, "period": period, "readings": readings,
+                                                 "not_usable": unusable})}
+        entries = [
+            {"name": "thesis", "file": f"{INPUTS_DIR}/thesis.yml", "required": True,
+             "bytes": len(texts["thesis"].encode("utf-8")), "sha256": registry.sha256_text(texts["thesis"]),
+             "sources": [registry.repo_file_source(roots.public, ctx.thesis_path(), registry.PUBLIC_REPO)]},
+            {"name": "readings", "file": f"{INPUTS_DIR}/readings.yml", "required": True,
+             "bytes": len(texts["readings"].encode("utf-8")), "sha256": registry.sha256_text(texts["readings"]),
+             "sources": reading_sources or [{"kind": "generated", "detail": "no reading source"}],
+             "note": f"{len(readings)} reading(s); {len(unusable)} extracted value(s) not usable as a number"},
+        ]
+        manifest = {
+            "manifest_version": MANIFEST_VERSION, "pipeline_commit": commit, "bundle": rel, "step": registry.CI_STEP,
+            "summary": CI_SPEC.summary, "role": PIPELINE_BACKEND, "company": ticker, "scope": ctx.scope,
+            "period": period, "run_date": run_date.isoformat(), "created_at": _iso(_utcnow()),
+            "created_by": "python -m pipeline.runner evaluate", "prompt": None, "rules": None, "design": None,
+            "model": None, "variables": {}, "context": registry.placement_context(ctx), "pipeline_fields": {},
+            "schemas": {}, "evaluator": {"name": evaluator.name, "placeholder": evaluator.placeholder},
+            "pipeline": {"repository": f"{_repo_owner(roots.public)}/{registry.PUBLIC_REPO}", "commit": commit,
+                         "dirty_paths": dirty, "pushed": pushed},
+            "private": {"commit": git_head(roots.private)}, "inputs": entries, "omitted": [],
+            "inputs_sha256": inputs_digest(entries), "request_sha256": None,
+            "notes": notes + reading_notes + (["rehearsal: a dry run"] if dry else []),
+        }
+        bundle_dir.parent.mkdir(parents=True, exist_ok=True)
+        tmp = Path(tempfile.mkdtemp(prefix=".evaluate-", dir=bundle_dir.parent))
+        try:
+            os.chmod(tmp, 0o755)
+            for entry in entries:
+                _write_atomic(tmp / entry["file"], texts[entry["name"]].encode("utf-8"))
+            write_yaml(tmp / MANIFEST, manifest)
+            tmp.rename(bundle_dir)
+        except BaseException:
+            shutil.rmtree(tmp, ignore_errors=True)
+            raise
+    if evaluator is None:
+        spec = manifest.get("evaluator") or {}
+        evaluator = evaluation.load_evaluator(allow_placeholder=bool(spec.get("placeholder")) and dry)
+    record = _run_evaluation(bundle_dir, manifest, evaluator, attempt, run_date)
+    _print_evaluation(record, out)
+    return bundle_dir, record
+
+
+def _run_evaluation(bundle_dir: Path, manifest: Mapping[str, Any], evaluator: evaluation.Evaluator, attempt: int,
+                    run_date: dt.date) -> dict[str, Any]:
+    inputs = read_inputs(bundle_dir, manifest)
+    record: dict[str, Any] = {"run_version": RUN_RECORD_VERSION, "bundle": manifest["bundle"], "step": registry.CI_STEP,
+                              "status": "failed", "backend": PIPELINE_BACKEND, "client": evaluator.name,
+                              "attempt": attempt, "started_at": _iso(_utcnow()), "requests": 0, "cost_usd": 0.0}
+    try:
+        thesis = yaml.safe_load(inputs["thesis"])
+        readings = (yaml.safe_load(inputs["readings"]) or {}).get("readings") or []
+        document = evaluator.evaluate_company(thesis, readings, str(manifest["period"]), run_date)
+        if not isinstance(document, (Mapping, list)):
+            raise TypeError(f"evaluate_company returned {type(document).__name__}, not a ci_results document")
+        text = registry.dump_yaml(_outputs.jsonable(document))
+        out_dir = bundle_dir / OUTPUTS_DIR
+        out_dir.mkdir(parents=True, exist_ok=False)
+        data = text.encode("utf-8")
+        _write_atomic(out_dir / f"{CI_OUTPUT}.yml", data)
+        entry = {"status": "written", "file": f"{OUTPUTS_DIR}/{CI_OUTPUT}.yml", "format": _outputs.YAML,
+                 "bytes": len(data), "sha256": _sha(data)}
+        record.update(status="succeeded", results=evaluation.result_counts(document), outputs={CI_OUTPUT: entry},
+                      placements=planned_placements(manifest, {CI_OUTPUT: entry}))
+    except Exception as exc:  # recorded in run.yml; only the error class is printed
+        record["error"] = describe_error(exc)
+    record["finished_at"] = _iso(_utcnow())
+    write_yaml(bundle_dir / RUN_RECORD, record)
+    return record
+
+
+def _print_evaluation(record: Mapping[str, Any], out: TextIO) -> None:
+    head = f"evaluate {record['bundle']} ({record['client']}, attempt {record['attempt']}): {record['status']}"
+    if record.get("error"):
+        head += f" ({record['error'].get('type')}; details in {RUN_RECORD})"
+    print(head, file=out)
+    counts = record.get("results") or {}
+    if counts:
+        print("  results: " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())), file=out)
+    for name, entry in (record.get("outputs") or {}).items():
+        print(f"  output {name}: {entry['format']}, {entry['bytes']:,} bytes, sha256 {entry['sha256'][:12]}", file=out)
+
+
 # ---------------------------------------------------------------------------------------------------- dry run
 
 
@@ -852,25 +1093,39 @@ def dry_run(step: str, company: str, period: str, *, run_date: dt.date | None = 
             out_root: str | os.PathLike[str] | None = None, replace: bool = False, edgar_gateway: Any = None,
             offline: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
             today: dt.date | None = None, out: TextIO | None = None) -> tuple[Path, dict[str, Any]]:
-    """assemble + execute with the fake backend, into a directory outside both repositories."""
+    """assemble + execute with the fake backend, into a directory outside both repositories. A post-event step whose
+    event is not on EDGAR yet runs as a rehearsal: the last reported quarter's filings stand in, and say so."""
     roots = roots or resolve_roots()
-    base = Path(out_root).resolve() if out_root else roots.workspace / DRY_RUN_DIR
-    if _inside(base, roots.public) or _inside(base, roots.private):
-        raise RunnerError(f"the dry-run directory {base} must be outside both repositories")
+    base = dry_run_base(roots, out_root)
     spec = registry.STEPS.get(step)
     if spec is not None and replace:
-        scope = "hq" if spec.scope == "hq" else str(company).strip().upper()
-        existing = base / "runs" / scope / f"{(run_date or today or dt.date.today()).isoformat()}-{spec.step}"
+        ticker = None if spec.scope == "hq" and not spec.about_company else str(company).strip().upper()
+        existing = base / "runs" / spec.storage_scope(ticker) / spec.bundle_name(run_date or today or dt.date.today(),
+                                                                                  ticker)
         if existing.is_dir():
             shutil.rmtree(existing)
     bundle_dir = assemble(step, company, period, run_date=run_date, roots=roots, out_root=base,
                           edgar_gateway=edgar_gateway, offline=offline, allow_dirty=True, schemas_dir=schemas_dir,
-                          today=today)
-    log = base / registry.LLM_LOG_REL  # a copy of the real call log, so the budget guard sees the real spend
+                          today=today, rehearsal=bool(spec and spec.post_event))
+    record = execute(bundle_dir, roots=roots, backend="fake", log_path=seed_dry_run_log(roots, base),
+                     schemas_dir=schemas_dir, out=out)
+    return bundle_dir, record
+
+
+def dry_run_base(roots: Roots, out_root: str | os.PathLike[str] | None = None) -> Path:
+    """The dry-run directory: work/pipeline-dry-run in the workspace unless given; never inside a repository."""
+    base = Path(out_root).resolve() if out_root else roots.workspace / DRY_RUN_DIR
+    if _inside(base, roots.public) or _inside(base, roots.private):
+        raise RunnerError(f"the dry-run directory {base} must be outside both repositories")
+    return base
+
+
+def seed_dry_run_log(roots: Roots, base: Path) -> Path:
+    """A copy of the real call log in the dry-run directory, so the budget guard sees the real spend."""
+    log = base / registry.LLM_LOG_REL
     seed = roots.private / registry.LLM_LOG_REL
     _write_atomic(log, seed.read_bytes() if seed.is_file() else b"")
-    record = execute(bundle_dir, roots=roots, backend="fake", log_path=log, schemas_dir=schemas_dir, out=out)
-    return bundle_dir, record
+    return log
 
 
 # ---------------------------------------------------------------------------------------------------- show, PR body
@@ -889,7 +1144,8 @@ def _source_summary(source: Mapping[str, Any]) -> str:
     if kind == "edgar":
         return f"EDGAR {source.get('detail')}"
     if kind == "thesis-ci":
-        return f"{source.get('schema')}.schema.json ({source.get('origin')})"
+        what = f"{source.get('schema')}.schema.json" if source.get("schema") else source.get("detail")
+        return f"{what} ({source.get('origin')})"
     if kind == "parameter":
         return str(source.get("detail"))
     if kind == "run_output":
@@ -907,12 +1163,16 @@ def describe_bundle(bundle_dir: Path) -> str:
     prompt = manifest.get("prompt") or {}
     rules = manifest.get("rules") or {}
     pipeline = manifest.get("pipeline") or {}
+    if manifest.get("role") == PIPELINE_BACKEND:
+        what = f"deterministic step, no model; evaluator {(manifest.get('evaluator') or {}).get('name')}"
+    else:
+        what = (f"prompt {prompt.get('id')} part {prompt.get('part')} v{prompt.get('version')} "
+                f"(sha256 {str(prompt.get('sha256'))[:12]}); rules 00 v{rules.get('version')} (sha256 "
+                f"{str(rules.get('sha256'))[:12]}); model {(manifest.get('model') or {}).get('id')}")
     lines = [
         f"{manifest['bundle']}  step {manifest['step']}  role {manifest['role']}  scope {manifest['scope']}  "
         f"period {manifest['period']}  run_date {manifest['run_date']}",
-        f"prompt {prompt.get('id')} part {prompt.get('part')} v{prompt.get('version')} "
-        f"(sha256 {str(prompt.get('sha256'))[:12]}); rules 00 v{rules.get('version')} (sha256 "
-        f"{str(rules.get('sha256'))[:12]}); model {(manifest.get('model') or {}).get('id')}",
+        what,
         f"pipeline commit {str(manifest.get('pipeline_commit'))[:12]}; pushed {pipeline.get('pushed')}; "
         f"uncommitted: {_paths_summary(pipeline.get('dirty_paths') or []) or 'none'}",
         f"request_sha256 {manifest.get('request_sha256')}",
@@ -937,8 +1197,9 @@ def describe_bundle(bundle_dir: Path) -> str:
         shown = ", ".join(f"{k}={json.dumps(v, ensure_ascii=False, default=str)}" for k, v in values.items())
         lines.append(f"pipeline fields of {output}: {shown}")
     estimate = manifest.get("estimate") or {}
-    lines.append(f"estimate: ~{estimate.get('input_tokens', 0):,} input tokens ({estimate.get('method')}); "
-                 f"uncached input cost ~{estimate.get('input_cost_usd_uncached')} USD on {estimate.get('model')}")
+    if estimate:
+        lines.append(f"estimate: ~{estimate.get('input_tokens', 0):,} input tokens ({estimate.get('method')}); "
+                     f"uncached input cost ~{estimate.get('input_cost_usd_uncached')} USD on {estimate.get('model')}")
     for note in manifest.get("notes") or []:
         lines.append(f"note: {note}")
     record = registry.load_yaml_file(bundle_dir / RUN_RECORD)
@@ -1021,9 +1282,191 @@ class PlannedWrite:
     path: str
     content: bytes
     note: str = ""
-    status: str = "new"  # new | same | header-update
+    status: str = "new"  # new | same | header-update | replace | update
     remove: list[str] = dataclasses.field(default_factory=list)
     cjk_lines: list[int] = dataclasses.field(default_factory=list)
+    action: str = "write"  # the 00 section F2 action that produced it (write, front_matter, append, merge, patch, pr_body)
+    public_bound: bool = False  # public text kept privately: the PR body, and updates staged under section G9
+    staged_from: str | None = None  # the public path a staged file will be published to
+
+    @property
+    def text(self) -> str:
+        return self.content.decode("utf-8")
+
+
+# 03 hands back complete new versions of these public files; they replace the current ones once the file is what the
+# draft read (a file changed in between is refused, never overwritten blindly).
+REPLACED_OUTPUTS = frozenset({"thesis", "ledger", "story"})
+QUARTERLY_UPDATE_STEPS = frozenset({"03R", "03P"})  # the placeable parts of prompt 03; the draft is revised first
+STAGED_DIR = "staged"  # section G9: runs/<scope>/<run_dir>/staged/<public path> in the private repository
+PR_BODY_FILE = "pr_body.md"
+PUBLICATION_RECORD = "publication.yml"
+# 00 section F2: the attachments of the quarterly-update pull request, appended to its body in this order.
+PR_ATTACHMENTS = (("04A", "findings", "Audit findings (04A)"),
+                  ("14T", "qualitative_verdicts", "Rulings on the qualitative tests (14T)"),
+                  ("04B-lite", "inversion_list", "Inversion list (04B-lite)"),
+                  ("14B", "divergence_map", "Divergence map (14B)"))
+# 00 section F5 keys -> the dossier's fixed headings (prompt 01A): part number and title.
+DOSSIER_PARTS: dict[str, tuple[int | None, str]] = {
+    "business": (1, "Business"), "economics": (2, "Economics"), "moat": (3, "Moat"),
+    "capital_allocation": (4, "Capital allocation"), "management": (5, "Management"), "culture": (6, "Culture"),
+    "runway": (7, "Runway"), "valuation": (8, "Valuation"), "bear_case": (9, "Bear case"),
+    "monitoring": (10, "Monitoring"), "thesis": (11, "Thesis"), "breakers": (12, "Thesis breakers"),
+    "munger": (None, "Munger matrix"), "unknowns": (None, "Unknowns register"),
+}
+VERSION_HISTORY = "Version history"
+MISTAKES_LIST_HEADING = "## The list"
+
+
+def set_front_matter(text: str, key: str, value: Any) -> str:
+    """A Markdown document with one front matter key set (reviewed_sections into the update record)."""
+    parts = _outputs.split_front_matter(text)
+    if parts is None:
+        raise ValueError("the document has no front matter")
+    front = _outputs.load_yaml_text(parts[0]) or {}
+    front[key] = value
+    return f"---\n{_outputs.dump_yaml(front)}---\n{parts[1]}"
+
+
+def add_mistake(current: str, entry: str) -> str:
+    """mistakes.md with the entry added as the newest one, right under "## The list" (the list is newest first)."""
+    entry = entry.strip()
+    if entry in current:
+        return current
+    marker = f"\n{MISTAKES_LIST_HEADING}\n"
+    at = current.find(marker)
+    if at < 0:
+        return current.rstrip("\n") + f"\n\n{MISTAKES_LIST_HEADING}\n\n{entry}\n"
+    head, tail = current[:at + len(marker)], current[at + len(marker):]
+    return f"{head}\n{entry}\n\n{tail.lstrip(chr(10))}"
+
+
+def merge_sources(current: str | None, entries: Sequence[Mapping[str, Any]]) -> tuple[str | None, int, list[str]]:
+    """A sources.yml with new entries appended; (text, entries added, problems). An entry whose tag is already
+    registered is skipped when identical and refused when it differs: placement never rewrites a source."""
+    data = yaml.safe_load(current) if current else None
+    if current and not (isinstance(data, dict) and isinstance(data.get("sources"), list)):
+        return current, 0, ["sources.yml has no sources list"]
+    old = list(data["sources"]) if data else []
+    known = {str(e.get("tag")): e for e in old if isinstance(e, dict)}
+    added, problems = [], []
+    for entry in entries:
+        tag = str(entry.get("tag"))
+        if tag in known:
+            if _outputs.jsonable(known[tag]) != _outputs.jsonable(entry):
+                problems.append(f"source {tag} is registered with different fields; placement never rewrites a source")
+            continue
+        added.append(dict(entry))
+        known[tag] = entry
+    if not added:
+        return current, 0, problems
+    first = re.search(r"^( *)- ", current or "", re.M)  # the file's own indentation of the sources list
+    indent = first.group(1) if first else "  "
+    block = "\n".join("\n".join(indent + line for line in registry.dump_yaml([e]).rstrip("\n").split("\n"))
+                      for e in added)
+    text = (current.rstrip("\n") + "\n\n" + block + "\n") if current else "sources:\n" + block + "\n"
+    if _outputs.jsonable(yaml.safe_load(text)) != _outputs.jsonable({**(data or {}), "sources": old + added}):
+        text = registry.dump_yaml({**(data or {}), "sources": old + added})  # formatting lost, content exact
+    return text, len(added), problems
+
+
+def patch_dossier(text: str, changes: Sequence[Mapping[str, Any]]) -> tuple[str, list[str]]:
+    """The dossier with each changed part replaced by its complete new text (03's dossier_changes; parts found by
+    their fixed headings, 01A), and version_history entries added at the end of "## Version history"."""
+    sections = isolation.split_sections(text, 2)
+    problems: list[str] = []
+    for change in changes:
+        key = str(change.get("section"))
+        body = next((str(change[k]).strip() for k in _outputs.DOSSIER_TEXT_KEYS if change.get(k)), "")
+        if key == "version_history":
+            at = next((i for i, (h, _) in enumerate(sections) if h and isolation.title_matches(h, VERSION_HISTORY)),
+                      None)
+            if at is None:
+                sections.append((VERSION_HISTORY, f"\n## {VERSION_HISTORY}\n\n{body}\n"))
+            else:
+                heading, chunk = sections[at]
+                sections[at] = (heading, chunk.rstrip("\n") + f"\n\n{body}\n\n")
+            continue
+        if key not in DOSSIER_PARTS:
+            problems.append(f"dossier_changes: {key} is not a part of the dossier")
+            continue
+        number, title = DOSSIER_PARTS[key]
+        at = next((i for i, (h, _) in enumerate(sections) if h and (
+            (number is not None and isolation.section_number(h) == number) or isolation.title_matches(h, title))),
+                  None)
+        if at is None:
+            problems.append(f"dossier_changes: the dossier has no part {number or ''} {title!r}".replace("  ", " "))
+            continue
+        heading = sections[at][0]
+        new = body if body.startswith("## ") else f"## {heading}\n\n{body}"
+        sections[at] = (heading, new.rstrip("\n") + "\n\n")
+    return "".join(chunk for _, chunk in sections).rstrip("\n") + "\n", problems
+
+
+def trust_level(public_root: Path, company: str) -> tuple[int | None, list[str]]:
+    """The company manager's trust level (section G9): thesis.yml's trust_level, and trust/levels.yml's when they
+    differ (the lower one counts, with a warning)."""
+    thesis = registry.load_yaml_file(public_root / "companies" / company / "thesis.yml")
+    levels = registry.load_yaml_file(public_root / "trust" / "levels.yml")
+    found = [v for v in ((thesis or {}).get("trust_level") if isinstance(thesis, dict) else None,
+                         ((levels or {}).get("companies") or {}).get(company) if isinstance(levels, dict) else None)
+             if isinstance(v, int) and not isinstance(v, bool)]
+    warnings = [] if len(set(found)) <= 1 else [f"trust levels differ (thesis.yml and trust/levels.yml: {found}); the "
+                                                "lower one routes this update"]
+    return (min(found) if found else None), warnings
+
+
+def h4_hits(text: str) -> list[str]:
+    """00 section H4 wording in public-bound text that is not a repository file (the PR body), with thesis-ci's own
+    wording lists; an empty list when thesis-ci is not installed (the caller warns)."""
+    try:
+        from thesis_ci.checks.public import ADVICE_WORDING, VALUATION_WORDING
+        from thesis_ci.textscan import wording_hits
+    except ImportError:
+        raise LookupError("thesis-ci is not installed") from None
+    return [f"line {line}: {label}" for wording in (VALUATION_WORDING, ADVICE_WORDING)
+            for line, label, _ in wording_hits(text, wording)]
+
+
+def compose_pr_body(text: str, manifest: Mapping[str, Any], base: Path) -> tuple[str, list[dict[str, Any]]]:
+    """03's pr_body followed by the attachments 00 section F2 puts on the quarterly-update pull request: the audit
+    findings, the rulings on the qualitative tests, the inversion list and the divergence map of the same event."""
+    runs = registry.index_run_roots([base])
+    parts, used = [text.rstrip()], []
+    for step, output, title in PR_ATTACHMENTS:
+        found = [r for r in runs if r.succeeded and r.step == step and r.company == manifest.get("company")
+                 and r.period == manifest.get("period")]
+        run = max(found, key=lambda r: (r.run_date, r.rel)) if found else None
+        body = run.read_output(output) if run else None
+        if body is None or not body.strip() or _outputs.is_empty_mark(body):
+            continue
+        parts.append(f"## {title}\n\n```yaml\n{body.rstrip()}\n```")
+        used += run.outputs_used([output])
+    return "\n\n".join(parts) + "\n", used
+
+
+def _replace_guard(write: PlannedWrite, manifest: Mapping[str, Any], base: Path, root: Path) -> str | None:
+    """A replaced file (thesis, ledger, story) must still be what the update read; returns a problem or None."""
+    current = registry.sha256_bytes((root / write.path).read_bytes())
+    read = None
+    manifests = [manifest]
+    runs = registry.index_run_roots([base])
+    drafts = [r for r in runs if r.succeeded and r.step == "03-draft" and r.company == manifest.get("company")
+              and r.period == manifest.get("period") and r.manifest]
+    manifests += [max(drafts, key=lambda r: (r.run_date, r.rel)).manifest] if drafts else []
+    for m in manifests:
+        entry = next((e for e in m.get("inputs") or [] if e.get("name") == write.output), None)
+        source = next((x for x in (entry or {}).get("sources") or [] if x.get("kind") == "repo_file"), None)
+        if source:
+            read = source.get("sha256")
+            break
+    if read is None:
+        write.note = "; ".join(filter(None, [write.note, "the update did not read this file; replaced as written"]))
+        return None
+    if read != current:
+        return (f"{write.repo}:{write.path} changed after the update read it ({current[:12]} now, {read[:12]} then); "
+                "run the update again on the current file")
+    return None
 
 
 def _horizon(items: Sequence[Any]) -> str:
@@ -1152,33 +1595,179 @@ def lint_delta(before: Mapping[str, Any], after: Mapping[str, Any]) -> dict[str,
     return out
 
 
+def _planned(writes: list[PlannedWrite], repo: str, path: str) -> PlannedWrite | None:
+    return next((w for w in writes if w.repo == repo and w.path == path), None)
+
+
+def _current_text(writes: list[PlannedWrite], roots: Roots, repo: str, path: str) -> str | None:
+    """The destination as placement will leave it so far: a write planned earlier in this placement, else the file."""
+    planned = _planned(writes, repo, path)
+    if planned is not None:
+        return planned.text
+    dest = (roots.public if repo == registry.PUBLIC_REPO else roots.private) / path
+    return dest.read_text(encoding="utf-8") if dest.is_file() else None
+
+
+def _upsert(writes: list[PlannedWrite], new: PlannedWrite) -> None:
+    old = _planned(writes, new.repo, new.path)
+    if old is None:
+        writes.append(new)
+    else:
+        old.content, old.action = new.content, f"{old.action}+{new.action}"
+
+
+def plan_actions(name: str, text: str, placements: Sequence[_outputs.Placement], manifest: Mapping[str, Any],
+                 roots: Roots, base: Path, writes: list[PlannedWrite], problems: list[str], warnings: list[str],
+                 attachments: list[dict[str, Any]]) -> None:
+    """The writes one output makes under 00 section F2: write, front_matter, append, merge, patch, pr_body and
+    pr_attachment. Each planned write holds the destination's complete new content."""
+    context = manifest.get("context") or {}
+    run_dir = context.get("run_dir") or f"{manifest['run_date']}-{manifest['step']}"
+    default = f"runs/{manifest['scope']}/{run_dir}/{name}.yml"
+    for p in placements:
+        if p.action == "write" and p.path is not None:
+            writes.append(PlannedWrite(name, p.repo, p.visibility, p.path, text.encode("utf-8"), note=p.note))
+        elif p.action == "front_matter":
+            target = _planned(writes, p.repo, str(p.path))
+            data = _outputs.load_yaml_text(text)
+            sections = data.get(name) if isinstance(data, dict) else data
+            if target is None:
+                problems.append(f"{name}: no {p.path} is written by this bundle to carry it in its front matter")
+                continue
+            try:
+                target.content = set_front_matter(target.text, name, sections).encode("utf-8")
+                target.action = f"{target.action}+front_matter"
+            except ValueError as exc:
+                problems.append(f"{name}: {p.path}: {exc}")
+        elif p.action == "append":
+            current = _current_text(writes, roots, p.repo, str(p.path))
+            if current is None:
+                problems.append(f"{name}: {p.repo}:{p.path} does not exist")
+                continue
+            if not text.lstrip().startswith("### "):
+                warnings.append(f"{name}: the entry does not open with a '### YYYY-MM-DD · Ticker · Category' heading "
+                                "(mistakes.md format)")
+            _upsert(writes, PlannedWrite(name, p.repo, p.visibility, str(p.path),
+                                         add_mistake(current, text).encode("utf-8"), note=p.note, action="append"))
+        elif p.action == "merge":
+            entries = _outputs.split_sources_additions(_outputs.load_yaml_text(text))[p.visibility]
+            if not entries:
+                continue
+            merged, added, trouble = merge_sources(_current_text(writes, roots, p.repo, str(p.path)), entries)
+            problems += [f"{name} ({p.visibility}): {t}" for t in trouble]
+            if added:
+                _upsert(writes, PlannedWrite(name, p.repo, p.visibility, str(p.path), str(merged).encode("utf-8"),
+                                             note=f"{added} source(s) added", action="merge"))
+        elif p.action == "patch":
+            current = _current_text(writes, roots, p.repo, str(p.path))
+            changes = _outputs.load_yaml_text(text)
+            if not changes:
+                continue
+            if current is None:
+                warnings.append(f"{name}: {p.repo}:{p.path} does not exist yet, so the changes cannot be merged into "
+                                f"it; they are kept at {default} for the archive build (01)")
+                writes.append(PlannedWrite(name, registry.PRIVATE_REPO, _outputs.PRIVATE, default,
+                                           text.encode("utf-8"), note="dossier changes kept until a dossier exists"))
+                continue
+            patched, trouble = patch_dossier(current, changes)
+            problems += trouble
+            _upsert(writes, PlannedWrite(name, p.repo, p.visibility, str(p.path), patched.encode("utf-8"),
+                                         note=p.note, action="patch"))
+        elif p.action == "pr_body":
+            body, used = compose_pr_body(text, manifest, base)
+            path = f"runs/{manifest['scope']}/{run_dir}/{PR_BODY_FILE}"
+            writes.append(PlannedWrite(name, registry.PRIVATE_REPO, _outputs.PRIVATE, path, body.encode("utf-8"),
+                                       note=f"the pull request's body, with {len(used)} attachment(s)",
+                                       action="pr_body", public_bound=True))
+        elif p.action == "pr_attachment":
+            attachments.append({"output": name, "attached": "to the body of the quarterly update's pull request, "
+                                                            "when the 03R bundle is placed"})
+        else:
+            problems.append(f"{name}: placement action {p.action!r} is not supported by the runner")
+
+
+def route_by_trust(writes: list[PlannedWrite], manifest: Mapping[str, Any], roots: Roots, *, publish: bool,
+                   warnings: list[str], problems: list[str]) -> dict[str, Any] | None:
+    """00 section G9 for a quarterly update: at trust level 1 or below its public files are staged in the private
+    repository (runs/<scope>/<run_dir>/staged/<path>) until HQ has reviewed them; `publish` then writes them to the
+    public branch, provided the staged copies are exactly what would be written now. Returns the routing record."""
+    if str(manifest["step"]) not in QUARTERLY_UPDATE_STEPS:
+        return None
+    level, notes = trust_level(roots.public, str(manifest["company"]))
+    warnings += notes
+    run_dir = (manifest.get("context") or {}).get("run_dir") or f"{manifest['run_date']}-{manifest['step']}"
+    staging = f"runs/{manifest['scope']}/{run_dir}/{STAGED_DIR}"
+    public = [w for w in writes if w.repo == registry.PUBLIC_REPO]
+    routing: dict[str, Any] = {"trust_level": level, "rule": "00 section G9"}
+    if level is None:
+        problems.append(f"{manifest['company']} has no trust level; a quarterly update is routed by it (section G9)")
+        return routing
+    if level >= 2:
+        routing["route"] = "public branch" + ("; HQ reviews before publication (17A)" if level == 2 else "")
+        if publish:
+            warnings.append(f"--publish is for staged updates; at trust level {level} they go to the branch directly")
+        return routing
+    if level == 0:
+        warnings.append("trust level 0: autonomy is suspended; this goes into the letter under 'For your attention'")
+    if not publish:
+        for w in public:
+            w.staged_from, w.public_bound = w.path, True
+            w.repo, w.visibility, w.path = registry.PRIVATE_REPO, _outputs.PRIVATE, f"{staging}/{w.path}"
+        routing["route"] = f"staged in {registry.PRIVATE_REPO}:{staging}/ until HQ has reviewed it item by item"
+        return routing
+    for w in public:
+        staged = roots.private / staging / w.path
+        if not staged.is_file():
+            problems.append(f"{w.path} was not staged; place the bundle without --publish first, for HQ's review")
+        elif staged.read_bytes() != w.content:
+            problems.append(f"{w.path}: what would be published now differs from the staged copy HQ reviewed (the "
+                            "public file changed since); place the bundle again without --publish")
+    routing["route"] = "published after HQ's review of the staged copies"
+    return routing
+
+
 def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch: str | None = None,
           announced: str | None = None, window: Sequence[str] | None = None, check: bool = False,
           allow_cjk: bool = False, allow_fake: bool = False, lint: bool = True, now: dt.datetime | None = None,
-          edgar_gateway: Any = None, schemas_dir: str | os.PathLike[str] | None = None,
+          edgar_gateway: Any = None, schemas_dir: str | os.PathLike[str] | None = None, publish: bool = False,
           out: TextIO | None = None) -> dict[str, Any]:
-    """Copy each output of an executed bundle to its 00 section F2 destination. Returns the placement record."""
+    """Copy each output of an executed bundle to its 00 section F2 destination. Returns the placement record.
+
+    Actions (docs/decisions/0024): write; front_matter (reviewed_sections into the update record); append (the
+    mistakes entry, newest first); merge (sources_additions into each repository's sources.yml by visibility); patch
+    (dossier_changes, part by part); pr_body (03's body plus the audit findings, the qualitative rulings, the inversion
+    list and the divergence map, kept as pr_body.md in the run directory); pr_attachment (nothing written; attached
+    through the PR body). A quarterly update is routed by trust level (section G9): at level 1 or below its public
+    files are staged in the private repository, and `publish` writes them to the public branch after HQ's review."""
     roots = roots or resolve_roots()
     out = out or sys.stdout
     schemas = Path(schemas_dir) if schemas_dir else None
     now = now or _utcnow()
     bundle_dir = resolve_bundle(bundle, roots.private)
     manifest = load_manifest(bundle_dir)
-    record = load_run_record(bundle_dir)
     rel = manifest["bundle"]
+    if manifest.get("role") == PIPELINE_BACKEND:
+        raise RunnerError(f"{rel} is a deterministic step; its results are read from the bundle, nothing is placed")
+    if manifest["step"] == "03-draft":
+        raise RunnerError(f"{rel} is the draft; 03R revises it after the audit, and the 03R bundle is placed")
+    record = load_run_record(bundle_dir)
     if record.get("status") != "succeeded":
         raise RunnerError(f"{rel} did not succeed (status {record.get('status')}); there is nothing to place")
     real = record.get("backend") in REAL_BACKENDS and record.get("client") in REAL_BACKENDS
     if not real and not allow_fake:
         raise RunnerError(f"{rel} was produced by the {record.get('client')} client (a dry run or a test); its outputs "
                           "are placeholders and are never placed")
+    base = bundle_dir.parents[2]
     entries = {k: v for k, v in (record.get("outputs") or {}).items() if v.get("status") == "written"}
     header, basis = (prereg_header_for(manifest, roots, announced=announced, window=window,
                                        edgar_gateway=edgar_gateway) if "prereg" in entries else (None, None))
     writes: list[PlannedWrite] = []
     problems: list[str] = []
     warnings: list[str] = []
+    attachments: list[dict[str, Any]] = []
     merged_prereg: Any = None
+    order = ("write", "front_matter", "append", "merge", "patch", "pr_body", "pr_attachment")
+    planned: list[tuple[int, str, str, list[_outputs.Placement]]] = []
     for name, entry in entries.items():
         data = (bundle_dir / str(entry["file"])).read_bytes()
         if _sha(data) != entry.get("sha256"):
@@ -1190,23 +1779,37 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             warnings += notes
             problems += [f"prereg: {p}" for p in prereg_problems]
         try:
-            placements = _outputs.place(name, prompt_id=str(manifest["prompt"]["id"]), part_id=str(manifest["step"]),
+            placements = _outputs.place(name, prompt_id=_prompt_id(manifest), part_id=str(manifest["step"]),
                                         fmt=str(entry["format"]), **(manifest.get("context") or {}))
         except _outputs.PlacementError as exc:
             problems.append(f"{name}: {exc}")
             continue
-        for p in placements:
-            if p.action != "write" or p.path is None:
-                problems.append(f"{name}: placement action {p.action!r} is not supported by the runner yet "
-                                "(decisions/0019)")
-                continue
-            write = PlannedWrite(name, p.repo, p.visibility, p.path, text.encode("utf-8"), note=p.note)
-            if p.visibility == _outputs.PUBLIC:
-                write.cjk_lines = cjk_lines(text)
-            writes.append(write)
+        rank = min(order.index(p.action) if p.action in order else len(order) for p in placements)
+        planned.append((rank, name, text, placements))
+    for _, name, text, placements in sorted(planned, key=lambda row: row[0]):
+        try:
+            plan_actions(name, text, placements, manifest, roots, base, writes, problems, warnings, attachments)
+        except (ValueError, yaml.YAMLError) as exc:
+            problems.append(f"{name}: {exc}")
+    routing = route_by_trust(writes, manifest, roots, publish=publish, warnings=warnings, problems=problems)
     for write in writes:
+        if write.visibility == _outputs.PUBLIC or write.public_bound:
+            write.cjk_lines = cjk_lines(write.text)
         root = roots.public if write.repo == registry.PUBLIC_REPO else roots.private
-        if (root / write.path).exists():
+        if not (root / write.path).exists():
+            continue
+        if write.action == "write" and write.output in REPLACED_OUTPUTS and _prompt_id(manifest) == "03" \
+                and write.staged_from is None:
+            if (root / write.path).read_bytes() == write.content:
+                write.status = "same"
+                continue
+            problem = _replace_guard(write, manifest, base, root)
+            if problem:
+                problems.append(problem)
+            write.status = "replace"
+        elif write.action != "write" or write.staged_from is not None:
+            write.status = "same" if (root / write.path).read_bytes() == write.content else "update"
+        else:
             problem = _check_existing(write, root, now, merged_prereg or {})
             if problem:
                 problems.append(problem)
@@ -1225,15 +1828,29 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             warnings.append(message + "; placed anyway with --allow-cjk")
         else:
             problems.append(message + "; rerun with English output, or pass --allow-cjk")
+    for w in (w for w in writes if w.action == "pr_body"):
+        try:
+            hits = h4_hits(w.text)
+        except LookupError:
+            warnings.append(f"{w.path}: the section H4 wording of the PR body was not checked (thesis-ci missing)")
+            continue
+        if hits:
+            problems.append(f"{w.path}: the PR body contains section H4 wording ({'; '.join(hits[:5])}); it goes "
+                            "public with the pull request")
     report: dict[str, Any] = {
         "placement_version": 1,
         "bundle": rel,
         "placed_at": _iso(now),
         "check_only": check,
+        "publish": publish,
         "prereg_header": {"basis": basis, **header} if header else None,
+        "routing": routing,
         "files": [{"output": w.output, "repo": w.repo, "visibility": w.visibility, "path": w.path,
-                   "status": w.status, "sha256": _sha(w.content), "remove": w.remove,
+                   "action": w.action, "status": w.status, "sha256": _sha(w.content), "remove": w.remove,
+                   **({"staged_from": w.staged_from} if w.staged_from else {}),
+                   **({"note": w.note} if w.note else {}),
                    **({"cjk_lines": len(w.cjk_lines)} if w.cjk_lines else {})} for w in writes],
+        "attachments": attachments,
         "warnings": warnings,
         "allow_cjk": allow_cjk,
     }
@@ -1243,7 +1860,7 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
         _print_placement(report, out)
         return report
     changed = [w for w in writes if w.status != "same"]
-    public_changes = [w for w in changed if w.visibility == _outputs.PUBLIC]
+    public_changes = [w for w in changed if w.repo == registry.PUBLIC_REPO]
     if public_changes:
         default_branch = f"pipeline/{manifest['scope']}-{manifest['run_date']}-{manifest['step']}"
         report["public_branch"] = ensure_public_branch(
@@ -1278,17 +1895,24 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             else:
                 _write_atomic(path, previous)
         raise
-    write_yaml(bundle_dir / PLACEMENT_RECORD, report)
+    write_yaml(bundle_dir / (PUBLICATION_RECORD if publish else PLACEMENT_RECORD), report)
     _print_placement(report, out)
     return report
 
 
 def _print_placement(report: Mapping[str, Any], out: TextIO) -> None:
-    verb = "would place" if report.get("check_only") else "placed"
+    verb = "would place" if report.get("check_only") else ("published" if report.get("publish") else "placed")
     print(f"{verb} {report['bundle']}:", file=out)
     for f in report["files"]:
         extra = f"; removes {', '.join(f['remove'])}" if f.get("remove") else ""
-        print(f"  {f['output']:<16} -> {f['repo']}:{f['path']} ({f['visibility']}, {f['status']}{extra})", file=out)
+        extra += f"; staged for {f['staged_from']}" if f.get("staged_from") else ""
+        print(f"  {f['output']:<16} -> {f['repo']}:{f['path']} ({f['visibility']}, {f['action']}, {f['status']}{extra})",
+              file=out)
+    for a in report.get("attachments") or []:
+        print(f"  {a['output']:<16} -> attached {a['attached']}", file=out)
+    if report.get("routing"):
+        routing = report["routing"]
+        print(f"  trust level {routing.get('trust_level')}: {routing.get('route')}", file=out)
     if report.get("prereg_header"):
         header = report["prereg_header"]
         print(f"  prereg header: expected_release {header['event'].get('expected_release')}, placeholder "
@@ -1302,10 +1926,12 @@ def _print_placement(report: Mapping[str, Any], out: TextIO) -> None:
             f"{lint[side]['warnings']} warning(s)" for side in ("public", "private")), file=out)
     if report.get("public_branch"):
         print(f"  public files are on branch {report['public_branch']} of {registry.PUBLIC_REPO}: commit, push and "
-              "open a pull request; for a pre-registration the timestamp workflow stamps it after the merge", file=out)
+              "open a pull request (its body: pr_body.md in the run directory, if the bundle wrote one); for a "
+              "pre-registration the timestamp workflow stamps it after the merge", file=out)
     if not report.get("check_only"):
-        print(f"  private files: commit them in {registry.PRIVATE_REPO} together with "
-              f"{report['bundle']}/{PLACEMENT_RECORD}", file=out)
+        record = PUBLICATION_RECORD if report.get("publish") else PLACEMENT_RECORD
+        print(f"  private files: commit them in {registry.PRIVATE_REPO} together with {report['bundle']}/{record}",
+              file=out)
 
 
 # ---------------------------------------------------------------------------------------------------- CLI
@@ -1348,6 +1974,33 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("dry-run", parents=[roots, step_args], help="assemble and execute with the fake backend")
     p.add_argument("--out", type=Path, default=None, help=f"output directory (default: <workspace>/{DRY_RUN_DIR})")
     p.add_argument("--replace", action="store_true", help="replace an earlier dry-run bundle of the same step and date")
+    p = sub.add_parser("evaluate", parents=[roots],
+                       help="evaluate the quantitative tests of an earnings event (ci_results; deterministic, no model)")
+    p.add_argument("company", help="ticker (companies/<TICKER>/)")
+    p.add_argument("period", help="FY<year>Q<quarter>")
+    p.add_argument("--run-date", type=_date_arg, default=None, help="YYYY-MM-DD (default: today)")
+    p.add_argument("--offline", action="store_true", help="EDGAR from the local cache only")
+    p.add_argument("--allow-dirty", action="store_true", help="evaluate with uncommitted pipeline code (recorded)")
+    p.add_argument("--retry", action="store_true", help="evaluate a failed bundle again")
+    p.add_argument("--out", type=Path, default=None,
+                   help="a dry-run directory outside both repositories (default: the private repository)")
+    p = sub.add_parser("event", parents=[roots],
+                       help="run the post-earnings chain of one event step by step, with stops for review "
+                            "(pipeline/chain.py)")
+    p.add_argument("company", help="ticker (companies/<TICKER>/)")
+    p.add_argument("period", help="FY<year>Q<quarter>")
+    p.add_argument("--run-date", type=_date_arg, default=None, help="YYYY-MM-DD for new bundles (default: today)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="the fake backend, outside both repositories; a rehearsal when the event has not happened")
+    p.add_argument("--out", type=Path, default=None, help=f"dry-run directory (default: <workspace>/{DRY_RUN_DIR})")
+    p.add_argument("--approve", action="append", default=[], choices=("draft", "audit", "placement"),
+                   help="record that the bundle under review at this stop was reviewed, and continue")
+    p.add_argument("--retry", action="store_true", help="run a failed bundle of the chain again")
+    p.add_argument("--backend", choices=REAL_BACKENDS, default=None,
+                   help=f"model backend of a real run (default: {llm.BACKEND_ENV}, else {DEFAULT_BACKEND})")
+    p.add_argument("--allow-dirty", action="store_true", help="assemble from uncommitted pipeline code (recorded)")
+    p.add_argument("--offline", action="store_true", help="EDGAR from the local cache only")
+    p.add_argument("--no-lint", action="store_true", help="skip thesis-ci lint when placing")
     p = sub.add_parser("show", parents=[roots], help="summarize a bundle: names, sizes, hashes, sources")
     p.add_argument("bundle")
     p = sub.add_parser("execute", parents=[roots], help="run a bundle's model call and record it in the bundle")
@@ -1373,6 +2026,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--check", action="store_true", help="show the plan and the checks; write nothing")
     p.add_argument("--allow-cjk", action="store_true", help="place public-bound output that contains CJK text")
     p.add_argument("--no-lint", action="store_true", help="skip thesis-ci lint after writing")
+    p.add_argument("--publish", action="store_true",
+                   help="after HQ's review: write a staged quarterly update (trust level 1 or below, section G9) to "
+                        "the public branch")
     return parser
 
 
@@ -1397,6 +2053,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(describe_bundle(bundle_dir))
             print(f"dry-run bundle: {bundle_dir}")
             return 0 if record.get("status") == "succeeded" else 1
+        if args.command == "evaluate":
+            _, record = evaluate(args.company, args.period, run_date=args.run_date, roots=roots, out_root=args.out,
+                                 offline=args.offline, allow_dirty=args.allow_dirty, schemas_dir=args.schemas_dir,
+                                 retry=args.retry)
+            return 0 if record.get("status") == "succeeded" else 1
+        if args.command == "event":
+            from . import chain  # the chain imports this module
+
+            code, _ = chain.run_event(args.company, args.period, run_date=args.run_date or dt.date.today(),
+                                      roots=roots, dry_run=args.dry_run, out_root=args.out, backend=args.backend,
+                                      approve_stops=args.approve, retry=args.retry, allow_dirty=args.allow_dirty,
+                                      offline=args.offline, schemas_dir=args.schemas_dir, lint=not args.no_lint)
+            return code
         if args.command == "show":
             print(describe_bundle(resolve_bundle(args.bundle, roots.private)))
             return 0
@@ -1415,7 +2084,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.command == "place":
             place(args.bundle, roots=roots, branch=args.branch, announced=args.announced, window=args.window,
-                  check=args.check, allow_cjk=args.allow_cjk, lint=not args.no_lint, schemas_dir=args.schemas_dir)
+                  check=args.check, allow_cjk=args.allow_cjk, lint=not args.no_lint, schemas_dir=args.schemas_dir,
+                  publish=args.publish)
             return 0
     except RunnerError as exc:
         print(f"error: {exc}", file=sys.stderr)

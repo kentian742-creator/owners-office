@@ -20,7 +20,7 @@ import yaml
 from pipeline import edgar, fake_client, llm, outputs, registry, runner
 from tests import runner_fixtures as fx
 
-STEPS = ("14Q", "15A", "18")
+STEPS = ("14Q", "15A", "18", "16B", "14T", "14A", "03-draft", "16A", "04A", "03R")
 NOW = dt.datetime(2026, 10, 20, 12, 0, tzinfo=dt.timezone.utc)
 RUN_DATE = dt.date.fromisoformat(fx.RUN_DATE)
 REAL_PROMPTS = fx.REPO_ROOT.parent / registry.PRIVATE_REPO / "prompts"
@@ -93,7 +93,9 @@ def branch_of(root: Path) -> str:
 
 def test_the_supported_steps():
     assert list(registry.STEPS) == list(STEPS)
-    assert registry.STEPS["15A"].pipeline_fields is not None
+    assert registry.STEPS["15A"].pipeline_fields is not None and registry.STEPS["03R"].pipeline_fields is not None
+    assert registry.STEPS["04A"].variables == {"subject": "quarterly update"}
+    assert all(registry.STEPS[s].post_event for s in STEPS[3:]) and not registry.STEPS["15A"].post_event
     assert registry.STEPS["14Q"].holdings_only and registry.STEPS["15A"].holdings_only
     assert registry.STEPS["18"].scope == "hq" and registry.STEPS["18"].period_kind == "month"
 
@@ -113,7 +115,7 @@ def test_the_real_roles_may_see_every_input_of_their_step(env, step):
     call = llm.prompt_part(llm.load_prompt(spec.prompt_id, env.private / "prompts"), spec.part)
     role = llm.role_definition(call.role, fx.REPO_ROOT)
     llm.check_inputs(call, role, [name for name, _ in call.inputs])
-    assert step in role.prompts
+    assert step in role.prompts or spec.prompt_id in role.prompts
 
 
 @pytest.mark.skipif(not REAL_PROMPTS.is_dir(), reason="the private prompts are not checked out next to this repository")
@@ -131,10 +133,10 @@ def test_the_real_prompts_are_covered_and_match_the_fixtures(env, step):
 # ---------------------------------------------------------------------------------------------------- isolation
 
 
-def seed_question_list(env) -> Path:
-    """A frozen and placed 14Q question list for APP FY2026Q3."""
-    run = env.private / "runs" / "APP" / "2026-10-01-14Q"
-    fx.write_yaml(run / runner.MANIFEST, {"manifest_version": 1, "step": "14Q", "period": "FY2026Q3"})
+def seed_question_list(env, period: str = "FY2026Q3") -> Path:
+    """A frozen and placed 14Q question list for APP (FY2026Q3 unless given)."""
+    run = env.private / "runs" / "APP" / "2026-07-01-14Q"
+    fx.write_yaml(run / runner.MANIFEST, {"manifest_version": 1, "step": "14Q", "period": period})
     fx.write_yaml(run / runner.RUN_RECORD, {"status": "succeeded"})
     fx.write_yaml(run / "question_list.yml", [
         {"id": "Q01", "question": "first", "kind": "pillar", "maps_to": ["P1"]},
@@ -144,32 +146,26 @@ def seed_question_list(env) -> Path:
     return run
 
 
-def blind_read_step(monkeypatch) -> None:
-    monkeypatch.setitem(registry.STEPS, "14A", registry.StepSpec("14A", "14", "A", "company", "quarter", True,
-                                                                 "blind read (test only)"))
-
-
-def test_the_blind_read_gets_only_the_stripped_question_list(env, monkeypatch):
-    seed_question_list(env)
-    blind_read_step(monkeypatch)
-    bundle = env.assemble("14A")
+def test_the_blind_read_gets_only_the_stripped_question_list(env):
+    seed_question_list(env, "FY2026Q2")
+    bundle = env.assemble("14A", period="FY2026Q2")
     stripped = yaml.safe_load((bundle / "inputs" / "question_list_stripped.yml").read_text(encoding="utf-8"))
     assert all("kind" not in q and "maps_to" not in q for q in stripped)
     assert {q["id"] for q in stripped} == {"Q01", "Q02", "Q03"} and stripped[-1]["question"] == "open question"
-    (entry,) = manifest_of(bundle)["inputs"]
+    filings, entry = manifest_of(bundle)["inputs"]
     assert entry["sources"][0]["transform"] == "isolation.question_list_stripped" and entry["sources"][0]["seed"]
-    assert manifest_of(bundle)["role"] == "blind_reader"
+    assert filings["name"] == "filings" and manifest_of(bundle)["role"] == "blind_reader"
 
 
-def test_assembly_refuses_an_input_the_role_may_not_see(env, monkeypatch):
+def test_assembly_refuses_an_input_the_role_may_not_see(env):
     """A blind-read part that declared the thesis is refused before anything is written."""
-    seed_question_list(env)
-    blind_read_step(monkeypatch)
+    seed_question_list(env, "FY2026Q2")
     prompt = env.private / "prompts" / "14-questions.md"
     prompt.write_text(prompt.read_text(encoding="utf-8").replace(
-        "inputs: [question_list_stripped]", "inputs: [question_list_stripped, thesis]"), encoding="utf-8")
+        "inputs: [filings, question_list_stripped]", "inputs: [filings, question_list_stripped, thesis]"),
+        encoding="utf-8")
     with pytest.raises(runner.RunnerError, match="thesis") as info:
-        env.assemble("14A")
+        env.assemble("14A", period="FY2026Q2")
     assert "blind_reader" in str(info.value)
     assert not (env.private / "runs" / "APP" / f"{fx.RUN_DATE}-14A").exists()
 
@@ -232,7 +228,7 @@ def test_assembly_fails_loudly_with_every_missing_input_and_writes_nothing(env, 
 
 
 @pytest.mark.parametrize("args, match", [
-    (("16B", "APP", "FY2026Q3"), "unknown step"),
+    (("16Z", "APP", "FY2026Q3"), "unknown step"),
     (("15A", "APP", "2026-10"), "quarter period"),
     (("15A", "AXP", "FY2026Q3"), "holdings only"),
     (("18", "APP", "2026-10"), "HQ step"),
@@ -595,7 +591,8 @@ def test_lint_errors_that_were_there_before_do_not_block_a_placement(env, monkey
 # ---------------------------------------------------------------------------------------------------- repository rules
 
 
-@pytest.mark.parametrize("module", ["runner.py", "registry.py", "fake_client.py"])
+@pytest.mark.parametrize("module", ["runner.py", "registry.py", "fake_client.py", "chain.py", "documents.py",
+                                    "evaluation.py"])
 def test_the_runner_modules_import_no_model_sdk(module):
     tree = ast.parse((fx.REPO_ROOT / "pipeline" / module).read_text(encoding="utf-8"))
     imported = {alias.name.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.Import)
@@ -608,7 +605,9 @@ def test_the_runner_modules_import_no_model_sdk(module):
 @pytest.mark.parametrize("path", [*sorted(p.relative_to(fx.REPO_ROOT).as_posix()
                                           for p in (fx.REPO_ROOT / "pipeline").glob("*.py")),
                                   "tests/test_runner.py", "tests/runner_fixtures.py", "tests/test_claude_code.py",
-                                  "docs/decisions/0019-pipeline-runner.md", "docs/decisions/0022-claude-code-backend.md"])
+                                  "tests/test_post_earnings.py", "tests/evaluate_shim.py",
+                                  "docs/decisions/0019-pipeline-runner.md", "docs/decisions/0022-claude-code-backend.md",
+                                  "docs/decisions/0024-post-earnings-steps.md"])
 def test_the_pipeline_files_are_english_only(path):
     """Owner policy 2026-09-25: the public repositories are English-first (no CJK text in the pipeline code)."""
     target = fx.REPO_ROOT / path

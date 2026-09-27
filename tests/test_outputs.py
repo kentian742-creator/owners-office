@@ -192,30 +192,87 @@ def test_text_outputs_are_left_alone_and_yaml_outputs_are_strict(schemas):
     reply = (
         '<output name="reply">Summary: no memo; the reasons follow.</output>'
         '<output name="bear_case">---\nprose that starts with a rule\n---\nmore prose</output>'
-        '<output name="gate_decision">Decision - release. The reasons are in questions.</output>'
+        '<output name="layout_instructions">Page 3 - move the chart. The reasons are in questions.</output>'
     )
-    parsed, errors = parse(reply, [("reply", True), ("bear_case", True), ("gate_decision", True)], schemas)
+    parsed, errors = parse(reply, [("reply", True), ("bear_case", True), ("layout_instructions", True)], schemas)
     assert parsed["reply"].text == "Summary: no memo; the reasons follow.\n"  # text: left alone even if it looks like YAML
     assert parsed["bear_case"].format == "text" and not parsed["bear_case"].generated_by_injected
     assert errors == []  # one sentence is a valid YAML scalar
-    assert parsed["gate_decision"].data == "Decision - release. The reasons are in questions."
-    _, errors = parse('<output name="gate_decision">decision: release\n  reason: [unclosed</output>',
-                      [("gate_decision", True)], schemas)
-    assert errors and errors[0].startswith("gate_decision: the YAML does not parse")
+    assert parsed["layout_instructions"].data == "Page 3 - move the chart. The reasons are in questions."
+    _, errors = parse('<output name="layout_instructions">page: 3\n  change: [unclosed</output>',
+                      [("layout_instructions", True)], schemas)
+    assert errors and errors[0].startswith("layout_instructions: the YAML does not parse")
 
 
 def test_generated_by_is_appended_to_schemaless_mappings_only_when_it_round_trips(schemas):
-    mapping = "as_of: 2026-09-24\nverdicts: []\n"
-    flow = "{as_of: 2026-09-24, verdicts: []}\n...\n"
+    mapping = "as_of: 2026-09-24\nchanges: []\n"
+    flow = "{as_of: 2026-09-24, checks: []}\n...\n"
     parsed, errors = parse(
-        f'<output name="fact_verdicts">{mapping}</output><output name="model_checks">{flow}</output>',
-        [("fact_verdicts", True), ("model_checks", True)],
+        f'<output name="layout_instructions">{mapping}</output><output name="model_checks">{flow}</output>',
+        [("layout_instructions", True), ("model_checks", True)],
         schemas,
     )
     assert errors == []
-    assert parsed["fact_verdicts"].generated_by_injected
-    assert parsed["fact_verdicts"].text.startswith(mapping)
+    assert parsed["layout_instructions"].generated_by_injected
+    assert parsed["layout_instructions"].text.startswith(mapping)
     assert not parsed["model_checks"].generated_by_injected
+
+
+FACT = ("- id: F001\n  location: update 2\n  subject: TEST\n  what: revenue\n  value: 100\n  unit: USD million\n"
+        "  period: FY2026Q3\n  source: TEST-10Q-FY2026Q3#Item2\n  excerpt: 'Excerpt: revenue of $100 million'\n")
+
+
+@pytest.mark.parametrize("output, text, error", [
+    ("fact_table", FACT, "fact_table: should be a mapping with a facts list (16A)"),
+    ("fact_table", "facts:\n" + FACT.replace("\n  ", "\n    ").replace("- ", "  - ", 1),
+     "fact_table: the mapping has no as_of (16A)"),
+    ("fact_table", "as_of: 2026-10-21\nfacts:\n  - id: F001\n    what: revenue\n",
+     "fact_table[0] (F001): has no location, value, source, excerpt (16A)"),
+    ("metric_values", "revenue_yoy: 12.5\n", "metric_values: should be a list with one entry per item, not a mapping"),
+    ("metric_values", "- metric: revenue_yoy\n  value: 12.5\n", "metric_values[0]: has no unit, period, source (16B)"),
+    ("qualitative_verdicts", "- test_id: TEST-L1\n  answer: 'No'\n  verdict: passed\n  excerpt: x\n  source: []\n",
+     "qualitative_verdicts[0] (TEST-L1): verdict 'passed' is not one of: fail, pass, undetermined, warn (14T)"),
+    ("qualitative_verdicts", "- test_id: TEST-L1\n  answer: 'No'\n  verdict: pass\n  excerpt: x\n  source: []\n",
+     "qualitative_verdicts[0] (TEST-L1): answer 'No' is not one of: cannot determine, no, yes (14T)"),
+    ("prereg_settlement", "- id: TEST-FY2026Q3-1\n  outcome: true\n  evidence: x\n  reasoning: y\n",
+     "prereg_settlement[0] (TEST-FY2026Q3-1): outcome True is not one of: happened, not_happened, undetermined (15B)"),
+    ("ledger_settlement", "- id: TEST-M-1\n  result: kept\n", "ledger_settlement[0] (TEST-M-1): has none of status, "
+                                                               "outcome (15B, 00 §F6)"),
+    ("revision_notes", "- finding_id: 04A-01\n  action: done\n  how: x\n",
+     "revision_notes[0]: action 'done' is not one of: fixed, not fixed, to HQ (00 §F4)"),
+    ("dossier_changes", "- section: Moat\n  text: New text.\n",
+     "dossier_changes[0]: section 'Moat' is not one of: bear_case, breakers"),
+    ("reviewed_sections", "[moat, Moat]\n", "reviewed_sections: 'Moat' is not one of: bear_case"),
+    ("gate_decision", "Release: the checks pass.\n",
+     "gate_decision: should be a mapping whose decision is release, return or hold"),
+    ("divergence_map", "- id: Q01\n  mark: disagree\n",
+     "divergence_map[0] (Q01): mark 'disagree' is not one of: agree, cannot tell, diverge (14B)"),
+])
+def test_yaml_outputs_that_later_steps_read_are_checked_for_shape_and_words(schemas, output, text, error):
+    """Decision 0024: YAML that parses but not in the part's format is refused with the rule it breaks, so the one
+    retry can fix it; the words are the rules' own (00 §F3, §F4, §F8 and the prompts)."""
+    FORMATS.setdefault(output, "yaml")
+    _, errors = parse(f'<output name="{output}">{text}</output>', [(output, True)], schemas)
+    assert any(e.startswith(error) for e in errors), errors
+
+
+WELL_FORMED = {
+    "fact_table": "as_of: 2026-10-21\nfacts:\n" + "".join("  " + line + "\n" for line in FACT.splitlines()),
+    "metric_values": "- metric: revenue_yoy\n  value: not_found\n  unit: '%'\n  period: FY2026Q3\n  source: null\n",
+    "qualitative_verdicts": ("- test_id: TEST-L1\n  answer: cannot determine\n  verdict: undetermined\n"
+                             "  excerpt: null\n  source: []\n"),
+    "dossier_changes": "- section: moat\n  text: New text of part 3.\n",
+    "reviewed_sections": "[moat, monitoring]\n",
+    "gate_decision": "decision: hold\nreasons: [the audit is open]\n",
+}
+
+
+def test_well_formed_structured_outputs_pass(schemas):
+    for output in WELL_FORMED:
+        FORMATS.setdefault(output, "yaml")
+    reply = "".join(f'<output name="{name}">{text}</output>' for name, text in WELL_FORMED.items())
+    parsed, errors = parse(reply, [(name, True) for name in WELL_FORMED], schemas)
+    assert errors == [] and parsed["fact_table"].data["facts"][0]["id"] == "F001"
 
 
 def test_file_outputs_cannot_travel_in_text(schemas):

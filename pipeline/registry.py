@@ -1,9 +1,16 @@
-"""Input registry for the pipeline runner (docs/decisions/0019). This module never calls a model.
+"""Input registry for the pipeline runner (docs/decisions/0019, 0024). This module never calls a model.
 
-A step is one prompt part run by one role: 14Q (question list, HQ), 15A (pre-registration, company manager),
-18 (monthly letter, HQ). The prompt's front matter is the only list of a part's inputs; this module maps every
-input name to an assembler that builds that document from the two repositories, EDGAR (through pipeline.edgar),
-the thesis-ci schemas and earlier run outputs under runs/ in the private repository.
+A step is one prompt part run by one role. Before an earnings event: 14Q (question list, HQ), 15A (pre-registration,
+company manager); once a month: 18 (monthly letter, HQ). After an earnings event (docs/decisions/0024): 16B (metric
+extraction), 03-draft (quarterly update draft, company manager), 16A (fact extraction from the draft), 04A (fact
+audit), 03R (revision after the audit); for holdings also 14T (qualitative tests, judge) and 14A (blind read), with
+04B-lite, 14B, 15B and 17A to come. The deterministic evaluation of the quantitative tests (ci_results) is not a
+prompt part; the runner records it like a run (the `ci` step, pipeline/evaluation.py), and pipeline/chain.py runs the
+whole chain of one event.
+
+The prompt's front matter is the only list of a part's inputs; this module maps every input name to an assembler
+that builds that document from the two repositories, EDGAR (through pipeline.edgar and pipeline/documents.py), the
+thesis-ci schemas and earlier run outputs under runs/ in the private repository.
 
 - A declared input without an assembler, or a required input whose data cannot be found, fails the assembly;
   the runner reports every missing input at once.
@@ -11,12 +18,14 @@ the thesis-ci schemas and earlier run outputs under runs/ in the private reposit
   explicit document that says so in one line, and the manifest marks it empty. Nothing is silently omitted.
   An optional input may be left out only by raising Omit, and the manifest records the reason.
 - Stand-ins are declared: until companies/<T>/dossier.md exists, the owner's complete report text stands in for
-  the dossier (substitute: dossier in the manifest).
+  the dossier (substitute: dossier in the manifest). In a dry-run rehearsal before the event (RunContext.rehearsal),
+  the last reported quarter's filings stand in for the event's (substitute: filings); real assemblies never do this.
+- Upstream outputs are the succeeded runs of the same company and period (RunContext.latest_run); a dry run looks in
+  its own directory first, so a rehearsal chain reads its own placeholders and never the private repository's runs.
 - Assemblers read files, git history and EDGAR. They never call a model and never print what they read.
 
-Adding a step (16B, 14A, 14T, 03, 04A, 04B-lite, 14B, 15B) means adding a StepSpec to STEPS and an assembler for
-each input name that part declares and that is not registered yet; the runner, the bundle format and the
-workflow stay as they are. docs/decisions/0019 lists what each of those steps still needs.
+Adding a step means adding a StepSpec to STEPS and an assembler for each input name that part declares and that is
+not registered yet; the runner, the bundle format and the workflow stay as they are.
 """
 
 from __future__ import annotations
@@ -35,7 +44,7 @@ from typing import Any
 
 import yaml
 
-from . import edgar, isolation, llm
+from . import documents, edgar, evaluation, isolation, llm
 from . import outputs as _outputs
 
 PUBLIC_REPO = "owners-office"
@@ -67,7 +76,10 @@ _PARENTHETICAL_RE = re.compile(r"\s*[(\uff08][^()\uff08\uff09]*[)\uff09]")
 QUARTER_RE = re.compile(r"^FY\d{4}Q[1-4]$")
 MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 TICKER_RE = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
-RUN_DIR_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-(\d{2}[A-Za-z0-9-]*)$")
+# <run_date>-<part>: a prompt part (15A, 03-draft, 04B-lite; an HQ step about one company adds its ticker, 17A-AXP),
+# or a deterministic pipeline step (ci).
+RUN_DIR_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-(\d{2}[A-Za-z0-9.-]*|[a-z][a-z0-9]*)$")
+CI_STEP = "ci"  # the evaluation of the quantitative tests (ci_results), recorded like a run
 _DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 _MISTAKE_HEADING_RE = re.compile(r"^### (\d{4}-\d{2}-\d{2})\b", re.M)
 _IX_HEADER_RE = re.compile(rb"(?is)<ix:header\b.*?</ix:header\s*>")
@@ -76,6 +88,10 @@ RESOLVED = ("happened", "not_happened")
 
 class MissingInput(LookupError):
     """A required input has no data and no defined stand-in. The message names what is missing, never content."""
+
+
+class EventNotReleased(MissingInput):
+    """The period's results are not on EDGAR as of the run date, or the event has not closed yet."""
 
 
 class Omit(Exception):
@@ -89,14 +105,26 @@ class Omit(Exception):
 class StepSpec:
     """One supported step. The inputs come from the prompt's front matter, not from here."""
 
-    step: str  # the part label as the prompt names it: 14Q, 15A, 18
+    step: str  # the part label as the prompt names it: 14Q, 15A, 18, 03-draft, 03R
     prompt_id: str
-    part: str | None  # front-matter part key (Q, A), or None for a prompt without parts
+    part: str | None  # front-matter part key (Q, A, draft, revise), or None for a prompt without parts
     scope: str  # "company" (runs/<TICKER>/...) or "hq" (runs/hq/...)
     period_kind: str  # "quarter" (FY<year>Q<quarter>) or "month" (YYYY-MM, the month the step is about)
-    holdings_only: bool  # prompt scope: 14Q and 15A run for holdings only
+    holdings_only: bool  # prompt scope: 14Q, 15A, 14A, 14T, 14B and 04B-lite run for holdings only
     summary: str
     pipeline_fields: Callable[[RunContext], dict[str, dict[str, Any]]] | None = None
+    variables: Mapping[str, str] = dataclasses.field(default_factory=dict)  # fixed prompt variables ({{subject}})
+    post_event: bool = False  # reads an earnings event that must be on EDGAR (and closed) by the run date
+    about_company: bool = False  # an HQ step about one company: runs/hq/<run_date>-<step>-<TICKER>/
+
+    def bundle_name(self, run_date: dt.date, company: str | None) -> str:
+        """The run directory's name: <run_date>-<step>, plus -<TICKER> for an HQ step about one company."""
+        suffix = f"-{company}" if self.about_company and company else ""
+        return f"{run_date.isoformat()}-{self.step}{suffix}"
+
+    def storage_scope(self, company: str | None) -> str:
+        """runs/<scope>/: the ticker for company steps, hq for HQ steps (even when about one company)."""
+        return "hq" if self.scope == "hq" else str(company)
 
 
 @dataclasses.dataclass
@@ -132,18 +160,41 @@ class FilingText:
         return f"{self.tag}#{self.locator}" if self.locator else self.tag
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class ResultsDocuments:
+    """The documents of one earnings event: the release (8-K exhibits or the 6-K) and the periodic report."""
+
     period: str
     period_end: dt.date
     release_date: dt.date
     documents: list[FilingText]
     notes: list[str]
+    event: edgar.EarningsEvent | None = None
+    rehearsal_for: str | None = None  # dry run: the period these documents stand in for
+
+    def event_record(self, as_of: dt.date) -> dict[str, Any]:
+        """The event as post-event inputs describe it: period, release, close (00 section F: event)."""
+        e = self.event
+        out: dict[str, Any] = {"period": self.rehearsal_for or self.period, "period_end": self.period_end.isoformat(),
+                               "release_date": self.release_date.isoformat()}
+        if e is not None:
+            out.update(form=e.form, accession=e.accession, filing_date=e.filing.filing_date.isoformat(),
+                       acceptance_datetime=e.filing.acceptance_datetime,
+                       closes_on=e.closes_on.isoformat() if e.closes_on else None, closed_by=e.closed_by,
+                       closed=bool(e.closes_on and e.closes_on <= as_of))
+            if e.closing is not None:
+                out["periodic_report"] = {"form": e.closing.form, "accession": e.closing.accession,
+                                          "filing_date": e.closing.filing_date.isoformat()}
+        if self.rehearsal_for:
+            out["rehearsal"] = {"stand_in_period": self.period,
+                                "note": "dry-run rehearsal: the event has not happened yet; the last reported "
+                                        "quarter stands in"}
+        return out
 
 
 @dataclasses.dataclass
 class PriorRun:
-    """A run directory under runs/<scope>/<run_date>-<part>/ in the private repository."""
+    """A run directory under runs/<scope>/<run_date>-<part>/ in the private repository (or a dry-run directory)."""
 
     path: Path
     rel: str
@@ -153,6 +204,17 @@ class PriorRun:
     manifest: dict[str, Any] | None
     record: dict[str, Any] | None
     attempts: list[dict[str, Any]] = dataclasses.field(default_factory=list)  # earlier failed attempts (--retry)
+
+    @property
+    def step(self) -> str:
+        """The step label from the manifest (17A for runs/hq/<date>-17A-AXP), else the directory's part."""
+        return str(self.manifest.get("step") or self.part) if self.manifest else self.part
+
+    @property
+    def company(self) -> str | None:
+        if self.manifest and self.manifest.get("company"):
+            return str(self.manifest["company"])
+        return None if self.scope == "hq" else self.scope
 
     @property
     def statuses(self) -> list[str]:
@@ -190,6 +252,20 @@ class PriorRun:
     def period(self) -> str | None:
         return str(self.manifest.get("period")) if self.manifest and self.manifest.get("period") else None
 
+    @property
+    def succeeded(self) -> bool:
+        return self.manifest is not None and self.status == "succeeded"
+
+    def outputs_used(self, names: Iterable[str]) -> list[dict[str, Any]]:
+        """Run-output source records for the outputs of this run that exist."""
+        out = []
+        for name in names:
+            path = self.output_file(name)
+            if path is not None:
+                out.append({"kind": "run_output", "run": self.rel, "output": name,
+                            "sha256": sha256_bytes(path.read_bytes())})
+        return out
+
 
 @dataclasses.dataclass
 class RunContext:
@@ -202,15 +278,16 @@ class RunContext:
     public_root: Path
     private_root: Path
     workspace_root: Path
-    call: Any  # llm.PromptPart
+    call: Any  # llm.PromptPart (None for the ci step)
     formats: Mapping[str, str]
     edgar: Any = None  # EdgarGateway or a test double; created on first use
     schemas_dir: Path | None = None
     memo: dict[str, Any] = dataclasses.field(default_factory=dict)
-
+    runs_roots: tuple[Path, ...] = ()  # directories searched for upstream runs before the private repository (dry runs)
+    rehearsal: bool = False  # dry run before the event: the last reported quarter's filings stand in
     @property
     def scope(self) -> str:
-        return self.company or "hq"
+        return self.step.storage_scope(self.company) if self.company else "hq"
 
     def remember(self, key: str, compute: Callable[[], Any]) -> Any:
         if key not in self.memo:
@@ -253,8 +330,57 @@ class RunContext:
         )
 
     def runs(self) -> list[PriorRun]:
-        return self.remember("runs", lambda: index_runs(self.private_root))
+        """Runs under the dry-run directories (if any) and the private repository, oldest first."""
+        return self.remember("runs", lambda: index_run_roots([*self.runs_roots, self.private_root]))
 
+    def latest_run(self, step: str, *, period: str | None = None, company: str | None = None) -> PriorRun | None:
+        """The latest succeeded run of a step for this company (and period, when given). Runs of a dry-run directory
+        come first, so a rehearsal reads its own chain."""
+        company = company if company is not None else self.company
+        found = [r for r in self.runs() if r.succeeded and r.step == step and r.company == company
+                 and (period is None or r.period == period)]
+        if not found:
+            return None
+        preferred = [r for r in found if any(_inside(r.path, root) for root in self.runs_roots)] or found
+        return max(preferred, key=lambda r: (r.run_date, r.rel))
+
+    def require_run(self, step: str, name: str, *, why: str = "") -> PriorRun:
+        run = self.latest_run(step, period=self.period)
+        if run is None:
+            raise MissingInput(f"{name}: no succeeded {step} run for {self.company} {self.period}"
+                               + (f" ({why})" if why else ""))
+        return run
+
+    def status(self) -> str:
+        return str(self.thesis().get("status") or "")
+
+    def is_holding(self) -> bool:
+        return self.status() == "holding"
+
+    def calendar(self) -> edgar.FiscalCalendar:
+        return edgar.FiscalCalendar.parse(self.filer().fiscal_year_end or "12-31")
+
+    def results(self) -> ResultsDocuments:
+        """The documents of this period's earnings event, as of the run date (post-event steps). In a rehearsal the
+        event is looked up as of today and, when it has not happened yet, the last reported quarter stands in."""
+
+        def load() -> ResultsDocuments:
+            company = _need_company(self, "filings")
+            known = known_filing_tags((self.public_root, self.private_root), company)
+            gateway = self.gateway()
+            try:
+                return gateway.period_results(self.filer(), self.period, self.run_date, known,
+                                              require_closed=not self.rehearsal)
+            except EventNotReleased:
+                if not self.rehearsal:
+                    raise
+            stand_in = gateway.latest_results(self.filer(), self.period, dt.date.today(), known)
+            stand_in.rehearsal_for = self.period
+            stand_in.notes.append(f"rehearsal: {self.period} is not on EDGAR yet; the documents of {stand_in.period} "
+                                  "stand in (dry run only)")
+            return stand_in
+
+        return self.remember("results", load)
     def month(self) -> tuple[dt.date, dt.date]:
         return month_bounds(self.period)
 
@@ -267,6 +393,18 @@ def _prereg_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
     return {"prereg": {"company": ctx.company, **ctx.estimate().prereg_header(), "author": "system"}}
 
 
+# 00 section G8: the thesis.yml fields the pipeline maintains; 03 hands back the current values unchanged.
+PIPELINE_THESIS_FIELDS = ("schema_version", "company", "status", "filer", "trust_level", "domain")
+QUARTERLY_UPDATE = "quarterly update"  # {{subject}} of prompt 04 when it audits a quarterly update
+
+
+def _update_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
+    """03 draft and 03R: the pipeline-maintained fields of thesis.yml and the ledger's company (00 section G8)."""
+    thesis = ctx.thesis()
+    return {"thesis": {key: thesis[key] for key in PIPELINE_THESIS_FIELDS if key in thesis},
+            "ledger": {"company": ctx.company}}
+
+
 STEPS: dict[str, StepSpec] = {
     "14Q": StepSpec("14Q", "14", "Q", "company", "quarter", True,
                     "neutral question list, frozen before the results event (HQ)"),
@@ -274,6 +412,24 @@ STEPS: dict[str, StepSpec] = {
                     "pre-registration of 3-5 settleable expectations (company manager)", _prereg_fields),
     "18": StepSpec("18", "18", None, "hq", "month", False,
                    "monthly letter to the owner about the previous month (HQ)"),
+    # After an earnings event (docs/decisions/0024), in the order the event command runs them.
+    "16B": StepSpec("16B", "16", "B", "company", "quarter", False,
+                    "metric extraction from the event's filings (extractor)", post_event=True),
+    "14T": StepSpec("14T", "14", "T", "company", "quarter", True,
+                    "independent ruling on the qualitative tests that are due (judge)", post_event=True),
+    "14A": StepSpec("14A", "14", "A", "company", "quarter", True,
+                    "blind read of the event's filings against the frozen question list (blind reader)",
+                    post_event=True),
+    "03-draft": StepSpec("03-draft", "03", "draft", "company", "quarter", False,
+                         "quarterly update draft (company manager)", _update_fields, post_event=True),
+    "16A": StepSpec("16A", "16", "A", "company", "quarter", False,
+                    "fact extraction from the quarterly update draft (extractor, update mode)", post_event=True),
+    "04A": StepSpec("04A", "04", "A", "company", "quarter", False,
+                    "fact audit of the quarterly update draft (auditor)",
+                    variables={"subject": QUARTERLY_UPDATE}, post_event=True),
+    "03R": StepSpec("03R", "03", "revise", "company", "quarter", False,
+                    "revision of the quarterly update after the audit (company manager)", _update_fields,
+                    post_event=True),
 }
 
 
@@ -302,18 +458,22 @@ def variables_for(ctx: RunContext) -> dict[str, str]:
         out[VAR_STATUS] = str(thesis.get("status") or "")
     if ctx.step.period_kind == "quarter":
         out[VAR_PERIOD] = ctx.period
+    out.update(ctx.step.variables)
     return out
 
 
 def placement_context(ctx: RunContext) -> dict[str, Any]:
-    """Template fields for outputs.place(): company, period, run_date, month (monthly letter)."""
+    """Template fields for outputs.place(): company, period, run_date, month (monthly letter), subject (04), and the
+    run directory's name (runs/hq/<run_date>-17A-<TICKER> for an HQ step about one company)."""
     return {
         "company": ctx.company,
         "period": ctx.period if ctx.step.period_kind == "quarter" else None,
         "run_date": ctx.run_date.isoformat(),
         "month": ctx.period if ctx.step.period_kind == "month" else None,
         "doc": None,
-        "subject": None,
+        "subject": ctx.step.variables.get(llm.VAR_SUBJECT),
+        "scope": ctx.scope,
+        "run_dir": ctx.step.bundle_name(ctx.run_date, ctx.company),
     }
 
 
@@ -428,6 +588,21 @@ def empty_document(ctx: RunContext, name: str, reason: str, **extra: Any) -> Bui
                       note=reason, empty=True)
 
 
+def index_run_roots(roots: Iterable[Path]) -> list[PriorRun]:
+    """index_runs() over several roots (dry-run directories, then the private repository), oldest first; a directory
+    reached through two roots is listed once."""
+    seen: set[Path] = set()
+    found: list[PriorRun] = []
+    for root in roots:
+        for run in index_runs(root):
+            key = run.path.resolve()
+            if key not in seen:
+                seen.add(key)
+                found.append(run)
+    found.sort(key=lambda r: (r.run_date, r.rel))
+    return found
+
+
 def index_runs(private_root: Path) -> list[PriorRun]:
     """All run directories under runs/<scope>/<run_date>-<part>/, oldest first."""
     base = private_root / "runs"
@@ -456,6 +631,14 @@ def index_runs(private_root: Path) -> list[PriorRun]:
             ))
     found.sort(key=lambda r: (r.run_date, r.rel))
     return found
+
+
+def _inside(path: Path, root: Path) -> bool:
+    try:
+        path.resolve().relative_to(root.resolve())
+        return True
+    except ValueError:
+        return False
 
 
 def _need_company(ctx: RunContext, name: str) -> str:
@@ -563,57 +746,149 @@ class EdgarGateway:
         return edgar.next_release(filer.cik, period, fiscal_year_end=filer.fiscal_year_end, filer_type=filer.type,
                                   form=filer.earnings_form, as_of=as_of, client=self.client)
 
+    def _context(self, filer: edgar.Filer, fiscal_year: int, *, years_back: int = 2) -> tuple[
+            edgar.Submissions, edgar.FiscalCalendar, str, str]:
+        subs = edgar.submissions(filer.cik, client=self.client, since=dt.date(fiscal_year - years_back, 1, 1))
+        cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+        kind = filer.type or edgar.infer_filer_type(subs)
+        ticker = filer.ticker or str(subs.tickers[0] if subs.tickers else filer.cik)
+        return subs, cal, kind, ticker
+
     def latest_results(self, filer: edgar.Filer, period: str, as_of: dt.date,
                        known_tags: Mapping[str, str] | None = None) -> ResultsDocuments:
         """The results release and periodic report of the last quarter reported before `period`, as of `as_of`."""
-        known_tags = known_tags or {}
         fiscal_year, quarter = edgar.parse_period(period)
         if quarter is None:
             raise ValueError(f"latest filings are looked up for a quarter (FY2026Q3), got {period!r}")
-        client = self.client
-        subs = edgar.submissions(filer.cik, client=client, since=dt.date(fiscal_year - 2, 1, 1))
-        cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+        subs, cal, kind, ticker = self._context(filer, fiscal_year)
         period_end = cal.quarter_end(fiscal_year, quarter)
-        kind = filer.type or edgar.infer_filer_type(subs)
         events = edgar.earnings_events(subs.cik, cal.label, filer_type=kind, since=period_end - dt.timedelta(days=400),
-                                       until=as_of, client=client, subs=subs)
+                                       until=as_of, client=self.client, subs=subs)
         earlier = [e for e in events if e.period_end < period_end]
         if not earlier:
             raise MissingInput(f"EDGAR has no results release for a quarter before {period} as of {as_of}")
         latest = max(earlier, key=lambda e: (e.period_end, e.filing.filing_date, e.accession))
-        ticker = filer.ticker or str(subs.tickers[0] if subs.tickers else filer.cik)
+        return self._results_documents(latest, kind, cal, ticker, as_of, known_tags or {})
+
+    def period_results(self, filer: edgar.Filer, period: str, as_of: dt.date,
+                       known_tags: Mapping[str, str] | None = None, *, require_closed: bool = True) -> ResultsDocuments:
+        """The results release and periodic report of `period` itself, as of `as_of` (post-event steps). Raises
+        EventNotReleased when EDGAR has no results filing for the period yet or, with require_closed, when the event
+        has not closed (the 10-Q/10-K filed or five business days passed; prompt 03)."""
+        fiscal_year, quarter = edgar.parse_period(period)
+        if quarter is None:
+            raise ValueError(f"an earnings event is a quarter (FY2026Q3), got {period!r}")
+        subs, cal, kind, ticker = self._context(filer, fiscal_year)
+        period_end = cal.quarter_end(fiscal_year, quarter)
+        events = edgar.earnings_events(subs.cik, cal.label, filer_type=kind, since=period_end, until=as_of,
+                                       client=self.client, subs=subs)
+        event = next((e for e in events if e.period == period), None)
+        if event is None:
+            raise EventNotReleased(f"EDGAR has no results release for {period} as of {as_of}")
+        if require_closed and (event.closes_on is None or event.closes_on > as_of):
+            raise EventNotReleased(f"the {period} earnings event (released {event.release_date}) closes on "
+                                   f"{event.closes_on} (the {'10-Q/10-K' if kind != edgar.FOREIGN else '6-K'} or five "
+                                   f"business days); run on or after that date (prompt 03)")
+        return self._results_documents(event, kind, cal, ticker, as_of, known_tags or {})
+
+    def _results_documents(self, event: edgar.EarningsEvent, kind: str, cal: edgar.FiscalCalendar, ticker: str,
+                           as_of: dt.date, known_tags: Mapping[str, str]) -> ResultsDocuments:
         documents: list[FilingText] = []
         notes: list[str] = []
         if kind == edgar.FOREIGN:
-            if latest.exhibit:
-                documents.append(self._document(ticker, cal, latest.filing, latest.exhibit, known_tags))
+            if event.exhibit:
+                documents.append(self._document(ticker, cal, event.filing, event.exhibit, known_tags))
             else:
-                notes.append(f"the results 6-K {latest.accession} names no press-release document")
+                notes.append(f"the results 6-K {event.accession} names no press-release document")
         else:
-            docs = edgar.filing_documents(subs.cik, latest.accession, client=client,
-                                          primary_document=latest.filing.primary_document)
+            docs = edgar.filing_documents(event.cik, event.accession, client=self.client,
+                                          primary_document=event.filing.primary_document)
             exhibits = [d for d in docs if d.kind == "exhibit" and (d.exhibit or "").startswith("EX-99")
                         and not d.name.lower().endswith(".pdf")]
             for doc in sorted(exhibits, key=_exhibit_key):
-                documents.append(self._document(ticker, cal, latest.filing, doc.name, known_tags, doc.exhibit))
+                documents.append(self._document(ticker, cal, event.filing, doc.name, known_tags, doc.exhibit))
             if not exhibits:
-                notes.append(f"the results 8-K {latest.accession} has no EX-99 exhibit")
-        closing = latest.closing
+                notes.append(f"the results 8-K {event.accession} has no EX-99 exhibit")
+        closing = event.closing
         if closing is not None and closing.filing_date <= as_of:
             documents.append(self._document(ticker, cal, closing, closing.primary_document, known_tags))
         elif kind != edgar.FOREIGN:
-            notes.append(f"the periodic report for {latest.period} was not on EDGAR as of {as_of}")
-        return ResultsDocuments(latest.period, latest.period_end, latest.release_date, documents, notes)
+            notes.append(f"the periodic report for {event.period} was not on EDGAR as of {as_of}")
+        return ResultsDocuments(event.period, event.period_end, event.release_date, documents, notes, event=event)
+
+    def companyfacts(self, cik: str) -> tuple[dict[str, Any], dict[str, Any]]:
+        """EDGAR's XBRL companyfacts for one issuer and its source record (URL, sha256, size); re-fetched after the
+        submissions TTL, like submissions (new filings add facts)."""
+        url = f"{edgar.DATA_BASE}/api/xbrl/companyfacts/CIK{edgar.normalize_cik(cik)}.json"
+        raw = self.client.get_bytes(url, max_age=self.client.ttl)
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise edgar.EdgarDataError(f"companyfacts for CIK {cik} is not JSON: {exc}") from None
+        return data, {"kind": "edgar", "detail": "XBRL companyfacts", "url": url, "sha256": sha256_bytes(raw),
+                      "bytes": len(raw)}
+
+    def where_filings(self, filer: edgar.Filer, period: str, as_of: dt.date, lookback: int,
+                      plan: documents.WherePlan) -> tuple[list[documents.Selection], list[str], edgar.Submissions,
+                                                          edgar.FiscalCalendar, str, str]:
+        """The company's own filings a qualitative test's `where` names over its lookback, as of `as_of`."""
+        fiscal_year, _ = edgar.parse_period(period)
+        subs, cal, kind, ticker = self._context(filer, fiscal_year, years_back=max(2, lookback // 4 + 2))
+        start = documents.window_start(period, lookback, cal)
+        events = edgar.earnings_events(subs.cik, cal.label, filer_type=kind, since=start - dt.timedelta(days=100),
+                                       until=as_of, client=self.client, subs=subs)
+        selections, notes = documents.select_filings(plan.requests, subs.filings, events, period=period,
+                                                     lookback=lookback, as_of=as_of, cal=cal,
+                                                     foreign=kind == edgar.FOREIGN)
+        return selections, notes, subs, cal, kind, ticker
+
+    def selection_documents(self, selection: documents.Selection, *, ticker: str, cal: edgar.FiscalCalendar,
+                            subs: edgar.Submissions, known_tags: Mapping[str, str]) -> list[FilingText]:
+        """The documents of one selected filing: its primary document and/or its EX-99 exhibits."""
+        filing = selection.filing
+        tag = known_tags.get(filing.accession) or documents.tag_with_ordinal(ticker, filing, cal, subs.filings)
+        out: list[FilingText] = []
+        if selection.primary and filing.primary_document:
+            out.append(self._document(ticker, cal, filing, filing.primary_document, known_tags, tag=tag))
+        if selection.exhibits:
+            docs = edgar.filing_documents(filing.cik, filing.accession, client=self.client,
+                                          primary_document=filing.primary_document)
+            exhibits = [d for d in docs if d.kind == "exhibit" and (d.exhibit or "").startswith("EX-99")
+                        and not d.name.lower().endswith(".pdf")
+                        and (not selection.only_exhibits or d.exhibit in selection.only_exhibits)]
+            for doc in sorted(exhibits, key=_exhibit_key):
+                out.append(self._document(ticker, cal, filing, doc.name, known_tags, doc.exhibit, tag=tag))
+        return out
+
+    def registered_documents(self, filer: edgar.Filer, accession: str, tag: str,
+                             exhibit: str | None = None) -> list[FilingText]:
+        """The document a registered source tag names: an EX-99 exhibit when the locator names one, else the
+        filing's primary document. Empty when the accession is not among the issuer's filings."""
+        subs = edgar.submissions(filer.cik, client=self.client)
+        filing = subs.get(accession)
+        if filing is None:
+            return []
+        cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+        ticker = filer.ticker or str(filer.cik)
+        known = {filing.accession: tag}
+        if exhibit:
+            docs = edgar.filing_documents(filing.cik, filing.accession, client=self.client,
+                                          primary_document=filing.primary_document)
+            wanted = [d for d in docs if d.exhibit == exhibit and not d.name.lower().endswith(".pdf")]
+            return [self._document(ticker, cal, filing, d.name, known, d.exhibit) for d in wanted[:1]]
+        if not filing.primary_document:
+            return []
+        return [self._document(ticker, cal, filing, filing.primary_document, known)]
 
     def _document(self, ticker: str, cal: edgar.FiscalCalendar, filing: edgar.Filing, name: str,
-                  known_tags: Mapping[str, str], exhibit: str | None = None) -> FilingText:
+                  known_tags: Mapping[str, str], exhibit: str | None = None, *, tag: str | None = None) -> FilingText:
         url = f"{filing.folder_url}/{name}"
         raw = self.client.get_bytes(url)
         if exhibit is None:
             kind, exhibit = edgar.classify_document(name, filing.primary_document)
             exhibit = exhibit if kind == "exhibit" else None
         registered = filing.accession in known_tags
-        tag = known_tags.get(filing.accession) or source_tag(ticker, filing, cal)
+        tag = known_tags.get(filing.accession) or tag or source_tag(ticker, filing, cal)
         return FilingText(tag=tag, locator=exhibit, registered=registered, form=filing.form, items=filing.items,
                           accession=filing.accession, filed=filing.filing_date, document=name, url=url,
                           raw_sha256=sha256_bytes(raw), text=document_text(raw, name))
@@ -761,6 +1036,24 @@ def _schema(ctx: RunContext, name: str) -> BuiltInput:
     return BuiltInput("\n".join(chunks), "txt", sources)
 
 
+CITE_NOTE = "Each document below opens with a header line that names its source tag; cite it as [src:TAG] or " \
+            "[src:TAG#LOCATOR]."
+
+
+def render_documents(lines: list[str], docs: Iterable[FilingText]) -> tuple[str, list[dict[str, Any]]]:
+    """Header lines, then each document under a ===== [src:TAG] ... ===== line; and the documents' source records."""
+    lines = list(lines)
+    sources = []
+    for doc in docs:
+        items = f" (Items {', '.join(doc.items)})" if doc.items else ""
+        lines += [f"===== [src:{doc.cite}] {doc.form}{items} | accession {doc.accession} | filed {doc.filed} | "
+                  f"{doc.document} =====", f"url: {doc.url}", "", doc.text.strip(), ""]
+        sources.append({"kind": "edgar", "tag": doc.cite, "registered": doc.registered, "form": doc.form,
+                        "accession": doc.accession, "filed": doc.filed.isoformat(), "document": doc.document,
+                        "url": doc.url, "sha256": doc.raw_sha256, "text_sha256": sha256_text(doc.text)})
+    return "\n".join(lines), sources
+
+
 @assembler("latest_filings")
 def _latest_filings(ctx: RunContext, name: str) -> BuiltInput:
     company = _need_company(ctx, name)
@@ -771,25 +1064,30 @@ def _latest_filings(ctx: RunContext, name: str) -> BuiltInput:
     lines = [
         f"Latest quarter reported before {ctx.period}: {results.period} (quarter end {results.period_end}); "
         f"results first public on {results.release_date} (US Eastern).",
-        "Each document below opens with a header line that names its source tag; cite it as [src:TAG] "
-        "or [src:TAG#LOCATOR].",
+        CITE_NOTE,
         *[f"Note: {note}." for note in results.notes],
         "",
     ]
-    sources = []
-    for doc in results.documents:
-        items = f" (Items {', '.join(doc.items)})" if doc.items else ""
-        lines += [f"===== [src:{doc.cite}] {doc.form}{items} | accession {doc.accession} | filed {doc.filed} | "
-                  f"{doc.document} =====", f"url: {doc.url}", "", doc.text.strip(), ""]
-        sources.append({"kind": "edgar", "tag": doc.cite, "registered": doc.registered, "form": doc.form,
-                        "accession": doc.accession, "filed": doc.filed.isoformat(), "document": doc.document,
-                        "url": doc.url, "sha256": doc.raw_sha256, "text_sha256": sha256_text(doc.text)})
-    return BuiltInput("\n".join(lines), "txt", sources, note="; ".join(results.notes) or None)
+    text, sources = render_documents(lines, results.documents)
+    return BuiltInput(text, "txt", sources, note="; ".join(results.notes) or None)
 
 
 @assembler("event")
 def _event(ctx: RunContext, name: str) -> BuiltInput:
+    """15A: the expected release and the pre-registration deadline. After the event (14T, 15B): the period, the release
+    and the date the event closed."""
     company = _need_company(ctx, name)
+    if ctx.step.post_event:
+        results = ctx.results()
+        data = {"company": company, "as_of": ctx.run_date.isoformat(), **results.event_record(ctx.run_date)}
+        event = results.event
+        sources = [{"kind": "edgar", "detail": f"pipeline.edgar.earnings_events: {results.period} results "
+                                               f"{event.form if event else ''} {event.accession if event else ''}".strip(),
+                    "cik": event.cik if event else None, "as_of": ctx.run_date.isoformat()}]
+        built = BuiltInput(dump_yaml(data), "yml", sources)
+        if results.rehearsal_for:
+            built.substitute, built.note = "event", results.notes[-1]
+        return built
     estimate = ctx.estimate()
     data = {"company": company, "as_of": ctx.run_date.isoformat()}
     data.update({k: v for k, v in estimate.to_dict().items() if k != "history"})
@@ -861,21 +1159,26 @@ def _prereg_candidates(ctx: RunContext, name: str) -> BuiltInput:
 
 
 def _frozen_question_list(ctx: RunContext, name: str) -> tuple[PriorRun, str]:
-    """The question list HQ froze for this company and period: the placed output of the latest 14Q run."""
+    """The question list HQ froze for this company and period: the placed output of the latest 14Q run. A rehearsal
+    also takes the unplaced output of a 14Q dry run in its own directory (dry runs are never placed)."""
     company = _need_company(ctx, name)
     runs = [r for r in ctx.runs() if r.scope == company and r.part == "14Q" and r.period == ctx.period
             and r.placed_file("question_list") is not None]
-    if not runs:
-        raise MissingInput(f"no placed 14Q question list for {company} {ctx.period} (run 14Q, merge it, then place it)")
-    run = runs[-1]
-    path = run.placed_file("question_list")
-    if path is None:  # pragma: no cover - filtered above
-        raise MissingInput(f"{run.rel} has no placed question_list")
-    return run, path.read_text(encoding="utf-8")
+    if runs:
+        path = runs[-1].placed_file("question_list")
+        return runs[-1], path.read_text(encoding="utf-8") if path else ""
+    rehearsed = [r for r in ctx.runs() if ctx.rehearsal and r.succeeded and r.step == "14Q" and r.company == company
+                 and r.period == ctx.period and any(_inside(r.path, root) for root in ctx.runs_roots)
+                 and r.output_file("question_list") is not None]
+    if rehearsed:
+        return rehearsed[-1], rehearsed[-1].read_output("question_list") or ""
+    raise MissingInput(f"no placed 14Q question list for {company} {ctx.period} (run 14Q, merge it, then place it)")
 
 
 @assembler("question_list")
 def _question_list(ctx: RunContext, name: str) -> BuiltInput:
+    if ctx.step.step == "03-draft" and not ctx.is_holding():
+        raise Omit("candidates have no question list (prompt 14 scope); question_answers is none")
     run, text = _frozen_question_list(ctx, name)
     return BuiltInput(text, "yml", [{"kind": "run_output", "run": run.rel, "output": "question_list",
                                      "sha256": sha256_text(text)}])
@@ -1278,3 +1581,667 @@ def _mistakes(ctx: RunContext, name: str) -> BuiltInput:
         built.sources = source
         return built
     return BuiltInput("\n".join(sections), "md", source)
+
+
+# ---------------------------------------------------------------------------------------------------- after the event
+# docs/decisions/0024. Upstream outputs are the succeeded runs of the same company and period (RunContext.latest_run).
+
+
+@assembler("filings")
+def _filings(ctx: RunContext, name: str) -> BuiltInput:
+    """The documents of this earnings event: the results release (8-K EX-99 exhibits, or the results 6-K) and the
+    10-Q or 10-K once filed. Call transcripts are not on EDGAR (STATUS T17)."""
+    company = _need_company(ctx, name)
+    results = ctx.results()
+    if not results.documents:
+        raise MissingInput(f"EDGAR returned no readable document for {company} {results.period}")
+    lines = [
+        f"The filings of {company}'s {results.period} earnings event (quarter end {results.period_end}); results first "
+        f"public on {results.release_date} (US Eastern).",
+        CITE_NOTE,
+        "Earnings call transcripts are not included: they are not on EDGAR and the pipeline has no source for them "
+        "yet.",
+        *[f"Note: {note}." for note in results.notes],
+        "",
+    ]
+    text, sources = render_documents(lines, results.documents)
+    built = BuiltInput(text, "txt", sources, note="; ".join(results.notes) or None)
+    if results.rehearsal_for:
+        built.substitute = "filings"
+    return built
+
+
+def _as_of(ctx: RunContext) -> dt.date:
+    """The date EDGAR is read as of: the run date, or today in a rehearsal (the run date is in the future)."""
+    return min(ctx.run_date, dt.date.today()) if ctx.rehearsal else ctx.run_date
+
+
+def _event_period(ctx: RunContext) -> str:
+    """The period whose documents are read: the event's, or in a rehearsal the quarter that stands in for it."""
+    return ctx.results().period if ctx.rehearsal else ctx.period
+
+
+# ---- 16B: metric extraction
+
+
+def metric_registry(ctx: RunContext) -> tuple[dict[str, dict[str, Any]], str]:
+    return ctx.remember("metric_registry", lambda: evaluation.load_metric_registry(ctx.schemas_dir))
+
+
+@assembler("metric_definitions")
+def _metric_definitions(ctx: RunContext, name: str) -> BuiltInput:
+    """The definitions of the metrics the due quantitative tests read from filing text: id, description, unit,
+    frequency, where, formula, components, params. No thresholds, claims or notes (the extractor sees no thesis)."""
+    company = _need_company(ctx, name)
+    registry, origin = metric_registry(ctx)
+    definitions, skipped, by_metric = evaluation.text_metric_definitions(ctx.thesis(), ctx.period, ctx.run_date,
+                                                                         registry)
+    sources = [repo_file_source(ctx.public_root, ctx.thesis_path(), PUBLIC_REPO)
+               | {"field": "tests", "transform": "metric definitions only (thresholds, claims and notes removed)",
+                  "tests_by_metric": by_metric},
+               {"kind": "thesis-ci", "detail": "metrics registry (spec/metrics.yml)", "origin": origin}]
+    if not definitions:
+        built = empty_document(ctx, name, f"no due test of {company} reads a metric from filing text in {ctx.period}",
+                               not_read_this_period=skipped)
+        built.sources = sources
+        return built
+    data = {"company": company, "period": ctx.period, "naming": evaluation.NAMING, "metrics": definitions}
+    if skipped:
+        data["not_read_this_period"] = skipped
+    return BuiltInput(dump_yaml(data), "yml", sources)
+
+
+def _period_key(period: str | None) -> int:
+    try:
+        return documents.period_index(str(period))
+    except ValueError:
+        return -1
+
+
+@assembler("prior_values")
+def _prior_values(ctx: RunContext, name: str) -> BuiltInput:
+    """The latest earlier period's 16B readings, to check that the basis is consistent."""
+    company = _need_company(ctx, name)
+    now = documents.period_index(ctx.period)
+    earlier = [r for r in ctx.runs() if r.succeeded and r.step == "16B" and r.company == company
+               and -1 < _period_key(r.period) < now and r.output_file("metric_values") is not None]
+    if not earlier:
+        raise Omit(f"no earlier 16B run for {company}: this is the first period read from filing text")
+    run = max(earlier, key=lambda r: (_period_key(r.period), r.run_date))
+    text = run.read_output("metric_values") or ""
+    return BuiltInput(text, "yml", run.outputs_used(["metric_values"]), note=f"metric_values of {run.period} ({run.rel})")
+
+
+# ---- 14T: qualitative tests
+
+
+QUALITATIVE_FIELDS = ("id", "question", "fail_if", "warn_if", "judge_notes")
+BASELINE_FIELDS = ("value", "unit", "period", "as_of", "source")  # baseline.note may carry thesis wording
+
+
+def due_qualitative(ctx: RunContext) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    return ctx.remember("due_qualitative",
+                        lambda: evaluation.due_tests(ctx.thesis(), "qualitative", ctx.period, ctx.run_date))
+
+
+@assembler("qualitative_tests")
+def _qualitative_tests(ctx: RunContext, name: str) -> BuiltInput:
+    """The due qualitative tests with id, question, fail_if, warn_if, judge_notes and the baseline's value and source;
+    claim and note (thesis wording) are removed (prompt 14T, 00 section G6)."""
+    company = _need_company(ctx, name)
+    due, skipped = due_qualitative(ctx)
+    source = repo_file_source(ctx.public_root, ctx.thesis_path(), PUBLIC_REPO) | {
+        "field": "tests", "tests": [t.get("id") for t in due],
+        "transform": "qualitative tests only; claim, note and baseline.note removed"}
+    if not due:
+        built = empty_document(ctx, name, f"no qualitative test of {company} is due in {ctx.period}", not_due=skipped)
+        built.sources = [source]
+        return built
+    tests = []
+    for test in due:
+        row = {key: test[key] for key in QUALITATIVE_FIELDS if test.get(key) is not None}
+        baseline = test.get("baseline")
+        if isinstance(baseline, Mapping):
+            row["baseline"] = {key: baseline[key] for key in BASELINE_FIELDS if baseline.get(key) is not None}
+        tests.append(row)
+    data = {"company": company, "period": ctx.period, "tests": tests}
+    note = f"{len(tests)} due; claim and note removed" + (f"; {len(skipped)} not due" if skipped else "")
+    return BuiltInput(dump_yaml(data), "yml", [source], note=note)
+
+
+@assembler("where_documents")
+def _where_documents(ctx: RunContext, name: str) -> BuiltInput:
+    """For each due qualitative test, the company's own EDGAR filings its `where` names over its `lookback`, and what
+    the pipeline could not supply (pipeline/documents.py); then each document once, with its source tag."""
+    company = _need_company(ctx, name)
+    due, _ = due_qualitative(ctx)
+    if not due:
+        return empty_document(ctx, name, f"no qualitative test of {company} is due in {ctx.period}")
+    thesis = ctx.thesis()
+    filer = ctx.filer()
+    gateway = ctx.gateway()
+    known = known_filing_tags((ctx.public_root, ctx.private_root), company)
+    owners = documents.owner_names(company, thesis.get("name"), short_name(thesis.get("name"), company))
+    foreign = filer.type == edgar.FOREIGN
+    period, as_of = _event_period(ctx), _as_of(ctx)
+    fetched: dict[tuple[str, str], FilingText] = {}
+    plan_rows = []
+    for test in due:
+        lookback = int(test.get("lookback") or 1)
+        plan = documents.parse_where(test.get("where"), foreign=foreign, owners=owners)
+        selections, notes, subs, cal, _, ticker = gateway.where_filings(filer, period, as_of, lookback, plan)
+        supplied: list[str] = []
+        for selection in selections:
+            for doc in gateway.selection_documents(selection, ticker=ticker, cal=cal, subs=subs, known_tags=known):
+                fetched.setdefault((doc.accession, doc.document), doc)
+                if doc.cite not in supplied:
+                    supplied.append(doc.cite)
+        plan_rows.append({"test_id": test.get("id"), "where": plan.where, "lookback": lookback,
+                          "periods": documents.lookback_periods(period, lookback),
+                          "window": f"{documents.window_start(period, lookback, cal)} to {as_of}",
+                          "supplied": supplied, "not_supplied": [*plan.not_supplied, *notes]})
+    header = [
+        f"Documents for the qualitative tests of {company} due in {ctx.period}, as of {as_of}.",
+        "For each test: what its `where` names, the fiscal quarters its `lookback` covers, the documents supplied below "
+        f"and what the pipeline could not supply. {documents.SECTION_NOTE[0].upper()}{documents.SECTION_NOTE[1:]}.",
+        CITE_NOTE,
+        "",
+        dump_yaml({"tests": plan_rows}).rstrip(),
+        "",
+    ]
+    if ctx.rehearsal and ctx.results().rehearsal_for:
+        header.insert(1, f"Rehearsal: the event has not happened yet; the window ends with {period} instead.")
+    ordered = sorted(fetched.values(), key=lambda d: (d.filed, d.accession, d.locator or ""))
+    text, sources = render_documents(header, ordered)
+    missing = sum(len(row["not_supplied"]) for row in plan_rows)
+    return BuiltInput(text, "txt", sources, note=f"{len(ordered)} document(s) for {len(plan_rows)} test(s); "
+                                                 f"{missing} part(s) of `where` not supplied",
+                      substitute=name if ctx.rehearsal and ctx.results().rehearsal_for else None)
+
+
+# ---- 03: quarterly update
+
+
+@assembler("ledger")
+def _ledger(ctx: RunContext, name: str) -> BuiltInput:
+    company = _need_company(ctx, name)
+    path = ctx.public_root / "companies" / company / "ledger.yml"
+    if not path.is_file():
+        raise MissingInput(f"companies/{company}/ledger.yml does not exist in {PUBLIC_REPO}")
+    return BuiltInput(path.read_text(encoding="utf-8"), "yml", [repo_file_source(ctx.public_root, path, PUBLIC_REPO)])
+
+
+@assembler("constitution")
+def _constitution(ctx: RunContext, name: str) -> BuiltInput:
+    path = ctx.public_root / "constitution" / "owner.md"
+    if not path.is_file():
+        raise MissingInput(f"constitution/owner.md does not exist in {PUBLIC_REPO}")
+    return BuiltInput(path.read_text(encoding="utf-8"), "md", [repo_file_source(ctx.public_root, path, PUBLIC_REPO)])
+
+
+def _run_output(ctx: RunContext, name: str, step: str, output: str, *, why: str) -> tuple[PriorRun, str]:
+    run = ctx.require_run(step, name, why=why)
+    text = run.read_output(output)
+    if text is None:
+        raise MissingInput(f"{name}: {run.rel} has no {output} output")
+    return run, text
+
+
+@assembler("ci_results")
+def _ci_results(ctx: RunContext, name: str) -> BuiltInput:
+    """The evaluation of the quantitative tests (the ci step): readings, thresholds and results, computed."""
+    run, text = _run_output(ctx, name, CI_STEP, "ci_results",
+                            why="run `python -m pipeline.runner evaluate` after 16B")
+    return BuiltInput(text, "yml", run.outputs_used(["ci_results"]))
+
+
+@assembler("qualitative_verdicts")
+def _qualitative_verdicts(ctx: RunContext, name: str) -> BuiltInput:
+    """14T's rulings, and the qualitative tests that were not due this period."""
+    company = _need_company(ctx, name)
+    if not ctx.is_holding():
+        raise Omit("the independent judge (14T) runs only for holdings; a candidate records every qualitative test as "
+                   "undetermined (prompt 14 scope)")
+    due, skipped = due_qualitative(ctx)
+    if not due:
+        return empty_document(ctx, name, f"no qualitative test of {company} was due in {ctx.period}",
+                              not_judged=skipped)
+    run, text = _run_output(ctx, name, "14T", "qualitative_verdicts", why="14T rules before the draft")
+    data = {"judged_by": "the independent judge (14T)", "run": run.rel, "verdicts": yaml.safe_load(text)}
+    if skipped:
+        data["not_judged_this_period"] = skipped
+    return BuiltInput(dump_yaml(data), "yml", run.outputs_used(["qualitative_verdicts"]))
+
+
+def _event_month_end(ctx: RunContext) -> dt.date:
+    """The end of the month in which the event closes (15B: items due by then are settled)."""
+    results = ctx.results()
+    closes = results.event.closes_on if results.event and results.event.closes_on else ctx.run_date
+    return month_end(closes)
+
+
+def prereg_items_due(ctx: RunContext) -> list[dict[str, Any]]:
+    """Pre-registration items (system and owner) not settled yet whose resolves_by is no later than the end of the
+    month in which this event closes (15B)."""
+    company = _need_company(ctx, "prereg_due")
+    cutoff = _event_month_end(ctx)
+    folder = ctx.public_root / "companies" / company / "prereg"
+    due = []
+    for path in sorted(folder.glob("*.yml")):
+        if path.name.endswith(".settlement.yml"):
+            continue
+        data = load_yaml_file(path)
+        if not isinstance(data, dict):
+            continue
+        period = path.name.split(".")[0].removesuffix("-owner")
+        settled = load_yaml_file(folder / f"{period}.settlement.yml") or {}
+        done = {str(r.get("id")) for r in settled.get("results") or [] if isinstance(r, dict)
+                and r.get("outcome") in RESOLVED}
+        book = "owner" if path.stem.endswith("-owner") else "system"
+        for item in data.get("items") or []:
+            if not isinstance(item, dict) or str(item.get("id")) in done:
+                continue
+            resolves_by = _date_prefix(str(item.get("resolves_by") or ""))
+            if resolves_by is not None and resolves_by <= cutoff:
+                due.append({**item, "book": book, "file": path.relative_to(ctx.public_root).as_posix()})
+    return due
+
+
+def _prereg_sources(ctx: RunContext) -> list[dict[str, Any]]:
+    return [{"kind": "repo_glob", "repo": PUBLIC_REPO, "paths": [f"companies/{ctx.company}/prereg/*.yml"]}]
+
+
+@assembler("prereg_due")
+def _prereg_due(ctx: RunContext, name: str) -> BuiltInput:
+    """03: the pre-registration items due this period, with the probabilities given at the time."""
+    company = _need_company(ctx, name)
+    if not ctx.is_holding():
+        raise Omit("candidates do not pre-register (prompt 15 scope)")
+    items = prereg_items_due(ctx)
+    if not items:
+        built = empty_document(ctx, name, f"no pre-registration item of {company} is due by {_event_month_end(ctx)}")
+        built.sources = _prereg_sources(ctx)
+        return built
+    return BuiltInput(dump_yaml({"company": company, "due_by": _event_month_end(ctx).isoformat(), "items": items}),
+                      "yml", _prereg_sources(ctx))
+
+
+@assembler("prereg_settlement")
+def _prereg_settlement(ctx: RunContext, name: str) -> BuiltInput:
+    company = _need_company(ctx, name)
+    if not ctx.is_holding():
+        raise Omit("candidates do not pre-register (prompt 15 scope)")
+    if not prereg_items_due(ctx):
+        return empty_document(ctx, name, f"no pre-registration item of {company} was due this period")
+    run, text = _run_output(ctx, name, "15B", "prereg_settlement", why="15B settles the due items before the draft")
+    return BuiltInput(text, "yml", run.outputs_used(["prereg_settlement"]))
+
+
+def _ledger_due_date(value: Any) -> dt.date | None:
+    """A ledger entry's due as a date: YYYY-MM-DD; YYYY (year end); YYYY-Qn (quarter end); YYYY-Hn (half end)."""
+    text = str(value or "").strip()
+    try:
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+            return dt.date.fromisoformat(text)
+        if re.fullmatch(r"\d{4}", text):
+            return dt.date(int(text), 12, 31)
+        match = re.fullmatch(r"(\d{4})-([QH])([1-4])", text)
+        if match:
+            year, kind, number = int(match.group(1)), match.group(2), int(match.group(3))
+            month = number * 3 if kind == "Q" else number * 6
+            return month_end(dt.date(year, month, 1))
+    except ValueError:
+        return None
+    return None
+
+
+def ledger_entries_due(ctx: RunContext) -> list[dict[str, Any]]:
+    """Pending ledger entries due by the end of this event's quarter (15B settles them; 03 relays)."""
+    company = _need_company(ctx, "ledger_due")
+    data = load_yaml_file(ctx.public_root / "companies" / company / "ledger.yml")
+    entries = data.get("entries") if isinstance(data, dict) else None
+    fiscal_year, quarter = edgar.parse_period(ctx.period)
+    period_end = ctx.calendar().quarter_end(fiscal_year, quarter or 4)
+    due = []
+    for entry in entries if isinstance(entries, list) else []:
+        if not isinstance(entry, dict) or entry.get("status") != "pending":
+            continue
+        day = _ledger_due_date(entry.get("due"))
+        if day is not None and day <= period_end:
+            due.append(entry)
+    return due
+
+
+@assembler("ledger_settlement")
+def _ledger_settlement(ctx: RunContext, name: str) -> BuiltInput:
+    """15B's settlement of the ledger entries due this period, or an explicit document that none was due."""
+    company = _need_company(ctx, name)
+    path = ctx.public_root / "companies" / company / "ledger.yml"
+    sources = [repo_file_source(ctx.public_root, path, PUBLIC_REPO)] if path.is_file() else []
+    if not ledger_entries_due(ctx):
+        built = empty_document(ctx, name, f"no pending ledger entry of {company} is due by the end of {ctx.period}")
+        built.sources = sources
+        return built
+    run, text = _run_output(ctx, name, "15B", "ledger_settlement", why="15B settles the due entries before the draft")
+    return BuiltInput(text, "yml", run.outputs_used(["ledger_settlement"]) + sources)
+
+
+# 03's pending_* inputs: content handed back by other steps and not merged yet (00 section F7).
+PENDING: dict[str, tuple[str, tuple[str, ...]]] = {
+    "pending_archive_patch": ("archive_patch", ("02", "05", "10", "11", "13")),
+    "pending_test_proposals": ("test_proposals", ("04B", "10", "13")),
+    "pending_ledger_entries": ("ledger_entries", ("10",)),
+}
+MERGING_STEPS = ("03R", "03P")
+
+
+def last_merge(ctx: RunContext) -> PriorRun | None:
+    """The latest 03R or 03P run of this company whose outputs were placed: patches handed back before it have been
+    decided (adopted or returned in its patch_decisions)."""
+    placed = [r for r in ctx.runs() if r.succeeded and r.step in MERGING_STEPS and r.company == ctx.company
+              and _placed(r)]
+    return max(placed, key=lambda r: (r.run_date, r.rel)) if placed else None
+
+
+def _placed(run: PriorRun) -> bool:
+    record = load_yaml_file(run.path / "placement.yml")
+    return isinstance(record, dict) and not record.get("check_only")
+
+
+@assembler(*PENDING)
+def _pending(ctx: RunContext, name: str) -> BuiltInput:
+    company = _need_company(ctx, name)
+    output, parts = PENDING[name]
+    merged = last_merge(ctx)
+    runs = [r for r in ctx.runs() if r.company == company and r.step in parts
+            and (merged is None or r.run_date > merged.run_date)]
+    chunks, used = [], []
+    for run in runs:
+        text = run.read_output(output)
+        if text is None or not text.strip() or _outputs.is_empty_mark(text):
+            continue
+        chunks.append({"run": run.rel, "part": run.step, output: yaml.safe_load(text)})
+        used.append(run)
+    since = f" since {merged.rel} was merged" if merged else ""
+    if not chunks:
+        built = empty_document(ctx, name, f"nothing waits to be merged: no {output} from {', '.join(parts)}{since}")
+        built.sources = [{"kind": "runs", "repo": PRIVATE_REPO, "path": f"runs/{company}/"}]
+        return built
+    sources = [s for run in used for s in run.outputs_used([output])]
+    return BuiltInput(dump_yaml({"company": company, "pending": chunks}), "yml", sources)
+
+
+@assembler("owner_notes")
+def _owner_notes(ctx: RunContext, name: str) -> BuiltInput:
+    company = _need_company(ctx, name)
+    path = ctx.private_root / "companies" / company / "owner_notes.md"
+    if not path.is_file():
+        raise Omit(f"no owner notes ({PRIVATE_REPO}:companies/{company}/owner_notes.md does not exist)")
+    return BuiltInput(path.read_text(encoding="utf-8"), "md", [repo_file_source(ctx.private_root, path, PRIVATE_REPO)],
+                      note="the owner's notes: leads only")
+
+
+# ---- 16A in update mode, 04A, 03R
+
+
+# The draft's outputs that carry facts, in the order 16A reads them; thesis.yml and ledger.yml go in as diffs.
+PRODUCT_OUTPUTS = ("update", "pr_body", "question_answers", "dossier_changes", "mistakes_entry", "story",
+                   "sources_additions")
+DIFF_OUTPUTS = {"thesis": "companies/{company}/thesis.yml", "ledger": "companies/{company}/ledger.yml"}
+
+
+def run_outputs_text(run: PriorRun, names: Iterable[str], title: str) -> tuple[str, list[dict[str, Any]]]:
+    """A run's outputs, each under a ===== <kind> output: <name> ===== line."""
+    lines, sources = [title, ""], []
+    for name in names:
+        path = run.output_file(name)
+        if path is None:
+            continue
+        text = path.read_text(encoding="utf-8")
+        lines += [f"===== output: {name} ({path.name}) =====", text.rstrip(), ""]
+        sources.append({"kind": "run_output", "run": run.rel, "output": name, "sha256": sha256_text(text)})
+    return "\n".join(lines) + "\n", sources
+
+
+def _diff(old: str, new: str, label: str) -> str:
+    import difflib
+
+    lines = list(difflib.unified_diff(old.splitlines(), new.splitlines(), f"current/{label}", f"draft/{label}",
+                                      lineterm="", n=2))
+    return "\n".join(lines) if lines else f"(no change to {label})"
+
+
+def draft_outputs_names(run: PriorRun) -> list[str]:
+    entries = (run.record or {}).get("outputs") or {}
+    return [name for name, entry in entries.items() if isinstance(entry, dict) and entry.get("status") == "written"]
+
+
+@assembler("product")
+def _product(ctx: RunContext, name: str) -> BuiltInput:
+    """16A in update mode: the 03 draft's outputs that carry facts, the changes to thesis.yml and ledger.yml as diffs
+    against the current files, and the source table."""
+    company = _need_company(ctx, name)
+    run = ctx.require_run("03-draft", name, why="16A extracts the facts of the draft before the audit")
+    text, sources = run_outputs_text(
+        run, [n for n in PRODUCT_OUTPUTS if run.output_file(n) is not None],
+        f"The product under audit: the quarterly update draft of {company} for {ctx.period} ({run.rel}). The outputs "
+        "that carry facts follow, then the changes the draft makes to thesis.yml and ledger.yml (a unified diff "
+        "against the current files; extract the facts on the changed and added lines only), then the source table.")
+    chunks = [text]
+    for output, template in DIFF_OUTPUTS.items():
+        path = run.output_file(output)
+        current = ctx.public_root / template.format(company=company)
+        if path is None:
+            continue
+        new = path.read_text(encoding="utf-8")
+        old = current.read_text(encoding="utf-8") if current.is_file() else ""
+        chunks.append(f"===== changes: {current.name} =====\n{_diff(old, new, current.name)}\n")
+        sources.append({"kind": "run_output", "run": run.rel, "output": output, "sha256": sha256_text(new),
+                        "transform": f"unified diff against {PUBLIC_REPO}:{template.format(company=company)}"})
+    table, table_sources = source_table(ctx)
+    chunks.append(f"===== source table (public and private sources.yml) =====\n{table}")
+    return BuiltInput("\n".join(chunks), "txt", sources + table_sources,
+                      note=f"update mode: the draft {run.rel}")
+
+
+def source_table(ctx: RunContext) -> tuple[str, list[dict[str, Any]]]:
+    """Both repositories' companies/<T>/sources.yml as one YAML list, each entry with its visibility."""
+    company = _need_company(ctx, "sources")
+    entries, sources = [], []
+    for root, repo, visibility in ((ctx.public_root, PUBLIC_REPO, "public"), (ctx.private_root, PRIVATE_REPO, "private")):
+        path = root / "companies" / company / "sources.yml"
+        data = load_yaml_file(path)
+        if not isinstance(data, dict):
+            continue
+        entries += [{**e, "visibility": visibility} for e in data.get("sources") or [] if isinstance(e, dict)]
+        sources.append(repo_file_source(root, path, repo))
+    return dump_yaml({"sources": entries}), sources
+
+
+def _fact_rows(data: Any) -> list[Any]:
+    if isinstance(data, dict) and isinstance(data.get("facts"), list):
+        return data["facts"]
+    return data if isinstance(data, list) else []
+
+
+def _tags_of(value: Any) -> list[str]:
+    items = value if isinstance(value, list) else [value]
+    return [str(x).strip() for x in items if isinstance(x, str) and x.strip()]
+
+
+def cited_texts(ctx: RunContext, tags: Iterable[str]) -> tuple[dict[str, str], list[FilingText], list[str]]:
+    """Texts of the documents the given tags cite: {tag or tag#locator: text}, the EDGAR documents fetched, and the
+    tags that could not be resolved. Resolved are this event's filings, the company's filings registered in
+    sources.yml with an accession, and the owner's report (inputs/text/reports__<T>.txt, a pointer only, 00 E2)."""
+    company = _need_company(ctx, "sources")
+    results = ctx.results()
+    by_cite: dict[str, str] = {}
+    docs: dict[tuple[str, str], FilingText] = {}
+    for doc in results.documents:
+        docs[(doc.accession, doc.document)] = doc
+    registered: dict[str, dict[str, Any]] = {}
+    for root in (ctx.public_root, ctx.private_root):
+        data = load_yaml_file(root / "companies" / company / "sources.yml")
+        for entry in (data.get("sources") if isinstance(data, dict) else None) or []:
+            if isinstance(entry, dict) and entry.get("tag"):
+                registered.setdefault(str(entry["tag"]), entry)
+    unresolved: list[str] = []
+    gateway = ctx.gateway()
+    filer = ctx.filer()
+    for cite in dict.fromkeys(tags):
+        tag, _, locator = cite.partition("#")
+        known = [d for d in docs.values() if d.tag == tag and (not locator or d.locator in (None, locator))]
+        if known:
+            continue
+        entry = registered.get(tag)
+        if entry and entry.get("accession") and str(entry.get("issuer_cik") or filer.cik).lstrip("0") == \
+                filer.cik.lstrip("0"):
+            try:
+                fetched = gateway.registered_documents(filer, str(entry["accession"]), tag,
+                                                       locator if locator.startswith("EX-") else None)
+            except (edgar.EdgarError, MissingInput):
+                fetched = []
+            for doc in fetched:
+                docs.setdefault((doc.accession, doc.document), doc)
+            if fetched:
+                continue
+        if re.match(rf"^{re.escape(company)}-RPT\d+-", tag):
+            report = ctx.workspace_root / "inputs" / "text" / f"reports__{company}.txt"
+            if report.is_file():
+                by_cite[tag] = report.read_text(encoding="utf-8")
+                continue
+        unresolved.append(cite)
+    for doc in docs.values():
+        by_cite.setdefault(doc.cite, doc.text)
+        by_cite.setdefault(doc.tag, doc.text)
+    return by_cite, list(docs.values()), unresolved
+
+
+def _report_page(text: str, locator: str) -> str:
+    """Page N of the owner's report text (page markers ===== [page N] =====), or the whole text."""
+    match = re.fullmatch(r"p(\d+)", locator or "")
+    if not match:
+        return text
+    pages = re.split(r"^===== \[page (\d+)\] =====$", text, flags=re.M)
+    for i in range(1, len(pages) - 1, 2):
+        if pages[i] == match.group(1):
+            return pages[i + 1]
+    return text
+
+
+@assembler("fact_table")
+def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
+    """16A's facts, each with the source excerpt the pipeline cut from the cited document by the value
+    (source_excerpt), or excerpt_missing when none was found (prompt 04A)."""
+    run, text = _run_output(ctx, name, "16A", "fact_table", why="16A extracts the facts before the audit")
+    data = yaml.safe_load(text)
+    facts = _fact_rows(data)
+    tags = [t for f in facts if isinstance(f, dict) for t in _tags_of(f.get("source"))]
+    texts, _, unresolved = cited_texts(ctx, tags)
+    found = missing = 0
+    for fact in facts:
+        if not isinstance(fact, dict) or fact.get("value") is None:
+            continue
+        excerpt = None
+        for cite in _tags_of(fact.get("source")):
+            tag, _, locator = cite.partition("#")
+            document = texts.get(cite) or texts.get(tag)
+            if document is None:
+                continue
+            if "-RPT" in tag:
+                document = _report_page(document, locator)
+            excerpt = documents.cut_excerpt(document, fact.get("value"))
+            if excerpt:
+                break
+        if excerpt:
+            fact["source_excerpt"] = excerpt
+            found += 1
+        else:
+            fact["excerpt_missing"] = True
+            missing += 1
+    out = data if isinstance(data, dict) else {"facts": facts}
+    note = f"source excerpts cut: {found}; excerpt_missing: {missing}"
+    if unresolved:
+        note += f"; {len(unresolved)} cited tag(s) not resolvable to a document"
+    source = {**run.outputs_used(["fact_table"])[0], "transform": "source_excerpt cut by the pipeline"}
+    return BuiltInput(dump_yaml(out), "yml", [source], note=note)
+
+
+def _findings_tags(text: str | None) -> list[str]:
+    return re.findall(r"\[src:([A-Z0-9][A-Za-z0-9._-]*(?:#[^\]\s]+)?)\]", text or "")
+
+
+@assembler("sources")
+def _sources(ctx: RunContext, name: str) -> BuiltInput:
+    """The source table (both sources.yml, and for 03R the draft's sources_additions) and the full text of the
+    primary documents: the event's filings and the documents the facts (04A) or the findings (03R) cite. Written as
+    .txt: thesis-ci validates any file named sources.yml."""
+    company = _need_company(ctx, name)
+    table, sources = source_table(ctx)
+    lines = [f"Sources for {company} {ctx.period}.", "", "===== source table (public and private sources.yml) =====",
+             table.rstrip(), ""]
+    tags: list[str] = []
+    if ctx.step.step == "04A":
+        run = ctx.latest_run("16A", period=ctx.period)
+        text = run.read_output("fact_table") if run else None
+        tags = [t for f in _fact_rows(yaml.safe_load(text) if text else None) if isinstance(f, dict)
+                for t in _tags_of(f.get("source"))]
+    elif ctx.step.step == "03R":
+        draft = ctx.latest_run("03-draft", period=ctx.period)
+        audit = ctx.latest_run("04A", period=ctx.period)
+        additions = draft.read_output("sources_additions") if draft else None
+        if additions and not _outputs.is_empty_mark(additions):
+            lines += ["===== the draft's sources_additions =====", additions.rstrip(), ""]
+            sources += draft.outputs_used(["sources_additions"])
+        tags = _findings_tags(audit.read_output("findings") if audit else None)
+    if not ctx.step.post_event:
+        return BuiltInput("\n".join(lines) + "\n", "txt", sources)
+    texts, docs, unresolved = cited_texts(ctx, tags)
+    report_tags = sorted({t.partition("#")[0] for t in tags if "-RPT" in t and t.partition("#")[0] in texts})
+    lines += [CITE_NOTE]
+    if unresolved:
+        lines.append(f"Not supplied (not resolvable to a document of {company} on EDGAR): {', '.join(unresolved)}.")
+    text, doc_sources = render_documents(lines + [""], sorted(docs, key=lambda d: (d.filed, d.accession,
+                                                                                    d.locator or "")))
+    for tag in report_tags:
+        path = ctx.workspace_root / "inputs" / "text" / f"reports__{company}.txt"
+        text += f"\n===== [src:{tag}] the owner's report (non-primary; a pointer to its own sources, 00 E2) =====\n\n"
+        text += texts[tag].strip() + "\n"
+        doc_sources.append(workspace_file_source(ctx.workspace_root, path))
+    return BuiltInput(text, "txt", sources + doc_sources,
+                      note=f"{len(docs)} EDGAR document(s)" + (f"; {len(unresolved)} tag(s) unresolved" if unresolved
+                                                               else ""),
+                      substitute=name if ctx.results().rehearsal_for else None)
+
+
+@assembler("draft_outputs")
+def _draft_outputs(ctx: RunContext, name: str) -> BuiltInput:
+    """03R: every output of the 03 draft, as written before the audit."""
+    run = ctx.require_run("03-draft", name)
+    text, sources = run_outputs_text(run, draft_outputs_names(run),
+                                     f"The outputs of the quarterly update draft {run.rel}, as written before the "
+                                     "audit, one block per output.")
+    return BuiltInput(text, "txt", sources)
+
+
+@assembler("findings_04A")
+def _findings_04a(ctx: RunContext, name: str) -> BuiltInput:
+    run, text = _run_output(ctx, name, "04A", "findings", why="04A audits the draft before the revision")
+    return BuiltInput(text, "yml", run.outputs_used(["findings"]))
+
+
+@assembler("test_proposals_04B_lite")
+def _test_proposals_04b_lite(ctx: RunContext, name: str) -> BuiltInput:
+    if not ctx.is_holding():
+        raise Omit("04B-lite runs only for holdings' quarterly updates (prompt 04)")
+    run, text = _run_output(ctx, name, "04B-lite", "test_proposals", why="the red team runs on the draft")
+    return BuiltInput(text, "yml", run.outputs_used(["test_proposals"]))
+
+
+@assembler("returns_17A")
+def _returns_17a(ctx: RunContext, name: str) -> BuiltInput:
+    run = ctx.latest_run("17A", period=ctx.period)
+    text = run.read_output("returns") if run else None
+    if run is None or text is None or not text.strip() or _outputs.is_empty_mark(text):
+        raise Omit("HQ has not returned this update (no 17A returns for this period)")
+    return BuiltInput(text, "yml", run.outputs_used(["returns"]))

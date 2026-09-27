@@ -1,10 +1,16 @@
-"""Fake model client for dry runs of the pipeline runner (docs/decisions/0019).
+"""Fake model client for dry runs of the pipeline runner (docs/decisions/0019, 0024).
 
 It stands in for the SDK client that pipeline/llm.py would otherwise create: it answers every request with
 schema-valid placeholders for the part's declared outputs and reports a rough token count, so the request
 assembly, the role checks, the output validation, the cost accounting and the budget guard in llm.py all run as
 they would with a key. It opens no network connection and imports no model SDK. Every placeholder says DRY-RUN,
 the run record says client: fake, and the runner refuses to place dry-run outputs.
+
+Outputs that a later step reads keep the shape that step expects, so a dry run of the post-earnings chain goes end
+to end: 16B answers each metric it was asked for with not_found, 14T rules every due test undetermined, 16A gives one
+untagged fact, 04A one no-change finding, and 03's thesis and ledger hand back the current files unchanged (they are
+valid by construction). The placeholders are built from the request's own inputs (context["inputs"]), never from
+anything else.
 """
 
 from __future__ import annotations
@@ -12,6 +18,7 @@ from __future__ import annotations
 import calendar
 import datetime as dt
 import math
+import re
 from collections.abc import Mapping, Sequence
 from types import SimpleNamespace
 from typing import Any
@@ -170,7 +177,130 @@ def _markdown(name: str, context: Mapping[str, Any]) -> str:
     return f"---\n{_dump(front)}\n---\n\n{DRY_RUN_NOTE}"
 
 
-SPECIAL = {"prereg": _prereg, "question_list": _question_list, "questions": _questions}
+def _inputs(context: Mapping[str, Any]) -> Mapping[str, str]:
+    return context.get("inputs") or {}
+
+
+def _yaml_input(context: Mapping[str, Any], name: str) -> Any:
+    text = _inputs(context).get(name)
+    try:
+        return yaml.safe_load(text) if text else None
+    except yaml.YAMLError:
+        return None
+
+
+_OUTPUT_BLOCK_RE = re.compile(r"^===== output: (\w+) \([^)]*\) =====\n(.*?)(?=^===== |\Z)", re.S | re.M)
+
+
+def carried_over(context: Mapping[str, Any], name: str) -> str | None:
+    """The current version of a file the part hands back complete (thesis, ledger): its input, or its block in
+    draft_outputs (03R)."""
+    inputs = _inputs(context)
+    if inputs.get(name):
+        return inputs[name]
+    for match in _OUTPUT_BLOCK_RE.finditer(inputs.get("draft_outputs") or ""):
+        if match.group(1) == name:
+            return match.group(2).rstrip() + "\n"
+    return None
+
+
+def _carry(name: str) -> Any:
+    def build(context: Mapping[str, Any]) -> str:
+        text = carried_over(context, name)
+        if text is None:
+            return _dump({"dry_run": True, "output": name, "note": DRY_RUN_NOTE})
+        data = yaml.safe_load(text)
+        if isinstance(data, dict):
+            data.pop("generated_by", None)
+        return _dump(data)
+
+    return build
+
+
+def _metric_values(context: Mapping[str, Any]) -> str:
+    wanted = _yaml_input(context, "metric_definitions") or {}
+    metrics = [m.get("id") for m in wanted.get("metrics") or [] if isinstance(m, dict)] or ["dry_run_metric"]
+    return _dump([{"metric": metric, "value": "not_found", "unit": None, "currency": None,
+                   "period": context.get("period"), "basis": DRY_RUN_NOTE, "source": None, "excerpt": DRY_RUN_NOTE,
+                   "confidence": "low", "note": DRY_RUN_NOTE} for metric in metrics])
+
+
+def _qualitative_verdicts(context: Mapping[str, Any]) -> str:
+    tests = (_yaml_input(context, "qualitative_tests") or {}).get("tests") or [{"id": "DRY-RUN"}]
+    return _dump([{"test_id": t.get("id"), "restated_question": DRY_RUN_NOTE, "answer": "cannot determine",
+                   "verdict": "undetermined", "conditions": [], "excerpt": DRY_RUN_NOTE, "source": [],
+                   "missing": DRY_RUN_NOTE} for t in tests if isinstance(t, dict)])
+
+
+def _fact_table(context: Mapping[str, Any]) -> str:
+    return _dump({"as_of": str(context["run_date"]), "facts": [
+        {"id": "F001", "location": "update", "subject": DRY_RUN_NOTE, "what": DRY_RUN_NOTE, "value": DRY_RUN_NOTE,
+         "unit": None, "period": None, "source": None, "untagged": True, "excerpt": DRY_RUN_NOTE}]})
+
+
+def _fact_verdicts(context: Mapping[str, Any]) -> str:
+    facts = (_yaml_input(context, "fact_table") or {}).get("facts") or [{"id": "F001"}]
+    return _dump([{"id": f.get("id"), "verdict": "unconfirmed", "source_location": None, "correct_value": None}
+                  for f in facts if isinstance(f, dict)])
+
+
+def _findings(context: Mapping[str, Any]) -> str:
+    label = context.get("label") or "RUN"
+    return _dump([{"id": f"{label}-01", "group": "no change", "type": None, "location": DRY_RUN_NOTE,
+                   "quote": DRY_RUN_NOTE, "evidence": DRY_RUN_NOTE, "fix": None}])
+
+
+def _question_ids(context: Mapping[str, Any], name: str) -> list[str]:
+    data = _yaml_input(context, name)
+    rows = data.get("questions") if isinstance(data, dict) else data
+    return [str(q.get("id")) for q in rows or [] if isinstance(q, dict) and q.get("id")]
+
+
+def _answers(source: str) -> Any:
+    def build(context: Mapping[str, Any]) -> str:
+        ids = _question_ids(context, source)
+        if not ids:
+            return _outputs.EMPTY_MARK  # a candidate has no question list, so no answers (prompt 03)
+        return _dump([{"id": qid, "answer": DRY_RUN_NOTE, "excerpt": None, "source": None,
+                       "confidence": "plausible but not the base case"} for qid in ids])
+
+    return build
+
+
+def _divergence_map(context: Mapping[str, Any]) -> str:
+    ids = _question_ids(context, "question_list") or ["Q01"]
+    return _dump([{"id": qid, "mark": "cannot tell", "company_manager": DRY_RUN_NOTE, "blind_read": DRY_RUN_NOTE,
+                   "touches_pillar": False, "more_direct": None, "resolution": DRY_RUN_NOTE,
+                   "to_owner_letter": False} for qid in ids])
+
+
+def _settlement(input_name: str, key: str) -> Any:
+    def build(context: Mapping[str, Any]) -> str:
+        data = _yaml_input(context, input_name)
+        rows = (data.get("items") or data.get("entries")) if isinstance(data, dict) else data
+        ids = [str(r.get("id")) for r in rows or [] if isinstance(r, dict) and r.get("id")]
+        if not ids:
+            return _outputs.EMPTY_MARK
+        return _dump([{"id": rid, key: "undetermined", "values": None, "evidence": DRY_RUN_NOTE,
+                       "reasoning": DRY_RUN_NOTE} for rid in ids])
+
+    return build
+
+
+def _gate_decision(context: Mapping[str, Any]) -> str:
+    return _dump({"decision": "hold", "reasons": [DRY_RUN_NOTE]})
+
+
+SPECIAL = {"prereg": _prereg, "question_list": _question_list, "questions": _questions, "thesis": _carry("thesis"),
+           "ledger": _carry("ledger"), "metric_values": _metric_values, "qualitative_verdicts": _qualitative_verdicts,
+           "fact_table": _fact_table, "fact_verdicts": _fact_verdicts, "findings": _findings,
+           "gate_decision": _gate_decision, "sources_additions": lambda context: "[]",
+           "question_answers": _answers("question_list"), "blind_answers": _answers("question_list_stripped"),
+           "divergence_map": _divergence_map, "prereg_settlement": _settlement("items_blind", "outcome"),
+           "ledger_settlement": _settlement("ledger_due", "status"),
+           "reviewed_sections": lambda context: "[]", "dossier_changes": lambda context: "[]",
+           "patch_decisions": lambda context: "[]", "revision_notes": lambda context: "[]",
+           "returns": lambda context: "[]"}
 
 
 def placeholder_output(name: str, fmt: str, context: Mapping[str, Any]) -> str:

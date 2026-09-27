@@ -60,7 +60,8 @@ The detailed price rules are in 00 §H2: only four kinds of prices may appear, a
 | `industries/<id>/` | Industry modules and signposts (no holdings, no recommendations) |
 | `forecasts/`, `letters/`, `mistakes.md` | Forecasts and overrides, letters to the owner, mistakes list |
 | `pipeline/llm.py` | The only model-call entry point; backends `claude-code` (default, the owner's subscription) and `api` (fallback, budgeted) (`docs/decisions/0022`) |
-| `pipeline/runner.py`, `pipeline/registry.py` | Pipeline runner and its input registry: assemble a bundle, execute it, place the outputs (`docs/decisions/0019`) |
+| `pipeline/runner.py`, `pipeline/registry.py` | Pipeline runner and its input registry: assemble a bundle, execute it, place the outputs (`docs/decisions/0019`, `0024`) |
+| `pipeline/chain.py`, `pipeline/documents.py`, `pipeline/evaluation.py` | After an earnings event: the chain of steps with review stops, the documents a step reads, the evaluation of the quantitative tests (`docs/decisions/0024`) |
 | `scripts/accept.py` | Phase acceptance script |
 | `zh-CN/` | Chinese versions of the key documents, at the same relative paths |
 | `../owners-office-private/` | Valuations, L3 memos, escalation requests, series ranking (`hq/`), decision log, PDF reports, prompts v3 (`prompts/`) |
@@ -88,6 +89,12 @@ The detailed price rules are in 00 §H2: only four kinds of prices may appear, a
 ../.venv/bin/python -m pipeline.runner execute runs/APP/2026-10-20-15A --backend api     # fallback: Anthropic API, counts against the budget
 ../.venv/bin/python -m pipeline.runner show runs/APP/2026-10-20-15A
 ../.venv/bin/python -m pipeline.runner place runs/APP/2026-10-20-15A --check
+# After an earnings event (docs/decisions/0024): the whole chain, with stops for review; resumable
+../.venv/bin/python -m pipeline.runner event AXP FY2026Q3 --run-date 2026-10-21 --dry-run   # fake backend; a rehearsal before the event
+../.venv/bin/python -m pipeline.runner event AXP FY2026Q3 --run-date 2026-10-21             # runs until the next stop
+../.venv/bin/python -m pipeline.runner event AXP FY2026Q3 --run-date 2026-10-21 --approve draft   # after reviewing the draft
+../.venv/bin/python -m pipeline.runner evaluate AXP FY2026Q3 --run-date 2026-10-21          # the quantitative tests alone (ci_results)
+../.venv/bin/python -m pipeline.runner place runs/AXP/2026-10-21-03R --publish              # a staged update, after HQ's review (00 §G9)
 ```
 
 Model backends (`docs/decisions/0022`): `claude-code` runs the Claude Code CLI in print mode on the owner's Claude subscription (no tools, settings, MCP, skills, CLAUDE.md or memory; an empty temporary directory); the CLI is `OWNERS_OFFICE_CLAUDE_BIN`, else `claude` on the PATH, else the copy the Claude desktop app installed, and it must be logged in (`claude auth login`, the owner's action). `api` is the fallback (plan limits reached, unattended runs in the private repository's Actions) and is the only spend that counts against `budget.monthly_usd`. `OWNERS_OFFICE_BACKEND` sets the default; `fake` is for dry runs and tests.

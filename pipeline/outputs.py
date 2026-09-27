@@ -10,7 +10,11 @@ there are errors, llm.py retries once with that list.
   (with no content, write the empty marker EMPTY_MARK, "none", in any letter case).
 - yaml: no code fences, must parse, no duplicate keys; outputs with a thesis-ci schema (OUTPUT_SCHEMAS) are then
   validated against the schema. The pipeline-maintained fields (00 §G8) given in pipeline_fields are written into
-  the document before it is validated.
+  the document before it is validated. YAML outputs that no schema covers but a later step reads (STRUCTURES: 04A's
+  fact_verdicts and every part's findings and questions per 00 §F3 and §F8, 16A's fact_table, 16B's metric_values,
+  14T's qualitative_verdicts, 15B's settlements, 03's dossier_changes, reviewed_sections and revision_notes, ...)
+  are checked for their shape and their fixed words (docs/decisions/0024): a list of the right rows, the keys
+  every row carries, and verdict, group and type names exactly as the rules write them.
 - markdown: must start with front matter that has at least company, doc, as_of and doc_status (00 §F1; the letter
   to the owner and its private appendix have no company); for story.md the front matter is validated only against
   the story schema.
@@ -406,6 +410,8 @@ def _parse_yaml(
         instance = data
     if validator is not None and not errors:
         errors = [f"{name}: {e}" for e in _cap(schema_errors(validator, instance, schema))]
+    if not errors and schema is None:
+        errors = _cap(structure_errors(name, data))
     if errors:
         return None, errors
     injected = False
@@ -454,6 +460,129 @@ def _parse_markdown(
     text = raw if not (injected or applied) else f"---\n{dump_yaml(front)}---\n{body}"
     return ParsedOutput(name, MARKDOWN, text, front, schema=schema, generated_by=generated_by,
                         generated_by_injected=injected, pipeline_fields=applied), []
+
+
+# ---------------------------------------------------------------- output structures (docs/decisions/0024)
+
+# 00 §F3 and prompt 04A, word for word.
+FACT_VERDICTS = frozenset({"accurate", "consistent with citation", "error", "L2 only", "unconfirmed", "basis issue"})
+FINDING_GROUPS = frozenset({"must fix", "should fix", "no change"})
+FINDING_TYPES = frozenset({"fact_error", "unsourced", "l2_only", "unit_or_period", "model_violation", "banned_content",
+                           "process_leak", "design", "reasoning", "other"})
+# 00 §F5 sections (dossier_changes; version_history adds the entry at the end of the dossier) and the parts a review
+# date can be set for (thesis-ci thesis.reviewed).
+ARCHIVE_SECTIONS = frozenset({"business", "economics", "moat", "capital_allocation", "management", "culture", "runway",
+                              "valuation", "bear_case", "monitoring", "thesis", "breakers", "munger", "unknowns",
+                              "ratings"})
+REVIEWED_SECTIONS = ARCHIVE_SECTIONS - {"ratings"}
+DOSSIER_TEXT_KEYS = ("text", "new_text", "content", "proposed")
+
+
+@dataclasses.dataclass(frozen=True)
+class Structure:
+    """The shape of a YAML output: a list of rows (or, with list_key, a mapping holding that list), the keys every row
+    carries (a value may be null unless listed in not_null), and the words a key may take."""
+
+    required: tuple[str, ...]
+    words: Mapping[str, frozenset[Any]] = dataclasses.field(default_factory=dict)
+    not_null: tuple[str, ...] = ()
+    list_key: str | None = None
+    mapping_required: tuple[str, ...] = ()
+    one_of: tuple[str, ...] = ()  # at least one of these keys
+    rule: str = ""  # where the shape is defined, quoted in the error
+
+    def errors(self, name: str, data: Any) -> list[str]:
+        rows = data
+        if self.list_key is not None:
+            if not isinstance(data, Mapping) or not isinstance(data.get(self.list_key), list):
+                return [f"{name}: should be a mapping with a {self.list_key} list ({self.rule})"]
+            missing = [k for k in self.mapping_required if k not in data]
+            if missing:
+                return [f"{name}: the mapping has no {', '.join(missing)} ({self.rule})"]
+            rows = data[self.list_key]
+        if not isinstance(rows, list):
+            shape = "a mapping" if isinstance(rows, Mapping) else type(rows).__name__
+            return [f"{name}: should be a list with one entry per item, not {shape} ({self.rule})"]
+        out: list[str] = []
+        for i, row in enumerate(rows):
+            where = f"{name}[{i}]" + (f" ({row.get('id') or row.get('test_id')})" if isinstance(row, Mapping)
+                                       and (row.get("id") or row.get("test_id")) else "")
+            if not isinstance(row, Mapping):
+                out.append(f"{where}: should be a mapping ({self.rule})")
+                continue
+            missing = [k for k in self.required if k not in row]
+            if missing:
+                out.append(f"{where}: has no {', '.join(missing)} ({self.rule})")
+            if self.one_of and not any(k in row for k in self.one_of):
+                out.append(f"{where}: has none of {', '.join(self.one_of)} ({self.rule})")
+            out += [f"{where}: {k} is empty" for k in self.not_null if k in row and row[k] in (None, "")]
+            for key, allowed in self.words.items():
+                if key in row and row[key] not in allowed and not (row[key] is None and key not in self.not_null
+                                                                    and None in allowed):
+                    listed = ", ".join(sorted(str(a) for a in allowed if a is not None))
+                    out.append(f"{where}: {key} {row[key]!r} is not one of: {listed} ({self.rule})")
+        return out
+
+
+STRUCTURES: dict[str, Structure] = {
+    "findings": Structure(("id", "group", "type", "location", "quote", "evidence", "fix"),
+                          {"group": FINDING_GROUPS, "type": FINDING_TYPES | {None}}, ("id", "group"),
+                          rule="00 §F3"),
+    "fact_verdicts": Structure(("id", "verdict", "source_location", "correct_value"), {"verdict": FACT_VERDICTS},
+                               ("id", "verdict"), rule="04A"),
+    "questions": Structure(("id", "issue", "options", "interim", "blocking"), {"blocking": frozenset({True, False})},
+                           ("id", "issue"), rule="00 §F8"),
+    "revision_notes": Structure(("finding_id", "action", "how"),
+                                {"action": frozenset({"fixed", "not fixed", "to HQ"})}, ("finding_id", "action"),
+                                rule="00 §F4"),
+    "fact_table": Structure(("id", "location", "what", "value", "source", "excerpt"), not_null=("id",),
+                            list_key="facts", mapping_required=("as_of",), rule="16A"),
+    "metric_values": Structure(("metric", "value", "unit", "period", "source"), not_null=("metric",), rule="16B"),
+    "qualitative_verdicts": Structure(
+        ("test_id", "answer", "verdict", "excerpt", "source"),
+        {"verdict": frozenset({"pass", "warn", "fail", "undetermined"}),
+         "answer": frozenset({"yes", "no", "cannot determine"})}, ("test_id", "verdict"), rule="14T"),
+    "prereg_settlement": Structure(("id", "outcome", "evidence", "reasoning"),
+                                   {"outcome": frozenset({"happened", "not_happened", "undetermined"})},
+                                   ("id", "outcome"), rule="15B"),
+    "ledger_settlement": Structure(("id",), {"status": frozenset({"kept", "partially_kept", "not_kept",
+                                                                   "silently_dropped", "undetermined"}),
+                                             "outcome": frozenset({"kept", "partially_kept", "not_kept",
+                                                                    "silently_dropped", "undetermined"})},
+                                   ("id",), one_of=("status", "outcome"), rule="15B, 00 §F6"),
+    "dossier_changes": Structure(("section",), {"section": ARCHIVE_SECTIONS | {"version_history"}}, ("section",),
+                                 one_of=DOSSIER_TEXT_KEYS, rule="03, 00 §F5"),
+    "divergence_map": Structure(("id", "mark"), {"mark": frozenset({"agree", "diverge", "cannot tell"})},
+                                ("id", "mark"), rule="14B"),
+    "blind_answers": Structure(("id", "answer", "excerpt", "source", "confidence"), not_null=("id",), rule="14A"),
+    "question_answers": Structure(("id", "answer", "excerpt", "source", "confidence"), not_null=("id",), rule="03"),
+}
+
+
+def structure_errors(name: str, data: Any) -> list[str]:
+    """Shape and fixed-word errors of a YAML output that has no thesis-ci schema (STRUCTURES)."""
+    if name == "reviewed_sections":
+        sections = data.get("reviewed_sections") if isinstance(data, Mapping) else data
+        if not isinstance(sections, list):
+            return [f"{name}: should be a list of the parts reviewed (thesis-ci SPEC 4.2)"]
+        return [f"{name}: {s!r} is not one of: {', '.join(sorted(REVIEWED_SECTIONS))}" for s in sections
+                if s not in REVIEWED_SECTIONS]
+    if name == "gate_decision":
+        decision = data.get("decision") if isinstance(data, Mapping) else None
+        if decision not in ("release", "return", "hold"):
+            return [f"{name}: should be a mapping whose decision is release, return or hold, with the reasons (17A)"]
+        return []
+    structure = STRUCTURES.get(name)
+    if structure is None:
+        return []
+    errors = structure.errors(name, data)
+    if name == "findings" and not errors:
+        for i, row in enumerate(data):
+            if row.get("group") == "no change" and row.get("type") is not None:
+                errors.append(f"{name}[{i}]: a no-change finding has type null (00 §F3)")
+            elif row.get("group") != "no change" and row.get("type") is None:
+                errors.append(f"{name}[{i}]: a {row.get('group')} finding needs a type (00 §F3)")
+    return errors
 
 
 def _cap(errors: list[str]) -> list[str]:
@@ -649,7 +778,7 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
     "pdf": (_d(PRIVATE, f"{_REPORTS}/{{doc}}.pdf"),),
     "rendered_pages": (_d(PRIVATE, f"{_REPORTS}/pages/"),),
 }
-DEFAULT_DESTINATION = _d(PRIVATE, "runs/{scope}/{run_date}-{part_id}/{output}.{ext}",
+DEFAULT_DESTINATION = _d(PRIVATE, "runs/{scope}/{run_dir}/{output}.{ext}",
                          note="§F2: outputs not listed in the table go to the private repository")
 TRUST_ROUTED_PROMPTS = frozenset({"03"})  # §G9: quarterly updates are routed by trust level
 
@@ -665,13 +794,16 @@ def place(output: str, *, prompt_id: str, part_id: str, fmt: str | None = None, 
     path that uses {ext} with no fmt given is an error.
     context gives the template fields: company (ticker), period (FY<year>Q<quarter>), run_date (YYYY-MM-DD), month
     (YYYY-MM, for the letter to the owner), doc (02/06/07/08/11, the report directory), subject (04's subject under
-    review), slug (the file name for memos and escalation requests; defaults to the output name).
+    review), slug (the file name for memos and escalation requests; defaults to the output name), run_dir (the run
+    directory's name; defaults to <run_date>-<part_id>, and an HQ step about one company adds -<TICKER>).
     Raises PlacementError when a field the template needs is missing.
     """
     ctx = {k: v for k, v in context.items() if v is not None}
     ctx.update(output=output, part_id=part_id, prompt_id=prompt_id)
     ctx.setdefault("slug", output)
     ctx.setdefault("scope", ctx.get("company") or "hq")
+    if "run_date" in ctx:
+        ctx.setdefault("run_dir", f"{ctx['run_date']}-{part_id}")
     if fmt is not None:
         ctx.setdefault("ext", "yml" if fmt == YAML else "md")
     dest = next(

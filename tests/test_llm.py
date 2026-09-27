@@ -592,8 +592,13 @@ def test_calls_and_per_pass_outputs_must_match_the_passes(env):
         llm.prompt_part(no_pass_outputs, "B", pass_no=1)
 
 
+FINDING = ("- id: {id}\n  group: should fix\n  type: reasoning\n  location: 3, The moat widens\n"
+           "  quote: The moat widens.\n  evidence: The filing says otherwise [src:TEST-10K-FY2025#Item7].\n"
+           "  fix: The moat is unchanged.\n")
+
+
 def test_second_pass_of_red_team_runs_with_pass_one_outputs(env):
-    reply = envelope(findings="- id: 04B-01\n  group: should_change", weakest_sentence='The sentence "...".',
+    reply = envelope(findings=FINDING.format(id="04B-01"), weakest_sentence='The sentence "...".',
                      questions="none")
     client = FakeClient(make_response(reply, model="claude-fable-5-1"))
     result = call(env, client, role="red_team", prompt_id="04", part="B", pass_no=2,
@@ -607,7 +612,7 @@ def test_second_pass_of_red_team_runs_with_pass_one_outputs(env):
 
 
 def test_second_pass_must_deliver_its_declared_outputs(env):
-    client = FakeClient(make_response(envelope(findings="- id: 04B-01"), model="claude-fable-5-1"))
+    client = FakeClient(make_response(envelope(findings=FINDING.format(id="04B-01")), model="claude-fable-5-1"))
     with pytest.raises(llm.LLMOutputInvalid) as info:
         call(env, client, role="red_team", prompt_id="04", part="B", pass_no=2,
              inputs={"pass1": "The first pass's outputs.", "product_counter_section": "The removed counter case."},
@@ -1119,13 +1124,45 @@ def test_generated_by_is_returned_alongside_when_the_schema_rejects_extra_keys(e
 
 
 def test_generated_by_goes_into_schemaless_yaml_mappings(env):
-    verdicts = "as_of: 2026-09-24\nverdicts:\n  - id: F1\n    verdict: correct\n"
-    client = FakeClient(make_response(envelope(fact_verdicts=verdicts, findings="- id: 04A-01", questions="none")))
-    result = audit(env, client)
-    assert result.outputs["fact_verdicts"].generated_by_injected
-    assert result.outputs["fact_verdicts"].data["generated_by"]["part"] == "04A"
-    assert result.outputs["fact_verdicts"].data["generated_by"]["backend"] == "api"
+    checks = "as_of: 2026-09-24\nchecks:\n  - page: 1\n    result: ok\n"
+    reply = envelope(design_checks=checks, layout_instructions="none", findings=FINDING.format(id="09C-01"),
+                     questions="none")
+    result = layout_review(env, FakeClient(make_response(reply)), [env.page_png])
+    assert result.outputs["design_checks"].generated_by_injected
+    assert result.outputs["design_checks"].data["generated_by"]["part"] == "09C"
+    assert result.outputs["design_checks"].data["generated_by"]["backend"] == "api"
     assert not result.outputs["findings"].generated_by_injected  # a list: returned alongside
+
+
+VERDICTS = "- id: F001\n  verdict: accurate\n  source_location: Item 7, Table 1\n  correct_value: null\n"
+
+
+@pytest.mark.parametrize("output, text, message", [
+    ("fact_verdicts", "verdicts:\n" + VERDICTS.replace("- ", "  - ").replace("\n  ", "\n    "),
+     "fact_verdicts: should be a list with one entry per item, not a mapping (04A)"),
+    ("fact_verdicts", VERDICTS.replace("accurate", "basis_issue"),
+     "fact_verdicts[0] (F001): verdict 'basis_issue' is not one of: L2 only, accurate, basis issue, consistent with "
+     "citation, error, unconfirmed (04A)"),
+    ("findings", "04A-01:\n  group: must fix\n", "findings: should be a list with one entry per item, not a mapping"),
+    ("findings", FINDING.format(id="04A-01").replace("should fix", "must_fix"),
+     "findings[0] (04A-01): group 'must_fix' is not one of: must fix, no change, should fix (00 §F3)"),
+    ("findings", FINDING.format(id="04A-01").replace("group: should fix", "group: no change"),
+     "findings[0]: a no-change finding has type null (00 §F3)"),
+    ("findings", "- id: 04A-01\n  group: must fix\n", "findings[0] (04A-01): has no type, location, quote, evidence, fix"),
+    ("questions", "- id: Q1\n  issue: Which basis?\n  options: [a, b]\n  interim: a\n  blocking: maybe\n",
+     "questions[0] (Q1): blocking 'maybe' is not one of: False, True (00 §F8)"),
+])
+def test_malformed_audit_outputs_get_a_precise_error_and_one_retry(env, output, text, message):
+    """Replies seen in the model comparison of 2026-09-27: YAML that parses but does not follow 04A's format is
+    refused with the exact rule, and the retry carries the error (decision 0024)."""
+    good = {"fact_verdicts": VERDICTS, "findings": FINDING.format(id="04A-01"), "questions": "none"}
+    bad = envelope(**{**good, output: text})
+    client = FakeClient(make_response(bad), make_response(envelope(**good)))
+    result = audit(env, client)
+    assert result.attempts == 2 and result.outputs["fact_verdicts"].data[0]["verdict"] == "accurate"
+    retried = client.requests[1]["messages"][0]["content"]
+    assert message in retried
+    assert any(message in e for e in read_log(env.log)[0]["validation_errors"])
 
 
 def test_placements_follow_section_f2(env):
@@ -1136,7 +1173,7 @@ def test_placements_follow_section_f2(env):
     assert placed["update"].path == "companies/TEST/updates/2026-09-24.md"
     assert "§G9" in placed["thesis"].note  # quarterly updates are routed by trust level
     assert "questions" not in placed  # "none" is not placed
-    audited = audit(env, FakeClient(make_response(envelope(fact_verdicts="none", findings="- id: 04A-01",
+    audited = audit(env, FakeClient(make_response(envelope(fact_verdicts="none", findings=FINDING.format(id="04A-01"),
                                                            questions="none"))))
     (findings,) = audited.placements(company="TEST")
     assert (findings.visibility, findings.action) == ("public", "pr_attachment")
@@ -1172,13 +1209,14 @@ def test_default_backend_comes_from_the_env_var(env, monkeypatch):
 
 
 def test_fake_backend_without_a_client_answers_with_placeholders(env):
-    # 04A's outputs are all schemaless YAML, which the fake client's placeholders satisfy
+    # 04A's placeholders keep the shape 03R reads: a list of verdicts and a list of findings (00 §F3)
     result = audit(env, None, backend="fake")
     assert result.backend == "fake"
     assert result.attempts == 1
     assert set(result.outputs) == {"fact_verdicts", "findings", "questions"}
     assert fake_client.DRY_RUN_NOTE in result.text
-    assert result.outputs["fact_verdicts"].data["dry_run"] is True
+    assert result.outputs["fact_verdicts"].data[0]["verdict"] == "unconfirmed"
+    assert result.outputs["findings"].data[0]["group"] == "no change"
     assert result.generated_by["backend"] == "fake"
     assert result.notional_cost_usd is None
     (record,) = read_log(env.log)

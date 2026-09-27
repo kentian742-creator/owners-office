@@ -176,7 +176,7 @@ def test_the_environment_is_built_from_scratch(env, cli, monkeypatch):
     assert "ANTHROPIC_API_KEY" not in seen_env and "ANTHROPIC_BASE_URL" not in seen_env
     assert "SOME_HOST_SETTING" not in seen_env and "CLAUDE_CONFIG_DIR" not in seen_env
     assert {k: seen_env[k] for k in llm.CLAUDE_ENV_FIXED} == llm.CLAUDE_ENV_FIXED
-    assert seen_env["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] == "64000" and seen_env["HOME"] == os.environ["HOME"]
+    assert seen_env["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] == "128000" and seen_env["HOME"] == os.environ["HOME"]
 
 
 def test_a_long_lived_token_gets_an_empty_configuration_directory(env, cli, monkeypatch):
@@ -189,12 +189,18 @@ def test_a_long_lived_token_gets_an_empty_configuration_directory(env, cli, monk
     assert log_lines(env)[0]["cli_isolated_config"] is True
 
 
-def test_long_output_prompts_get_the_larger_limit(env, cli):
+def test_every_part_gets_the_models_full_output_ceiling(env, cli):
+    """The CLI's limit covers thinking and the reply: a short output still needs room to think (decision 0024)."""
     cli.answer(result=envelope(report="---\ncompany: TEST\ndoc: report_02\nas_of: 2026-09-24\ndoc_status: draft\n---\n"
                                       "Report.\n", questions="none"))
     call(env, prompt_id="02", mode="report", inputs={"run_date": "2026-09-24", "dossier": "Dossier."},
          variables=DRAFT_VARIABLES)
-    assert cli.calls[0]["env"]["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] == "128000"
+    cli.answer(result=DRAFT_REPLY)
+    call(env)
+    assert [c["env"]["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] for c in cli.calls] == ["128000", "128000"]
+    write_agent(env.repo, "company_manager", model="claude-haiku-4-5")
+    call(env)
+    assert cli.calls[-1]["env"]["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] == "64000"
 
 
 def test_models_without_effort_get_no_effort_flag(env, cli):
@@ -218,7 +224,7 @@ def test_claude_code_calls_are_logged_like_api_calls_at_no_api_cost(env, cli):
     assert (line["session_id"], line["cli_version"], line["num_turns"]) == ("fake-session", "9.9.9", 1)
     for key in ("prompt_version", "prompt_revision", "rules_version", "rules_revision", "input_sha256", "part_id"):
         assert line[key]
-    assert line["fallbacks"] is None and line["stream"] is None and line["max_tokens"] == 64000
+    assert line["fallbacks"] is None and line["stream"] is None and line["max_tokens"] == 128000
     assert result.generated_by["backend"] == "claude-code"
     assert llm.month_spend(env.log) == 0.0
 
@@ -253,7 +259,8 @@ def test_an_invalid_reply_is_retried_once_with_the_errors_in_english(env, cli):
     ({"is_error": True, "api_error_status": 429, "result": "API Error"}, llm.PlanLimitReached, "limit"),
     ({"is_error": True, "api_error_status": 500, "result": "API Error: 500 internal"}, llm.ClaudeCodeError, "500"),
     ({"raw": "Error: unknown option '--frobnicate'\n", "exit": 1}, llm.ClaudeCodeError, "printed no result"),
-    ({"result": DRAFT_REPLY, "num_turns": 3}, llm.ClaudeCodeError, "tools"),
+    ({"result": DRAFT_REPLY, "num_turns": 3, "permission_denials": [{"tool_name": "Bash"}]}, llm.ClaudeCodeError,
+     "tools"),
 ])
 def test_cli_failures_are_logged_and_raised(env, cli, step, error, match):
     cli.answer(**step)
@@ -279,6 +286,18 @@ def test_truncation_and_refusal(env, cli):
     with pytest.raises(llm.LLMRefusal):
         call(env)
     assert [line["stop_reason"] for line in log_lines(env)] == ["max_tokens", "refusal"]
+
+
+def test_a_second_turn_without_tools_is_an_output_limit_not_tool_use(env, cli):
+    """At effort xhigh the thinking can fill the output limit; the CLI then continues into a second turn. With no tool
+    loaded and no permission asked, that is a truncation, reported as such (model comparison, decision 0024)."""
+    cli.answer(result=DRAFT_REPLY, num_turns=2)
+    with pytest.raises(llm.LLMTruncated, match="output limit of 128000 tokens") as info:
+        call(env)
+    assert "tools" not in str(info.value)
+    (line,) = log_lines(env)
+    assert line["stop_reason"] == "max_tokens" and line["cli_stop_reason"] == "end_turn" and line["num_turns"] == 2
+    assert "output limit" in line["cli_output_limit"] and line["notional_cost_usd"] == 0.0421
 
 
 def test_a_client_cannot_be_given_to_the_cli_backend(env, cli):
