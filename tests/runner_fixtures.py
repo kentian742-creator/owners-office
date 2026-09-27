@@ -39,22 +39,51 @@ id: "00"
 title: synthetic series rules (runner tests)
 version: "9.0"
 output_formats:
-  yaml: [prereg, questions, question_list, blind_answers]
-  markdown: [letter, private_appendix]
-  text: [l2_report, unprompted_observations]
+  yaml: [prereg, questions, question_list, blind_answers, unprompted_observations, qualitative_verdicts, divergence_map, question_answers, prereg_settlement, ledger_settlement, fact_table, metric_values, fact_verdicts, findings, inversion_list, test_proposals, dossier_changes, patch_decisions, thesis, ledger, sources_additions, reviewed_sections, escalation, valuation_input_notes, revision_notes, gate_decision, returns, rulings, owner_letter_items]
+  markdown: [letter, private_appendix, update, story]
+  text: [l2_report, pr_body, mistakes_entry]
   file: [pdf]
 ---
 
 Synthetic rules for the runner tests.
 """
 
+# The front matter of the real prompts, part by part (test_the_real_prompts_are_covered_and_match_the_fixtures
+# compares them); the prompt text is synthetic.
+PROMPT_03 = """---
+id: "03"
+title: synthetic quarterly update
+version: "9.4"
+role: company_manager
+parts:
+  draft: {inputs: [run_date, dossier, thesis, ledger, constitution, filings, ci_results, "qualitative_verdicts?", "prereg_settlement?", "prereg_due?", ledger_settlement, "question_list?", pending_archive_patch, pending_test_proposals, pending_ledger_entries, "owner_notes?", schema], outputs: [update, question_answers, dossier_changes, patch_decisions, thesis, ledger, "story?", sources_additions, reviewed_sections, mistakes_entry, pr_body, l2_report, "escalation?", "valuation_input_notes?", questions]}
+  revise: {name: 03R synthetic revision, inputs: [draft_outputs, findings_04A, "test_proposals_04B_lite?", "returns_17A?", sources], outputs: [update, question_answers, dossier_changes, patch_decisions, thesis, ledger, "story?", sources_additions, reviewed_sections, mistakes_entry, pr_body, l2_report, "escalation?", "valuation_input_notes?", questions, revision_notes]}
+---
+
+Synthetic prompt 03 about {{company}} ({{ticker}}) for {{period}}.
+"""
+
+PROMPT_04 = """---
+id: "04"
+title: synthetic audit
+version: "9.5"
+parts:
+  A: {name: synthetic fact audit, role: auditor, inputs: [fact_table, sources], outputs: [fact_verdicts, findings, questions]}
+  B_lite: {name: synthetic inversion list, role: red_team, inputs: [update, filings, thesis_without_loss_paths, "prior_inversion_list?"], outputs: [inversion_list, test_proposals]}
+---
+
+Synthetic prompt 04: the {{subject}} of {{company}} ({{ticker}}).
+"""
+
 PROMPT_14 = """---
 id: "14"
-title: synthetic question list and blind read
+title: synthetic question list, blind read, rulings and divergence map
 version: "9.1"
 parts:
   Q: {name: synthetic question list, role: hq_capital_allocator, inputs: [thesis, dossier], outputs: [question_list]}
-  A: {name: synthetic blind read, role: blind_reader, inputs: [question_list_stripped], outputs: [blind_answers, unprompted_observations]}
+  A: {name: synthetic blind read, role: blind_reader, inputs: [filings, question_list_stripped], outputs: [blind_answers, unprompted_observations]}
+  T: {name: synthetic rulings, role: judge, inputs: [event, qualitative_tests, where_documents], outputs: [qualitative_verdicts]}
+  B: {name: synthetic divergence map, role: hq_capital_allocator, inputs: [question_list, question_answers, blind_answers, unprompted_observations, filings, thesis, dossier, update], outputs: [divergence_map, l2_report, questions]}
 ---
 
 Synthetic prompt 14.
@@ -62,13 +91,38 @@ Synthetic prompt 14.
 
 PROMPT_15 = """---
 id: "15"
-title: synthetic pre-registration
+title: synthetic pre-registration and settlement
 version: "9.2"
 parts:
   A: {name: synthetic prereg, role: company_manager, inputs: [run_date, thesis, dossier, latest_filings, prereg_candidates, calibration, event, release_history, schema], outputs: [prereg, l2_report, questions]}
+  B: {name: synthetic settlement, role: settler, inputs: [event, items_blind, filings, metric_values, ledger_due], outputs: [prereg_settlement, ledger_settlement, questions]}
 ---
 
 Synthetic prompt 15.
+"""
+
+PROMPT_16 = """---
+id: "16"
+title: synthetic extraction
+version: "9.6"
+parts:
+  A: {name: synthetic fact extraction, role: extractor, inputs: [product], outputs: [fact_table]}
+  B: {name: synthetic metric extraction, role: extractor, inputs: [filings, metric_definitions, "prior_values?"], outputs: [metric_values]}
+---
+
+Synthetic prompt 16.
+"""
+
+PROMPT_17 = """---
+id: "17"
+title: synthetic HQ
+version: "9.7"
+role: hq_capital_allocator
+parts:
+  A: {name: synthetic review, inputs: [run_date, update_outputs, findings_04A, inversion_list, divergence_map, ci_results, trust_level, gate_rules, questions, "valuation_input_notes?", decision_rights], outputs: [gate_decision, returns, rulings, l2_report, owner_letter_items]}
+---
+
+Synthetic prompt 17.
 """
 
 PROMPT_18 = """---
@@ -83,7 +137,8 @@ outputs: [letter, private_appendix]
 Synthetic prompt 18.
 """
 
-PROMPTS = {"00-rules.md": RULES, "14-questions.md": PROMPT_14, "15-prereg.md": PROMPT_15, "18-letter.md": PROMPT_18}
+PROMPTS = {"00-rules.md": RULES, "03-update.md": PROMPT_03, "04-audit.md": PROMPT_04, "14-questions.md": PROMPT_14,
+           "15-prereg.md": PROMPT_15, "16-extraction.md": PROMPT_16, "17-hq.md": PROMPT_17, "18-letter.md": PROMPT_18}
 
 THESIS_APP = {
     "schema_version": "0.2",
@@ -103,6 +158,56 @@ THESIS_APP = {
         "Culture rating: left empty until there is first-hand evidence.",
     ],
 }
+CANARY_TEST = "CANARY-TESTWORDING-3c8d"  # thesis wording in tests' claims and notes: never given to 16B, 14T
+WHERE_L1 = "Earnings 8-K Exhibit 99.1 press release, call materials, the MD&A of the 10-Q and 10-K"
+THESIS_APP["tests"] = [
+    {"id": "APP-Q1", "type": "quantitative", "claim": f"Growth holds {CANARY_TEST}", "origin": "manual",
+     "severity": "watch", "covers": ["growth"], "metric": "revenue_yoy", "fail_if": "Below 10%",
+     "rule": {"op": "<", "threshold": 10, "unit": "%", "consecutive": 1, "period": "quarter"}, "data": "xbrl",
+     "effective_from": "FY2026Q2", "note": f"Synthetic note {CANARY_TEST}."},
+    {"id": "APP-Q5", "type": "quantitative", "claim": f"Unit drivers hold {CANARY_TEST}", "origin": "manual",
+     "severity": "breaker", "covers": ["unit_economics"], "metric_def": {
+         "id": "unit_drivers_yoy", "description": "Installs year on year", "unit": "%", "frequency": "quarter",
+         "data": "filing_text", "where": "Key metrics in the 10-Q MD&A",
+         "components": {"installs": {"description": "Installs", "unit": "count", "where": "10-Q MD&A",
+                                     "xbrl": ["us-gaap:NotAConcept"]}}},
+     "fail_if": "Below 0 for 2 quarters", "rule": {"op": "<", "threshold": 0, "unit": "%", "consecutive": 2},
+     "data": "filing_text", "effective_from": "FY2026Q2", "first_readable": "2026-08",
+     "note": f"Synthetic note {CANARY_TEST}."},
+    {"id": "APP-Q7", "type": "quantitative", "claim": f"The segment grows {CANARY_TEST}", "origin": "manual",
+     "severity": "watch", "covers": ["growth"], "metric": "segment_revenue_yoy",
+     "params": {"segment": "Apps", "basis": "reported"}, "fail_if": "Below 0",
+     "rule": {"op": "<", "threshold": 0, "unit": "%", "consecutive": 1}, "data": "filing_text",
+     "effective_from": "FY2026Q2"},
+    {"id": "APP-Q9", "type": "quantitative", "claim": "Later reading", "origin": "manual", "severity": "watch",
+     "covers": ["growth"], "metric": "annual_text_metric", "metric_def": {
+         "description": "Read from the 10-K", "unit": "%", "data": "filing_text", "where": "10-K"},
+     "fail_if": "Below 0", "rule": {"op": "<", "threshold": 0}, "data": "filing_text", "effective_from": "FY2026Q2",
+     "first_readable": "2027-02"},
+    {"id": "APP-L1", "type": "qualitative", "claim": f"No large acquisitions {CANARY_TEST}", "origin": "manual",
+     "severity": "watch", "covers": ["capital_allocation"], "question": "Did the company announce an acquisition?",
+     "fail_if": "Yes, above 10% of assets", "warn_if": "Yes", "judge": "independent_model", "evidence": "required",
+     "where": WHERE_L1, "lookback": 1, "judge_notes": ["Count only signed agreements."],
+     "baseline": {"value": "No acquisition in 2026", "as_of": "2026-09-24", "source": "APP-8K-2026-08-05#EX-99.1",
+                  "note": f"Baseline note {CANARY_TEST}."},
+     "effective_from": "FY2026Q2", "note": f"Synthetic note {CANARY_TEST}."},
+    {"id": "APP-L4", "type": "qualitative", "claim": "Later", "origin": "manual", "severity": "breaker",
+     "covers": ["management"], "question": "Did the founder leave?", "fail_if": "Yes", "judge": "independent_model",
+     "evidence": "required", "where": "8-K Item 5.02, Form 4, DEF 14A", "lookback": 4,
+     "effective_from": "FY2026Q2", "first_readable": "2027-07"},
+]
+LEDGER_APP = {"company": "APP", "entries": [
+    {"id": "APP-M-2026-01", "side": "management", "kind": "numeric_target", "statement": "Synthetic target.",
+     "made_at": "2026-08-05", "due": "2026", "source": "APP-8K-2026-08-05#EX-99.1", "status": "pending"}]}
+METRICS_YML = {"metrics": [
+    {"id": "revenue_yoy", "description": "Year-on-year growth of total revenue", "unit": "%", "frequency": "quarter",
+     "data": "xbrl", "xbrl": ["us-gaap:Revenues"], "formula": "revenue_t / revenue_{t-4q} - 1"},
+    {"id": "segment_revenue_yoy", "description": "Year-on-year revenue growth of a segment", "unit": "%",
+     "frequency": "quarter", "data": "filing_text", "where": "segment note or earnings press release"},
+]}
+PERMISSIVE_SCHEMAS = ("thesis", "ledger", "story", "escalation")
+SOURCES_SCHEMA = {"$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object", "required": ["sources"],
+                  "properties": {"sources": {"type": "array"}}}
 THESIS_AXP = {"schema_version": "0.2", "company": "AXP", "name": "Synthetic candidate", "status": "candidate",
               "domain": "payments_financial_data"}
 SOURCES_APP = {"sources": [{"tag": "APP-8K-2026-08-05", "kind": "filing", "title": "synthetic", "form": "8-K",
@@ -154,7 +259,15 @@ TENQ_URL = f"{edgar.ARCHIVES_BASE}/1751008/000175100826000059/app-20260630.htm"
 EX991_HTML = (f"<html><body><p>AppLovin Announces Second Quarter 2026 Financial Results</p>"
               f"<p>Synthetic press release {CANARY_FILING}.</p></body></html>")
 TENQ_HTML = ("<html><body><div style='display:none'><ix:header>hidden contexts and units</ix:header></div>"
-             "<p>FORM 10-Q</p><p>Synthetic quarterly report.</p></body></html>")
+             "<p>FORM 10-Q</p><p>Synthetic quarterly report.</p><p>Installs grew to 1,234 million in the quarter.</p>"
+             "</body></html>")
+TENK_URL = f"{edgar.ARCHIVES_BASE}/1751008/000175100826000010/app-20251231.htm"
+TENK_HTML = "<html><body><p>FORM 10-K</p><p>Synthetic annual report; risk factors.</p></body></html>"
+COMPANYFACTS_URL = f"{edgar.DATA_BASE}/api/xbrl/companyfacts/CIK{APP_CIK}.json"
+# The shim evaluator (tests/evaluate_shim.py) reads ready readings from this key of the synthetic companyfacts.
+COMPANYFACTS = {"cik": 1751008, "entityName": "AppLovin (synthetic)", "facts": {}, "shim_readings": [
+    {"metric": "revenue_yoy", "period": "FY2026Q2", "value": 12.0, "unit": "%", "source": "APP-XBRL#us-gaap:Revenues",
+     "basis": "synthetic"}]}
 
 
 def git(root: Path, *args: str) -> str:
@@ -206,6 +319,8 @@ class Transport:
         self.responses[TENQ_INDEX_URL] = json.dumps(
             {"directory": {"item": [{"name": "app-20260630.htm", "size": "300"}]}}).encode()
         self.responses[TENQ_URL] = TENQ_HTML.encode()
+        self.responses[TENK_URL] = TENK_HTML.encode()
+        self.responses[COMPANYFACTS_URL] = json.dumps(COMPANYFACTS).encode()
         self.calls: list[str] = []
 
     def __call__(self, url: str, headers: Any, timeout: float) -> tuple[int, dict[str, str], bytes]:
@@ -271,6 +386,8 @@ def make_env(tmp_path: Path) -> Env:
     write(public / "constitution" / "decision-rights.yml", "budget:\n  monthly_usd: 20\n")
     write_yaml(public / "companies" / "APP" / "thesis.yml", THESIS_APP)
     write_yaml(public / "companies" / "APP" / "sources.yml", SOURCES_APP)
+    write_yaml(public / "companies" / "APP" / "ledger.yml", LEDGER_APP)
+    write(public / "constitution" / "owner.md", "# Owner's constitution (synthetic)\n\n- R1 Business first.\n")
     write(public / "companies" / "APP" / "prereg" / ".gitkeep", "")
     write_yaml(public / "companies" / "AXP" / "thesis.yml", THESIS_AXP)
     write_yaml(public / "trust" / "levels.yml", {"as_of": "2026-09-24", "companies": {"APP": 1, "AXP": 1},
@@ -287,6 +404,8 @@ def make_env(tmp_path: Path) -> Env:
     for name, text in PROMPTS.items():
         write(private / "prompts" / name, text)
     write(private / "runs" / ".gitkeep", "")
+    write_yaml(private / "companies" / "APP" / "sources.yml", {"sources": [
+        {"tag": "APP-RPT1-2026-09-20", "kind": "report", "title": "synthetic report", "primary": False}]})
     write(private / "memos" / ".gitkeep", "")
     git(private, "init", "-q", "-b", "main")
     commit_all(private)
@@ -294,6 +413,10 @@ def make_env(tmp_path: Path) -> Env:
     write(workspace / "inputs" / "text" / "reports__APP.txt", f"Synthetic complete report {CANARY_REPORT}.\n")
     schemas = tmp_path / "schemas"
     write(schemas / "prereg.schema.json", json.dumps(PREREG_SCHEMA, indent=2))
+    for name in PERMISSIVE_SCHEMAS:
+        write(schemas / f"{name}.schema.json", json.dumps({"$schema": PREREG_SCHEMA["$schema"], "type": "object"}))
+    write(schemas / "sources.schema.json", json.dumps(SOURCES_SCHEMA))
+    write_yaml(tmp_path / "metrics.yml", METRICS_YML)
     roots = runner.Roots(public=public, private=private, workspace=workspace)
     return Env(workspace=workspace, public=public, private=private, schemas=schemas, roots=roots,
                gateway=make_gateway(tmp_path / "edgar-cache"), log=tmp_path / "llm-log.jsonl")
