@@ -1,10 +1,11 @@
 # MSFT source tag table (public; thesis-ci spec §3; schema: spec/schemas/sources.schema.json)
 # Locator convention: N in MSFT-RPT1-2026-09-17#pN is the report's PDF page number, matching the page markers of the inputs/text extracted text
 # (the page numbers printed in the report's header are one lower than the PDF page numbers: printed page 10 = PDF page 11).
-# The archive's numbers currently all cite report pages; the primary documents registered below are the ones the report says it is based on, and the numbers are still to be checked against them one by one.
-# The report cites no Microsoft 10-Q (its appendix cites only one Amazon 10-Q): the FY2026 10-K already covers the period to 2026-06-30,
-# and Microsoft's first 10-Q on the new basis is for FY27 Q1 (around the end of October 2026), to be registered then.
-# The accession numbers, filing dates, and 8-K item and exhibit numbers below were checked against EDGAR; the other notes come from the report's appendix.
+# In MSFT-10K-FY2026#pN, N is the page number printed in the 10-K; other 10-Ks are located by Item or Note; slide N of Exhibit 99.1 of MSFT-8K-2026-09-02 is its slide order.
+# Facts in the archive cite the primary documents below; the report is cited for its own views, estimates, scenarios and thresholds, and as a pointer.
+# Microsoft's first 10-Q on the FY2027 basis is for FY27 Q1 (around the end of October 2026), to be registered then.
+# The accession numbers, filing dates, periods, forms, and 8-K item and exhibit numbers of EDGAR filings below were checked against the EDGAR filing index pages
+# (the entries added on 2026-09-27 were read that day); web pages were read on the dates their notes give.
 sources:
   - tag: MSFT-RPT1-2026-09-17
     kind: report
@@ -24,7 +25,7 @@ sources:
     filed: 2026-07-29
     url: https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/0001193125-26-323660-index.htm
     primary: true
-    note: "The report's main financial basis: the income statement and segments, the cash flow statement (cash capex, free cash flow), the property and equipment note (useful lives and asset mix), the goodwill and Activision purchase price allocation notes, the contractual obligations table, the list of executive officers and the headcount in Part I."
+    note: "The report's main financial basis: the income statement and segments, the cash flow statement (cash capex, free cash flow), the non-GAAP reconciliation, the property and equipment note (useful lives and asset mix), the goodwill and Activision purchase price allocation notes, the OpenAI investment (Note 1), the contractual obligations table, the list of executive officers and the headcount in Part I."
 
   - tag: MSFT-10K-FY2025
     kind: filing
@@ -36,7 +37,7 @@ sources:
     filed: 2025-07-30
     url: https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/0000950170-25-100235-index.htm
     primary: true
-    note: The report uses it for the FY2025 comparatives and the headcount; the ten-year FY2016–FY2026 series comes from each year's 10-K cash flow statement, to be registered year by year when needed.
+    note: "The FY2025 comparatives and the headcount; its income and cash flow statements also carry the FY2023 columns (operating income, taxes, capex) used in F29, and its revenue note gives the RPO at 2025-06-30."
 
   - tag: MSFT-8K-2026-07-29
     kind: filing
@@ -49,7 +50,7 @@ sources:
     date: 2026-07-29
     url: https://www.sec.gov/Archives/edgar/data/789019/000119312526323632/0001193125-26-323632-index.htm
     primary: true
-    note: Items 2.02 and 9.01; apart from the XBRL files it has only Exhibit 99.1 (the FY26 Q4 earnings press release), and the “8-K segment history exhibit” named in the report's appendix is not in this 8-K. The report uses it for the fourth-quarter and full-year results and Xbox content and services revenue; footnote [1] in section two of the report cites both the FY2026 10-K and this press release, covering the FY2026 segment figures and the FY2027 guidance for Windows OEM and Xbox. The press release's Business Outlook paragraph says forward-looking guidance is given on the call and webcast, and the 10-K does not contain these two pieces of guidance either, so this archive records them under MSFT-CALL-FY2026Q4.
+    note: "Items 2.02 and 9.01; apart from the XBRL files it has only Exhibit 99.1 (the FY26 Q4 earnings press release), and the “8-K segment history exhibit” named in the report's appendix is not in this 8-K. The report uses it for the fourth-quarter and full-year results and Xbox content and services revenue; footnote [1] in section two of the report cites both the FY2026 10-K and this press release, covering the FY2026 segment figures, the FY2027 guidance for Windows OEM and Devices and the XBOX outlook. The press release's Business Outlook paragraph says forward-looking guidance is given on the call and webcast, and the 10-K does not contain that guidance either, so this archive records it under MSFT-CALL-FY2026Q4."
 
   - tag: MSFT-8K-2026-09-02
     kind: filing
@@ -62,7 +63,7 @@ sources:
     date: 2026-09-02
     url: https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/0001193125-26-380280-index.htm
     primary: true
-    note: "Items 7.01 and 9.01 (Reg FD, not an earnings 8-K). From FY2027 the reportable segments go from three to two (Agents and Infra, Devices and Consumer), Azure's definition narrows and its dollar revenue is disclosed quarterly for the first time, M365 commercial seats include paid GitHub seats, and FY2026 is restated. All of this archive's watch indicators and thesis breakers are judged on this new basis. Slide 21 of Exhibit 99.1 (FY27 Q1 Outlook Detail) only mechanically adjusts the FY27 Q1 guidance given on 2026-07-29 to the new segment basis: M365 commercial cloud moves from about 15% to about 17% in constant currency; this figure of about 17% is what section four of the report footnotes to this document (footnote [9]), and the say-do ledger's MSFT-MGT-02 cites it."
+    note: "Items 7.01 and 9.01 (Reg FD, not an earnings 8-K). From FY2027 the reportable segments go from three to two (Agents and Infra, Devices and Consumer), Azure's definition narrows and its dollar revenue is disclosed quarterly for the first time, M365 commercial seats include paid GitHub seats, and FY2026 is restated. All of this archive's watch indicators and thesis breakers are judged on this new basis. Slide 21 of Exhibit 99.1 (FY27 Q1 Outlook Detail) only mechanically adjusts the FY27 Q1 guidance given on 2026-07-29 to the new segment basis: M365 commercial cloud moves from about 15% to about 17% in constant currency; this figure of about 17% is what section four of the report footnotes to this document (footnote [9]), and the say-do ledger's MSFT-MGT-02 cites it. Slides cited: 11 (metrics with material changes), 13 (metric definitions), 15 (restated segment results), 17 (revenue as restated), 18 (investor metrics as reported and as restated), 21 (FY27 Q1 outlook detail)."
 
   - tag: MSFT-DEF14A-2025-10-21
     kind: filing
@@ -74,26 +75,364 @@ sources:
     filed: 2025-10-21
     url: https://www.sec.gov/Archives/edgar/data/789019/000119312525245150/0001193125-25-245150-index.htm
     primary: true
-    note: The metric structure of the long-term performance stock awards (MSFT-L2's baseline). The proxy statement for FY2026 is expected in October 2026 and will be registered then.
+    note: "The metric structure of the long-term performance stock awards (MSFT-L2's baseline): the FY2025 metrics and weights on page 39, the relative TSR modifier on page 40, the annual cash incentive measures on page 37. The proxy statement for FY2026 is expected in October 2026 and will be registered then."
 
   - tag: MSFT-CALL-FY2026Q2
     kind: transcript
     title: Microsoft FY26 Q2 earnings call transcript (2026-01-28)
     date: 2026-01-28
+    url: https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q2
     primary: true
-    note: The only time the company disclosed the share of commercial RPO coming from a single customer (OpenAI); the report's concentration reading comes from here.
+    note: "The company hosts the full transcript on the investor-relations event page above (read 2026-09-25 and 2026-09-27); citations point to it. The only time the company disclosed the share of commercial RPO coming from a single customer (OpenAI, about 45% of $625 billion at 2025-12-31); the CFO's description of how the OpenAI stake is accounted for after the recapitalization; quarterly capex of $37.5 billion (company definition)."
 
   - tag: MSFT-CALL-FY2026Q3
     kind: transcript
     title: Microsoft FY26 Q3 earnings call transcript (2026-04-29)
     date: 2026-04-29
+    url: https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3
     primary: true
-    note: "Report footnote [28]: CFO Hood expects headcount to keep falling in FY2027. The primary source for the say-do ledger's MSFT-MGT-05."
+    note: "The company hosts the full transcript on the investor-relations event page above (read 2026-09-25 and 2026-09-27); citations point to it. The CFO's calendar-2026 capex expectation of about $190 billion was given on this call (not on the FY26 Q4 call); report footnote [28]: the CFO expects headcount to decrease year over year in FY2027 (say-do ledger MSFT-MGT-05); commercial RPO growth excluding OpenAI of 26%; quarterly capex of $31.9 billion (company definition); the CFO's remark that the revenue share from OpenAI exists through 2030 under the amended agreement."
 
   - tag: MSFT-CALL-FY2026Q4
     kind: transcript
     title: Microsoft FY26 Q4 earnings call transcript (2026-07-29)
     date: 2026-07-29
-    url: http://www.microsoft.com/en-us/investor
+    url: https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4
     primary: true
-    note: "The call and webcast took place on 2026-07-29 at 14:30 US Pacific time (17:30 Eastern), accessed through the investor relations URL above, with the replay available until 2027-07-29; the earnings press release says forward-looking guidance is given on this call and webcast (the Business Outlook and Webcast Details paragraphs of Exhibit 99.1 of MSFT-8K-2026-07-29). This archive does not have the full transcript of the call; citations add the report page that relays it. Report footnotes [4] and [7]: Copilot paid seats and usage intensity, the statements on demand and capacity, and the change in the capex definition. The FY2027 guidance for Windows OEM and Devices and for Xbox also comes from this call (say-do ledger MSFT-MGT-03, MSFT-MGT-04). The FY27 Q1 M365 commercial cloud guidance was first given here (about 15% in constant currency), and the 8-K of 2026-09-02 mechanically adjusted it to about 17% on the new segment basis, the figure the report and the say-do ledger's MSFT-MGT-02 use."
+    note: "The call and webcast took place on 2026-07-29 at 14:30 US Pacific time (17:30 Eastern), with the replay available until 2027-07-29; the earnings press release says forward-looking guidance is given on this call and webcast (the Business Outlook and Webcast Details paragraphs of Exhibit 99.1 of MSFT-8K-2026-07-29). The company hosts the full transcript on the investor-relations event page above (read 2026-09-25 and 2026-09-27); citations point to it. Report footnotes [4] and [7]: Copilot paid seats and usage, the statements on demand and capacity, the useful-life change and the calendar-2026 capex figure of about $175 billion. The FY2027 full-year guidance for Windows OEM and Devices (revenue to decline in the high teens) and the XBOX outlook also come from this call (say-do ledger MSFT-MGT-03, MSFT-MGT-04); for XBOX the call gave only FY27 Q1 guidance (content and services revenue to decline in the mid-single digits; hardware revenue to decline) and the CEO's expectation of a return to growth in fiscal 2027, with no full-year FY2027 figure. The FY27 Q1 M365 commercial cloud guidance was first given here (about 15% in constant currency), and the 8-K of 2026-09-02 mechanically adjusted it to about 17% on the new segment basis, the figure the report and the say-do ledger's MSFT-MGT-02 use."
+
+  # ---------- Added on 2026-09-27, in the revision after the first fact audit ----------
+  - tag: MSFT-CALL-FY2026Q1
+    kind: transcript
+    title: Microsoft FY26 Q1 earnings call transcript (2025-10-29)
+    date: 2025-10-29
+    url: https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q1
+    primary: true
+    note: "The company hosts the full transcript on the investor-relations event page above (read 2026-09-25 and 2026-09-27). Cited for quarterly capex of $34.9 billion (company definition, including finance leases), one of the four quarters summed in F9."
+
+  - tag: MSFT-10Q-FY2026Q2
+    kind: filing
+    title: Microsoft Corporation quarterly report for the quarter ended 2025-12-31 (Form 10-Q, FY26 Q2)
+    issuer_cik: "0000789019"
+    form: 10-Q
+    period: FY2026Q2
+    accession: "0001193125-26-027207"
+    filed: 2026-01-28
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312526027207/0001193125-26-027207-index.htm
+    primary: true
+    note: "Note 1: an investment of approximately 27 percent of OpenAI on an as-converted basis, accounted for under the equity method, at 2025-12-31; Note 11: commercial remaining performance obligation of $625 billion at 2025-12-31."
+
+  - tag: MSFT-10K-FY2024
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2024 (Form 10-K, fiscal year ended 2024-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2024
+    accession: "0000950170-24-087843"
+    filed: 2024-07-30
+    url: https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/0000950170-24-087843-index.htm
+    primary: true
+    note: "FY2022 columns of the cash flow statement (dividends, buybacks, debt); Note 16 shares outstanding for FY2022–FY2024 (issued and repurchased); the Item 7 non-GAAP table as originally reported (FY2024 had no adjustments; FY2023 excluded the Q2 charge); FY2024 Intelligent Cloud operating income as first reported."
+
+  - tag: MSFT-10K-FY2023
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2023 (Form 10-K, fiscal year ended 2023-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2023
+    accession: "0000950170-23-035122"
+    filed: 2023-07-27
+    url: https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/0000950170-23-035122-index.htm
+    primary: true
+    note: "Income and cash flow statements for FY2021–FY2023 (revenue, operating income, net income, operating cash flow, capex, diluted weighted-average shares); Item 7 non-GAAP table (FY2023 and FY2022 adjusted net income; FY2022 excluded the tax benefit from the transfer of intangible properties); Note 16 shares outstanding."
+
+  - tag: MSFT-10K-FY2022
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2022 (Form 10-K, fiscal year ended 2022-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2022
+    accession: "0001564590-22-026876"
+    filed: 2022-07-28
+    url: https://www.sec.gov/Archives/edgar/data/789019/000156459022026876/0001564590-22-026876-index.htm
+    primary: true
+    note: "Item 7 non-GAAP table: adjusted net income of $69,447 million for FY2022 and $60,651 million for FY2021."
+
+  - tag: MSFT-10K-FY2021
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2021 (Form 10-K, fiscal year ended 2021-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2021
+    accession: "0001564590-21-039151"
+    filed: 2021-07-29
+    url: https://www.sec.gov/Archives/edgar/data/789019/000156459021039151/0001564590-21-039151-index.htm
+    primary: true
+    note: "Income and cash flow statements for FY2019–FY2021 (revenue, net income, operating cash flow, capex)."
+
+  - tag: MSFT-10K-FY2018
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2018 (Form 10-K, fiscal year ended 2018-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2018
+    accession: "0001564590-18-019062"
+    filed: 2018-08-03
+    url: https://www.sec.gov/Archives/edgar/data/789019/000156459018019062/0001564590-18-019062-index.htm
+    primary: true
+    note: "FY2016 and FY2017 restated for the revenue standard ASC 606 (FY2016 revenue $91,154 million, operating income $26,078 million, net income $20,539 million); cash flow statements for FY2016–FY2018."
+
+  - tag: MSFT-10K-FY2016
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2016 (Form 10-K, fiscal year ended 2016-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2016
+    accession: "0001193125-16-662209"
+    filed: 2016-07-28
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312516662209/0001193125-16-662209-index.htm
+    primary: true
+    note: "FY2016 as originally reported: revenue $85,320 million, additions to property and equipment $8,343 million, property and equipment, net $18,356 million at 2016-06-30."
+
+  - tag: MSFT-10K-FY2015
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2015 (Form 10-K, fiscal year ended 2015-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2015
+    accession: "0001193125-15-272806"
+    filed: 2015-07-31
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312515272806/0001193125-15-272806-index.htm
+    primary: true
+    note: "Item 7: goodwill and asset impairment charges of $7.5 billion related to the Phone Hardware business (the Nokia Devices and Services acquisition)."
+
+  - tag: MSFT-10K-FY2012
+    kind: filing
+    title: Microsoft Corporation annual report for fiscal year 2012 (Form 10-K, fiscal year ended 2012-06-30)
+    issuer_cik: "0000789019"
+    form: 10-K
+    period: FY2012
+    accession: "0001193125-12-316848"
+    filed: 2012-07-26
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312512316848/0001193125-12-316848-index.htm
+    primary: true
+    note: "Item 8: goodwill impairment of $6,193 million in the Online Services Division."
+
+  - tag: MSFT-8K-2012-07-02
+    kind: filing
+    title: Microsoft Corporation 8-K on the impairment of Online Services Division goodwill (Items 2.06 and 9.01; Exhibit 99.1 press release)
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2012Q4
+    accession: "0001193125-12-292236"
+    filed: 2012-07-02
+    date: 2012-06-28
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312512292236/0001193125-12-292236-index.htm
+    primary: true
+    note: "Event date 2012-06-28. Exhibit 99.1: a write-down of Online Services Division goodwill of approximately $6.2 billion, mostly related to the 2007 aQuantive acquisition."
+
+  - tag: MSFT-8K-2015-07-08
+    kind: filing
+    title: Microsoft Corporation 8-K on the restructuring of the phone hardware business (Items 7.01 and 9.01; Exhibit 99.1 press release)
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2015Q4
+    accession: "0001193125-15-247530"
+    filed: 2015-07-08
+    date: 2015-07-08
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312515247530/0001193125-15-247530-index.htm
+    primary: true
+    note: "Exhibit 99.1 announced an impairment charge of approximately $7.6 billion related to the Nokia Devices and Services business; the audited figure in the FY2015 10-K is $7.5 billion (both are written, the audited one prevails)."
+
+  - tag: MSFT-8K-2021-07-27
+    kind: filing
+    title: Microsoft Corporation FY21 Q4 earnings 8-K (Items 2.02 and 9.01; Exhibit 99.1 earnings press release)
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2021Q4
+    accession: "0001193125-21-225746"
+    filed: 2021-07-27
+    date: 2021-07-27
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312521225746/0001193125-21-225746-index.htm
+    primary: true
+    note: "FY2021 as adjusted (non-GAAP): net income $60,651 million and diluted EPS $7.97, excluding a $620 million net income tax benefit from the India Supreme Court decision on withholding taxes (GAAP: $61,271 million and $8.05)."
+
+  - tag: MSFT-8K-2024-07-30
+    kind: filing
+    title: Microsoft Corporation FY24 Q4 earnings 8-K (Items 2.02 and 9.01; Exhibit 99.1 earnings press release)
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2024Q4
+    accession: "0000950170-24-087835"
+    filed: 2024-07-30
+    date: 2024-07-30
+    url: https://www.sec.gov/Archives/edgar/data/789019/000095017024087835/0000950170-24-087835-index.htm
+    primary: true
+    note: "FY2024 results as originally reported, with no non-GAAP adjustments (net income $88,136 million)."
+
+  - tag: MSFT-8K-2025-10-29
+    kind: filing
+    title: Microsoft Corporation FY26 Q1 earnings 8-K (Items 2.02, 7.01 and 9.01; Exhibit 99.2 is the Microsoft blog of 2025-10-28 on the OpenAI partnership)
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2026Q1
+    accession: "0001193125-25-256310"
+    filed: 2025-10-29
+    date: 2025-10-28
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312525256310/0001193125-25-256310-index.htm
+    primary: true
+    note: "Event date 2025-10-28. Exhibit 99.1 is the FY26 Q1 press release, Exhibit 99.2 the blog “The next chapter of the Microsoft–OpenAI partnership” (the same text as MSFT-WEB-2025-10-28-1), Exhibit 99.3 the investor presentation. Exhibit 99.2: OpenAI has contracted to purchase an incremental $250 billion of Azure services; after the recapitalization Microsoft's investment was valued at about $135 billion, roughly 27 percent on an as-converted diluted basis; the revenue share was then to remain until an expert panel verifies AGI (amended on 2026-04-27, see MSFT-WEB-2026-04-27-1); IP rights for models and products through 2032."
+
+  - tag: MSFT-8K-2026-01-28
+    kind: filing
+    title: Microsoft Corporation FY26 Q2 earnings 8-K (Items 2.02 and 9.01; Exhibit 99.1 earnings press release)
+    issuer_cik: "0000789019"
+    form: 8-K
+    period: FY2026Q2
+    accession: "0001193125-26-027198"
+    filed: 2026-01-28
+    date: 2026-01-28
+    url: https://www.sec.gov/Archives/edgar/data/789019/000119312526027198/0001193125-26-027198-index.htm
+    primary: true
+    note: "Exhibit 99.1: commercial remaining performance obligation increased 110% to $625 billion (at 2025-12-31)."
+
+  - tag: MSFT-WEB-2025-10-28-1
+    kind: web
+    title: "The Official Microsoft Blog: “The next chapter of the Microsoft–OpenAI partnership” (2025-10-28)"
+    date: 2025-10-28
+    url: https://blogs.microsoft.com/blog/2025/10/28/the-next-chapter-of-the-microsoft-openai-partnership/
+    primary: true
+    note: "Company-hosted; also furnished as Exhibit 99.2 of MSFT-8K-2025-10-29, which the public archive cites. Read on 2026-09-25."
+
+  - tag: MSFT-WEB-2026-04-27-1
+    kind: web
+    title: "The Official Microsoft Blog: “The next phase of the Microsoft-OpenAI partnership” (2026-04-27)"
+    date: 2026-04-27
+    url: https://blogs.microsoft.com/blog/2026/04/27/the-next-phase-of-the-microsoft-openai-partnership/
+    primary: true
+    note: "Company-hosted; read on 2026-09-27. The amended agreement: Microsoft remains OpenAI's primary cloud partner and OpenAI products ship first on Azure unless Microsoft cannot and chooses not to support them; OpenAI can serve all its products through any cloud provider; Microsoft's license to OpenAI IP for models and products runs through 2032 and is now non-exclusive; Microsoft no longer pays a revenue share to OpenAI; revenue-share payments from OpenAI to Microsoft continue through 2030, independent of OpenAI's technology progress, at the same percentage but subject to a total cap. It does not mention the $250 billion Azure commitment. The FY2026 10-K refers to the October 2025 and April 2026 extensions of the partnership."
+
+  - tag: MSFT-WEB-2026-09-25-1
+    kind: web
+    title: "Microsoft 365 Copilot pricing pages: Enterprise and Business (microsoft.com)"
+    date: 2026-09-25
+    url: https://www.microsoft.com/en-us/microsoft-365-copilot/pricing/enterprise
+    primary: true
+    note: "Company-hosted; read on 2026-09-25 and 2026-09-27. Enterprise: $30.00 per user per month, paid yearly (annual subscription). Business (https://www.microsoft.com/en-us/microsoft-365-copilot/business): $21.00 per user per month, paid yearly, shown with a promotional price of $18.00. List prices, not realized prices."
+
+  - tag: MSFT-WEB-2026-09-25-2
+    kind: web
+    title: "Microsoft Entra product page: identity and network access solutions (microsoft.com)"
+    date: 2026-09-25
+    url: https://www.microsoft.com/en-us/security/business/microsoft-entra
+    primary: true
+    note: "Company-hosted; read on 2026-09-25 and 2026-09-27; describes Entra as unified identity and network access solutions. Cited only for what the product is."
+
+  - tag: MSFT-WEB-2026-09-25-3
+    kind: web
+    title: "Microsoft Purview product page: data security, governance and compliance (microsoft.com)"
+    date: 2026-09-25
+    url: https://www.microsoft.com/en-us/security/business/microsoft-purview
+    primary: true
+    note: "Company-hosted; read on 2026-09-25 and 2026-09-27; describes Purview as unified data security, governance and compliance solutions. Cited only for what the product is."
+
+  - tag: MSFT-WEB-2026-09-25-4
+    kind: web
+    title: "Microsoft Stories timeline: “Steve Ballmer named CEO” (news.microsoft.com)"
+    date: 2026-09-25
+    url: https://news.microsoft.com/announcement/steve-ballmer-named-ceo/
+    primary: true
+    note: "Company-hosted; read on 2026-09-25 and 2026-09-27: Ballmer became Microsoft's second CEO, succeeding Bill Gates, who hired him in 1980 as the company's first business manager."
+
+  - tag: MSFT-WEB-2026-02-03-1
+    kind: web
+    title: "Recon Analytics, “AI Choice 2026: Why Licenses Don't Equal Adoption” (2026-02-03)"
+    date: 2026-02-03
+    url: https://www.reconanalytics.com/ai-choice-2026-why-licenses-dont-equal-adoption/
+    primary: false
+    note: "A vendor's own survey panel (Recon Analytics U.S. AI Survey, July 2025 to January 2026, U.S. paid subscribers only, more than 150,000 respondents; the method is not fully disclosed), read on 2026-09-27. Readings used: Copilot converts 35.8% of U.S. paid subscribers with workplace access (ChatGPT 83.1%); with all three major tools available, 8% choose Copilot; when Copilot is the only tool provided, 68% adopt it as their primary tool. L2 only: it supports no test baseline, valuation input or rating on its own. Relayed by the report as appendix item [06]."
+
+  - tag: AMZN-8K-2026-02-27
+    kind: filing
+    title: Amazon.com, Inc. 8-K on the equity commitment to OpenAI (Items 1.01, 7.01, 8.01 and 9.01)
+    issuer_cik: "0001018724"
+    form: 8-K
+    period: null
+    accession: "0001104659-26-021050"
+    filed: 2026-02-27
+    date: 2026-02-27
+    url: https://www.sec.gov/Archives/edgar/data/1018724/000110465926021050/0001104659-26-021050-index.htm
+    primary: true
+    note: "Item 1.01: an equity commitment letter under which an Amazon subsidiary agreed to buy OpenAI Series C Preferred Stock for an aggregate $35.0 billion, separate from a $15.0 billion Series C purchase."
+
+  - tag: AMZN-10Q-FY2026Q2
+    kind: filing
+    title: Amazon.com, Inc. quarterly report for the quarter ended 2026-06-30 (Form 10-Q)
+    issuer_cik: "0001018724"
+    form: 10-Q
+    period: FY2026Q2
+    accession: "0001018724-26-000026"
+    filed: 2026-07-31
+    url: https://www.sec.gov/Archives/edgar/data/1018724/000101872426000026/0001018724-26-000026-index.htm
+    primary: true
+    note: "Accepted on 2026-07-30 after 17:30 US Eastern time, so EDGAR's filing date is 2026-07-31. Amazon invested $13.7 billion of the $35.0 billion commitment in Q2 2026 and the remaining $21.3 billion after 2026-06-30; AWS's $38.0 billion commitment with OpenAI was expanded by $100.0 billion over eight years."
+
+  - tag: ORCL-10Q-FY2027Q1
+    kind: filing
+    title: Oracle Corporation quarterly report for the quarter ended 2026-08-31 (Form 10-Q, Oracle's FY2027 Q1)
+    issuer_cik: "0001341439"
+    form: 10-Q
+    period: FY2027Q1
+    accession: "0001193125-26-389274"
+    filed: 2026-09-11
+    url: https://www.sec.gov/Archives/edgar/data/1341439/000119312526389274/0001193125-26-389274-index.htm
+    primary: true
+    note: "Cited only for the absence of OpenAI: the 10-Q does not name OpenAI (full text searched on 2026-09-27), so MSFT-L3 looks to the parties' own announcements for Oracle."
+
+  - tag: SBG-WEB-2025-09-24-1
+    kind: press_release
+    title: "OpenAI, Oracle and SoftBank joint announcement: “OpenAI, Oracle, and SoftBank expand Stargate with five new AI data center sites” (2025-09-24; hosted by SoftBank Group)"
+    date: 2025-09-24
+    url: https://group.softbank/en/news/press/20250924
+    primary: true
+    note: "A joint announcement of the three parties, read on the SoftBank Group site on 2026-09-27 (OpenAI's own pages refuse scripted requests). In July 2025 OpenAI and Oracle agreed to develop up to 4.5 gigawatts of additional Stargate capacity, described as a partnership that exceeds $300 billion between the two companies over the next five years."
+
+  - tag: OPENAI-WEB-2026-06-08-1
+    kind: web
+    title: "OpenAI, “Confidential submission of draft S-1 to the SEC” (2026-06-08)"
+    date: 2026-06-08
+    url: https://openai.com/index/openai-submits-confidential-s-1/
+    primary: true
+    note: "The issuer's own page, dated June 8, 2026; openai.com refuses scripted requests, so it was read on 2026-09-27 in the Internet Archive capture web.archive.org/web/20260923084915/https://openai.com/index/openai-submits-confidential-s-1/. It says OpenAI had “recently” submitted a confidential S-1; it does not give the submission date."
+
+  - tag: EC-CADA-2026-06-03
+    kind: other
+    title: "European Commission, Proposal for a Regulation establishing a framework of measures for strengthening Europe's cloud and AI ecosystem (Cloud and AI Development Act), COM(2026) 502 final, 2026/0138 (COD), with annexes"
+    date: 2026-06-03
+    url: https://digital-strategy.ec.europa.eu/en/library/proposal-cloud-and-ai-development-act-cada
+    primary: true
+    note: "A regulator document, dated Brussels, 3.6.2026, read on 2026-09-25 and 2026-09-27. Annex II sets out four Union assurance levels; Article 18 (Associated third countries) lets the Commission, by implementing acts, identify third countries whose providers may be audited against the Level 3 criteria if six cumulative criteria are met. A proposal, not adopted law."
+
+  - tag: CSRB-2024-04-02
+    kind: other
+    title: "Cyber Safety Review Board (U.S. Department of Homeland Security), Review of the Summer 2023 Microsoft Exchange Online Intrusion"
+    date: 2024-04-02
+    url: https://www.cisa.gov/resources-tools/resources/CSRB-Review-Summer-2023-MEO-Intrusion
+    primary: true
+    note: "The report is dated 2024-03-20 and was released by DHS on 2024-04-02; read on 2026-09-27. It concludes that Microsoft's security culture was inadequate and requires an overhaul."
+
+  - tag: UST-PARYIELD-2025-09-24
+    kind: web
+    title: "U.S. Department of the Treasury, Daily Treasury Par Yield Curve Rates: 2025-09-24"
+    date: 2025-09-24
+    url: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&field_tdr_date_value=2025
+    primary: true
+    note: "Official rate data; 10-year 4.16%."
+
+  - tag: UST-PARYIELD-2026-09-24
+    kind: web
+    title: "U.S. Department of the Treasury, Daily Treasury Par Yield Curve Rates: 2026-09-24"
+    date: 2026-09-24
+    url: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&field_tdr_date_value=2026
+    primary: true
+    note: "Official rate data; 10-year 5.18% (earlier in September 2026: 4.97% on 09-14, 5.00% on 09-15, 5.01% on 09-16, 4.94% on 09-17, 5.01% on 09-18, 4.96% on 09-21 and 09-22, 5.11% on 09-23)."

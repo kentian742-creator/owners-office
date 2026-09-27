@@ -6,12 +6,12 @@ entries:
   - id: AXP-M-2026-01
     side: management
     kind: numeric_target
-    statement: "Fiscal 2026 revenue growth guidance raised to +10% and EPS guidance unchanged, with the stated reason of reinvesting the excess revenue [src:AXP-RPT1-2026-09-17#p9]."
+    statement: "Fiscal 2026 revenue growth guidance raised to 10% (from 9% to 10%), with a plan to reinvest this outperformance in growth initiatives, and EPS guidance of $17.30 to $17.90 kept unchanged [src:AXP-8K-2026-07-24#EX-99.1]."
     made_at: 2026-07-24
     due: "2026"
-    source: AXP-RPT1-2026-09-17#p9
+    source: AXP-8K-2026-07-24#EX-99.1
     status: pending
-    note: "The report dates this to July 2026, on the same call as the second-quarter results; the Q2 earnings press release (2026-07-24) states that full-year revenue growth guidance was raised to 10% and that the part above expectations is reinvested in growth [src:AXP-8K-2026-07-24#EX-99.1], so made_at takes this date. Settled on the year-over-year change in total revenues net of interest expense in the FY2026 annual report."
+    note: "The Q2 2026 earnings press release of 2026-07-24 raises full-year revenue growth guidance to 10% and says the company plans to reinvest this outperformance in growth initiatives [src:AXP-8K-2026-07-24#EX-99.1], so made_at takes this date; the owner's report dates the raise to July 2026, on the same call as the second-quarter results [src:AXP-RPT1-2026-09-17#p9]. The release states a plan, not a reason for keeping EPS guidance unchanged; reading the reinvestment as that reason is the report's inference [src:AXP-RPT1-2026-09-17#p9]. Settled on the year-over-year change in total revenues net of interest expense in the FY2026 annual report."
   - id: AXP-M-2026-02
     side: management
     kind: numeric_target
@@ -20,4 +20,4 @@ entries:
     due: "2026"
     source: AXP-8K-2026-07-24#EX-99.1
     status: pending
-    note: "The report gives the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-RPT1-2026-09-17#p12] [src:AXP-8K-2026-07-24#EX-99.1] but not the date the range was first announced; it is recorded here as of the July 2026 announcement that maintained the guidance, with the same made_at as the previous entry [src:AXP-RPT1-2026-09-17#p9]. Settled on diluted EPS in the FY2026 annual report: at or above the bottom of the range, $17.30, is kept and below $17.30 is not_kept [src:AXP-8K-2026-07-24#EX-99.1]; settlement_source takes the source tag of the FY2026 10-K. If the company later changes the range, this entry is still settled against the original range recorded here, and the change is written into this note."
+    note: "The range was first announced on 2026-01-30 with the Q4 2025 results [src:AXP-8K-2026-01-30#EX-99.1] and reaffirmed on 2026-04-23 [src:AXP-8K-2026-04-23#EX-99.1] and 2026-07-24 [src:AXP-8K-2026-07-24#EX-99.1]. This entry records the July reaffirmation, the most recent statement AXP-L1 compares against, so it keeps the same made_at as the previous entry; the owner's report uses the range's midpoint of $17.60 [src:AXP-RPT1-2026-09-17#p12]. Settled on diluted EPS in the FY2026 annual report: at or above the bottom of the range, $17.30, is kept and below $17.30 is not_kept [src:AXP-8K-2026-07-24#EX-99.1]; settlement_source takes the source tag of the FY2026 10-K. If the company later changes the range, this entry is still settled against the original range recorded here, and the change is written into this note."

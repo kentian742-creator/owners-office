@@ -7,6 +7,7 @@
 # Breaker four is two conditions joined by "or", split into MSFT-Q8 (the number) and MSFT-L5 (the commitment restructured or impaired, judged by an independent model with sources).
 # Two more watch tests are this archive's own additions (origin: manual), taken from section seven of the report: MSFT-Q13 (whether capex comes down) and MSFT-Q14 (purchase commitments due within a year).
 # Section ten of the report: from FY2027 the segments and definitions are restated per the 8-K of 2026-09-02; every metric below is judged on the new basis.
+# Facts cite the primary documents in sources.yml; the report (MSFT-RPT1-2026-09-17) is cited for its own views, estimates, scenarios and thresholds.
 # Everything price-related (ranges, reference price, the rating on price) is only in the private repository, owners-office-private/companies/MSFT/valuation.yml.
 schema_version: "0.2"
 company: MSFT
@@ -21,7 +22,7 @@ filer:
   annual_form: 10-K
 category: stalwart
 category_secondary: fast_grower
-category_rationale: "FY2026 revenue of $331.8 billion and an operating margin of 46.8% [src:MSFT-RPT1-2026-09-17#p3], with revenue up 18% in a year [src:MSFT-RPT1-2026-09-17#p7]: a large, steady stalwart that keeps earning from the annuity of seats it rents out, and its risk falls exactly on what this template watches, “expensive allocation made for growth”: FY2026 cash capex of $115.9 billion, 34.9% of revenue [src:MSFT-RPT1-2026-09-17#p5]. The secondary category is fast grower, because Azure within it grew 41% for the full year (old basis) and passed $100 billion of revenue for the first time [src:MSFT-RPT1-2026-09-17#p3]."
+category_rationale: "FY2026 revenue of $331.8 billion and an operating margin of 46.8% [src:MSFT-10K-FY2026#p50], with revenue up 18% in a year, as the company rounds it (17.8% on the exact figures) [src:MSFT-10K-FY2026#p37]: a large, steady stalwart that keeps earning from the annuity of seats it rents out, and its risk falls exactly on what this template watches, “expensive allocation made for growth”: FY2026 cash capex of $115.9 billion, 34.9% of revenue [src:MSFT-10K-FY2026#p53]. The secondary category is fast grower, because Azure within it grew 41% for the full year (old basis) and passed $100 billion of revenue for the first time [src:MSFT-10K-FY2026#p39] [src:MSFT-8K-2026-07-29#EX-99.1]."
 domain: enterprise_software
 # Depends on the semiconductor foundry module. The report itself does not analyze the foundry industry; this dependency is a monitoring link added by this archive (set on 2026-09-24; the owner may withdraw it, see todo).
 # Two of the module's signposts are relevant: FOUNDRY-SP2 (the leading foundry's gross margin floor and AI demand: TSMC cutting its capex guidance, the HPC share stalling;
@@ -57,35 +58,35 @@ ratings:
   source: MSFT-RPT1-2026-09-17#p3
 
 thesis:
-  summary: "Microsoft is two businesses stuck together. One rents Microsoft 365, Windows commercial licenses, Dynamics and LinkedIn to businesses by the seat; the Productivity and Business Processes segment had FY2026 revenue of $140 billion at an operating margin of 59.9% [src:MSFT-RPT1-2026-09-17#p3]. The other is Azure computing power, whose full-year revenue passed $100 billion for the first time [src:MSFT-RPT1-2026-09-17#p3]. What glues the two together is one customer directory and one identity and compliance system; the switching costs sit in the layer of file formats, the identity directory (Entra) and compliance auditing (Purview), while the $30-per-seat Copilot add-on has almost no switching costs of its own [src:MSFT-RPT1-2026-09-17#p3]. For the first time, it is putting the annuity's cash into data centers on a large scale: FY2026 cash capex was $115.9 billion, 34.9% of revenue, and the conversion of free cash flow to non-GAAP net income fell from 91.5% in FY2021 to 52.0% [src:MSFT-RPT1-2026-09-17#p5]. For the thesis to hold, the base has to keep collecting rent in the agent era, compute growth has to be profitable and the capex cycle has to come down, and the $678 billion of commercial RPO has to rest on more than OpenAI alone (the latest disclosure was 45% in FY26 Q2, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]."
+  summary: "Microsoft is two businesses stuck together. One rents Microsoft 365 (with the cloud portion of Windows Commercial), Dynamics and LinkedIn's Talent and Sales Solutions to businesses by the seat [src:MSFT-10K-FY2026#p5]; the Productivity and Business Processes segment had FY2026 revenue of $140.0 billion at an operating margin of 59.9% [src:MSFT-10K-FY2026#p38]. The other is Azure computing power, whose revenue passed $100 billion for the first time in FY2026 [src:MSFT-8K-2026-07-29#EX-99.1]. What glues the two together is one customer directory and one identity and compliance system; the switching costs sit in the layer of file formats, the identity directory (Entra) and compliance auditing (Purview) [src:MSFT-RPT1-2026-09-17#p3] [src:MSFT-WEB-2026-09-25-2] [src:MSFT-WEB-2026-09-25-3], while the Copilot add-on, listed at $30 per user per month on an annual subscription [src:MSFT-WEB-2026-09-25-1], has almost no switching costs of its own [src:MSFT-RPT1-2026-09-17#p3]. For the first time, it is putting the annuity's cash into data centers on a large scale: FY2026 cash capex was $115.9 billion, 34.9% of revenue [src:MSFT-10K-FY2026#p53], and free cash flow fell to 52.0% of non-GAAP net income in FY2026, from 83.0% in FY2024 on the same definition, which excludes OpenAI gains and losses [src:MSFT-10K-FY2026#p42] [src:MSFT-10K-FY2026#p53]; in FY2021–FY2023 it ran at 81.1%–93.8% on each year's own definition (F11 and F28 give the calculations) [src:MSFT-10K-FY2022#Item7] [src:MSFT-10K-FY2023#Item7] [src:MSFT-10K-FY2023#Item8]. For the thesis to hold, the base has to keep collecting rent in the agent era, compute growth has to be profitable and the capex cycle has to come down, and the $678 billion of commercial RPO at 2026-06-30 [src:MSFT-10K-FY2026#p77] has to rest on more than OpenAI alone, whose share was about 45% at the only disclosure (FY26 Q2, of $625 billion at 2025-12-31) [src:MSFT-CALL-FY2026Q2] [src:MSFT-8K-2026-01-28#EX-99.1]."
   pillars:
     - id: P1
-      claim: "The annuity base is still getting stronger: the switching costs sit in the layer of file formats, the identity directory and compliance auditing, and the Productivity and Business Processes segment's operating margin is 59.9% [src:MSFT-RPT1-2026-09-17#p3]; M365 commercial cloud FY2026 revenue was $102 billion, up 16%, and commercial seats grew 6% (7% on the new basis) [src:MSFT-RPT1-2026-09-17#p5]."
-      source: MSFT-RPT1-2026-09-17#p5
+      claim: "The annuity base is still getting stronger: the switching costs sit in the layer of file formats, the identity directory and compliance auditing [src:MSFT-RPT1-2026-09-17#p3], and the Productivity and Business Processes segment's operating margin was 59.9% in FY2026 [src:MSFT-10K-FY2026#p38]; the segment is not reported from FY2027, and its successor, Agents and Infra, had a restated FY2026 operating margin of 50.9% [src:MSFT-8K-2026-09-02#EX-99.1-slide15]. In FY2026 Microsoft 365 Commercial cloud revenue grew 17% (14% in constant currency, and 18% and 15% on the FY2027 definition) while commercial seats grew 6% (7% on the FY2027 definition) [src:MSFT-10K-FY2026#p38] [src:MSFT-8K-2026-09-02#EX-99.1-slide18]. The company does not disclose Microsoft 365 Commercial cloud revenue in dollars; the line that contains it, Microsoft 365 Commercial products and cloud services, also includes on-premises licences and was $102.0 billion in FY2026, up 16% [src:MSFT-10K-FY2026#Note18] [src:MSFT-10K-FY2026#p38]."
+      source: MSFT-10K-FY2026#p38
     - id: P2
-      claim: "The thesis needs the base to keep its pricing power in the agent era, and the report says this is exactly the biggest issue for this business today: if the entry point to daily work shifts from opening an app to talking to an agent, the file and identity layer stays, but pricing power flows to whoever owns that interface [src:MSFT-RPT1-2026-09-17#p4]. The add-on layer itself has almost no switching costs: when three tools are available, only 8% of people choose Copilot, and the active-use rate among those with access is 35.8% [src:MSFT-RPT1-2026-09-17#p6]; so the base has to carry the renewals, and agent or usage revenue has to take over before seats peak [src:MSFT-RPT1-2026-09-17#p6]. This pillar is tested by MSFT-Q12 (whether the add-on layer renews) and MSFT-Q9 (whether agent or usage revenue catches the fall when seats decline)."
+      claim: "The thesis needs the base to keep its pricing power in the agent era, and the report says this is exactly the biggest issue for this business today: if the entry point to daily work shifts from opening an app to talking to an agent, the file and identity layer stays, but pricing power flows to whoever owns that interface [src:MSFT-RPT1-2026-09-17#p4]. The add-on layer itself has almost no switching costs: in a vendor panel of U.S. paid users (Recon Analytics, more than 150,000 respondents, July 2025 to January 2026), which is L2 only with no primary data seen, only 8% chose Copilot when three tools were available, and 35.8% of those with workplace access to Copilot actively used it [src:MSFT-WEB-2026-02-03-1]; so the base has to carry the renewals, and agent or usage revenue has to take over before seats peak [src:MSFT-RPT1-2026-09-17#p6]. This pillar is tested by MSFT-Q12 (whether the add-on layer renews) and MSFT-Q9 (whether agent or usage revenue catches the fall when seats decline)."
       source: MSFT-RPT1-2026-09-17#p4
     - id: P3
-      claim: "The compute business's growth is profitable: Azure FY2026 revenue passed $100 billion for the first time, up 41% (old basis) [src:MSFT-RPT1-2026-09-17#p3], and Microsoft Cloud gross margin was 66% for the full year and 65% in the fourth quarter [src:MSFT-RPT1-2026-09-17#p11]; the company says demand keeps exceeding available capacity [src:MSFT-RPT1-2026-09-17#p4]. The report's main text, taking the company-wide increase in after-tax operating profit over three years of capex, gives an after-tax incremental return of 13% to 39%, a range public data cannot narrow [src:MSFT-RPT1-2026-09-17#p4]; the appendix says the range was calculated on two bases, the whole company and Intelligent Cloud, without saying which basis gives which end [src:MSFT-RPT1-2026-09-17#p13]."
-      source: MSFT-RPT1-2026-09-17#p4
+      claim: "The compute business's growth is profitable: Azure revenue passed $100 billion for the first time in FY2026, up 41% (old basis) [src:MSFT-8K-2026-07-29#EX-99.1] [src:MSFT-10K-FY2026#p39], and Microsoft Cloud gross margin was 66% for FY2026 and 65% in the fourth quarter, on the FY2026 definition [src:MSFT-10K-FY2026#p37] [src:MSFT-CALL-FY2026Q4]; the company says customer demand continues to exceed available capacity [src:MSFT-CALL-FY2026Q4]. Company-wide, the increase in after-tax operating income from FY2023 to FY2026 ($53.4 billion) equals 23.7% of FY2024–FY2026 cash capex, or 38.9% of FY2023–FY2025 cash capex with a one-year lag (this archive's calculation, F29) [src:MSFT-10K-FY2026#p50] [src:MSFT-10K-FY2025#Item8] [src:MSFT-10K-FY2026#p53]; the report's own range of 13% to 39% was calculated on two bases, the whole company and Intelligent Cloud [src:MSFT-RPT1-2026-09-17#p13]."
+      source: MSFT-10K-FY2026#p39
     - id: P4
-      claim: "The capex cycle will come down and profit will turn back into cash: FY2026 cash capex was 34.9% of revenue, and the conversion of free cash flow to non-GAAP net income fell from 91.5% in FY2021 to 52.0% [src:MSFT-RPT1-2026-09-17#p5]; whether conversion recovers depends on when capex comes down [src:MSFT-RPT1-2026-09-17#p4]. The healthy line written in section ten of the report is a recovery after FY2027 (MSFT-Q4), and the thesis invalidation line is below 45% in the FY2028 annual report (MSFT-Q6) [src:MSFT-RPT1-2026-09-17#p11]; whether capex comes down, by section seven's dividing line (back below 20% of revenue after FY2028, or still above 30%), is tracked by MSFT-Q13 [src:MSFT-RPT1-2026-09-17#p8]. Where conversion settles is a separate question: explanation A says it returns above 70% once capacity runs full, explanation B says the new normal is 50–65%, and the two cannot be told apart before FY2028 [src:MSFT-RPT1-2026-09-17#p5]; this difference falls on the valuation (only in the private repository), not on the thesis invalidation line."
-      source: MSFT-RPT1-2026-09-17#p5
+      claim: "The capex cycle will come down and profit will turn back into cash: FY2026 cash capex was 34.9% of revenue [src:MSFT-10K-FY2026#p53], and free cash flow was 52.0% of non-GAAP net income in FY2026, against 83.0% in FY2024 on the same current definition and 81.1%–93.8% in FY2021–FY2023 on each year's own definition (F11, F28) [src:MSFT-10K-FY2026#p42] [src:MSFT-10K-FY2022#Item7] [src:MSFT-10K-FY2023#Item7]; whether conversion recovers depends on when capex comes down [src:MSFT-RPT1-2026-09-17#p4]. The healthy line written in section ten of the report is a recovery after FY2027 (MSFT-Q4), and the thesis invalidation line is below 45% in the FY2028 annual report, read on the non-GAAP definition in force for FY2028 (MSFT-Q6) [src:MSFT-RPT1-2026-09-17#p11]; whether capex comes down, by section seven's dividing line (back below 20% of revenue after FY2028, or still above 30%), is tracked by MSFT-Q13 [src:MSFT-RPT1-2026-09-17#p8]. Where conversion settles is a separate question: explanation A says it returns above 70% once capacity runs full, explanation B says the new normal is 50–65%, and the two cannot be told apart before FY2028 [src:MSFT-RPT1-2026-09-17#p5]; this difference falls on the valuation (only in the private repository), not on the thesis invalidation line."
+      source: MSFT-10K-FY2026#p42
     - id: P5
-      claim: "The demand behind the RPO comes from more than one customer: commercial RPO is $678 billion, and the latest disclosed share from OpenAI is 45% (FY26 Q2, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]; excluding OpenAI it still grew 25%, and all of the latest quarter's sequential increase came from customers other than frontier-model companies [src:MSFT-RPT1-2026-09-17#p8]."
-      source: MSFT-RPT1-2026-09-17#p8
+      claim: "The demand behind the RPO comes from more than one customer: commercial RPO was $678 billion at 2026-06-30 [src:MSFT-10K-FY2026#p77], and the only disclosed single-customer share is about 45% from OpenAI (FY26 Q2, of $625 billion at 2025-12-31) [src:MSFT-CALL-FY2026Q2]; excluding OpenAI, commercial RPO grew 25% year on year at FY2026Q4, and all of that quarter's sequential increase came from customers outside frontier-model companies [src:MSFT-CALL-FY2026Q4]."
+      source: MSFT-CALL-FY2026Q4
     - id: P6
-      claim: "Management allocates capital like owners: all three CEOs have been insiders, and the six executive officers average 25.0 years of tenure [src:MSFT-RPT1-2026-09-17#p7]; in FY2022–FY2026, $110.2 billion of dividends plus $112.9 billion of buybacks went back to shareholders, with no equity issuance [src:MSFT-RPT1-2026-09-17#p8]; the weak spot is that of the four long-term incentive measures, three are revenue and one is relative share price, with no return-on-capital measure [src:MSFT-RPT1-2026-09-17#p7], while the data centers are the largest capital allocation in its history [src:MSFT-RPT1-2026-09-17#p3]."
-      source: MSFT-RPT1-2026-09-17#p8
+      claim: "Management allocates capital like owners: all three CEOs have been insiders: Gates hired Ballmer in 1980, and Nadella joined in 1992 [src:MSFT-WEB-2026-09-25-4] [src:MSFT-10K-FY2026#p12], and the six executive officers average 25.0 years of tenure, counted to calendar 2026 from the year each joined [src:MSFT-10K-FY2026#p12]. In FY2022–FY2026, $110.2 billion of dividends plus $112.9 billion of buybacks went back to shareholders [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2025#Item8] [src:MSFT-10K-FY2024#Item8]; no equity was sold to raise capital, but employee stock plans issued 171 million shares (cash proceeds $9.8 billion) against 263 million repurchased, and diluted weighted-average shares fell only about 2%, from 7,608 million in FY2021 to 7,453 million in FY2026 [src:MSFT-10K-FY2026#Note15] [src:MSFT-10K-FY2024#Note16] [src:MSFT-10K-FY2023#Item8] [src:MSFT-10K-FY2026#p50]. The weak spot is the yardstick: the FY2025 performance stock awards have four core metrics, all revenue growth (Azure and other cloud services 35%, Microsoft Cloud excluding Azure 35%, Consumer Services 15%, Xbox content and services 15%), three-year relative TSR against the S&P 500 only modifies the payout (75%–150%), and none is a return-on-capital measure [src:MSFT-DEF14A-2025-10-21#p39] [src:MSFT-DEF14A-2025-10-21#p40], while the data centers are the largest capital allocation in its history [src:MSFT-RPT1-2026-09-17#p3]."
+      source: MSFT-DEF14A-2025-10-21#p39
   # Munger inversion list: how a permanent loss could happen (from section seven's strongest bear argument, section four's erosion paths and section twelve's “where this is most likely wrong”)
   permanent_loss_paths:
-    - "Compute becomes a heavy asset that eats the annuity's cash: capacity from the four hyperscalers plus the neoclouds comes online at the same time, and today's queue becomes tomorrow's discount [src:MSFT-RPT1-2026-09-17#p6]; FY2028 depreciation and amortization will very likely be more than $22 billion above FY2026, and covering it takes about $32 billion of new revenue [src:MSFT-RPT1-2026-09-17#p4]; if capex is still above 30% of revenue after FY2028, the bear case is right, and the cash the annuity piled up has been permanently swapped for machines with mediocre returns [src:MSFT-RPT1-2026-09-17#p8]."
-    - "The reflexive chain around a single customer breaks: OpenAI has committed to buy an incremental $250 billion of Azure services, about $50 billion a year if consumed over five years, half of Azure's full-year FY2026 revenue [src:MSFT-RPT1-2026-09-17#p8]; on Microsoft's side, non-cancelable lease and purchase commitments total $637.6 billion, equal to 9.5 years of FY2026 free cash flow [src:MSFT-RPT1-2026-09-17#p8]; OpenAI's valuation, funding and purchases and Microsoft's RPO and capex vouch for one another, so when the chain breaks, it will not break in just one place [src:MSFT-RPT1-2026-09-17#p9]."
-    - "The annuity is taken apart by its own agents: the entry point to daily work moves out to the interfaces of model companies or phone makers, Office shrinks to a file format and a back end, and pricing power flows to the owners of the interface [src:MSFT-RPT1-2026-09-17#p6]; of the Copilot add-on layer's roughly $10.8 billion annualized, about $6.9 billion is seats bought but little used, held up by the stickiness of the base [src:MSFT-RPT1-2026-09-17#p6]; once seats start to fall and agent or usage revenue fails to take over, it is the base itself that bleeds."
-    - "Cash conversion never gets back to a rent collector's level (where section twelve of the report thinks this judgment is most likely wrong): in FY2021–FY2023 capex never exceeded 14% of revenue [src:MSFT-RPT1-2026-09-17#p4], and conversion was between 82.2% and 91.5% [src:MSFT-RPT1-2026-09-17#p5]; in FY2024 capex was already 18.1% of revenue and conversion was still 84.0% [src:MSFT-RPT1-2026-09-17#p5]; section twelve counts FY2024 among the years when capex was below 14% of revenue, which disagrees with section three's text and table (see todo) [src:MSFT-RPT1-2026-09-17#p12]; conversion fell in the two years when capex exceeded 20% of revenue, to only 67.9% in FY2025 and only 52.0% in FY2026 [src:MSFT-RPT1-2026-09-17#p12]. The report says that if the property buyer cannot get back to the rent collector's conversion rate, the stickiness of the annuity, management's record and the concentration arithmetic cannot save it even if they are all right [src:MSFT-RPT1-2026-09-17#p13]; what this rewrites first is the valuation (only in the private repository); the thesis's own invalidation line is below 45% in FY2028 (MSFT-Q6) [src:MSFT-RPT1-2026-09-17#p11]."
-    - "Capital allocation mistakes magnified by scale: the aQuantive and Nokia acquisitions are confirmed failures, with about $13.8 billion written off between them, the $75.4 billion Activision deal is still under observation, and the data centers are the fourth such bet and the largest [src:MSFT-RPT1-2026-09-17#p3]; and the yardstick to measure it is not yet installed: long-term incentives reward the increase in Azure revenue, not the capex spent to get it [src:MSFT-RPT1-2026-09-17#p7]."
+    - "Compute becomes a heavy asset that eats the annuity's cash: capacity from the four hyperscalers plus the neoclouds comes online at the same time, and today's queue becomes tomorrow's discount [src:MSFT-RPT1-2026-09-17#p6]; the report estimates that FY2028 depreciation and amortization is highly likely to be more than $22 billion above FY2026, and that covering it takes about $32 billion of new revenue [src:MSFT-RPT1-2026-09-17#p4]; if cash capex is still above 30% of revenue after FY2028, the bear case is right, and the cash the annuity piled up has been permanently swapped for machines with mediocre returns [src:MSFT-RPT1-2026-09-17#p8]."
+    - "The reflexive chain around a single customer breaks: OpenAI has contracted to buy an incremental $250 billion of Azure services [src:MSFT-8K-2025-10-29#EX-99.2]; if consumed over five years (an assumption, since no term is disclosed), that is about $50 billion a year, about half of Azure's FY2026 revenue of $101.9 billion on the FY2027 definition [src:MSFT-8K-2026-09-02#EX-99.1-slide17]. On Microsoft's side, at 2026-06-30, lease obligations including imputed interest ($443.5 billion, of which $329.1 billion are leases not yet commenced, some subject to contractual conditions) and purchase commitments ($194.1 billion, including open purchase orders and take-or-pay contracts) total $637.6 billion, equal to 9.5 years of FY2026 free cash flow [src:MSFT-10K-FY2026#p44] [src:MSFT-10K-FY2026#p78] [src:MSFT-10K-FY2026#p53]; OpenAI's valuation, funding and purchases and Microsoft's RPO and capex vouch for one another, so when the chain breaks, it will not break in just one place [src:MSFT-RPT1-2026-09-17#p9]."
+    - "The annuity is taken apart by its own agents: the entry point to daily work moves out to the interfaces of model companies or phone makers, Office shrinks to a file format and a back end, and pricing power flows to the owners of the interface [src:MSFT-RPT1-2026-09-17#p6]. At list price, the Copilot add-on layer is about $10.8 billion a year: over 30 million paid seats [src:MSFT-8K-2026-07-29#EX-99.1] × the $30 Enterprise list price per user per month [src:MSFT-WEB-2026-09-25-1] × 12 (this archive's estimate, see F30), while Microsoft discloses no Copilot revenue and the report notes the realized price is lower than list [src:MSFT-RPT1-2026-09-17#p6]. If the 35.8% active-use rate of a U.S. vendor panel held for all paid seats (L2 only, no primary data seen) [src:MSFT-WEB-2026-02-03-1], about $6.9 billion of it would be seats bought but little used, held up by the stickiness of the base [src:MSFT-RPT1-2026-09-17#p6]; once seats start to fall and agent or usage revenue fails to take over, it is the base itself that bleeds."
+    - "Cash conversion never gets back to a rent collector's level (where section twelve of the report thinks this judgment is most likely wrong): in FY2021–FY2023 cash capex never exceeded 14% of revenue (at most 13.3%, in FY2023) [src:MSFT-10K-FY2023#Item8], and free cash flow ran at 81.1%–93.8% of non-GAAP net income on each year's own definition (82.2%–91.6% of GAAP net income) [src:MSFT-10K-FY2022#Item7] [src:MSFT-10K-FY2023#Item7] [src:MSFT-10K-FY2023#Item8]; in FY2024 cash capex was already 18.1% of revenue and conversion was still 83.0% on the current definition (84.0% as originally reported) [src:MSFT-10K-FY2026#p42] [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2024#Item7]; conversion fell in the two years when cash capex exceeded 20% of revenue, to 67.9% in FY2025 (70.3% as originally reported) and 52.0% in FY2026 [src:MSFT-10K-FY2026#p42] [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2025#Item7]. The report says that if the property buyer cannot get back to the rent collector's conversion rate, the stickiness of the annuity, management's record and the concentration arithmetic cannot save it even if they are all right [src:MSFT-RPT1-2026-09-17#p13]; what this rewrites first is the valuation (only in the private repository); the thesis's own invalidation line is below 45% in FY2028, read on the non-GAAP definition in force for that year (MSFT-Q6) [src:MSFT-RPT1-2026-09-17#p11]."
+    - "Capital allocation mistakes magnified by scale: the aQuantive and Nokia acquisitions are confirmed failures, with about $13.7 billion written off between them [src:MSFT-10K-FY2012#Item8] [src:MSFT-10K-FY2015#Item7]. That is $6.2 billion of Online Services Division goodwill in FY2012, mostly from aQuantive [src:MSFT-8K-2012-07-02#EX-99.1] [src:MSFT-10K-FY2012#Item8], and $7.5 billion of Phone Hardware goodwill and asset impairments in FY2015, against about $7.6 billion announced in the 8-K of July 2015 [src:MSFT-10K-FY2015#Item7] [src:MSFT-8K-2015-07-08#EX-99.1]. The $75.4 billion Activision deal is still under observation [src:MSFT-10K-FY2026#p69], and the data centers are the fourth such bet and the largest [src:MSFT-RPT1-2026-09-17#p3]; and the yardstick to measure it is not yet installed: the long-term performance stock awards reward Azure revenue growth, not the capex spent to get it [src:MSFT-DEF14A-2025-10-21#p39]."
 
-# Baseline facts from the report, for audits and for later item-by-item checks against XBRL and filings (the unit, USD 100 million, follows the report)
+# Baseline facts, for audits and for later item-by-item checks against XBRL and filings (the unit, USD 100 million, follows the report)
 baseline_facts:
   - id: F1
     label: Total revenue
@@ -93,192 +94,223 @@ baseline_facts:
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p3
-    note: "Operating profit of $155.2 billion and an operating margin of 46.8%, a ten-year high [src:MSFT-RPT1-2026-09-17#p3]."
+    source: MSFT-10K-FY2026#p50
+    note: "Operating income of $155.2 billion and an operating margin of 46.8%, the highest of FY2016–FY2026 (series in F2) [src:MSFT-10K-FY2026#p50] [src:MSFT-10K-FY2018#Item8]."
   - id: F2
     label: Operating margin series (FY2016 on a restated basis)
     value: [28.6, 41.6, 44.6, 45.6, 46.8]
     unit: "%"
     period: FY2016 / FY2021 / FY2024 / FY2025 / FY2026
-    source: MSFT-RPT1-2026-09-17#p5
+    source: MSFT-10K-FY2026#p50
+    note: "Operating income ÷ revenue. FY2016: $26,078 million ÷ $91,154 million as restated for the revenue standard ASC 606 [src:MSFT-10K-FY2018#Item8] (23.7% as originally reported [src:MSFT-10K-FY2016#Item8]); FY2021: $69,916 million ÷ $168,088 million [src:MSFT-10K-FY2023#Item8]; FY2024–FY2026 [src:MSFT-10K-FY2026#p50]."
   - id: F3
     label: Productivity and Business Processes segment revenue
     value: 1400
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p3
-    note: "Operating margin of 59.9% [src:MSFT-RPT1-2026-09-17#p3]; the segment's revenue growth is 16% in section two and 15% in section three, to be checked against the 10-K [src:MSFT-RPT1-2026-09-17#p3] [src:MSFT-RPT1-2026-09-17#p4]."
+    source: MSFT-10K-FY2026#p38
+    note: "Operating margin of 59.9% ($83,879 million ÷ $139,996 million), revenue growth of 16% (+15.9% on the exact figures, against $120,810 million) and operating income growth of 20% (+20.2%, against $69,773 million) [src:MSFT-10K-FY2026#p38]."
   - id: F4
     label: Intelligent Cloud segment revenue (old segment basis)
     value: 1378
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p3
-    note: "Operating margin of 41.4% [src:MSFT-RPT1-2026-09-17#p3]."
+    source: MSFT-10K-FY2026#p38
+    note: "Operating margin of 41.3% ($56,972 million ÷ $137,791 million) [src:MSFT-10K-FY2026#p38]. The segment is not reported from FY2027 (see F15)."
   - id: F5
     label: More Personal Computing segment revenue (Windows OEM, Xbox, search advertising)
     value: 541
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p3
-    note: "16% of revenue, a part the report treats as background, not as part of the thesis [src:MSFT-RPT1-2026-09-17#p3]."
+    source: MSFT-10K-FY2026#p38
+    note: "16% of revenue ($54,052 million ÷ $331,839 million) [src:MSFT-10K-FY2026#p38] [src:MSFT-10K-FY2026#p50], a part the report treats as background, not as part of the thesis [src:MSFT-RPT1-2026-09-17#p3]."
   - id: F6
     label: Azure full-year revenue (old basis)
     value: more than 1,000
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p3
-    note: "Growth of 41% (old basis) [src:MSFT-RPT1-2026-09-17#p3]."
+    source: MSFT-8K-2026-07-29#EX-99.1
+    note: "Growth of 41% (old basis, or 40% in constant currency) [src:MSFT-10K-FY2026#p39] [src:MSFT-8K-2026-09-02#EX-99.1-slide18]. The company gives no dollar figure on the old basis; on the FY2027 definition FY2026 Azure revenue was $101,938 million [src:MSFT-8K-2026-09-02#EX-99.1-slide17]."
   - id: F7
     label: Azure June-quarter revenue (FY27 new basis)
     value: 294.2
     unit: USD 100 million
     period: FY2026Q4
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p11
-    note: "Up 42% year on year (new basis, constant currency) [src:MSFT-RPT1-2026-09-17#p11]."
+    source: MSFT-8K-2026-09-02#EX-99.1-slide17
+    note: "Up 42% year on year on the new basis, $29,417 million against $20,712 million [src:MSFT-8K-2026-09-02#EX-99.1-slide17]. The restated metrics show a single figure for the quarter, so reported and constant-currency growth are the same [src:MSFT-8K-2026-09-02#EX-99.1-slide18]."
   - id: F8
-    label: M365 commercial cloud revenue
+    label: Microsoft 365 Commercial products and cloud services revenue (cloud plus on-premises Windows Commercial and Office licences)
     value: 1020
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p3
-    note: "Growth of 16% [src:MSFT-RPT1-2026-09-17#p3]; M365 commercial seats grew 6%, or 7% as restated on the FY27 new basis (which includes paid GitHub seats) [src:MSFT-RPT1-2026-09-17#p11]."
+    source: MSFT-10K-FY2026#Note18
+    note: "Up 16% ($101,997 million against $87,767 million, +16.2%) [src:MSFT-10K-FY2026#Note18] [src:MSFT-10K-FY2026#p38]. Microsoft does not disclose Microsoft 365 Commercial cloud revenue in dollars; that metric grew 17% in FY2026, or 14% in constant currency, and 18% (15% in constant currency) as restated on the FY2027 definition, which adds GitHub and other developer cloud services and Security Copilot [src:MSFT-10K-FY2026#p38] [src:MSFT-8K-2026-09-02#EX-99.1-slide18] [src:MSFT-8K-2026-09-02#EX-99.1-slide11]. Microsoft 365 commercial seats grew 6%, or 7% as restated on the FY2027 definition, which includes paid GitHub seats [src:MSFT-10K-FY2026#p38] [src:MSFT-8K-2026-09-02#EX-99.1-slide18]. On the FY2027 basis the nearest dollar line is Microsoft 365 cloud (commercial and consumer), $100,299 million restated for FY2026 [src:MSFT-8K-2026-09-02#EX-99.1-slide17]."
   - id: F9
     label: Cash capex (excluding finance leases)
     value: 1159
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p5
-    note: "34.9% of revenue [src:MSFT-RPT1-2026-09-17#p5]; 12.3% in FY2021, 18.1% in FY2024 and 22.9% in FY2025 [src:MSFT-RPT1-2026-09-17#p5]."
+    source: MSFT-10K-FY2026#p53
+    note: "Additions to property and equipment, 34.9% of revenue [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2026#p50]; 12.3% in FY2021 [src:MSFT-10K-FY2023#Item8], 18.1% in FY2024 and 22.9% in FY2025 [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2026#p50]; ten years earlier, FY2016 cash capex was $8,343 million, 9.2% of revenue as restated for ASC 606 ($91,154 million, 9.8% of the originally reported $85,320 million) [src:MSFT-10K-FY2016#Item8] [src:MSFT-10K-FY2018#Item8]. On the company's own capex definition, which includes finance leases, FY2026 capex was about $145 billion: $34.9 billion, $37.5 billion, $31.9 billion and $41 billion in the four quarters (this archive's sum of the company's quarterly figures, the fourth of which is rounded to the billion) [src:MSFT-CALL-FY2026Q1] [src:MSFT-CALL-FY2026Q2] [src:MSFT-CALL-FY2026Q3] [src:MSFT-CALL-FY2026Q4]."
   - id: F10
     label: Free cash flow (operating cash flow − cash capex)
     value: [741, 716, 670]
     unit: USD 100 million
     period: FY2024 / FY2025 / FY2026
-    source: MSFT-RPT1-2026-09-17#p5
+    source: MSFT-10K-FY2026#p53
+    note: "Net cash from operations less additions to property and equipment: $74,071 million, $71,611 million and $66,987 million [src:MSFT-10K-FY2026#p53]."
   - id: F11
-    label: Free cash flow ÷ non-GAAP net income
-    value: [91.5, 89.6, 82.2, 84.0, 67.9, 52.0]
+    label: Free cash flow ÷ non-GAAP net income, current definition (excludes OpenAI gains and losses, recast by the company only back to FY2024)
+    value: [83.0, 67.9, 52.0]
     unit: "%"
-    period: FY2021 / FY2022 / FY2023 / FY2024 / FY2025 / FY2026
-    source: MSFT-RPT1-2026-09-17#p5
+    period: FY2024 / FY2025 / FY2026
+    source: MSFT-10K-FY2026#p42
+    note: "This archive's calculation: free cash flow of $74,071 million, $71,611 million and $66,987 million [src:MSFT-10K-FY2026#p53] ÷ adjusted net income of $89,262 million, $105,452 million and $128,786 million [src:MSFT-10K-FY2026#p42]. As originally reported, FY2024 and FY2025 had no non-GAAP adjustments: 84.0% ($74,071 million ÷ $88,136 million) [src:MSFT-10K-FY2024#Item7] and 70.3% ($71,611 million ÷ $101,832 million) [src:MSFT-10K-FY2025#Item7]. Earlier years are in F28, on a different definition; the two are never read as one series."
   - id: F12
     label: Operating cash flow
     value: 1829
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p8
+    source: MSFT-10K-FY2026#p53
   - id: F13
     label: Gross margin
     value: 67.9
     unit: "%"
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p5
+    source: MSFT-10K-FY2026#p50
+    note: "Gross margin of $225,465 million ÷ revenue of $331,839 million [src:MSFT-10K-FY2026#p50]."
   - id: F14
     label: Microsoft Cloud gross margin (full year / fourth quarter)
     value: [66, 65]
     unit: "%"
     period: FY2026 / FY2026Q4
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p11
+    source: MSFT-10K-FY2026#p37
+    note: "66% for FY2026 [src:MSFT-10K-FY2026#p37] and 65% in the fourth quarter [src:MSFT-CALL-FY2026Q4], both on the FY2026 Microsoft Cloud definition, which also counted the commercial portion of LinkedIn and Dynamics 365 [src:MSFT-10K-FY2026#p36]. The FY2027 definition covers Azure, Microsoft 365 commercial cloud and Industry solutions cloud, and the company has not restated the gross margin on it [src:MSFT-8K-2026-09-02#EX-99.1-slide13]."
   - id: F15
     label: Agents and Infra operating margin (FY2026 restated for the new segments)
     value: 50.9
     unit: "%"
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p11
-    note: "From FY27 the “Intelligent Cloud margin” no longer exists and this replaces it; the report writes “about 50.9%” [src:MSFT-RPT1-2026-09-17#p11]."
+    source: MSFT-8K-2026-09-02#EX-99.1-slide15
+    note: "Operating income of $136,365 million ÷ revenue of $268,127 million [src:MSFT-8K-2026-09-02#EX-99.1-slide15]. From FY27 the Intelligent Cloud margin is no longer reported and this replaces it; Agents and Infra also takes in most of Productivity and Business Processes, so it is not a like-for-like successor (FY2026: 50.9% against Intelligent Cloud's 41.3%) [src:MSFT-8K-2026-09-02#EX-99.1-slide15] [src:MSFT-10K-FY2026#p38]."
   - id: F16
-    label: Net fixed assets
+    label: Net fixed assets (property and equipment, net)
     value: 3131
     unit: USD 100 million
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p4
-    note: "Equal to 94% of full-year revenue, against 21% ten years earlier [src:MSFT-RPT1-2026-09-17#p4]; about two-thirds is short-lived assets such as servers and network equipment, about $209 billion [src:MSFT-RPT1-2026-09-17#p4]."
+    source: MSFT-10K-FY2026#p52
+    note: "Equal to 94% of FY2026 revenue ($313,076 million ÷ $331,839 million) [src:MSFT-10K-FY2026#p52] [src:MSFT-10K-FY2026#p50], against 20% ten years earlier: $18,356 million at 2016-06-30 ÷ FY2016 revenue of $91,154 million as restated for ASC 606 (21.5% of the originally reported $85,320 million) [src:MSFT-10K-FY2016#Item8] [src:MSFT-10K-FY2018#Item8]. The 10-K does not split net property and equipment by class; at cost, servers, network equipment and software were $215.9 billion of $431.8 billion (50%), and land, buildings and leasehold improvements $209.6 billion [src:MSFT-10K-FY2026#p69]; finance-lease assets were $82.7 billion at cost [src:MSFT-10K-FY2026#p78]. The company says roughly two thirds of its FY2026 fourth-quarter capex went to short-lived assets, primarily CPUs and GPUs [src:MSFT-CALL-FY2026Q4]."
   - id: F17
-    label: Depreciation and amortization
+    label: Depreciation, amortization, and other (cash flow statement)
     value: 385
     unit: USD 100 million
     period: FY2026
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p4
-    note: "The report's estimate from the asset mix: FY2028 depreciation and amortization will very likely exceed $60 billion, more than $22 billion above FY2026 [src:MSFT-RPT1-2026-09-17#p4]."
+    source: MSFT-10K-FY2026#p53
+    note: "Of which depreciation expense was $34.3 billion [src:MSFT-10K-FY2026#p69] and amortization of intangible assets $4.7 billion [src:MSFT-10K-FY2026#Note9], and a depreciation cross-check uses the $34.3 billion. The report's estimate from the asset mix: FY2028 depreciation and amortization is highly likely to exceed $60 billion, more than $22 billion above FY2026 [src:MSFT-RPT1-2026-09-17#p4]."
   - id: F18
     label: Commercial remaining performance obligation (commercial RPO)
     value: 6780
     unit: USD 100 million
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p8
-    note: "The only customer concentration the company has ever disclosed: 45% from OpenAI (FY26 Q2 call, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]. All of the latest quarter's sequential increase came from customers other than frontier-model companies; the portion to be recognized beyond 12 months grew 112% year on year, and the report puts this in the same sentence as “still up 25% excluding OpenAI” without saying whether this reading excludes OpenAI (see todo) [src:MSFT-RPT1-2026-09-17#p8]."
+    source: MSFT-10K-FY2026#p77
+    note: "The only disclosure of a single customer's share of commercial RPO: about 45% from OpenAI at 2025-12-31, of $625 billion (FY26 Q2 call, not updated on the Q3 or Q4 calls) [src:MSFT-CALL-FY2026Q2] [src:MSFT-10Q-FY2026Q2#Note11]. The FY2026 10-K discloses FY2026 revenue from commercial arrangements with OpenAI, including revenue-sharing payments, of $24.1 billion, as a related party [src:MSFT-10K-FY2026#p60]. All of FY2026Q4's sequential increase in commercial RPO came from customers outside frontier-model companies [src:MSFT-CALL-FY2026Q4]. The portion of RPO, including OpenAI, to be recognized beyond 12 months grew 112% year on year [src:MSFT-CALL-FY2026Q4]; it is not evidence of breadth outside OpenAI (the growth excluding OpenAI is F19)."
   - id: F19
     label: Commercial RPO excluding OpenAI, year on year
     value: 25
     unit: "%"
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p8
-    note: "The report warns that the balance excluding OpenAI cannot separate neoclouds from real enterprises, so the concentration itself remains [src:MSFT-RPT1-2026-09-17#p8]."
+    source: MSFT-CALL-FY2026Q4
+    note: "26% a quarter earlier [src:MSFT-CALL-FY2026Q3]. The report warns that the balance excluding OpenAI cannot separate neoclouds from real enterprises, so the concentration itself remains [src:MSFT-RPT1-2026-09-17#p8]."
   - id: F20
     label: Total contractual obligations
     value: 7438
     unit: USD 100 million
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p8
-    note: "Purchase commitments of $194.1 billion ($169 billion of it due in FY2027), leases including imputed interest of $443.5 billion, construction commitments of $34.6 billion and debt of $71.7 billion [src:MSFT-RPT1-2026-09-17#p8]; non-cancelable lease and purchase commitments total $637.6 billion, equal to 9.5 years of FY2026 free cash flow [src:MSFT-RPT1-2026-09-17#p8]; the purchase commitments due in FY2027 equal 92% of FY2026 operating cash flow [src:MSFT-RPT1-2026-09-17#p8]."
+    source: MSFT-10K-FY2026#p44
+    note: "At 2026-06-30: purchase commitments of $194.1 billion ($169.0 billion of it due in FY2027), leases including imputed interest of $443.5 billion, construction commitments of $34.6 billion, and long-term debt payments of $71.7 billion (principal of $46.1 billion plus $25.6 billion of future interest) [src:MSFT-10K-FY2026#p44]. The lease obligations and purchase commitments together total $637.6 billion, equal to 9.5 years of FY2026 free cash flow [src:MSFT-10K-FY2026#p44] [src:MSFT-10K-FY2026#p53]; the 10-K does not call them non-cancelable: $329.1 billion of the leases have not yet commenced, some subject to contractual conditions, and the purchase commitments include open purchase orders and take-or-pay contracts [src:MSFT-10K-FY2026#p78] [src:MSFT-10K-FY2026#p44]. The purchase commitments due in FY2027 equal 92.4% of FY2026 operating cash flow [src:MSFT-10K-FY2026#p44] [src:MSFT-10K-FY2026#p53]."
   - id: F21
     label: Long-term debt principal
     value: 461
     unit: USD 100 million
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p9
+    source: MSFT-10K-FY2026#p72
+    note: "Face value, including $9.25 billion due in FY2027 [src:MSFT-10K-FY2026#p72] [src:MSFT-10K-FY2026#p44]."
   - id: F22
     label: Cash returned to shareholders (dividends / buybacks)
     value: [1102, 1129]
     unit: USD 100 million
     period: FY2022–FY2026 cumulative
-    source: MSFT-RPT1-2026-09-17#p8
-    note: "A total of $223.1 billion [src:MSFT-RPT1-2026-09-17#p8]; over the same period, net debt repayment was $23.2 billion, there was no equity issuance, and the diluted share count fell about 2% [src:MSFT-RPT1-2026-09-17#p8]; five years of stock-based compensation expense came to about $52.2 billion, plus $24.8 billion of repurchases for tax withholding [src:MSFT-RPT1-2026-09-17#p8]."
+    source: MSFT-10K-FY2026#p53
+    note: "A total of $223.1 billion, and net debt repayment over the same years of $23.2 billion [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2025#Item8] [src:MSFT-10K-FY2024#Item8]. No equity was raised through offerings, but 171 million shares were issued under employee stock plans (cash proceeds of $9.8 billion) against 263 million repurchased, so shares outstanding fell by 92 million, from 7,519 million at 2021-06-30 to 7,427 million at 2026-06-30 [src:MSFT-10K-FY2026#Note15] [src:MSFT-10K-FY2024#Note16] [src:MSFT-10K-FY2026#p53]; diluted weighted-average shares fell 2.0%, from 7,608 million in FY2021 to 7,453 million in FY2026 [src:MSFT-10K-FY2023#Item8] [src:MSFT-10K-FY2026#p50]. Five years of stock-based compensation expense came to $52.2 billion, and $24.8 billion of the buybacks were repurchases for tax withholding [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2026#Note15] [src:MSFT-10K-FY2024#Note16] [src:MSFT-10K-FY2023#Note16]."
   - id: F23
     label: Copilot paid seats (company-reported)
     value: more than 3,000
     unit: "10,000"
     period: FY2026Q4
-    source: MSFT-RPT1-2026-09-17#p6
-    note: "A vendor panel covering more than 150,000 paid US enterprise users shows the share of those with access who actively use the tool at 35.8% for Copilot and 83.1% for ChatGPT, only 8% choosing Copilot when all three are available, and 68% using Copilot as their main tool when it is the only one [src:MSFT-RPT1-2026-09-17#p6]."
+    source: MSFT-8K-2026-07-29#EX-99.1
+    note: "Over 30 million paid Microsoft 365 Copilot seats, with net seat additions more than doubling quarter on quarter [src:MSFT-8K-2026-07-29#EX-99.1] [src:MSFT-CALL-FY2026Q4]. A vendor panel of U.S. paid subscribers (Recon Analytics, more than 150,000 respondents, July 2025 to January 2026), which is L2 only with no primary data seen, puts the share of those with workplace access who actively use the tool at 35.8% for Copilot and 83.1% for ChatGPT, with only 8% choosing Copilot when all three tools are available and 68% using Copilot as their main tool when it is the only one [src:MSFT-WEB-2026-02-03-1]; these readings support no test baseline, valuation input or rating on their own."
   - id: F24
-    label: Microsoft's equity stake in OpenAI (approximate)
-    value: 27
+    label: Microsoft's equity stake in OpenAI (approximate, as-converted)
+    value: 25
     unit: "%"
-    source: MSFT-RPT1-2026-09-17#p9
+    as_of: 2026-06-30
+    source: MSFT-10K-FY2026#p60
+    note: "About 27% after the October 2025 recapitalization and at 2025-12-31 [src:MSFT-8K-2025-10-29#EX-99.2] [src:MSFT-10Q-FY2026Q2#Note1]; the share fell during FY2026 because of the recapitalization and other OpenAI funding [src:MSFT-10K-FY2026#p60]. Microsoft accounts for the stake under the equity method, using hypothetical liquidation at book value (HLBV), and records its share of changes in OpenAI's net assets, mostly dilution gains when OpenAI raises capital ($6.5 billion of net gains in FY2026, mainly from the recapitalization) [src:MSFT-10K-FY2026#p60] [src:MSFT-10K-FY2026#p41]; it does not book gains on OpenAI's valuation."
   - id: F25
     label: Goodwill
     value: 1196.51
     unit: USD 100 million
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p7
-    note: "$119.509 billion at the end of the previous year [src:MSFT-RPT1-2026-09-17#p7]; not a cent of the $51.001 billion from Activision has been written down [src:MSFT-RPT1-2026-09-17#p7]."
+    source: MSFT-10K-FY2026#p52
+    note: "$119,509 million at 2025-06-30 [src:MSFT-10K-FY2026#p52]; the $51,001 million of goodwill from Activision has not been written down, and the May 2024, 2025 and 2026 tests found no impairment [src:MSFT-10K-FY2026#Note7] [src:MSFT-10K-FY2026#Note8]."
   - id: F26
-    label: Employees
+    label: Employees (full-time)
     value: 223000
     unit: people
     as_of: 2026-06-30
-    source: MSFT-RPT1-2026-09-17#p7
-    note: "5,000 fewer than a year earlier, of whom 77,000 are in product research and development; revenue per employee rose from $1.24 million to $1.49 million [src:MSFT-RPT1-2026-09-17#p7]."
+    source: MSFT-10K-FY2026#p9
+    note: "5,000 fewer than the 228,000 a year earlier [src:MSFT-10K-FY2026#p9] [src:MSFT-10K-FY2025#Item1], of whom 77,000 are in product research and development [src:MSFT-10K-FY2026#p9]; revenue per full-time employee at year-end rose from $1.24 million in FY2025 to $1.49 million in FY2026 (this archive's calculation from revenue and year-end headcount) [src:MSFT-10K-FY2026#p50] [src:MSFT-10K-FY2025#Item1] [src:MSFT-10K-FY2026#p9]."
   - id: F27
     label: Average tenure of the six executive officers
     value: 25.0
     unit: years
     period: as of 2026
-    source: MSFT-RPT1-2026-09-17#p7
+    source: MSFT-10K-FY2026#p12
+    note: "Joined: Nadella 1992, Smith 1993, Numoto 1997, Hood 2002, Coleman 2009, Althoff 2013; (34 + 33 + 29 + 24 + 17 + 13) ÷ 6 = 25.0 years, counted to calendar 2026 (this archive's calculation) [src:MSFT-10K-FY2026#p12]."
+  # ---------- Independent calculations of this archive (00 §E1): method and every input in the note ----------
+  - id: F28
+    label: Free cash flow ÷ non-GAAP net income, each year's reported definition (not recast)
+    value: [92.5, 93.8, 81.1]
+    unit: "%"
+    period: FY2021 / FY2022 / FY2023
+    source: MSFT-10K-FY2023#Item7
+    note: "This archive's calculation: free cash flow of $56,118 million ($76,740 million − $20,622 million), $65,149 million ($89,035 million − $23,886 million) and $59,475 million ($87,582 million − $28,107 million) [src:MSFT-10K-FY2023#Item8] ÷ adjusted net income of $60,651 million, $69,447 million and $73,307 million [src:MSFT-10K-FY2022#Item7] [src:MSFT-10K-FY2023#Item7]. Those years' adjustments were other items: FY2021 excluded a $620 million India withholding-tax benefit [src:MSFT-8K-2021-07-27#EX-99.1], FY2022 a $3.3 billion tax benefit from transferring intangible properties [src:MSFT-10K-FY2023#Item7], and FY2023 a second-quarter charge [src:MSFT-10K-FY2024#Item7]; the company has not recast them to the current definition (F11). On GAAP net income ($61,271 million, $72,738 million, $72,361 million) the ratios are 91.6%, 89.6% and 82.2% [src:MSFT-10K-FY2023#Item8]. Further back, FY2016–FY2020 free cash flow was 97.5%–194.6% of GAAP net income (FY2016 and FY2017 on net income restated for ASC 606) [src:MSFT-10K-FY2018#Item8] [src:MSFT-10K-FY2021#Item8], so FY2026's 52.0% is the lowest reading since at least FY2016 on any of these bases."
+  - id: F29
+    label: After-tax incremental return on cash capex, whole company, FY2023 to FY2026
+    value: [23.7, 38.9]
+    unit: "%"
+    period: FY2023–FY2026 (same window / one-year lag)
+    source: MSFT-10K-FY2026#p50
+    note: "This archive's calculation. Method: the increase in after-tax operating income over the window ÷ the cash capex of the window. After-tax operating income = operating income × (1 − the year's effective tax rate): FY2023 $88,523 million × (1 − $16,950 million ÷ $89,311 million) = $71,723 million [src:MSFT-10K-FY2025#Item8]; FY2026 $155,237 million × (1 − $32,185 million ÷ $165,934 million) = $125,127 million [src:MSFT-10K-FY2026#p50], an increase of $53,404 million. Same window: ÷ FY2024–FY2026 cash capex of $224,976 million ($44,477 million + $64,551 million + $115,948 million) = 23.7% [src:MSFT-10K-FY2026#p53]. One-year lag: ÷ FY2023–FY2025 cash capex of $137,135 million ($28,107 million + $44,477 million + $64,551 million) = 38.9% [src:MSFT-10K-FY2025#Item8] [src:MSFT-10K-FY2026#p53]. Cash capex excludes finance leases, as elsewhere in this archive. The report's 13%–39% is its own calculation on two bases, the whole company and Intelligent Cloud [src:MSFT-RPT1-2026-09-17#p13]; the capital-allocation rating's upgrade condition (a reading above 20%) [src:MSFT-RPT1-2026-09-17#p3] is read against this method."
+  - id: F30
+    label: Copilot add-on run rate at list price (estimate)
+    value: 10.8
+    unit: USD billion per year
+    period: FY2026Q4
+    source: MSFT-8K-2026-07-29#EX-99.1
+    note: "This archive's estimate: over 30 million paid seats [src:MSFT-8K-2026-07-29#EX-99.1] × $30 per user per month, the Enterprise list price on an annual subscription [src:MSFT-WEB-2026-09-25-1] × 12 = $10.8 billion a year; the seat count is a floor and the price a ceiling (Microsoft 365 Copilot Business lists at $21 [src:MSFT-WEB-2026-09-25-1]), and Microsoft discloses no Copilot revenue. It equals 10.6% of the $102.0 billion FY2026 revenue of Microsoft 365 Commercial products and cloud services, a line that also includes on-premises products [src:MSFT-10K-FY2026#Note18]."
 
 tests:
   # ---------- Lynch stalwart template (all five kept; MSFT-Q4 changes the metric and rewrites the threshold, MSFT-L1 rewrites the question; reasons in each note) ----------
@@ -298,13 +330,13 @@ tests:
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: 18
+      value: 17.8
       unit: "%"
       period: FY2026
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p7
-      note: "Revenue rose from $281.7 billion in FY2025 to $331.8 billion in FY2026 [src:MSFT-RPT1-2026-09-17#p5]."
-    note: "The thresholds are the template defaults. They are far from FY2026's growth rate, so this test is only a floor: the early signals of slowing growth are in the segment tests, namely Azure growth (MSFT-Q10's warning line and MSFT-Q5), M365 commercial cloud and seat growth (MSFT-Q12's warning line), and whether seats are falling (MSFT-Q9). The report treats the More Personal Computing business (Windows OEM, Xbox, search advertising) as background, not as part of the thesis, and the company's FY2027 guidance is for Windows OEM and Devices to decline in the high teens [src:MSFT-RPT1-2026-09-17#p3]; when company-wide growth slows, check the tests above first to see which business is slowing."
+      source: MSFT-10K-FY2026#p50
+      note: "Revenue rose from $281.7 billion in FY2025 to $331.8 billion in FY2026, +17.8% (the company rounds it to 18%) [src:MSFT-10K-FY2026#p50] [src:MSFT-10K-FY2026#p37]."
+    note: "The thresholds are the template defaults. They are far from FY2026's growth rate, so this test is only a floor: the early signals of slowing growth are in the segment tests, namely Azure growth (MSFT-Q10's warning line and MSFT-Q5), Microsoft 365 commercial cloud and seat growth (MSFT-Q12's warning line), and whether seats are falling (MSFT-Q9). The report treats the More Personal Computing business (Windows OEM, Xbox, search advertising) as background, not as part of the thesis [src:MSFT-RPT1-2026-09-17#p3], and the company's FY2027 guidance is for Windows OEM and Devices revenue to decline in the high teens [src:MSFT-CALL-FY2026Q4]; when company-wide growth slows, check the tests above first to see which business is slowing."
 
   - id: MSFT-Q2
     type: quantitative
@@ -319,7 +351,7 @@ tests:
     data: xbrl
     effective_from: FY2027Q1
     first_readable: 2027-07
-    note: "Both the claim and the threshold are the template defaults. The report gives no company-wide return on invested capital, so the baseline is to be backfilled from the XBRL of the FY2026 annual report. This test cannot see the data centers' drag on returns: invested capital in the registry's roic is equity plus interest-bearing debt minus cash, excluding lease liabilities, and the data centers are largely obtained through leases: lease obligations including imputed interest were $443.5 billion at the end of FY2026 [src:MSFT-RPT1-2026-09-17#p8], against long-term debt principal of only $46.1 billion [src:MSFT-RPT1-2026-09-17#p9], and from FY2027 most data center leases are booked as operating leases [src:MSFT-RPT1-2026-09-17#p4]. The annuity's high returns will also mask the returns on new investment for many years, so this test is a floor, not an early signal; for early signals, see MSFT-Q5 and MSFT-Q7. The report gives an incremental measure: its main text takes the company-wide increase in after-tax operating profit over three years of capex, for an after-tax incremental return between 13% and 39% that public data cannot narrow [src:MSFT-RPT1-2026-09-17#p4], and the appendix says the range was calculated on two bases, the whole company and Intelligent Cloud [src:MSFT-RPT1-2026-09-17#p13]; one condition for raising the capital allocation rating to B+ is a three-year incremental after-tax return reading above 20% [src:MSFT-RPT1-2026-09-17#p3]."
+    note: "Both the claim and the threshold are the template defaults. The report gives no company-wide return on invested capital, so the baseline is to be backfilled from the XBRL of the FY2026 annual report. This test cannot see the data centers' drag on returns: invested capital in the registry's roic is equity plus interest-bearing debt minus cash, excluding lease liabilities, and most of the datacenter capacity Microsoft has committed to but not yet received comes through leases: $329.1 billion of leases not yet commenced, primarily datacenters, against $34.6 billion of construction commitments at 2026-06-30 [src:MSFT-10K-FY2026#p78] [src:MSFT-10K-FY2026#p69]. The existing base is mixed: finance-lease assets were $82.7 billion of $431.8 billion of property and equipment at cost [src:MSFT-10K-FY2026#p78] [src:MSFT-10K-FY2026#p69]. Lease obligations including imputed interest were $443.5 billion at 2026-06-30 [src:MSFT-10K-FY2026#p44], against long-term debt principal of $46.1 billion at the same date [src:MSFT-10K-FY2026#p72]. From FY2027 Microsoft extended the estimated useful lives of datacenters and office buildings from 15 to 25 years, so more of its future datacenter leases will be classified as operating rather than finance leases; finance leases count in the company's capex and operating leases do not [src:MSFT-CALL-FY2026Q4]. The annuity's high returns will also mask the returns on new investment for many years, so this test is a floor, not an early signal; for early signals, see MSFT-Q5 and MSFT-Q7. An incremental measure: company-wide, the FY2023–FY2026 increase in after-tax operating income equals 23.7% of FY2024–FY2026 cash capex, or 38.9% of FY2023–FY2025 cash capex with a one-year lag (this archive's calculation, with method and inputs in F29) [src:MSFT-10K-FY2026#p50] [src:MSFT-10K-FY2025#Item8] [src:MSFT-10K-FY2026#p53]. The report's own range of 13% to 39% was calculated on two bases, the whole company and Intelligent Cloud [src:MSFT-RPT1-2026-09-17#p13]; Intelligent Cloud's history was recast in FY2025 (FY2024 operating income $49,584 million as first reported, $37,813 million as recast) and the segment is not reported from FY2027, so any figure built on it spans bases [src:MSFT-10K-FY2024#Item8] [src:MSFT-10K-FY2026#Note18] [src:MSFT-8K-2026-09-02#EX-99.1-slide15]. One condition for raising the capital allocation rating to B+ is a three-year incremental after-tax return reading above 20% [src:MSFT-RPT1-2026-09-17#p3]; it is read against F29's method."
 
   - id: MSFT-Q3
     type: quantitative
@@ -340,8 +372,8 @@ tests:
       period: FY2026 (year on year)
       as_of: 2026-06-30
       source: MSFT-10K-FY2026
-      note: "The year-on-year reading is to be backfilled from the XBRL of the FY2026 annual report. The report gives only the five-year total: the diluted share count fell about 2% over FY2022–FY2026 (see F22) [src:MSFT-RPT1-2026-09-17#p8]; buybacks over the same period were $112.9 billion, while five years of stock-based compensation expense came to about $52.2 billion, plus $24.8 billion of repurchases for tax withholding, so new shares ate about half the effect of the buyback cash [src:MSFT-RPT1-2026-09-17#p8]."
-    note: "The threshold is the template default. Standard two in section six of the report asks whether shareholder returns were offset by new debt or equity (the answer is no), not how much of the buybacks truly reduced the share count (the answer is half); this test watches the second question."
+      note: "The year-on-year reading is to be backfilled from the XBRL of the FY2026 annual report. Five-year readings for FY2022–FY2026: buybacks of $112.9 billion, of which $24.8 billion were repurchases for tax withholding, and stock-based compensation expense of $52.2 billion, equal to 46% of the buyback cash [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2024#Item8] [src:MSFT-10K-FY2026#Note15] [src:MSFT-10K-FY2024#Note16] [src:MSFT-10K-FY2023#Note16]. How much of the 263 million repurchased shares truly reduced the count depends on the basis: on diluted weighted-average shares (7,608 million in FY2021 to 7,453 million in FY2026, −2.0%) about 59%, and on period-end shares outstanding (−92 million, −1.2%) about 35%, the other 65% being offset by 171 million shares issued under employee stock plans (this archive's calculation) [src:MSFT-10K-FY2023#Item8] [src:MSFT-10K-FY2026#p50] [src:MSFT-10K-FY2026#Note15] [src:MSFT-10K-FY2024#Note16]."
+    note: "The threshold is the template default. Standard two in section six of the report asks whether shareholder returns were offset by new debt or equity: on a net basis they were not, since net debt repayment over FY2022–FY2026 was $23.2 billion and shares outstanding fell by 92 million [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2025#Item8] [src:MSFT-10K-FY2024#Item8] [src:MSFT-10K-FY2026#Note15] [src:MSFT-10K-FY2024#Note16]. This test watches a different question, how much of the buybacks truly reduced the share count: between about 35% and 59% by basis, as the baseline note shows [src:MSFT-10K-FY2026#Note15] [src:MSFT-10K-FY2026#p50]."
 
   - id: MSFT-Q4
     type: quantitative
@@ -363,9 +395,9 @@ tests:
       unit: "%"
       period: FY2026
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p5
-      note: "FY2021 91.5%, FY2022 89.6%, FY2023 82.2%, FY2024 84.0%, FY2025 67.9% [src:MSFT-RPT1-2026-09-17#p5]."
-    note: "Rewritten template: not only the threshold but also the metric was changed, which goes beyond the template README's permission to change thresholds only; the integration step is to record this in a decision record (see todo). The template's default is the registry's fcf_conversion (GAAP net income basis, computable from XBRL), failing after 2 consecutive years below the normal line; on the report's basis, FY2025's 67.9% and FY2026's 52.0% are already two consecutive years below that normal line [src:MSFT-RPT1-2026-09-17#p5], so judged as written, the test would fail on creation and bring no new information. Two changes are made here, both taken from the report. One: the metric becomes free cash flow ÷ non-GAAP net income as used throughout the report (capex excluding finance leases), the same number MSFT-Q6 reads [src:MSFT-RPT1-2026-09-17#p4]; the cost is that the denominator is defined by the company and has to be extracted from the press release's reconciliation table, so this archive no longer has a cash conversion test computable directly from XBRL. Two: the threshold becomes the healthy line of section ten's watch indicator #4, “recovery after FY2027”, with FY2026's 52% as the base [src:MSFT-RPT1-2026-09-17#p11]. The template's normal line has a counterpart in the report: conversion returning above 70% once capacity runs full is explanation A, a new normal of 50–65% is explanation B, and the two cannot be separated before FY2028 [src:MSFT-RPT1-2026-09-17#p5]; review this test once the FY2028 annual report is out. Watch indicator #4's trigger line is breaker two; see MSFT-Q6."
+      source: MSFT-10K-FY2026#p42
+      note: "FY2026: free cash flow of $66,987 million ÷ adjusted net income of $128,786 million [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2026#p42]. On the current definition, which excludes OpenAI gains and losses and which the company has recast only back to FY2024: FY2024 83.0%, FY2025 67.9% (as originally reported, when neither year had non-GAAP adjustments: 84.0% and 70.3%) [src:MSFT-10K-FY2026#p42] [src:MSFT-10K-FY2024#Item7] [src:MSFT-10K-FY2025#Item7]. On each year's own reported definition, not recast: FY2021 92.5%, FY2022 93.8%, FY2023 81.1% (F28) [src:MSFT-10K-FY2022#Item7] [src:MSFT-10K-FY2023#Item7] [src:MSFT-10K-FY2023#Item8]. The two sets are not one series. FY2026 is the lowest reading since at least FY2016 on any basis (FY2016–FY2020: 97.5%–194.6% of GAAP net income) [src:MSFT-10K-FY2018#Item8] [src:MSFT-10K-FY2021#Item8]."
+    note: "Rewritten template: not only the threshold but also the metric was changed, which goes beyond the template README's permission to change thresholds only; the integration step is to record this in a decision record (see todo). The template's default is the registry's fcf_conversion (GAAP net income basis, computable from XBRL), failing after 2 consecutive years below the normal line; on the current non-GAAP definition, FY2025's 67.9% and FY2026's 52.0% are already two consecutive years below that normal line [src:MSFT-10K-FY2026#p42] [src:MSFT-10K-FY2026#p53], so judged as written, the test would fail on creation and bring no new information. Two changes are made here, both taken from the report. One: the metric becomes free cash flow ÷ non-GAAP net income as used throughout the report (capex excluding finance leases), the same number MSFT-Q6 reads [src:MSFT-RPT1-2026-09-17#p4]; the cost is that the denominator is defined by the company, has to be extracted from the reconciliation table of the earnings release or the 10-K [src:MSFT-8K-2026-07-29#EX-99.1] [src:MSFT-10K-FY2026#p42], and changes over time: the FY2021–FY2023 definitions excluded other items, and the current one, which excludes OpenAI gains and losses, is recast only back to FY2024 (F11, F28). Each year is read on the definition in force for that year, and the update that records the reading names it; this archive no longer has a cash conversion test computable directly from XBRL. Two: the threshold becomes the healthy line of section ten's watch indicator #4, “recovery after FY2027”, with FY2026's 52.0% as the base [src:MSFT-10K-FY2026#p42] [src:MSFT-RPT1-2026-09-17#p11]. The template's normal line has a counterpart in the report: conversion returning above 70% once capacity runs full is explanation A, a new normal of 50–65% is explanation B, and the two cannot be separated before FY2028 [src:MSFT-RPT1-2026-09-17#p5]; review this test once the FY2028 annual report is out. Watch indicator #4's trigger line is breaker two; see MSFT-Q6."
 
   - id: MSFT-L1
     type: qualitative
@@ -386,8 +418,8 @@ tests:
     baseline:
       value: "FY27 Q1 guidance: Microsoft 365 commercial cloud revenue growth of about 17% in constant currency (FY27 new basis, mechanically adjusted to the new segment basis from the roughly 15% given on 2026-07-29)"
       source: MSFT-8K-2026-09-02#EX-99.1-slide21
-      note: "Other guidance already given: FY2027 Windows OEM and Devices to decline in the high teens, and Xbox expected to return to growth after its reset, given on the FY26 Q4 earnings call of 2026-07-29 [src:MSFT-CALL-FY2026Q4]; this archive does not have the full call transcript, and the wording is taken from the report page that relays it [src:MSFT-RPT1-2026-09-17#p3]. The “seat growth of about 7% on the new basis” that the report writes next to that quarter's guidance is FY2026 seat growth restated on the new basis [src:MSFT-RPT1-2026-09-17#p11]; it is not treated as guidance here unless the call transcript or an 8-K shows that the company really did guide seat growth (see todo). The calendar 2026 capex figure changed from about $190 billion to about $175 billion because, from FY2027, data center leases are mostly booked as operating rather than finance leases, which is a change in how they are booked, not a revision [src:MSFT-RPT1-2026-09-17#p4]."
-    note: "Rewritten template: the template asks about published medium-term financial targets; the report does not mention Microsoft publishing medium-term targets and records only guidance already given (see baseline), so here “targets” is read as the outlook and guidance management has given that has not yet come due. “Microsoft gives next-quarter guidance only on each quarterly call and its full-year outlook on the fourth-quarter call” is this archive's working assumption, not stated in the report, to be checked against the FY26 Q4 call transcript and the 8-K (see todo). fail_if keeps the template's meaning (withdrawn with no testable replacement figure); an unfavorable revision is recorded as a warning, a level this archive added. Capex is kept out of this question: raising capex is not an unkept promise but capital allocation, and lowering it is exactly the direction pillar P4 wants; both are tracked by MSFT-Q5 and MSFT-Q13 as a share of revenue."
+      note: "Other guidance given on the FY26 Q4 earnings call of 2026-07-29 [src:MSFT-CALL-FY2026Q4]: for FY2027, Windows OEM and Devices revenue to decline in the high teens; for XBOX, only FY27 Q1 guidance (content and services revenue to decline in the mid-single digits, hardware revenue to decline), together with the CEO's statement that the company expects “to return the business to growth in fiscal 2027” [src:MSFT-CALL-FY2026Q4]. The “seat growth of about 7% on the new basis” that the report writes next to that quarter's guidance is FY2026 seat growth restated on the new basis [src:MSFT-8K-2026-09-02#EX-99.1-slide18]; the FY27 Q1 outlook has no seat-growth item [src:MSFT-8K-2026-09-02#EX-99.1-slide21], and the FY26 Q4 call gives no seat guidance [src:MSFT-CALL-FY2026Q4]. The calendar-2026 capex expectation moved from about $190 billion [src:MSFT-CALL-FY2026Q3] to about $175 billion [src:MSFT-CALL-FY2026Q4] because, from FY2027, the company extended the estimated useful lives of datacenters and office buildings from 15 to 25 years, so more of its future datacenter leases shift from finance to operating leases, which its capex figure excludes; the company says its investment expectation is otherwise unchanged, so this is a change in how leases are booked, not a revision [src:MSFT-CALL-FY2026Q4]."
+    note: "Rewritten template: the template asks about published medium-term financial targets; the report does not mention Microsoft publishing medium-term targets and records only guidance already given (see baseline), so here “targets” is read as the outlook and guidance management has given that has not yet come due. “Microsoft gives next-quarter guidance only on each quarterly call and its full-year outlook on the fourth-quarter call” is this archive's working assumption, not stated in the report, to be checked against the call transcripts (see todo). fail_if keeps the template's meaning (withdrawn with no testable replacement figure); an unfavorable revision is recorded as a warning, a level this archive added. Capex is kept out of this question: raising capex is not an unkept promise but capital allocation, and lowering it is exactly the direction pillar P4 wants; both are tracked by MSFT-Q5 and MSFT-Q13 as a share of revenue."
 
   # ---------- Section ten of the report: thesis breakers (if any one holds, the investment thesis is void, not merely downgraded) ----------
   - id: MSFT-Q5
@@ -422,9 +454,9 @@ tests:
       unit: "%"
       period: FY2026Q4 (June quarter, new basis, constant currency)
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p11
-      note: "June-quarter Azure revenue of $29.42 billion [src:MSFT-RPT1-2026-09-17#p11]; FY2026 full-year cash capex was 34.9% of revenue [src:MSFT-RPT1-2026-09-17#p5]."
-    note: "Breaker one in section ten of the report. The second condition uses the registry's capex_to_revenue definition (xbrl), consistent with the report's “cash capex always excludes finance leases, and section ten's thresholds are written on this basis” [src:MSFT-RPT1-2026-09-17#p4]. An earlier-stage alarm is watch indicator #1, two consecutive quarters below 25% (see MSFT-Q10) [src:MSFT-RPT1-2026-09-17#p11]."
+      source: MSFT-8K-2026-09-02#EX-99.1-slide18
+      note: "June-quarter Azure revenue of $29,417 million on the FY2027 definition [src:MSFT-8K-2026-09-02#EX-99.1-slide17]; FY2026 full-year cash capex was 34.9% of revenue [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2026#p50]."
+    note: "Breaker one in section ten of the report. Azure's history on the FY2027 definition is restated in the 8-K of 2026-09-02 [src:MSFT-8K-2026-09-02#EX-99.1-slide17]. The second condition uses the registry's capex_to_revenue definition (xbrl), consistent with the report's “cash capex always excludes finance leases, and section ten's thresholds are written on this basis” [src:MSFT-RPT1-2026-09-17#p4]; the company's own capex figure includes finance leases (about $145 billion in FY2026, see F9) [src:MSFT-CALL-FY2026Q4]. An earlier-stage alarm is watch indicator #1, two consecutive quarters below 25% (see MSFT-Q10) [src:MSFT-RPT1-2026-09-17#p11]."
 
   - id: MSFT-Q6
     type: quantitative
@@ -444,8 +476,9 @@ tests:
       unit: "%"
       period: FY2026
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p5
-    note: "Breaker two in section ten of the report, and also watch indicator #4's trigger line. This line is looser than “conversion stops falling”: as long as FY2028 is not below 45%, it does not trigger even if it is lower than FY2026's 52.0% [src:MSFT-RPT1-2026-09-17#p11] [src:MSFT-RPT1-2026-09-17#p5]; a continued decline that does not break the line is recorded by MSFT-Q4's warning and failure lines. The report keeps this line separate from the depreciation curve: depreciation is a non-cash charge that weighs on profit, not on conversion; what really weighs on conversion is the cash outlay of capex, and whether conversion recovers depends on when capex comes down [src:MSFT-RPT1-2026-09-17#p4]. Both lines can first be read in the annual report of July 2028, but they cannot corroborate each other [src:MSFT-RPT1-2026-09-17#p4]. For years after FY2028, the threshold will be rewritten in the update at that time."
+      source: MSFT-10K-FY2026#p42
+      note: "Free cash flow of $66,987 million ÷ adjusted net income of $128,786 million, on the current definition, which excludes OpenAI gains and losses [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2026#p42]."
+    note: "Breaker two in section ten of the report, and also watch indicator #4's trigger line. The FY2028 reading is taken on the non-GAAP definition in force for FY2028, as the company reports it; if that definition differs from FY2026's, the update names both. This line is looser than “conversion stops falling”: as long as FY2028 is not below 45%, it does not trigger even if it is lower than FY2026's 52.0% [src:MSFT-RPT1-2026-09-17#p11] [src:MSFT-10K-FY2026#p42]; a continued decline that does not break the line is recorded by MSFT-Q4's warning and failure lines. The report keeps this line separate from the depreciation curve: depreciation is a non-cash charge that weighs on profit, not on conversion; what really weighs on conversion is the cash outlay of capex, and whether conversion recovers depends on when capex comes down [src:MSFT-RPT1-2026-09-17#p4]. Both lines can first be read in the annual report of July 2028, but they cannot corroborate each other [src:MSFT-RPT1-2026-09-17#p4]. For years after FY2028, the threshold will be rewritten in the update at that time."
 
   - id: MSFT-Q7
     type: quantitative
@@ -473,9 +506,9 @@ tests:
       unit: "%"
       period: FY2026Q4
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p11
-      note: "66% for full-year FY2026 [src:MSFT-RPT1-2026-09-17#p11]."
-    note: "Breaker three in section ten of the report. Watch indicator #3's healthy range is not below 62%, and its trigger line is this breaker line [src:MSFT-RPT1-2026-09-17#p11], so it is merged into this test: below 62% is recorded as a warning. Section four of the report reads it this way: a break below 64% is the first reading in the bad direction, 62% is the second, and only two consecutive quarters below 58% is a thesis breaker [src:MSFT-RPT1-2026-09-17#p6]; that 64% directional line is only recorded in updates, with no threshold of its own [src:MSFT-RPT1-2026-09-17#p6]. This is the signal for the compute-commoditization erosion path; the other line is Azure dollar revenue, disclosed quarterly for the first time from FY27 [src:MSFT-RPT1-2026-09-17#p6]."
+      source: MSFT-CALL-FY2026Q4
+      note: "66% for full-year FY2026 [src:MSFT-10K-FY2026#p37]. Both readings are on the FY2026 Microsoft Cloud definition, which also counted the commercial portion of LinkedIn and Dynamics 365 [src:MSFT-10K-FY2026#p36]; the FY2027 definition covers Azure, Microsoft 365 commercial cloud and Industry solutions cloud, the company does not list it among the metrics with material changes and has not restated the gross margin, so the first FY2027 readings are on the new definition without a restated comparative [src:MSFT-8K-2026-09-02#EX-99.1-slide13]."
+    note: "Breaker three in section ten of the report. Watch indicator #3's healthy range is not below 62%, and its trigger line is this breaker line [src:MSFT-RPT1-2026-09-17#p11], so it is merged into this test: below 62% is recorded as a warning. Section four of the report reads it this way: a break below 64% is the first reading in the bad direction, 62% is the second, and only two consecutive quarters below 58% is a thesis breaker [src:MSFT-RPT1-2026-09-17#p6]; that 64% directional line is only recorded in updates, with no threshold of its own [src:MSFT-RPT1-2026-09-17#p6]. This is the signal for the compute-commoditization erosion path; the other line is Azure dollar revenue, disclosed quarterly for the first time from FY27 [src:MSFT-8K-2026-09-02#EX-99.1-slide17] [src:MSFT-RPT1-2026-09-17#p6]."
 
   - id: MSFT-Q8
     type: quantitative
@@ -502,9 +535,9 @@ tests:
       unit: "%"
       period: FY2026Q4
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p11
-      note: "Commercial RPO of $678 billion, with the latest disclosed share from OpenAI at 45% (FY26 Q2 call, of the $625 billion total at the time) [src:MSFT-RPT1-2026-09-17#p8]."
-    note: "The first condition of breaker four in section ten of the report. The second condition, the $250 billion commitment being restructured or impaired (a mere extension with unchanged concentration is recorded as a worsening of duration and watched separately), requires judging the wording of documents, so it is split out into the qualitative test MSFT-L5, judged by an independent model with sources and verbatim excerpts [src:MSFT-RPT1-2026-09-17#p11]; the two are joined by “or”, and if either fails, breaker four holds. An earlier-stage alarm is watch indicator #2, below 10% (see MSFT-Q11) [src:MSFT-RPT1-2026-09-17#p11]."
+      source: MSFT-CALL-FY2026Q4
+      note: "Commercial RPO of $678 billion at 2026-06-30 [src:MSFT-10K-FY2026#p77]; the only disclosed OpenAI share is about 45% (FY26 Q2 call, of $625 billion at 2025-12-31) [src:MSFT-CALL-FY2026Q2]."
+    note: "The first condition of breaker four in section ten of the report. The second condition, the $250 billion commitment [src:MSFT-8K-2025-10-29#EX-99.2] being restructured or impaired (a mere extension with unchanged concentration is recorded as a worsening of duration and watched separately), requires judging the wording of documents, so it is split out into the qualitative test MSFT-L5, judged by an independent model with sources and verbatim excerpts [src:MSFT-RPT1-2026-09-17#p11]; the two are joined by “or”, and if either fails, breaker four holds. An earlier-stage alarm is watch indicator #2, below 10% (see MSFT-Q11) [src:MSFT-RPT1-2026-09-17#p11]."
 
   - id: MSFT-Q9
     type: quantitative
@@ -535,9 +568,9 @@ tests:
       unit: "%"
       period: FY2026 (restated on the new basis)
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p11
-      note: "6% on the old basis [src:MSFT-RPT1-2026-09-17#p5]; Agent 365 had nearly 40 million sign-ups in two months, company-reported, with no figure for active users [src:MSFT-RPT1-2026-09-17#p6]."
-    note: "Breaker five in section ten of the report, for the erosion path of the entry point moving elsewhere. The pillar is P1: the first leg looks at whether the seat base itself is shrinking; it also tests the half of P2 about “agent or usage revenue taking over before seats peak”. The source and excerpt requirement for the event leg is written only in the rule's note; the schema does not enforce it (see todo). Deliberately moving GitHub Copilot and Copilot Cowork to usage-based pricing usually means the seat ceiling is in sight [src:MSFT-RPT1-2026-09-17#p6]; whether the company starts disclosing agent or usage revenue separately is another signal on this path [src:MSFT-RPT1-2026-09-17#p6]."
+      source: MSFT-8K-2026-09-02#EX-99.1-slide18
+      note: "6% on the old basis [src:MSFT-10K-FY2026#p38]; the FY2027 definition adds paid GitHub seats [src:MSFT-8K-2026-09-02#EX-99.1-slide11]. Two months after launch, Agent 365 had nearly 40 million agents registered across tens of thousands of companies (company-reported), with no figure for how many are active [src:MSFT-CALL-FY2026Q4]."
+    note: "Breaker five in section ten of the report, for the erosion path of the entry point moving elsewhere. The pillar is P1: the first leg looks at whether the seat base itself is shrinking; it also tests the half of P2 about “agent or usage revenue taking over before seats peak”. The source and excerpt requirement for the event leg is written only in the rule's note; the schema does not enforce it (see todo). Microsoft is adding usage-based billing alongside per-seat licensing: GitHub Copilot from June 2026, with Business and Enterprise seats still growing, and Cowork from July 2026; the CEO describes the model as moving “beyond per-seat to per-seat-plus-consumption” [src:MSFT-CALL-FY2026Q4]. The report reads the move to usage-based pricing as a sign that the seat ceiling is in sight [src:MSFT-RPT1-2026-09-17#p6]; since seats are being kept, the change alone does not show that. Whether the company starts disclosing agent or usage revenue separately is another signal on this path [src:MSFT-RPT1-2026-09-17#p6]."
 
   - id: MSFT-L2
     type: qualitative
@@ -558,9 +591,10 @@ tests:
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: "Nadella joined in 1992 and became CEO in 2014; the long-term performance stock metrics in the FY2025 proxy are incentive-plan revenue 35%, Microsoft Cloud revenue 35%, Azure and other cloud services revenue 15%, and three-year total shareholder return relative to the S&P 500 15%; none of the four is a return-on-capital measure"
-      source: MSFT-RPT1-2026-09-17#p7
-    note: "Breaker six in section ten of the report. (a) Per the report's text, it counts only if Nadella has already left without a disclosed succession arrangement; an announced departure is recorded in that period's update [src:MSFT-RPT1-2026-09-17#p12]. The report's reasoning: in FY2026, an Azure increase of about $29 billion consumed $115.9 billion of cash capex, and the incentive plan rewards the former, not the latter [src:MSFT-RPT1-2026-09-17#p7]. The October 2026 proxy statement is the first point at which one can see whether this yardstick has been installed (a supplementary observation, not a trigger) [src:MSFT-RPT1-2026-09-17#p11]. The report does not say which period the $150 billion refers to, so here it is judged on cash capex for the latest full fiscal year when the proxy is published (FY2027), on the same basis as section ten, excluding finance leases [src:MSFT-RPT1-2026-09-17#p12] [src:MSFT-RPT1-2026-09-17#p4]; this reading awaits the owner's confirmation (see todo)."
+      value: "Nadella joined Microsoft in 1992 and became CEO in February 2014; the FY2025 performance stock awards have four core metrics, all revenue growth: Azure and Other Cloud Services 35%, Microsoft Cloud excluding Azure and Other Cloud Services 35%, Consumer Services 15%, Xbox Content and Services 15%; three-year total shareholder return relative to the S&P 500 only modifies the payout (75% to 150%); none of the four is a return-on-capital measure"
+      source: MSFT-DEF14A-2025-10-21#p39
+      note: "Nadella's dates [src:MSFT-10K-FY2026#p12]; the metrics, weights and modifier [src:MSFT-DEF14A-2025-10-21#p39] [src:MSFT-DEF14A-2025-10-21#p40]. Incentive Plan Revenue is a measure of the annual cash incentive, not of the performance stock awards [src:MSFT-DEF14A-2025-10-21#p37]."
+    note: "Breaker six in section ten of the report. (a) Per the report's text, it counts only if Nadella has already left without a disclosed succession arrangement; an announced departure is recorded in that period's update [src:MSFT-RPT1-2026-09-17#p12]. The report's reasoning: in FY2026, an Azure increase of about $29.3 billion on the FY2027 definition [src:MSFT-8K-2026-09-02#EX-99.1-slide17] consumed $115.9 billion of cash capex [src:MSFT-10K-FY2026#p53], and the incentive plan rewards the former, not the latter [src:MSFT-RPT1-2026-09-17#p7] [src:MSFT-DEF14A-2025-10-21#p39]. The October 2026 proxy statement is the first point at which one can see whether this yardstick has been installed (a supplementary observation, not a trigger) [src:MSFT-RPT1-2026-09-17#p11]. The report does not say which period the $150 billion refers to, so here it is judged on cash capex for the latest full fiscal year when the proxy is published (FY2027), on the same basis as section ten, excluding finance leases [src:MSFT-RPT1-2026-09-17#p12] [src:MSFT-RPT1-2026-09-17#p4]; this reading awaits the owner's confirmation (see todo)."
 
   - id: MSFT-L3
     type: qualitative
@@ -573,15 +607,15 @@ tests:
     fail_if: "Yes ((a) or (b) holds)"
     judge: independent_model
     evidence: required
-    where: Microsoft's 10-Q/10-K notes on equity-method investments and credit losses, and its 8-Ks; OpenAI's S-1 and financing announcements; 8-Ks of other parties to commitments, such as Amazon and Oracle
+    where: "Microsoft's 10-Q/10-K notes on equity-method investments and credit losses, and its 8-Ks; OpenAI's S-1 and financing announcements; filings and announcements of other parties to OpenAI's compute commitments: Amazon's 10-Q and 8-Ks, which name OpenAI, and for Oracle, whose filings do not name OpenAI, the parties' own announcements"
     lookback: 4
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: "OpenAI has committed to buy an incremental $250 billion of Azure services; Q1 2026 revenue $5.7 billion and cash burn $3.7 billion, Q2 revenue $6.7 billion (secondary); S-1 filed confidentially on 2026-06-08; the $35 billion conditional portion of Amazon's $50 billion investment came in on 2026-07-31"
-      source: MSFT-RPT1-2026-09-17#p8
-      note: "Microsoft holds about 27% of OpenAI's equity and recognizes gains on its valuation in its financial statements [src:MSFT-RPT1-2026-09-17#p9]."
-    note: "Breaker seven in section ten of the report. The reflexive chain: OpenAI's valuation supports its funding, its funding supports its purchases from Microsoft, those purchases support Microsoft's RPO and Azure growth, that growth supports Microsoft's capex, and outside money decides how long the chain can hold [src:MSFT-RPT1-2026-09-17#p9]. Complements MSFT-L5: that test looks at the commitment itself, this one at the equity stake and the counterparty's ability to raise money."
+      value: "OpenAI has contracted to purchase an incremental $250 billion of Azure services (Microsoft, 2025-10-28); Amazon committed $50 billion to OpenAI ($15 billion of Series C preferred stock plus a $35 billion equity commitment, 2026-02-27) and had funded all of it by its 10-Q of 2026-07-31 ($13.7 billion of the commitment in Q2 2026 and the remaining $21.3 billion after 2026-06-30); OpenAI announced on 2026-06-08 that it had recently submitted a confidential draft S-1"
+      source: MSFT-8K-2025-10-29#EX-99.2
+      note: "Sources: the $250 billion [src:MSFT-8K-2025-10-29#EX-99.2]; Amazon's commitment terms [src:AMZN-8K-2026-02-27#Item1.01] and funding [src:AMZN-10Q-FY2026Q2]; the S-1 announcement [src:OPENAI-WEB-2026-06-08-1]. Microsoft held about 25% of OpenAI on an as-converted basis at 2026-06-30, down from about 27% after the October 2025 recapitalization [src:MSFT-10K-FY2026#p60] [src:MSFT-8K-2025-10-29#EX-99.2]; it accounts for the stake under the equity method (HLBV) and records its share of changes in OpenAI's net assets, chiefly dilution gains when OpenAI raises capital ($6.5 billion of net gains in FY2026, mainly from the recapitalization) [src:MSFT-10K-FY2026#p60] [src:MSFT-10K-FY2026#p41]. Third-party report of OpenAI documents, not in any filing: OpenAI's Q1 2026 revenue of $5.7 billion and cash burn of $3.7 billion, and Q2 2026 revenue of $6.7 billion, as relayed by the owner's report from press reports [src:MSFT-RPT1-2026-09-17#p8]; background only, not part of this baseline."
+    note: "Breaker seven in section ten of the report. The reflexive chain: OpenAI's valuation supports its funding, its funding supports its purchases from Microsoft, those purchases support Microsoft's RPO and Azure growth, that growth supports Microsoft's capex, and outside money decides how long the chain can hold [src:MSFT-RPT1-2026-09-17#p9]. Other parties: Amazon's Q2 2026 10-Q names OpenAI and the AWS commitment ($38.0 billion, expanded by $100.0 billion over eight years) [src:AMZN-10Q-FY2026Q2]; Oracle's 10-Q for the quarter to 2026-08-31 does not name OpenAI [src:ORCL-10Q-FY2027Q1], and the OpenAI–Oracle agreement (up to 4.5 gigawatts, described as “a partnership that exceeds $300 billion” over five years) is in the joint announcement of OpenAI, Oracle and SoftBank [src:SBG-WEB-2025-09-24-1]. Complements MSFT-L5: that test looks at the commitment itself, this one at the equity stake and the counterparty's ability to raise money."
 
   - id: MSFT-L4
     type: qualitative
@@ -600,9 +634,10 @@ tests:
     effective_from: FY2027Q1
     first_readable: 2027-01
     baseline:
-      value: "The European Commission proposed the Cloud and AI Development Act on 2026-06-03, setting up a four-level sovereignty framework whose top level, read literally, would exclude providers subject to the US CLOUD Act; the Commission says Level 3 has a third-country recognition route, and industry says no major technology country can meet the Article 18 criteria today"
-      source: MSFT-RPT1-2026-09-17#p6
-    note: "Breaker eight in section ten of the report, for the sovereignty-fragmentation erosion path; the signal the report gives is whether Level 3's recognition route is open to US providers in practice, readable progressively over 2027–2029 [src:MSFT-RPT1-2026-09-17#p6]. The three cases of “closed in practice” are this archive's reading, written down in advance: (a) and (b) are closure in law, (c) is closure in fact, since industry says no major technology country can meet the Article 18 criteria today and the route may exist only on paper [src:MSFT-RPT1-2026-09-17#p6]. Neither the time limit in (c) nor the warn_if level comes from the report; both await the owner's confirmation (see todo). first_readable is the start of the report's 2027–2029 readable window. Scale: Level 4 (defense), by the Financial Times' measure, is about 1% of the public procurement market (secondary), and the real battleground is Level 3 [src:MSFT-RPT1-2026-09-17#p6]."
+      value: "The European Commission proposed the Cloud and AI Development Act (COM(2026) 502) on 2026-06-03, setting up four Union assurance levels; the top level requires providers that are not subject to the control of a third country, which, read literally, would exclude providers subject to the US CLOUD Act; for Level 3 the Commission can recognise third countries whose providers may be audited against the Level 3 criteria, under six cumulative conditions in Article 18"
+      source: EC-CADA-2026-06-03
+      note: "Levels in Annex II, the recognition route in Article 18 [src:EC-CADA-2026-06-03]. The text does not name the US CLOUD Act; the exclusion is the report's reading, consistent with the text [src:MSFT-RPT1-2026-09-17#p6] [src:EC-CADA-2026-06-03]. Industry view as relayed by the owner's report (L2 only, no primary data seen): no major technology country can meet the Article 18 criteria today [src:MSFT-RPT1-2026-09-17#p6]."
+    note: "Breaker eight in section ten of the report, for the sovereignty-fragmentation erosion path; the signal the report gives is whether Level 3's recognition route is open to US providers in practice, readable progressively over 2027–2029 [src:MSFT-RPT1-2026-09-17#p6]. The three cases of “closed in practice” are this archive's reading, written down in advance: (a) and (b) are closure in law, (c) is closure in fact, since the industry view relayed by the report (L2 only) is that no major technology country can meet the Article 18 criteria today, in which case the route exists only on paper [src:MSFT-RPT1-2026-09-17#p6]. Neither the time limit in (c) nor the warn_if level comes from the report; both await the owner's confirmation (see todo). first_readable is the start of the report's 2027–2029 readable window. Scale: Level 4 (defense), by a Financial Times measure the report relays without identifying the article, is about 1% of the public procurement market, and the real battleground is Level 3 [src:MSFT-RPT1-2026-09-17#p6]; that measure is L2 only, with no primary data seen, and the Commission's text gives neither a defence scope for Level 4 nor a procurement share [src:EC-CADA-2026-06-03]."
 
   - id: MSFT-L5
     type: qualitative
@@ -621,8 +656,9 @@ tests:
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: OpenAI has committed to buy an incremental $250 billion of Azure services, which, consumed over five years, is about $50 billion a year, half of Azure's full-year FY2026 revenue
-      source: MSFT-RPT1-2026-09-17#p8
+      value: "OpenAI has contracted to purchase an incremental $250 billion of Azure services (Microsoft, 2025-10-28); consumed over five years, that would be about $50 billion a year, about half of Azure's FY2026 revenue ($101.9 billion on the FY2027 definition)"
+      source: MSFT-8K-2025-10-29#EX-99.2
+      note: "The commitment [src:MSFT-8K-2025-10-29#EX-99.2]; Azure's restated FY2026 revenue [src:MSFT-8K-2026-09-02#EX-99.1-slide17]; the five-year consumption period is the report's assumption, and no term is disclosed [src:MSFT-RPT1-2026-09-17#p8]. The amended partnership agreement of 2026-04-27 (Microsoft's IP license now non-exclusive, OpenAI free to serve its products through any cloud provider, the revenue share paid to Microsoft capped and running through 2030) does not mention the $250 billion commitment [src:MSFT-WEB-2026-04-27-1]."
     note: "The second condition of breaker four in section ten of the report, split out from MSFT-Q8 and joined to it by “or”; the report records an extension with unchanged concentration as a worsening of duration, watched separately, which is written here as warn_if [src:MSFT-RPT1-2026-09-17#p11]. The answer often shows up first not in the financial statements but in an 8-K: OpenAI's IPO pricing and any restructuring or impairment of the commitment can appear as an 8-K at any time [src:MSFT-RPT1-2026-09-17#p8], so the test is judged each time a relevant 8-K appears. Complements MSFT-L3: this test looks at the commitment itself, that one at Microsoft's equity stake and OpenAI's ability to raise money."
 
   # ---------- Section ten of the report: watch indicators read every quarter (#1, #2, #5; #3 and #4 are merged into MSFT-Q7 and MSFT-Q4/Q6) ----------
@@ -647,9 +683,9 @@ tests:
       unit: "%"
       period: FY2026Q4 (June quarter, new basis, constant currency)
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p11
-      note: "June-quarter revenue of $29.42 billion [src:MSFT-RPT1-2026-09-17#p11]; full-year FY2026 growth of 41% on the old basis [src:MSFT-RPT1-2026-09-17#p3]."
-    note: "Watch indicator #1 in section ten of the report: the healthy range is not below 30%, and two consecutive quarters below 25% trigger attention [src:MSFT-RPT1-2026-09-17#p11]. Before FY27 Q1, the growth rates the cloud providers report do not share the same numerator (both definitions and periods differ), so they cannot be used to infer market share [src:MSFT-RPT1-2026-09-17#p6]."
+      source: MSFT-8K-2026-09-02#EX-99.1-slide18
+      note: "June-quarter revenue of $29,417 million on the FY2027 definition [src:MSFT-8K-2026-09-02#EX-99.1-slide17]; full-year FY2026 growth of 41% on the old basis (40% in constant currency) [src:MSFT-10K-FY2026#p39] [src:MSFT-8K-2026-09-02#EX-99.1-slide18]."
+    note: "Watch indicator #1 in section ten of the report: the healthy range is not below 30%, and two consecutive quarters below 25% trigger attention [src:MSFT-RPT1-2026-09-17#p11]. The FY2027 Azure definition, restated in the 8-K of 2026-09-02, moves GitHub and other developer cloud services and Security Copilot to Microsoft 365 commercial cloud and Healthcare and Life Sciences cloud to Industry solutions cloud [src:MSFT-8K-2026-09-02#EX-99.1-slide11]. Before FY27 Q1, the growth rates the cloud providers report do not share the same numerator (both definitions and periods differ), so they cannot be used to infer market share [src:MSFT-RPT1-2026-09-17#p6]."
 
   - id: MSFT-Q11
     type: quantitative
@@ -678,7 +714,8 @@ tests:
       unit: "%"
       period: FY2026Q4
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p11
+      source: MSFT-CALL-FY2026Q4
+      note: "Given as a single total on the FY26 Q4 call; 26% at FY2026Q3 [src:MSFT-CALL-FY2026Q4] [src:MSFT-CALL-FY2026Q3]."
     note: "Watch indicator #2 in section ten of the report: the healthy range is not below 15%, and below 10% triggers attention [src:MSFT-RPT1-2026-09-17#p11]. The report warns that the balance excluding OpenAI cannot separate neoclouds from real enterprises, so even if this reading is healthy, the concentration itself remains [src:MSFT-RPT1-2026-09-17#p8]."
 
   - id: MSFT-Q12
@@ -716,13 +753,13 @@ tests:
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: 10
+      value: 8
       unit: pp
-      period: FY2026 (commercial cloud 16% − seats 6%, old basis)
+      period: "FY2026 (Microsoft 365 commercial cloud growth 15% in constant currency − seat growth 7%, both restated on the FY2027 definition)"
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p11
-      note: "The company's FY27 Q1 guidance for Microsoft 365 commercial cloud is about 17% in constant currency (FY27 new basis) [src:MSFT-8K-2026-09-02#EX-99.1-slide21]; the “seat growth of about 7% on the new basis” that the report writes next to it is FY2026's reading restated on the new basis [src:MSFT-RPT1-2026-09-17#p11]; whether the company also guided seat growth is still to be checked (see todo)."
-    note: "Watch indicator #5 in section ten of the report. The arithmetic: about 30 million paid seats × $30 per seat per month × 12 ≈ about $10.8 billion a year of annualized Copilot revenue, 10.6% of M365 commercial cloud's $102 billion, which almost explains the gap of about 10 percentage points between commercial cloud growth and seat growth [src:MSFT-RPT1-2026-09-17#p6]; all three inputs come with caveats (global seats, list price rather than realized price, active-use rates from a US panel) [src:MSFT-RPT1-2026-09-17#p6]. If the roughly $6.9 billion of it that is seats bought but little used churns within a year, the gap narrows to about 4 percentage points [src:MSFT-RPT1-2026-09-17#p6]; a gap still around 10 percentage points means the add-on layer is renewing, and a gap narrowing to within 5 percentage points means that $6.9 billion is churning [src:MSFT-RPT1-2026-09-17#p6]. The healthy range “≥12% / ≥4%” is read as applying to commercial cloud growth and seat growth respectively [src:MSFT-RPT1-2026-09-17#p11]."
+      source: MSFT-8K-2026-09-02#EX-99.1-slide18
+      note: "On the metric's own definition: constant currency, both components on the FY2027 basis [src:MSFT-8K-2026-09-02#EX-99.1-slide18]. In reported currency the gap is 11 percentage points on either basis: 18% − 7% restated, and 17% − 6% as first reported, where 17% is the growth of Microsoft 365 Commercial cloud [src:MSFT-8K-2026-09-02#EX-99.1-slide18] [src:MSFT-10K-FY2026#p38]; in constant currency on the old basis it is 8 (14% − 6%) [src:MSFT-8K-2026-09-02#EX-99.1-slide18]. The gaps are taken from the company's whole-percent growth rates. The company's FY27 Q1 guidance for Microsoft 365 commercial cloud, about 17% in constant currency, is on the same basis as the metric [src:MSFT-8K-2026-09-02#EX-99.1-slide21]; the “seat growth of about 7% on the new basis” the report writes next to it is FY2026's restated reading [src:MSFT-8K-2026-09-02#EX-99.1-slide18], and the FY27 Q1 outlook has no seat item [src:MSFT-8K-2026-09-02#EX-99.1-slide21]. The first reading comes with the FY27 Q1 results in late October 2026."
+    note: "Watch indicator #5 in section ten of the report. The report sized the add-on layer this way: over 30 million paid Microsoft 365 Copilot seats at FY2026Q4 [src:MSFT-8K-2026-07-29#EX-99.1] × $30 per seat per month, the Enterprise list price (Microsoft 365 Copilot Business lists at $21) [src:MSFT-WEB-2026-09-25-1] × 12 ≈ $10.8 billion a year at list price (a floor on seats and a ceiling on price, as F30 notes), 10.6% of the $102.0 billion FY2026 revenue of Microsoft 365 Commercial products and cloud services, a line that also contains on-premises products because Microsoft discloses no Microsoft 365 Commercial cloud revenue in dollars [src:MSFT-10K-FY2026#Note18]. The report put the gap between commercial cloud growth and seat growth at about 10 percentage points and read the add-on layer as almost explaining it [src:MSFT-RPT1-2026-09-17#p6]; on the company's figures the FY2026 gap is 8 points on the metric's definition (11 in reported currency), so the baseline sits three points above the fail line of 5, not five. The inputs come with caveats: seats are global, $30 is a list price rather than the realized price, and the active-use rate comes from a U.S. vendor panel [src:MSFT-RPT1-2026-09-17#p6]. In the report's scenario, if the roughly $6.9 billion of it that is seats bought but little used churns within a year, the gap narrows from its 10 points to about 4 [src:MSFT-RPT1-2026-09-17#p6]; that $6.9 billion applies the 35.8% active-use rate of Recon Analytics' U.S. panel to global seats (L2 only, no primary data seen) [src:MSFT-WEB-2026-02-03-1]. The report reads a gap that holds as the add-on layer renewing, and a gap narrowing to within 5 percentage points as that $6.9 billion churning [src:MSFT-RPT1-2026-09-17#p6]. The healthy range “≥12% / ≥4%” is read as applying to commercial cloud growth and seat growth respectively [src:MSFT-RPT1-2026-09-17#p11]."
 
   # ---------- Added by this archive (origin: manual): two readings that have a dividing line in section seven of the report but are not listed in section ten ----------
   - id: MSFT-Q13
@@ -745,8 +782,8 @@ tests:
       unit: "%"
       period: FY2026
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p5
-      note: "12.3% in FY2021, 18.1% in FY2024 and 22.9% in FY2025 [src:MSFT-RPT1-2026-09-17#p5]."
+      source: MSFT-10K-FY2026#p53
+      note: "12.3% in FY2021 [src:MSFT-10K-FY2021#Item8], 18.1% in FY2024 and 22.9% in FY2025 [src:MSFT-10K-FY2026#p53] [src:MSFT-10K-FY2026#p50]."
     note: "The dividing variable of bear argument one in section seven of the report: if capex returns below 20% of revenue after FY2028, the depreciation curve peaks around FY2030 and conversion returns to 70% [src:MSFT-RPT1-2026-09-17#p8]; if it stays above 30%, the bear case is right [src:MSFT-RPT1-2026-09-17#p8]. The report does not list it among section ten's thesis breakers, so it is recorded here only as watch; the thresholds come from the report, and reading “after FY2028” as starting from the FY2029 annual report is this archive's reading (see todo). Same basis as section ten: cash capex excluding finance leases [src:MSFT-RPT1-2026-09-17#p4]. This is the direct test of the “capex cycle comes down” half of pillar P4; the other half (conversion) is tracked by MSFT-Q4 and MSFT-Q6."
 
   - id: MSFT-Q14
@@ -770,13 +807,13 @@ tests:
     effective_from: FY2027Q1
     first_readable: 2026-10
     baseline:
-      value: 92
+      value: 92.4
       unit: "%"
       period: FY2026 (purchase commitments due in FY2027 ÷ FY2026 operating cash flow)
       as_of: 2026-06-30
-      source: MSFT-RPT1-2026-09-17#p8
-      note: "Purchase commitments of $194.1 billion, of which $169 billion are due in FY2027 [src:MSFT-RPT1-2026-09-17#p8]; FY2026 operating cash flow of $182.9 billion [src:MSFT-RPT1-2026-09-17#p8]."
-    note: "One of the three readings listed in section seven of the report that can change the judgment before 2028: the $743.8 billion table of contractual obligations, which will get heavier [src:MSFT-RPT1-2026-09-17#p8], is the only one of the three interest-rate transmission paths that lands directly on this company, and it can be read in every 10-Q of FY2027 [src:MSFT-RPT1-2026-09-17#p9]. The other two readings: interest rates go only into the valuation (private repository), and OpenAI's 8-Ks are tracked by MSFT-L3 and MSFT-L5. The threshold (commitments due within a year exceeding a year's operating cash flow) was written down in advance by this archive; the report gives none, and it awaits the owner's confirmation (see todo); if the 10-Q does not disclose purchase commitments by year due, this test can only be read once a year from the 10-K. The report also notes that for leases signed after September 2026, the pricing benchmark has moved from a 10-year yield of about 4.2% a year earlier to above 5.0% [src:MSFT-RPT1-2026-09-17#p9]; this is recorded in updates, with no threshold."
+      source: MSFT-10K-FY2026#p44
+      note: "Purchase commitments of $194.1 billion at 2026-06-30, of which $169.0 billion are due in FY2027 [src:MSFT-10K-FY2026#p44]; FY2026 operating cash flow of $182.9 billion [src:MSFT-10K-FY2026#p53]; $169,008 million ÷ $182,935 million = 92.4% (this archive's calculation) [src:MSFT-10K-FY2026#p44] [src:MSFT-10K-FY2026#p53]."
+    note: "One of the three readings listed in section seven of the report that can change the judgment before 2028: the $743.8 billion table of contractual obligations at 2026-06-30 [src:MSFT-10K-FY2026#p44], which the report expects to get heavier [src:MSFT-RPT1-2026-09-17#p8], is the only one of the three interest-rate transmission paths that lands directly on this company, and it can be read in every 10-Q of FY2027 [src:MSFT-RPT1-2026-09-17#p9]. The other two readings: interest rates go only into the valuation (private repository), and OpenAI's 8-Ks are tracked by MSFT-L3 and MSFT-L5. The threshold (commitments due within a year exceeding a year's operating cash flow) was written down in advance by this archive; the report gives none, and it awaits the owner's confirmation (see todo); if the 10-Q does not disclose purchase commitments by year due, this test can only be read once a year from the 10-K. The report also notes that for leases signed after September 2026 the pricing benchmark has moved [src:MSFT-RPT1-2026-09-17#p9]: the 10-year Treasury par yield was 4.16% on 2025-09-24 and 5.18% on 2026-09-24 [src:UST-PARYIELD-2025-09-24] [src:UST-PARYIELD-2026-09-24], though it was below 5.0% on some days in between, such as 4.94% on 2026-09-17 [src:UST-PARYIELD-2026-09-24]; this is recorded in updates, with no threshold."
 
   # ---------- _common: staleness tests ----------
   - id: MSFT-S1
@@ -811,22 +848,21 @@ tests:
     section: bear_case
     max_age_quarters: 2
     effective_from: FY2027Q1
-    note: "Section twelve of the report considers cash conversion after the capex cycle to be the thinnest evidence [src:MSFT-RPT1-2026-09-17#p12]. The high conversion was achieved in years when capex was a low share of revenue: it never exceeded 14% in FY2021–FY2023 [src:MSFT-RPT1-2026-09-17#p4]; in FY2024, with capex at 18.1% of revenue, conversion was still 84.0% [src:MSFT-RPT1-2026-09-17#p5], and section twelve counts FY2024 among the years below 14%, which disagrees with section three (see todo) [src:MSFT-RPT1-2026-09-17#p12]. The first point at which it can be tested is the annual report of July 2028 [src:MSFT-RPT1-2026-09-17#p13]."
+    note: "Section twelve of the report considers cash conversion after the capex cycle to be the thinnest evidence [src:MSFT-RPT1-2026-09-17#p12]. The high conversion was achieved in years when cash capex was a low share of revenue: at most 13.3% in FY2021–FY2023 [src:MSFT-10K-FY2023#Item8]; in FY2024, with cash capex at 18.1% of revenue, conversion was still 83.0% (free cash flow of $74.1 billion ÷ adjusted net income of $89.3 billion, on the current definition that the FY2025 and FY2026 readings use), or 84.0% on the non-GAAP basis reported at the time, when FY2024 had no adjustments [src:MSFT-10K-FY2026#p42] [src:MSFT-10K-FY2026#p53] [src:MSFT-8K-2024-07-30#EX-99.1]. The first point at which it can be tested is the annual report of July 2028 [src:MSFT-RPT1-2026-09-17#p13]."
 
 todo:
   - Register the FY27 Q1 10-Q and earnings 8-K (around the end of October 2026) and the proxy statement for FY2026 (around October 2026) once they are published.
-  - "The history on the new basis is still to be read: Exhibit 99.1 of the 8-K of 2026-09-02 restated FY2026 (Azure quarterly dollar revenue and growth, commercial seats on the new basis, Agents and Infra operating margin). Check the report's readings against it item by item, such as Azure's June quarter at $29.42 billion and +42%, and seats at +7% [src:MSFT-RPT1-2026-09-17#p11], and confirm where the consecutive counts of MSFT-Q5, MSFT-Q9, MSFT-Q10 and MSFT-Q12 start, and whether the Microsoft Cloud gross margin is restated on the new basis."
+  - "The history on the new basis: Exhibit 99.1 of the 8-K of 2026-09-02 restates FY2026 on the FY2027 basis, and the readings used here were checked against it: Azure's June quarter at $29,417 million and +42%, seats at +7% [src:MSFT-8K-2026-09-02#EX-99.1-slide17] [src:MSFT-8K-2026-09-02#EX-99.1-slide18], and Agents and Infra at $136,365 million of operating income on $268,127 million of revenue [src:MSFT-8K-2026-09-02#EX-99.1-slide15]; the exhibit restates no Microsoft Cloud gross margin (see MSFT-Q7). Still open: confirm with the first FY2027 filing that the consecutive counts of MSFT-Q5, MSFT-Q9, MSFT-Q10 and MSFT-Q12 start from FY27 Q1."
   - MSFT-Q2 (return on invested capital) and MSFT-Q3 (diluted shares year on year) have no report readings; their baselines are to be backfilled from the XBRL of the FY2026 annual report.
-  - "Incremental return on capital: the report's main text says the 13% to 39% was calculated as the company-wide increase in after-tax operating profit over three years of capex [src:MSFT-RPT1-2026-09-17#p4], while the appendix says the range was calculated on two bases, the whole company and Intelligent Cloud [src:MSFT-RPT1-2026-09-17#p13]; the owner is to confirm which basis gives which end. The report gives only an upgrade line, above 20% lifting capital allocation to B+ [src:MSFT-RPT1-2026-09-17#p3], and no downside threshold; whether to add a separate incremental-return test will be decided at the next update. Invested capital in the registry's roic and incremental_roic_3y excludes lease liabilities in both cases; to see the data centers' returns, a metric_def that counts leases in invested capital is needed."
-  - "Verify whether the company discloses commercial RPO growth excluding OpenAI every quarter (MSFT-Q8, MSFT-Q11); if it stops, the two tests cannot be judged and will need to be rewritten as total RPO growth plus the concentration disclosure. Also check against the call transcript whether “the portion to be recognized beyond 12 months grew 112% year on year” excludes OpenAI (see F18) [src:MSFT-RPT1-2026-09-17#p8]."
-  - "Guidance to be checked against the FY26 Q4 call transcript: one, whether the company ever guided seat growth on the new basis (the number the report writes next to the guidance is FY2026's restated reading; the FY27 Q1 outlook in Exhibit 99.1 of the 8-K of 2026-09-02 has no such item); two, whether Microsoft publishes medium-term targets, and on which calls the full-year outlook is given and updated (MSFT-L1's working assumption)."
-  - "Three inconsistencies inside the report, to be checked against the 10-K: the Productivity and Business Processes segment's revenue growth is 16% in section two and 15% in section three [src:MSFT-RPT1-2026-09-17#p3] [src:MSFT-RPT1-2026-09-17#p4], and this archive uses neither; FY2016 cash capex is $8.9 billion, 9.8% of revenue, in the text [src:MSFT-RPT1-2026-09-17#p4] and $8.3 billion, 9.1%, in the table [src:MSFT-RPT1-2026-09-17#p5], and this archive uses neither; section twelve counts FY2024 among the years when capex was below 14% of revenue [src:MSFT-RPT1-2026-09-17#p12], while section three's text and table both give 18.1% for FY2024 [src:MSFT-RPT1-2026-09-17#p4] [src:MSFT-RPT1-2026-09-17#p5], and this archive uses 18.1%."
+  - "Incremental return on capital: this archive's company-wide calculation (F29) replaces the report's 13%–39% range for reading the capital-allocation upgrade condition, a reading above 20% [src:MSFT-RPT1-2026-09-17#p3]. On that method the FY2023–FY2026 reading is 23.7% on same-window capex and 38.9% with a one-year lag, both above 20% [src:MSFT-10K-FY2026#p50] [src:MSFT-10K-FY2025#Item8] [src:MSFT-10K-FY2026#p53]; whether this moves the capital allocation rating (B) is a rating judgment for the next review of that dimension, not made in this factual revision. The report gives only an upgrade line and no downside threshold; whether to add a separate incremental-return test will be decided at the next update. Invested capital in the registry's roic and incremental_roic_3y excludes lease liabilities in both cases; to see the data centers' returns, a metric_def that counts leases in invested capital is needed."
+  - "Verify each quarter that the company still discloses commercial RPO growth excluding OpenAI (MSFT-Q8, MSFT-Q11); if it stops, the two tests cannot be judged and will need to be rewritten as total RPO growth plus the concentration disclosure. The company gives it only as a total (+25% at FY2026Q4) [src:MSFT-CALL-FY2026Q4]. The 112% growth of the portion recognized beyond 12 months includes OpenAI: it follows “RPO, including OpenAI” in the same passage [src:MSFT-CALL-FY2026Q4], and the 10-K shares agree (about 70% of $684 billion at 2026-06-30 against about 60% of $375 billion a year earlier) [src:MSFT-10K-FY2026#p77] [src:MSFT-10K-FY2025#Item8]; no split of that portion excluding OpenAI is disclosed."
+  - "Guidance cadence: the FY26 Q4 call gives no seat-growth guidance [src:MSFT-CALL-FY2026Q4], and the FY27 Q1 outlook in Exhibit 99.1 of the 8-K of 2026-09-02 has no seat item [src:MSFT-8K-2026-09-02#EX-99.1-slide21]. Still to be checked against the transcripts of FY2027: whether Microsoft publishes medium-term targets, and on which calls the full-year outlook is given and updated (MSFT-L1's working assumption)."
   - "The following are this archive's readings of the report's wording, or thresholds it added itself, awaiting the owner's confirmation before results come in: MSFT-Q4's healthy line “recovery after FY2027” is judged as “not above 52% from FY2027 on”, the other reading being FY2028 above FY2027, to be reviewed after the FY2027 annual report [src:MSFT-RPT1-2026-09-17#p11]; MSFT-Q12's healthy range “≥12% / ≥4%” is read as applying to commercial cloud growth and seat growth respectively [src:MSFT-RPT1-2026-09-17#p11]; MSFT-Q9's “growing” is judged by year-on-year growth disclosed in the same period's materials; the $150 billion in MSFT-L2 (b) is judged against FY2027 cash capex (excluding finance leases) [src:MSFT-RPT1-2026-09-17#p12]; MSFT-L4's “closed in practice” has three cases, of which the time limit in (c) and the warn_if level were added by this archive; MSFT-L1's warn_if level was added by this archive; MSFT-Q13 reads “after FY2028” as starting from the FY2029 annual report; MSFT-Q14's threshold (purchase commitments due within a year exceeding operating cash flow over the latest four quarters) was set by this archive."
   - "MSFT-Q9's event leg (op: event) stays in a quantitative test, and the requirements for an independent model, sources and excerpts are written only in the rule's note and not enforced by the schema. If the spec allows judge / evidence on an event sub-rule, move them there; otherwise consider turning the whole of MSFT-Q9 into a qualitative test."
-  - MSFT-Q4 changed the template's metric (fcf_conversion replaced by fcf_to_non_gaap_net_income), which goes beyond the template README's permission to change thresholds only; the integration step is to record this in a decision record. Once FY2026 GAAP net income is backfilled, an XBRL-computable fcf_conversion test can be added for comparison, with its threshold set then.
+  - "MSFT-Q4 changed the template's metric (fcf_conversion replaced by fcf_to_non_gaap_net_income), which goes beyond the template README's permission to change thresholds only; the integration step is to record this in a decision record. The company's non-GAAP definition changes over time (F11, F28), so each annual reading of MSFT-Q4 and MSFT-Q6 is taken on the definition in force for that year and names it. Once FY2026 GAAP net income is backfilled, an XBRL-computable fcf_conversion test can be added for comparison, with its threshold set then."
   - "The cost rule during candidacy: DESIGN and decisions/0002 say candidate companies run only quantitative tests and company manager drafts, so while MSFT is a candidate, none of the qualitative tests MSFT-L1 to MSFT-L5 will run, although MSFT-L2, MSFT-L3, MSFT-L4 and MSFT-L5 are thesis breakers, and MSFT-Q9's event leg also needs a model's judgment. HQ is to decide whether to exempt qualitative tests with severity: breaker from the candidate cost rule (model choice is an L2 matter) and record it in a decision record; until then, the company manager checks these tests for new disclosures in every update draft."
   - "depends_on has industries/semiconductor-foundry added (reasons in the comment at the top of the file): the report itself does not rely on the economics of the foundry industry; this is a monitoring link added by this archive, for the owner to confirm or withdraw; if the integration step thinks it necessary, it writes a decision record."
-  - "The say-do ledger (ledger.yml) already records the five management commitments in the report that have a date and a source; the first (the FY27 Q1 commercial cloud guidance) settles around the end of October 2026, so each entry's settlement criteria (the tolerance for approximate figures, the range of “high teens”, the Xbox definition) must be written in phase 1, before each entry settles, rather than waiting for the phase 3 ledger rules."
+  - "The say-do ledger (ledger.yml) already records the five management commitments in the report that have a date and a source; the first (the FY27 Q1 commercial cloud guidance) settles around the end of October 2026, so each entry's settlement criteria (the tolerance for approximate figures, the range of “high teens”, the XBOX measure behind MSFT-MGT-04's “return to growth”) must be written in phase 1, before each entry settles, rather than waiting for the phase 3 ledger rules."
   - "The report's supplementary observations (not triggers, background only), to be recorded item by item in the phase 1 updates: whether the company starts disclosing Copilot active-use or renewal rates (stopping disclosure of the seat count would itself be a signal); the direction of the three items coaching, feedback and incentives in the annual manager survey (the next one around the middle of 2027); whether the long-term incentives in the FY2026 proxy statement (October 2026) include a return-on-capital metric."
-  - "The culture dimension has no testable third-party series: the two internal surveys are the company's self-assessment, relayed by the media (secondary), and the company does not disclose employee retention or internal promotion rates; the only external check is the CSRB's in 2024, which reached the opposite conclusion."
-  - Most readings on OpenAI's side (revenue, cash burn, long-term compute commitments) are secondary; replace them with primary documents once OpenAI's S-1 is public.
+  - "The culture dimension has no testable third-party series: the two internal surveys are the company's self-assessment, relayed by the media (secondary) [src:MSFT-RPT1-2026-09-17#p7]; the company does not disclose employee retention or internal promotion rates [src:MSFT-10K-FY2026#p9]; the only external check is the Cyber Safety Review Board's review of the summer 2023 Exchange Online intrusion (dated 2024-03-20, released 2024-04-02), which concluded that Microsoft's security culture was inadequate and requires an overhaul [src:CSRB-2024-04-02], the opposite of the company's self-assessment in the report's reading [src:MSFT-RPT1-2026-09-17#p7]."
+  - "The readings on OpenAI's own finances (revenue, cash burn, long-term compute commitments) are third-party reports of OpenAI documents, not in any filing; replace them with primary documents once OpenAI's S-1 is public."

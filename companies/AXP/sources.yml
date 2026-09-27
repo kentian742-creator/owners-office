@@ -1,5 +1,6 @@
 # AXP source tag table (thesis-ci spec §3; schema: spec/schemas/sources.schema.json)
 # Locator convention: in AXP-RPT1-2026-09-17#pN, N is the report's PDF page number (the same as the page markers in the text extraction).
+# For 10-K and 10-Q filings, #pN is the filing's printed page number; #ItemN, #ExN and #EX-99.N name an item or exhibit, and #Ex13-p21 a page within an exhibit.
 sources:
   - tag: AXP-RPT1-2026-09-17
     kind: report
@@ -68,7 +69,7 @@ sources:
     filed: 2023-02-10
     url: https://www.sec.gov/Archives/edgar/data/4962/000000496223000006/0000004962-23-000006-index.htm
     primary: true
-    note: The report uses it for management's discussion of how the 2022 rate increases affected results.
+    note: "The report uses it for management's discussion of how the 2022 rate increases affected results. The archive also cites it for the co-brand share of 2022 (a share of worldwide network volumes, p24), the average discount rate, last disclosed here (Table 5, p47), and the 2020–2022 share repurchases (p139)."
 
   - tag: DAL-10K-FY2025
     kind: filing
@@ -87,5 +88,429 @@ sources:
     title: "FRED series CORCCACBN: net charge-off rate on credit card loans, all commercial banks (not seasonally adjusted)"
     url: https://fred.stlouisfed.org/series/CORCCACBN
     date: 2026-08-25
+    primary: false
+    note: "A convenience copy of the Federal Reserve Board's charge-off release (FRB-CHGOFF-2026-08-25), the primary source of these rates; FRED republishes the Board's figures, and the readings the archive uses agree in both. The report uses the quarterly series as updated on 2026-08-25; AXP-Q7 and AXP-Q11 may read the industry side from either, and the archive cites the Board's release."
+
+  # Added 2026-09-27 in the revision after the first fact audit (HQ rulings A1, A2, A12): the primary documents behind the corrections.
+  - tag: AXP-10K-FY1993
+    kind: filing
+    title: American Express Company annual report for fiscal 1993 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY1993
+    accession: 0000004962-94-000006
+    filed: 1994-03-31
+    url: https://www.sec.gov/Archives/edgar/data/4962/0000004962-94-000006-index.htm
     primary: true
-    note: The report uses the quarterly series as updated on 2026-08-25; the industry side of AXP-Q7 and AXP-Q11 is judged on it.
+    note: "Exhibit 13 (selected financial data): net income of $1,157 million in 1989, $181 million in 1990, $789 million in 1991 and $461 million in 1992. Exhibit 11: discontinued operations (the Lehman brokerage and investment-banking business) lost $967 million after tax in 1990 and $149 million in 1992. The earliest AXP annual report on EDGAR."
+
+  - tag: AXP-10K405-FY2001
+    kind: filing
+    title: American Express Company annual report for fiscal 2001 (Form 10-K405)
+    issuer_cik: "0000004962"
+    form: 10-K405
+    period: FY2001
+    accession: 0000950117-02-000727
+    filed: 2002-04-01
+    url: https://www.sec.gov/Archives/edgar/data/4962/000095011702000727/0000950117-02-000727-index.htm
+    primary: true
+    note: "Exhibit 13 (annual report, MD&A): 2001 net income of $1.31 billion, 53 percent lower than the $2.81 billion of 2000."
+
+  - tag: AXP-10K-FY2009
+    kind: filing
+    title: American Express Company annual report for fiscal 2009 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2009
+    accession: 0001193125-10-041232
+    filed: 2010-02-26
+    url: https://www.sec.gov/Archives/edgar/data/4962/000119312510041232/0001193125-10-041232-index.htm
+    primary: true
+    note: "Exhibit 13 (financial statements; also in the filing's XBRL): net income of $4,012 million in 2007 and $2,130 million in 2009; diluted EPS of $3.34 and $1.54."
+
+  - tag: AXP-10K-FY2014
+    kind: filing
+    title: American Express Company annual report for fiscal 2014 (Form 10-K, with Exhibit 13)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2014
+    accession: 0001193125-15-059931
+    filed: 2015-02-24
+    url: https://www.sec.gov/Archives/edgar/data/4962/000119312515059931/0001193125-15-059931-index.htm
+    primary: true
+    note: "Exhibit 13, p21: U.S. Costco co-brand accounts generated about 8 percent of worldwide billed business in 2014 and held about 20 percent of worldwide Card Member loans at 2014-12-31. 10-K Item 1A, p73: the co-brand relationships with Costco in Canada and with JetBlue were not renewed."
+
+  - tag: AXP-10K-FY2016
+    kind: filing
+    title: American Express Company annual report for fiscal 2016 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2016
+    accession: 0001193125-17-047588
+    filed: 2017-02-17
+    url: https://www.sec.gov/Archives/edgar/data/4962/000119312517047588/0001193125-17-047588-index.htm
+    primary: true
+    note: "Item 6 (selected financial data, p35): total revenues net of interest expense of $34,188 million (2014), $32,818 million (2015) and $32,119 million (2016), as originally reported."
+
+  - tag: AXP-10K-FY2017
+    kind: filing
+    title: American Express Company annual report for fiscal 2017 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2017
+    accession: 0000004962-18-000032
+    filed: 2018-02-16
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496218000032/0000004962-18-000032-index.htm
+    primary: true
+    note: "Item 7: 2017 net income of $2.7 billion and diluted EPS of $2.97, against $5.4 billion and $5.65 in 2016; 2017 results include a $2.6 billion tax charge related to the Tax Act."
+
+  - tag: AXP-10K-FY2019
+    kind: filing
+    title: American Express Company annual report for fiscal 2019 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2019
+    accession: 0000004962-20-000030
+    filed: 2020-02-13
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496220000030/0000004962-20-000030-index.htm
+    primary: true
+    note: "Item 1, p3: during 2019 the company signed an 11-year renewal extending the Delta co-brand relationship through the end of 2029. Item 6, p36: 2016 revenue restated under the new revenue recognition standard; 2015 amounts not restated."
+
+  - tag: AXP-10K-FY2021
+    kind: filing
+    title: American Express Company annual report for fiscal 2021 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2021
+    accession: 0000004962-22-000008
+    filed: 2022-02-11
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496222000008/0000004962-22-000008-index.htm
+    primary: true
+    note: "Consolidated statements of income, p92: net income of $6,759 million (2019) and $3,135 million (2020); diluted EPS of $7.99 and $3.77."
+
+  - tag: AXP-10K-FY2023
+    kind: filing
+    title: American Express Company annual report for fiscal 2023 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2023
+    accession: 0000004962-24-000013
+    filed: 2024-02-09
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496224000013/0000004962-24-000013-index.htm
+    primary: true
+    note: "Item 1A, p24: co-brand portfolios were about 21 percent of worldwide network volumes in 2023. Table 5, p48: network volumes and billed business for 2023 and 2022. p64: $5.3 billion returned to shareholders in 2023, about 62 percent of total capital generated."
+
+  - tag: AXP-10K-FY2024
+    kind: filing
+    title: American Express Company annual report for fiscal 2024 (Form 10-K)
+    issuer_cik: "0000004962"
+    form: 10-K
+    period: FY2024
+    accession: 0000004962-25-000016
+    filed: 2025-02-07
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496225000016/0000004962-25-000016-index.htm
+    primary: true
+    note: "Item 1A, p25: co-brand portfolios were about 25 percent of worldwide billed business in 2024 (the first 10-K to use billed business rather than network volumes). p66: $7.9 billion returned to shareholders in 2024, about 76 percent of total capital generated."
+
+  - tag: AXP-10Q-FY2019Q2
+    kind: filing
+    title: American Express Company quarterly report for the second quarter of 2019 (Form 10-Q)
+    issuer_cik: "0000004962"
+    form: 10-Q
+    period: FY2019Q2
+    accession: 0000004962-19-000051
+    filed: 2019-07-23
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496219000051/0000004962-19-000051-index.htm
+    primary: true
+    note: "Consolidated statements of income, p1: net card fees of $988 million in the three months ended 2019-06-30."
+
+  - tag: AXP-8K-2009-01-09
+    kind: filing
+    title: American Express Company 8-K on the sale of preferred shares to the U.S. Treasury under the Capital Purchase Program
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: "2009-01-07"
+    accession: 0000004962-09-000002
+    filed: 2009-01-09
+    date: 2009-01-09
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496209000002/0000004962-09-000002-index.htm
+    primary: true
+    note: "3,388,890 shares of fixed-rate cumulative perpetual preferred stock sold to the Treasury for $3,388,890,000 under the TARP Capital Purchase Program (event date 2009-01-07)."
+
+  - tag: AXP-8K-2015-02-12
+    kind: filing
+    title: American Express Company 8-K announcing the end of the U.S. Costco co-brand and acceptance agreements (Exhibit 99.1 press release)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: "2015-02-12"
+    accession: 0000004962-15-000007
+    filed: 2015-02-12
+    date: 2015-02-12
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496215000007/0000004962-15-000007-index.htm
+    primary: true
+    note: The U.S. co-brand and merchant acceptance agreements with Costco were set to end on 2016-03-31.
+
+  - tag: AXP-8K-2015-10-21
+    kind: filing
+    title: American Express Company 8-K with third-quarter 2015 results (Exhibit 99.1 press release)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: FY2015Q3
+    accession: 0000004962-15-000094
+    filed: 2015-10-21
+    date: 2015-10-21
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496215000094/0000004962-15-000094-index.htm
+    primary: true
+    note: "The CEO's statement that the outlook, first shared in February 2015, to return to EPS growth in 2016 and to the 12 to 15 percent target range in 2017 remained appropriate."
+
+  - tag: AXP-8K-2016-01-21
+    kind: filing
+    title: American Express Company 8-K with fourth-quarter and full-year 2015 results (Exhibit 99.1 press release)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: FY2015Q4
+    accession: 0000004962-16-000116
+    filed: 2016-01-21
+    date: 2016-01-21
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496216000116/0000004962-16-000116-index.htm
+    primary: true
+    note: "\"For 2017, we are now targeting EPS of at least $5.60\": the 12 to 15 percent EPS growth target is replaced by a 2017 EPS target."
+
+  - tag: AXP-8K-2024-07-19
+    kind: filing
+    title: American Express Company 8-K with second-quarter 2024 results (Exhibit 99.2 statistical tables)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: FY2024Q2
+    accession: 0000004962-24-000051
+    filed: 2024-07-19
+    date: 2024-07-19
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496224000051/0000004962-24-000051-index.htm
+    primary: true
+    note: "Exhibit 99.2: Card Member loans and receivables and their credit loss reserves for Q2 2023 to Q2 2024, from which the archive computes the combined reserve rate (2.66% at 2023-06-30) on the basis the company has used since Q1 2026; reserve as a % of Card Member loans was 4.1% at 2024-06-30."
+
+  - tag: AXP-8K-2025-01-16
+    kind: filing
+    title: American Express Company 8-K on the resolution of investigations into historical small-business sales practices (Item 8.01)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: "2025-01-16"
+    accession: 0000004962-25-000005
+    filed: 2025-01-16
+    date: 2025-01-16
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496225000005/0000004962-25-000005-index.htm
+    primary: true
+    note: "Agreements with the Department of Justice and an agreement in principle with Federal Reserve staff over sales practices for certain U.S. small business customers, which the company ended in 2021 or earlier; after crediting, about $230 million in total."
+
+  - tag: AXP-8K-2026-01-30
+    kind: filing
+    title: American Express Company 8-K with fourth-quarter 2025 results (Exhibit 99.1 press release)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: FY2025Q4
+    accession: 0000004962-26-000037
+    filed: 2026-01-30
+    date: 2026-01-30
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496226000037/0000004962-26-000037-index.htm
+    primary: true
+    note: "First statement of the fiscal 2026 guidance: revenue growth of 9% to 10% and EPS of $17.30 to $17.90."
+
+  - tag: AXP-8K-2026-04-23
+    kind: filing
+    title: American Express Company 8-K with first-quarter 2026 results (Exhibit 99.1 press release)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: FY2026Q1
+    accession: 0000004962-26-000188
+    filed: 2026-04-23
+    date: 2026-04-23
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496226000188/0000004962-26-000188-index.htm
+    primary: true
+    note: "Fiscal 2026 guidance reaffirmed: revenue growth of 9 to 10 percent and EPS of $17.30 to $17.90."
+
+  - tag: AXP-8K-2026-09-15
+    kind: filing
+    title: American Express Company 8-K with monthly U.S. Consumer and Small Business credit statistics for June to August 2026 (Item 7.01)
+    issuer_cik: "0000004962"
+    form: 8-K
+    period: "2026-09-15"
+    accession: 0000004962-26-000353
+    filed: 2026-09-15
+    date: 2026-09-15
+    url: https://www.sec.gov/Archives/edgar/data/4962/000000496226000353/0000004962-26-000353-index.htm
+    primary: true
+    note: "Footnote (b): in June 2026 the company sold previously written-off Card balances; the proceeds lowered June's principal-only net write-off rate by about 0.3% for U.S. Consumer and 0.1% for U.S. Small Business."
+
+  - tag: AXP-DEF14A-2018-03-19
+    kind: proxy
+    title: American Express Company proxy statement for the 2018 annual meeting (Form DEF 14A)
+    issuer_cik: "0000004962"
+    form: DEF 14A
+    period: "2018"
+    accession: 0001206774-18-000866
+    filed: 2018-03-19
+    date: 2018-03-19
+    url: https://www.sec.gov/Archives/edgar/data/4962/000120677418000866/0001206774-18-000866-index.htm
+    primary: true
+    note: "The Board appointed Stephen J. Squeri CEO and elected him Chairman, each effective 2018-02-01."
+
+  - tag: AXP-DEF14A-2026-03-25
+    kind: proxy
+    title: American Express Company proxy statement for the 2026 annual meeting (Form DEF 14A)
+    issuer_cik: "0000004962"
+    form: DEF 14A
+    period: "2026"
+    accession: 0001104659-26-034163
+    filed: 2026-03-25
+    date: 2026-03-25
+    url: https://www.sec.gov/Archives/edgar/data/4962/000110465926034163/0001104659-26-034163-index.htm
+    primary: true
+    note: "Executive biographies: Mr. Squeri joined American Express in 1985 and has over 40 years of tenure; Mr. Le Caillec (CFO since 2023) joined in 1997."
+
+  - tag: DAL-10Q-FY2026Q2
+    kind: filing
+    title: Delta Air Lines quarterly report for the second quarter of 2026 (Form 10-Q)
+    issuer_cik: "0000027904"
+    form: 10-Q
+    period: FY2026Q2
+    accession: 0000027904-26-000031
+    filed: 2026-07-10
+    url: https://www.sec.gov/Archives/edgar/data/27904/000002790426000031/0000027904-26-000031-index.htm
+    primary: true
+    note: "Item 2 (MD&A, financial condition and liquidity): remuneration from American Express of $4.5 billion in the six months ended 2026-06-30, up 13% on a year earlier, and $2.4 billion in the June quarter. It gives no full-year 2026 figure."
+
+  - tag: AXP-CALL-FY2026Q2
+    kind: presentation
+    title: American Express second-quarter 2026 earnings conference call presentation (slides, 2026-07-24)
+    date: 2026-07-24
+    url: https://s26.q4cdn.com/747928648/files/doc_earnings/2026/q2/presentation/Q2-2026-Earnings-Presentation.pdf
+    primary: true
+    note: "Company-hosted slides for the call of 2026-07-24 (live audio, slides and replay on the investor relations site, https://ir.americanexpress.com/events/event-details/2026/Q2-2026-American-Express-Earnings-Conference-Call/default.aspx; no transcript is posted). Slide 9 (#p9): 75% of global new accounts (excluding Corporate) acquired on fee-paying products in Q2 2026. The slides are primary for what is on them; the audio was not transcribed, so statements heard only on the call are labelled wherever used."
+
+  - tag: DAL-CALL-FY2026Q2
+    kind: web
+    title: Delta Air Lines June quarter 2026 earnings call, webcast (company investor relations website)
+    date: 2026-07-10
+    url: https://ir.delta.com/news/news-details/2026/Delta-Air-Lines-Announces-Webcast-of-June-Quarter-2026-Financial-Results/default.aspx
+    primary: true
+    note: "The call and webcast took place on 2026-07-10 at 10 a.m. ET, with a replay at ir.delta.com. The webcast was not transcribed in this run; Delta's expectation of $9 billion of American Express remuneration in 2026 is known from third-party write-ups of the call and from the owner's report, is not in Delta's filings, and is labelled as such wherever it is used; it is not used as a test baseline."
+
+  - tag: AXP-WEB-2026-04-14-1
+    kind: press_release
+    title: "American Express press release: American Express Debuts Agentic Commerce Experiences (ACE) Developer Kit and Announces Industry-First Protection for Registered Agent Purchases"
+    date: 2026-04-14
+    url: https://www.americanexpress.com/en-us/newsroom/articles/innovation/american-express-debuts-agentic-commerce-experiences--ace--devel.html
+    primary: true
+    note: "The company introduces the ACE developer kit, two of whose five services (Agent Registration and Cart Context) are marked as in development, and announces Amex Agent Purchase Protection as an industry-first commitment: in the future it will protect eligible Card Members from charges related to errors by registered AI agents, with terms and conditions to apply. Read from a wire copy of the release (the newsroom page needs JavaScript)."
+
+  - tag: AXP-WEB-2025-09-18-1
+    kind: press_release
+    title: "American Express press release: American Express Unveils Updated U.S. Consumer and Business Platinum Cards"
+    date: 2025-09-18
+    url: https://www.americanexpress.com/en-us/newsroom/articles/products-and-services/there-s-nothing-like-platinum---american-express-unveils-updated.html
+    primary: true
+    note: "The new annual fee for both cards is $895; for Card Members who opened accounts before 2025-09-18 it applies from the next renewal date on or after 2025-12-02 (U.S. Business Platinum) or 2026-01-02 (U.S. Consumer Platinum)."
+
+  - tag: MA-WEB-2025-04-29-1
+    kind: press_release
+    title: "Mastercard press release: Mastercard unveils Agent Pay, pioneering agentic payments technology to power commerce in the age of AI"
+    date: 2025-04-29
+    url: https://newsroom.mastercard.com/news/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai
+    primary: true
+    note: Mastercard announces the launch of its Agentic Payments Program, Mastercard Agent Pay.
+
+  - tag: V-WEB-2025-10-14-1
+    kind: press_release
+    title: "Visa press release: Visa Introduces Trusted Agent Protocol: An Ecosystem-Led Framework for AI Commerce"
+    date: 2025-10-14
+    url: https://usa.visa.com/about-visa/newsroom/press-releases.releaseId.21716.html
+    primary: true
+    note: Visa unveils Trusted Agent Protocol, available in the Visa Developer Center and on GitHub.
+
+  - tag: DOJ-OPA-2025-01-16
+    kind: press_release
+    title: "U.S. Department of Justice, Office of Public Affairs, press release 25-69: American Express Agrees to Pay $108.7M to Settle Allegations of Deceptive Marketing and \"Dummy\" Account Information"
+    date: 2025-01-16
+    url: https://www.justice.gov/archives/opa/pr/american-express-agrees-pay-1087m-settle-allegations-deceptive-marketing-and-dummy-account
+    primary: true
+    note: "A $108.7 million FIRREA civil penalty over deceptive card marketing to small businesses in 2014–2017 (including overstated business income), \"dummy\" employer identification numbers on small-business cards in 2015 and the first half of 2016, and deceptive marketing of the Payroll Rewards and Premium Wire products in 2018–2021; a $30.35 million credit applies on full payment under the criminal resolution, which deals only with the wire products. Read in a browser (justice.gov refuses scripted requests)."
+
+  - tag: USAO-EDNY-2025-01-16
+    kind: press_release
+    title: "U.S. Attorney's Office, Eastern District of New York, press release: American Express Agrees to Pay More Than $138 Million to Resolve Wire Fraud Investigation In Connection With The Sales And Marketing Of Wire Products"
+    date: 2025-01-16
+    url: https://www.justice.gov/usao-edny/pr/american-express-agrees-pay-more-138-million-resolve-wire-fraud-investigation
+    primary: true
+    note: "Non-prosecution agreement: a criminal fine of $77,696,000 and forfeiture of $60,700,000 over sales of the Payroll Rewards and Premium Wire wire products, launched in 2018 and discontinued in November 2021. Read in a browser (justice.gov refuses scripted requests)."
+
+  - tag: CFPB-2012-10-01
+    kind: press_release
+    title: "Consumer Financial Protection Bureau press release: CFPB Orders American Express to Pay $85 Million Refund to Consumers Harmed by Illegal Credit Card Practices"
+    date: 2012-10-01
+    url: https://www.consumerfinance.gov/archive/newsroom/cfpb-orders-american-express-to-pay-85-million-refund-to-consumers-harmed-by-illegal-credit-card-practices/
+    primary: true
+    note: Orders requiring three American Express subsidiaries to refund an estimated $85 million to about 250,000 customers; the regulators also imposed $27.5 million of civil money penalties.
+
+  - tag: SDNY-1993-12-22
+    kind: other
+    title: "In re American Express Co. Shareholder Litigation, 840 F. Supp. 260 (S.D.N.Y. 1993), opinion of 1993-12-22"
+    date: 1993-12-22
+    url: https://www.courtlistener.com/opinion/1958240/in-re-american-express-co-shareholder-litigation/
+    primary: true
+    note: "Background: on 1989-07-28 American Express publicly apologized to Edmond Safra for its efforts to injure his reputation and announced an $8 million donation to charities of his choosing."
+
+  - tag: SCOTUS-2018-06-25
+    kind: other
+    title: "Ohio v. American Express Co., No. 16-1454 (U.S. Supreme Court, decided 2018-06-25)"
+    date: 2018-06-25
+    url: https://www.supremecourt.gov/opinions/17pdf/16-1454_5h26.pdf
+    primary: true
+    note: "Holds that Amex's anti-steering provisions do not violate federal antitrust law. The provisions, in Amex's contracts with merchants, prohibit merchants from implying a preference for non-Amex cards, dissuading customers from using Amex cards, persuading customers to use other cards, imposing special restrictions, conditions, disadvantages or fees on Amex cards, or promoting other cards more than Amex."
+
+  - tag: NDILL-2026-06-01
+    kind: other
+    title: "Illinois Bankers Association v. Raoul, No. 1:24-cv-07307 (N.D. Ill.), Memorandum Opinion and Order of 2026-06-01 (Dkt. 223)"
+    date: 2026-06-01
+    url: https://storage.courtlistener.com/recap/gov.uscourts.ilnd.463030/gov.uscourts.ilnd.463030.223.0.pdf
+    primary: true
+    note: "On an interim remand from the Seventh Circuit, the court permanently enjoins Illinois from enforcing the Interchange Fee Limitation of its Interchange Fee Prohibition Act against national banks, banks chartered by other states subject to Riegle-Neal, federal savings associations and payment card networks. Docket: https://www.courtlistener.com/docket/69048225/illinois-bankers-association-v-raoul/ (RECAP copy)."
+
+  - tag: NDILL-2026-09-22
+    kind: other
+    title: "Illinois Bankers Association v. Raoul, No. 1:24-cv-07307 (N.D. Ill.), Memorandum Opinion and Order of 2026-09-22 (Dkt. 240)"
+    date: 2026-09-22
+    url: https://storage.courtlistener.com/recap/gov.uscourts.ilnd.463030/gov.uscourts.ilnd.463030.240.0_1.pdf
+    primary: true
+    note: "Extends the permanent injunction to federal credit unions. It recounts that the February 2026 ruling was on cross-appeal at the Seventh Circuit, that the June ruling was made on remand, and that the parties had not yet re-instituted their appeal when the NCUA issued its preemption rule in June 2026. The docket shows no notice of appeal between 2026-06-01 and 2026-09-23."
+
+  - tag: IL-PA-104-0532
+    kind: other
+    title: "Illinois Public Act 104-0532 (SB 3645, 104th General Assembly): bill status"
+    date: 2026-06-26
+    url: https://www.ilga.gov/Legislation/BillStatus?DocNum=3645&GAID=18&DocTypeID=SB&SessionID=114&GA=104
+    primary: true
+    note: "Amends the Interchange Fee Prohibition Act so that it takes effect on 2027-07-01 rather than 2026-07-01; passed both houses 2026-06-01, approved by the Governor and effective 2026-06-26."
+
+  - tag: OCC-NR-2026-32
+    kind: press_release
+    title: "Office of the Comptroller of the Currency, News Release 2026-32: OCC Issues Two Interim Final Actions Clarifying Bank Powers under Federal Law and the Preemption of a Related State Law"
+    date: 2026-04-24
+    url: https://www.occ.gov/news-issuances/news-releases/2026/nr-occ-2026-32.html
+    primary: true
+    note: An interim final rule on national bank non-interest charges and fees, and an interim final order confirming that federal law preempts the Illinois Interchange Fee Prohibition Act for national banks and federal savings associations.
+
+  - tag: FR-91-23150
+    kind: other
+    title: "Federal Register, 91 FR 23150 (2026-04-29): Order Preempting the Illinois Interchange Fee Prohibition Act (Office of the Comptroller of the Currency, document 2026-08341)"
+    date: 2026-04-29
+    url: https://www.federalregister.gov/documents/2026/04/29/2026-08341/order-preempting-the-illinois-interchange-fee-prohibition-act
+    primary: true
+    note: The published text of the OCC's interim final order announced in OCC-NR-2026-32.
+
+  - tag: FRB-CHGOFF-2026-08-25
+    kind: web
+    title: "Board of Governors of the Federal Reserve System, Charge-Off and Delinquency Rates on Loans and Leases at Commercial Banks: Charge-Off Rates, All Banks, not seasonally adjusted (update of 2026-08-25)"
+    date: 2026-08-25
+    url: https://www.federalreserve.gov/releases/chargeoff/chgallnsa.htm
+    primary: true
+    note: "Credit cards column: 3.92% for 2026:Q2 and 4.73% for 2024:Q2, the highest reading since 5.63% in 2011:Q3; charge-offs are net of recoveries, as a percentage of average loans, annualized. The Q2 2026 reading was published on 2026-08-25, about eight weeks after quarter end. FRED series CORCCACBN (FRED-CORCCACBN) is a copy."

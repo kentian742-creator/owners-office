@@ -4,6 +4,12 @@
 # Thresholds follow the report's text; where the report gives none, the test note states how this archive operationalizes it.
 # Everything price-related (ranges, reference price, the rating of the price) is only in the private repository, owners-office-private/companies/AXP/valuation.yml.
 # Revised 2026-09-24 after the fact audit and the design audit: wording and page numbers corrected, AXP-Q5 split, judgment windows written out, AXP-L6 to AXP-L8, AXP-Q15 and AXP-Q16 added.
+# Revised 2026-09-27 after the first fact audit of the archive (16A → 04A), under HQ rulings A1–A14: facts re-cited to the primary documents,
+#   baselines corrected where the audit found them wrong or on the wrong basis or period, and AXP-Q17 added to supersede AXP-Q8 from FY2026Q4 (ruling A5).
+# Labels: "this archive's computation" = computed from a primary filing's figures (growth rates and shares to one decimal, per HQ ruling P4);
+#   "as the company rounds it" = the rounded figure the company prints; "per the owner's report" = rests only on AXP-RPT1-2026-09-17;
+#   "per secondary historical accounts" = rests on the secondary compilations the report itself lists, with no primary record on EDGAR.
+# Locators: AXP-RPT1-2026-09-17#pN is the report's PDF page; for 10-K and 10-Q filings #pN is the filing's printed page number.
 schema_version: "0.2"
 company: AXP
 name: American Express Company
@@ -19,7 +25,7 @@ category: stalwart
 category_secondary: cyclical
 # The secondary cyclical template's three tests: Q-cycle (provision growth YoY) is covered by AXP-Q12 and AXP-Q7, since the net direction of provisions and the reserve rate move earlier than provision growth and are not distorted by the base;
 # Q-leverage (net debt ÷ EBITDA) does not apply, because a card issuer's new debt funds new card balances (see the AXP-Q2 note); L-cycle-capalloc is applied as AXP-L7.
-category_rationale: "FY2025 revenue of $72.229 billion [src:AXP-RPT1-2026-09-17#p3], up 10% year on year [src:AXP-RPT1-2026-09-17#p8], with 2026 revenue guidance raised to +10% [src:AXP-RPT1-2026-09-17#p9]: a large, steady stalwart growing at around ten percent. The secondary category is cyclical, because at bottom it is a spread lender with a subscription layer on top [src:AXP-RPT1-2026-09-17#p4], and in thirty-five years it has had four earnings drawdowns of 30% or more (the four are measured on different bases and serve only to gauge frequency and size) [src:AXP-RPT1-2026-09-17#p11]."
+category_rationale: "FY2025 total revenues net of interest expense were $72,229 million [src:AXP-10K-FY2025#p92], up 9.5% on FY2024 (this archive's computation, which the company rounds to 10%) [src:AXP-10K-FY2025#p43], and in July 2026 the company raised its 2026 revenue growth guidance to 10% [src:AXP-8K-2026-07-24#EX-99.1]: a large, steady stalwart growing at around ten percent. The secondary category is cyclical, because at bottom it is a spread lender with a subscription layer on top [src:AXP-RPT1-2026-09-17#p4], and since 1989 reported net income has fallen by 30% or more five times (1989–92, 2001, 2008–09, 2017 and 2020) [src:AXP-10K-FY1993#Ex13] [src:AXP-10K405-FY2001#Ex13] [src:AXP-10K-FY2009#Ex13] [src:AXP-10K-FY2017#Item7] [src:AXP-10K-FY2021#p92]. The 2017 fall came from a one-time $2.6 billion Tax Act charge [src:AXP-10K-FY2017#Item7], so the cyclical reading rests on the other four."
 domain: payments_financial_data
 depends_on:
   - industries/payments-card-networks
@@ -51,36 +57,36 @@ ratings:
   source: AXP-RPT1-2026-09-17#p3
 
 thesis:
-  summary: "American Express is a membership business that collects the annual fee as a subscription, uses merchant discount and interest to subsidize benefits, and uses the benefits to keep a high-spending customer base: of FY2025 revenue of $72.229 billion, merchant discount was 51.8% and net card fees 13.8% [src:AXP-RPT1-2026-09-17#p3]. The evidence of pricing power is that net card fees grew from about $1 billion a quarter in Q2 2019 to $2.86 billion a quarter in Q2 2026, through pandemic shutdowns, zero rates, rate hikes and rate cuts [src:AXP-RPT1-2026-09-17#p3]. It is not a company living on free float but a spread lender with a subscription layer on top: $157 billion of deposits cost about $5.2 billion a year in interest, equal to 38% of FY2025 pretax income [src:AXP-RPT1-2026-09-17#p4], and both times history pushed it to the brink (1991, 2008) the cause was its own balance sheet [src:AXP-RPT1-2026-09-17#p10]. The thesis fears two things most: agents choosing cards for users, so that \"people no longer choose\", and the Delta co-brand expiring at the end of 2029, so that \"the customer base is not its own\" [src:AXP-RPT1-2026-09-17#p3] [src:AXP-RPT1-2026-09-17#p8]."
+  summary: "American Express is a membership business that collects the annual fee as a subscription, uses merchant discount and interest to subsidize benefits, and uses the benefits to keep a high-spending customer base: of FY2025 total revenues net of interest expense of $72,229 million, discount revenue was 51.8% and net card fees 13.8% (this archive's computation) [src:AXP-10K-FY2025#p92]. The evidence of pricing power is that net card fees grew from $988 million in Q2 2019 to $2,862 million in Q2 2026 [src:AXP-10Q-FY2019Q2#p1] [src:AXP-10Q-FY2026Q2#p39], through pandemic shutdowns, zero rates, rate hikes and rate cuts. It is not a company living on free float but a spread lender with a subscription layer on top: its $157 billion of customer deposits at 2026-06-30 [src:AXP-10Q-FY2026Q2#p42] cost about $5.1 billion a year in interest (the first half of 2026 annualized, $2,563 million × 2) [src:AXP-10Q-FY2026Q2#p40], equal to 37.2% of FY2025 pretax income of $13,795 million (this archive's computation) [src:AXP-10K-FY2025#p92]. In the owner's report's reading, both times the company came close to the brink, around 1991 and in 2008, the cause was its own balance sheet [src:AXP-RPT1-2026-09-17#p10]. The 1991 episode is known only from secondary historical accounts; the 2008 one is on the record: in January 2009 the company sold $3.39 billion of preferred shares to the U.S. Treasury under the Capital Purchase Program [src:AXP-8K-2009-01-09]. The thesis fears two things most: agents choosing cards for users, so that \"people no longer choose\", and the loss of the Delta co-brand, whose agreement runs through the end of 2029 [src:AXP-10K-FY2025#p4], so that \"the customer base is not its own\" [src:AXP-RPT1-2026-09-17#p3] [src:AXP-RPT1-2026-09-17#p8]."
   pillars:
     - id: P1
-      claim: "The annual-fee subscription is where the operating leverage is, and members' willingness to pay is getting stronger: in Q2 the annualized average fee per card was $131 (+12% year on year), 75% of new accounts were in fee-paying products, and net card fees were up 15.4% year on year [src:AXP-RPT1-2026-09-17#p4]; but in 2027 this line still has to prove that fees can catch up with the benefit costs that followed the price increases [src:AXP-RPT1-2026-09-17#p6]."
+      claim: "The annual-fee subscription is where the operating leverage is, and members' willingness to pay is getting stronger: in Q2 2026 the annualized average fee per card was $131, up from $117 a year earlier [src:AXP-8K-2026-07-24#EX-99.2], net card fees rose 15.4% year on year to $2,862 million (this archive's computation) [src:AXP-10Q-FY2026Q2#p39], and 75% of global new accounts (excluding Corporate) were acquired on fee-paying products [src:AXP-CALL-FY2026Q2#p9]. In 2027 this line still has to prove that fees can catch up with the benefit costs that followed the price increases [src:AXP-RPT1-2026-09-17#p6]."
       source: AXP-RPT1-2026-09-17#p7
     - id: P2
-      claim: "The two subsidy lines, merchant rates and interest, will not be repriced off a cliff by bargaining power or regulation: the rate proxy slips only 2–3 basis points a year, and part of that comes from the rising co-brand share [src:AXP-RPT1-2026-09-17#p7]; the 2018 Supreme Court precedent still protects anti-steering provisions, and Illinois's interchange fee limits have been permanently enjoined as to national banks and payment card networks [src:AXP-RPT1-2026-09-17#p8]."
+      claim: "The two subsidy lines, merchant rates and interest, will not be repriced off a cliff by bargaining power or regulation: the rate proxy (discount revenue ÷ billed business) went from 2.289% in FY2023 to 2.269% in FY2024 and 2.240% in FY2025, a fall of 2.0 and 2.9 basis points a year (this archive's computation) [src:AXP-10K-FY2025#p43] [src:AXP-10K-FY2025#p45], and in the owner's report's reading part of that comes from the rising co-brand share [src:AXP-RPT1-2026-09-17#p7]. The Supreme Court upheld Amex's anti-steering provisions in 2018 [src:SCOTUS-2018-06-25], and on 2026-06-01 a federal court permanently enjoined Illinois's interchange fee limits as to national banks and payment card networks [src:NDILL-2026-06-01]."
       source: AXP-RPT1-2026-09-17#p7
     - id: P3
-      claim: "The customer base is largely its own: co-brand partner Delta (about 13% of worldwide billed business and 21% of Card Member loans) will renew and stay exclusive before the agreement expires at the end of 2029, and growth in co-brand remuneration will not persistently outrun Amex's own revenue [src:AXP-RPT1-2026-09-17#p8]."
+      claim: "The customer base is largely its own: co-brand partner Delta (about 13% of worldwide billed business and about 21% of worldwide Card Member loans at 2025-12-31 [src:AXP-10K-FY2025#p4]) will renew and stay exclusive before the agreement expires at the end of 2029 [src:AXP-10K-FY2025#p4], and growth in co-brand remuneration will not persistently outrun Amex's own revenue [src:AXP-RPT1-2026-09-17#p8]."
       source: AXP-RPT1-2026-09-17#p8
     - id: P4
-      claim: "The premise that people choose their payment instrument still holds: agentic commerce has not turned card choice into a default ranked by total cost; on 2026-04-14 Amex released the ACE developer kit and launched purchase protection for purchases made by agents [src:AXP-RPT1-2026-09-17#p8]."
+      claim: "The premise that people choose their payment instrument still holds: agentic commerce has not turned card choice into a default ranked by total cost [src:AXP-RPT1-2026-09-17#p8]. On 2026-04-14 Amex introduced its Agentic Commerce Experiences (ACE) developer kit and announced Amex Agent Purchase Protection for purchases made by registered agents, as a commitment for the future [src:AXP-WEB-2026-04-14-1] [src:AXP-10Q-FY2026Q1#p34]."
       source: AXP-RPT1-2026-09-17#p8
     - id: P5
-      claim: "The customer base's credit advantage and the balance sheet can get through a credit cycle: Amex's main net write-off rate is 2.0%, 1.92 percentage points below the industry's 3.92% [src:AXP-RPT1-2026-09-17#p11]; the cost of its collect-first, pay-later funding reprices with the market but is not out of control, with interest expense −3% and interest income +7% year on year in the first half of 2026 [src:AXP-RPT1-2026-09-17#p5]."
+      claim: "The customer base's credit advantage and the balance sheet can get through a credit cycle: in Q2 2026 Amex's net write-off rate (principal only, consumer and small business Card balances, as the company defines it) was 2.0% [src:AXP-10Q-FY2026Q2#p8], 1.92 percentage points below the 3.92% net charge-off rate on credit card loans at all commercial banks in the same quarter (not seasonally adjusted) [src:FRB-CHGOFF-2026-08-25]. The two rates are defined differently, so the gap is a proxy, and a June 2026 sale of written-off balances lowered June's U.S. Consumer write-off rate by about 0.3 points [src:AXP-8K-2026-09-15]. The cost of its collect-first, pay-later funding reprices with the market but is not out of control: in the first half of 2026 interest expense fell 2.8% and interest income rose 7.0% year on year (this archive's computation) [src:AXP-10Q-FY2026Q2#p40]."
       source: AXP-RPT1-2026-09-17#p11
     - id: P6
-      claim: "Management quality and capital discipline continue: management passes both of the report's calculable tests, all three operating segments were profitable in every year of 2023–2025, and 76% of net income to common was returned over the last three years, with the share count down a net 5.4% in three years [src:AXP-RPT1-2026-09-17#p10]; capital allocation itself rates only B: buybacks are made near intrinsic value and neither clearly create nor destroy value [src:AXP-RPT1-2026-09-17#p3]. This is an organization run by insiders [src:AXP-RPT1-2026-09-17#p9], and the \"excellent management\" verdict is tied to specific people and years [src:AXP-RPT1-2026-09-17#p10]."
+      claim: "Management quality and capital discipline continue: management passes both of the report's calculable tests [src:AXP-RPT1-2026-09-17#p10], and all four reportable operating segments (U.S. Consumer Services, Commercial Services, International Card Services, and Global Merchant and Network Services) were profitable in every year of 2023–2025 [src:AXP-10K-FY2025#p150] [src:AXP-10K-FY2025#p151]. Buybacks and common dividends came to 71.3% of net income available to common shareholders over FY2023–FY2025 ($20.8 billion against $29.16 billion, this archive's computation) [src:AXP-10K-FY2023#p64] [src:AXP-10K-FY2024#p66] [src:AXP-10K-FY2025#p63] [src:AXP-10K-FY2025#p146], and average diluted shares fell a net 5.4% from FY2023 to FY2025, from 736 million to 696 million [src:AXP-10K-FY2025#p43]. Capital allocation itself rates only B: buybacks are made near intrinsic value and neither clearly create nor destroy value [src:AXP-RPT1-2026-09-17#p3]. This is an organization run by insiders [src:AXP-RPT1-2026-09-17#p9], and the \"excellent management\" verdict is tied to specific people and years [src:AXP-RPT1-2026-09-17#p10]."
       source: AXP-RPT1-2026-09-17#p10
   # Munger inversion list: how a permanent loss could happen (from sections five and seven of the report and the "where am I most likely wrong" part of section twelve); each item ends with the tests that monitor it
   permanent_loss_paths:
-    - "A credit cycle on top of a balance-sheet mistake: in a recession the industry charge-off rate goes back above its peak and reserves swing from releases to builds [src:AXP-RPT1-2026-09-17#p14], and buybacks stop first [src:AXP-RPT1-2026-09-17#p6]; in thirty-five years there have been four earnings drawdowns of 30% or more (on different bases, so only frequency and size matter) [src:AXP-RPT1-2026-09-17#p11], and if, as in 1991, credit mistakes, bleeding non-core businesses and collective action by merchants are exposed in the same recession, a cyclical drawdown becomes a permanent loss [src:AXP-RPT1-2026-09-17#p10] [src:AXP-RPT1-2026-09-17#p13]. Monitored by: AXP-Q7, AXP-Q11, AXP-Q12."
-    - "The co-brand relationship breaks or gets expensive: Delta is about 13% of worldwide billed business and 21% of Card Member loans, and the current agreement expires at the end of 2029 [src:AXP-RPT1-2026-09-17#p8]. The comparable precedent is Costco: when Amex announced in February 2015 that it would not renew with Costco, Costco was about 8% of worldwide billed business and about 20% of worldwide loans [src:AXP-RPT1-2026-09-17#p8]; that year the Costco portfolio's loans-to-billings ratio was 2.5x against Delta's 1.6x, so the Delta portfolio actually depends less on interest [src:AXP-RPT1-2026-09-17#p8]. The report records that revenue then fell in both 2015 and 2016 and that the medium-term targets had to be reset in 2015, but the JetBlue co-brand was also lost in the same period, and the passage is marked as not checked item by item against the original [src:AXP-RPT1-2026-09-17#p9]. Monitored by: AXP-Q5, AXP-L6."
-    - "The choice of card moves away from people: AI agents choose cards for users by total cost and do not allow a card to be locked in, so the \"choose me\" machinery of annual fees, points and benefits loses its audience [src:AXP-RPT1-2026-09-17#p4], the merchant-rate premium is arbitraged away on cost, and the 2018 anti-steering precedent constrains what merchants say and do to people, not the ranking parameters given to machines [src:AXP-RPT1-2026-09-17#p8]. Monitored by: AXP-L2."
-    - "Membership unit economics deteriorate: the benefits race keeps the cost curve outrunning the fee curve, and the benefit cost of each extra dollar of annual fees has risen from 0.84x to 1.62x [src:AXP-RPT1-2026-09-17#p6]; the company does not disclose renewal rates, and if \"those who stay pay more\" actually hides \"fewer people are willing to pay\", the pricing power of the annual fee is an illusion [src:AXP-RPT1-2026-09-17#p16]. Monitored by: AXP-Q6, AXP-Q9, AXP-Q13."
-    - "Regulatory repricing: a federal credit card interest rate cap hits net interest income, about 24% of revenue [src:AXP-RPT1-2026-09-17#p3] [src:AXP-RPT1-2026-09-17#p14], or the Credit Card Competition Act removes the three-party network exemption and state interchange legislation spreads [src:AXP-RPT1-2026-09-17#p14]. Monitored by: AXP-L3, AXP-L4."
-    - "Trust damaged at the acquisition end: Amex describes service as the core of its moat, yet its most recent regulatory penalty was over sales practices, a settlement of about $230 million with the Department of Justice in January 2025 over deceptive marketing to small businesses in 2014–2017 [src:AXP-RPT1-2026-09-17#p9]; the report holds that its trust risk lies at the acquisition end rather than the servicing end, and lists this as one of the starting points of the bear case [src:AXP-RPT1-2026-09-17#p9]. Monitored by: AXP-L8."
+    - "A credit cycle on top of a balance-sheet mistake: in a recession the industry charge-off rate goes back above its peak and reserves swing from releases to builds [src:AXP-RPT1-2026-09-17#p14], and buybacks stop first [src:AXP-RPT1-2026-09-17#p6]. Since 1989 reported net income has fallen by 30% or more five times: four times in credit cycles or recessions (the 1989–92 episode, which bottomed in 1990, and 2001, 2008–09 and 2020) and once, in 2017, because of a one-time $2.6 billion Tax Act charge [src:AXP-10K-FY1993#Ex13] [src:AXP-10K405-FY2001#Ex13] [src:AXP-10K-FY2009#Ex13] [src:AXP-10K-FY2017#Item7] [src:AXP-10K-FY2021#p92]. This path concerns the four. If, as around 1991, credit mistakes, bleeding non-core businesses and collective action by merchants are exposed in the same recession, a cyclical drawdown becomes a permanent loss [src:AXP-RPT1-2026-09-17#p10] [src:AXP-RPT1-2026-09-17#p13]. The Optima card losses and the merchant revolt of that episode rest on secondary historical accounts; the filings show the Lehman brokerage and investment-banking business, later reported as discontinued operations, losing $967 million after tax in 1990 and $149 million in 1992 [src:AXP-10K-FY1993#Ex11]. Monitored by: AXP-Q7, AXP-Q11, AXP-Q12."
+    - "The co-brand relationship breaks or gets expensive: Delta was about 13% of worldwide billed business and about 21% of worldwide Card Member loans at 2025-12-31, and the current agreement runs through the end of 2029 [src:AXP-10K-FY2025#p4]. The comparable precedent is Costco: in February 2015 Amex announced that its U.S. co-brand and acceptance agreements with Costco would end in March 2016 [src:AXP-8K-2015-02-12#EX-99.1]. The Costco co-brand accounts had generated about 8% of worldwide billed business in 2014 and held about 20% of worldwide Card Member loans at 2014-12-31 [src:AXP-10K-FY2014#Ex13-p21]. Measured as share of loans over share of billed business, the Costco portfolio stood at 2.5 times (FY2014) against 1.6 times for Delta (2025-12-31), so the Delta portfolio depends less on interest (this archive's computation) [src:AXP-10K-FY2014#Ex13-p21] [src:AXP-10K-FY2025#p4]. Total revenues net of interest expense then fell in both 2015 and 2016 as reported, from $34,188 million in 2014 to $32,818 million and $32,119 million [src:AXP-10K-FY2016#Item6] (2016 was later restated under the new revenue standard and 2015 was not [src:AXP-10K-FY2019#p36]). Through 2015 the company kept its 12–15% EPS growth target and expected to be back within it in 2017 [src:AXP-8K-2015-10-21#EX-99.1], and on 2016-01-21 it replaced that with a 2017 target of EPS of at least $5.60 [src:AXP-8K-2016-01-21#EX-99.1]. The JetBlue co-brand was not renewed either [src:AXP-10K-FY2014#p73]. Monitored by: AXP-Q5, AXP-L6."
+    - "The choice of card moves away from people: AI agents choose cards for users by total cost and do not allow a card to be locked in, so the \"choose me\" machinery of annual fees, points and benefits loses its audience [src:AXP-RPT1-2026-09-17#p4], and the merchant-rate premium is arbitraged away on cost. Amex's anti-steering provisions, contract terms the Supreme Court upheld in 2018, bar merchants from implying a preference for other cards, dissuading customers from using Amex cards, persuading them to use other cards, imposing special restrictions, conditions, disadvantages or fees on Amex cards, or promoting other cards more than Amex [src:SCOTUS-2018-06-25]. In the owner's report's reading they govern what merchants do toward people, not the ranking parameters that platforms give to machines [src:AXP-RPT1-2026-09-17#p8]. Monitored by: AXP-L2."
+    - "Membership unit economics deteriorate: the benefits race keeps the cost curve outrunning the fee curve. Each extra dollar of net card fees came with $0.83 of extra Card Member services expense from FY2024 to FY2025 ($1,275 million against $1,544 million) [src:AXP-10K-FY2025#p45] [src:AXP-10K-FY2025#p47] and with $1.62 from the first half of 2025 to the first half of 2026 ($1,295 million against $801 million), both this archive's computation [src:AXP-10Q-FY2026Q2#p40]. The company does not disclose renewal rates, and if \"those who stay pay more\" actually hides \"fewer people are willing to pay\", the pricing power of the annual fee is an illusion [src:AXP-RPT1-2026-09-17#p16]. Monitored by: AXP-Q6, AXP-Q9, AXP-Q13."
+    - "Regulatory repricing: a federal credit card interest rate cap hits net interest income, 24.0% of total revenues net of interest expense in FY2025 and 24.2% in the first half of 2026 (this archive's computation) [src:AXP-10K-FY2025#p45] [src:AXP-10Q-FY2026Q2#p40], or the Credit Card Competition Act removes the three-party network exemption and state interchange legislation spreads [src:AXP-RPT1-2026-09-17#p14]. Monitored by: AXP-L3, AXP-L4."
+    - "Trust damaged at the acquisition end: Amex says its brand is built on trust, security and service [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-10K-FY2025#p4], and the owner's report reads service as the core of its moat [src:AXP-RPT1-2026-09-17#p9], yet its most recent regulatory penalty was over sales practices. In January 2025 it agreed to pay about $230 million in total, after crediting, to resolve Department of Justice investigations and, in principle, a Federal Reserve matter over sales practices toward small businesses [src:AXP-8K-2025-01-16#Item8.01]. The pieces were a non-prosecution agreement with the U.S. Attorney's Office for the Eastern District of New York ($77.7 million fine plus $60.7 million forfeiture), which covers only the Payroll Rewards and Premium Wire products sold in 2018–2021 [src:USAO-EDNY-2025-01-16], and a $108.7 million civil penalty over card marketing in 2014–2017, \"dummy\" employer identification numbers in 2015–2016 and the same wire products [src:DOJ-OPA-2025-01-16]; these gross amounts do not add up to the company's net total. The report holds that its trust risk lies at the acquisition end rather than the servicing end, and lists this as one of the starting points of the bear case [src:AXP-RPT1-2026-09-17#p9]. Dated note (2026-09-27): the Q2 2026 10-Q says Amex expects to be subject to an enforcement action over its anti-money-laundering programs, which could include civil money penalties [src:AXP-10Q-FY2026Q2#p29]; until such a penalty is imposed, the most recent one remains the sales-practice resolution. Monitored by: AXP-L8."
 
-# Baseline facts from the report, for the audit and for item-by-item checks against XBRL and filings later
+# Baseline facts, for the audit and for item-by-item checks against XBRL and filings later
 baseline_facts:
   - id: F1
     label: Billed business (Card Member spending worldwide)
@@ -88,97 +94,99 @@ baseline_facts:
     unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
-    source: AXP-RPT1-2026-09-17#p3
+    source: AXP-10K-FY2025#p43
   - id: F2
     label: Total revenues (net of interest expense)
     value: 722.29
     unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
-    source: AXP-RPT1-2026-09-17#p3
+    source: AXP-10K-FY2025#p92
   - id: F3
     label: Discount revenue
     value: 374.01
     unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
-    source: AXP-RPT1-2026-09-17#p3
-    note: "51.8% of total revenues [src:AXP-RPT1-2026-09-17#p3]."
+    source: AXP-10K-FY2025#p92
+    note: "51.8% of total revenues net of interest expense ($37,401 million / $72,229 million, this archive's computation) [src:AXP-10K-FY2025#p92]."
   - id: F4
     label: Net card fees
     value: 99.93
     unit: USD 100 million
     period: FY2025
     as_of: 2025-12-31
-    source: AXP-RPT1-2026-09-17#p3
-    note: "13.8% of revenue, and 14.6% in the first half of 2026 [src:AXP-RPT1-2026-09-17#p3]."
+    source: AXP-10K-FY2025#p92
+    note: "13.8% of total revenues net of interest expense in FY2025 [src:AXP-10K-FY2025#p92] and 14.6% in the first half of 2026 ($5,614 million / $38,544 million) [src:AXP-10Q-FY2026Q2#p40], both this archive's computation."
   - id: F5
     label: Quarterly net card fees
-    value: 28.6
+    value: 28.62
     unit: USD 100 million
     period: 2026Q2
     as_of: 2026-06-30
-    source: AXP-RPT1-2026-09-17#p3
-    note: "About $1 billion a quarter in Q2 2019 [src:AXP-RPT1-2026-09-17#p3]."
+    source: AXP-10Q-FY2026Q2#p39
+    note: "$988 million in Q2 2019 [src:AXP-10Q-FY2019Q2#p1]."
   - id: F6
     label: Customer deposits
-    value: 1570
+    value: 1569.73
     unit: USD 100 million
     as_of: 2026-06-30
-    source: AXP-RPT1-2026-09-17#p3
-    note: "Over 99% are interest-bearing deposits [src:AXP-RPT1-2026-09-17#p3]."
+    source: AXP-10Q-FY2026Q2#p42
+    note: "Over 99% are interest-bearing ($155,863 million of $156,973 million) [src:AXP-10Q-FY2026Q2#p59]."
   - id: F7
     label: Interest expense on deposits
-    value: 26
+    value: 25.63
     unit: USD 100 million
     period: 1H26
     as_of: 2026-06-30
-    source: AXP-RPT1-2026-09-17#p3
-    note: "About $5.2 billion annualized, equal to 38% of FY2025 pretax income of $13.795 billion (the report's formula one) [src:AXP-RPT1-2026-09-17#p4]."
+    source: AXP-10Q-FY2026Q2#p40
+    note: "About $5.1 billion annualized ($2,563 million × 2 = $5,126 million), equal to 37.2% of FY2025 pretax income of $13,795 million (this archive's computation) [src:AXP-10Q-FY2026Q2#p40] [src:AXP-10K-FY2025#p92]."
   - id: F8
-    label: Merchant rate proxy (discount revenue ÷ billed business, report's basis)
+    label: Merchant rate proxy (discount revenue ÷ billed business)
     value: [2.269, 2.240, 2.226]
     unit: "%"
     period: FY2024 / FY2025 / 1H26
     as_of: 2026-06-30
-    source: AXP-RPT1-2026-09-17#p7
+    source: AXP-10K-FY2025#p43
+    note: "This archive's computation to three decimals: FY2024 $35,192 million / $1,550.9 billion and FY2025 $37,401 million / $1,669.8 billion [src:AXP-10K-FY2025#p43] [src:AXP-10K-FY2025#p45], and the first half of 2026 $19,675 million / $883.8 billion [src:AXP-10Q-FY2026Q2#p2] [src:AXP-10Q-FY2026Q2#p40]. The company prints the same ratio, rounded to two decimals, as \"Discount revenue as a % of Billed business\": 2.29%, 2.27% and 2.24% for FY2023–FY2025 [src:AXP-10K-FY2025#p48]."
   - id: F9
-    label: Co-brand share of billed business (annual-report basis from 2022)
-    value: [18, 21, 26]
+    label: "Co-brand share: of worldwide network volumes (2022, 2023) and of worldwide billed business (2024, 2025)"
+    value: [18, 21, 25, 26]
     unit: "%"
-    period: 2022 / 2023 / 2025
+    period: 2022 / 2023 / 2024 / 2025
     as_of: 2025-12-31
-    source: AXP-RPT1-2026-09-17#p7
+    source: AXP-10K-FY2025#p24
+    note: "About 18% (2022) and 21% (2023) of worldwide network volumes [src:AXP-10K-FY2022#p24] [src:AXP-10K-FY2023#p24], and about 25% (2024) and 26% (2025) of worldwide billed business [src:AXP-10K-FY2024#p25] [src:AXP-10K-FY2025#p24]. The company changed the denominator in its FY2024 10-K, so the four readings are not one series. Restated on billed business (co-brand cards are proprietary, so their spending is all billed business), 2022 and 2023 come to about 21% and 24%, a like-for-like rise of about 5 percentage points over 2022–2025 rather than 8 (this archive's computation: 18% × $1,552.8 billion / $1,338.3 billion and 21% × $1,680.1 billion / $1,459.6 billion) [src:AXP-10K-FY2023#p48]."
   - id: F10
     label: Delta's share of worldwide billed business / Card Member loans
     value: [13, 21]
     unit: "%"
     period: FY2025
     as_of: 2025-12-31
-    source: AXP-RPT1-2026-09-17#p8
-    note: The current agreement was renewed in 2019 and expires at the end of 2029.
+    source: AXP-10K-FY2025#p4
+    note: "The current agreement was renewed in 2019 for eleven years [src:AXP-10K-FY2019#p3] and runs through the end of 2029 [src:AXP-10K-FY2025#p4]."
   - id: F11
     label: Card balances
-    value: 2180
+    value: 2180.54
     unit: USD 100 million
     as_of: 2026-06-30
-    source: AXP-RPT1-2026-09-17#p11
+    source: AXP-10Q-FY2026Q2#p8
   - id: F12
-    label: Reserve rate
+    label: Reserve rate (reserve for credit losses as a % of Card balances)
     value: 2.7
     unit: "%"
     period: 2026Q2
     as_of: 2026-06-30
-    source: AXP-RPT1-2026-09-17#p11
-    note: "Down from 3.0% to a three-year low, with Q2 provisions including a net reserve release of $191 million [src:AXP-RPT1-2026-09-17#p11]."
+    source: AXP-10Q-FY2026Q2#p8
+    note: "The company's definition: since Q1 2026 Card balances combine the former Card Member loans and receivables, with prior periods reclassified. The rate fell from 3.0% at 2025-06-30 to 2.7% at 2026-06-30 ($5,866 million / $218,054 million) [src:AXP-10Q-FY2026Q2#p8], the lowest quarter-end reading since 2023-06-30, when it was 2.66% on the same combined basis (this archive's computation from loan and receivable reserves and balances) [src:AXP-8K-2024-07-19#EX-99.2]. Q2 2026 provisions of $1,084 million less net write-offs of $1,275 million give a net reserve release of $191 million [src:AXP-10Q-FY2026Q2#p5]."
   - id: F13
-    label: "Net write-off rate: Amex (main) / industry (FRED, not seasonally adjusted)"
+    label: "Net write-off rate: Amex (principal only, consumer and small business Card balances) / industry (credit card loans, all commercial banks, not seasonally adjusted)"
     value: [2.0, 3.92]
     unit: "%"
     period: 2026Q2
     as_of: 2026-06-30
-    source: AXP-RPT1-2026-09-17#p11
-    note: The Amex side is what the report calls the "main net write-off rate"; which company basis it corresponds to (principal only, or including interest and fees) is to be checked against Exhibit 99.2 of the Q2 earnings 8-K.
+    source: AXP-10Q-FY2026Q2#p8
+    note: "Amex's figure is the company's principal-only rate for consumer and small business Card balances; including interest and fees it was 2.2% [src:AXP-10Q-FY2026Q2#p8]. The industry figure is the annualized net charge-off rate on credit card loans at all commercial banks, net of recoveries and not seasonally adjusted [src:FRB-CHGOFF-2026-08-25], which FRED series CORCCACBN copies [src:FRED-CORCCACBN]. The two are defined differently (Amex's covers pay-in-full charge balances and excludes corporate cards, while the industry series covers credit card loans only), so the 1.92-point gap is a proxy [src:AXP-10Q-FY2026Q2#p8] [src:FRB-CHGOFF-2026-08-25]. A June 2026 sale of previously written-off Card balances lowered June's U.S. Consumer net write-off rate by about 0.3 points and U.S. Small Business by about 0.1 point, and the quarterly 2.0% includes those proceeds [src:AXP-8K-2026-09-15]."
 
 tests:
   # ---------- Lynch stalwart template (two metrics that mean nothing for a card issuer replaced) and the secondary cyclical template ----------
@@ -204,7 +212,13 @@ tests:
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2026-10
-    baseline: {value: 10, unit: "%", period: FY2025, as_of: 2025-12-31, source: AXP-RPT1-2026-09-17#p8}
+    baseline:
+      value: 9.5
+      unit: "%"
+      period: FY2025
+      as_of: 2025-12-31
+      source: AXP-10K-FY2025#p43
+      note: "Total revenues net of interest expense of $72,229 million against $65,949 million (this archive's computation) [src:AXP-10K-FY2025#p43]; the company rounds the growth to 10% [src:AXP-10K-FY2025#p44]."
     note: Corresponds to Q-growth in the stalwart template, with the template's default thresholds. Amex's revenue basis is total revenues net of interest expense; the candidate concepts for revenue_yoy in the registry might first pick up a basis with only revenue from contracts with customers and no net interest income, so the metric is defined in place with metric_def. The metric still means revenue growth, with only the revenue basis changed, so origin is template:stalwart; AXP-Q2 and AXP-Q4 switched to different metrics and are recorded as manual.
 
   - id: AXP-Q2
@@ -220,7 +234,7 @@ tests:
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2027-02
-    note: "Replaces Q-returns (roic) in the stalwart template: for a card issuer, new debt funds new card balances and goes with the expansion of assets [src:AXP-RPT1-2026-09-17#p10], so counting interest-bearing debt as \"invested capital\" makes no sense, and return on equity is used instead. The threshold is borrowed from the template's default for return on invested capital and does not mean the same thing; the report gives no ROE reading, and the baseline is to be backfilled from the FY2025 annual report. After backfilling and before the FY2026 annual report is published, review whether this threshold suits return on equity, and write the conclusion and date into this note so that it stays registered in advance (see todo)."
+    note: "Replaces Q-returns (roic) in the stalwart template: for a card issuer, new debt funds new card balances and goes with the expansion of assets [src:AXP-10K-FY2025#p64], so counting interest-bearing debt as \"invested capital\" makes no sense, and return on equity is used instead. The threshold is borrowed from the template's default for return on invested capital and does not mean the same thing; the report gives no ROE reading, and the baseline is to be backfilled from the FY2025 annual report. After backfilling and before the FY2026 annual report is published, review whether this threshold suits return on equity, and write the conclusion and date into this note so that it stays registered in advance (see todo)."
 
   - id: AXP-Q3
     type: quantitative
@@ -236,12 +250,12 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2027-02
     baseline:
-      value: -3
+      value: -2.9
       unit: "%"
       period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p6
-      note: "Q2 average diluted shares, year on year; the share count fell from about 736 million in FY2023 to about 696 million in FY2025, a net reduction of 5.4% [src:AXP-RPT1-2026-09-17#p10]."
+      source: AXP-10Q-FY2026Q2#p2
+      note: "Q2 2026 average diluted shares against Q2 2025, 679 million against 699 million (this archive's computation, which the company rounds to −3%) [src:AXP-10Q-FY2026Q2#p2]. Average diluted shares fell from 736 million in FY2023 to 696 million in FY2025, a net 5.4% over two years, and year-end shares outstanding from 723 million to 686 million, 5.1% (this archive's computation) [src:AXP-10K-FY2025#p43] [src:AXP-10K-FY2025#p139]."
 
   - id: AXP-Q4
     type: quantitative
@@ -264,12 +278,13 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2027-02
     baseline:
-      value: 76
+      value: 71.3
       unit: "%"
-      period: Last three years (company-disclosed basis)
-      as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p6
-    note: "Replaces Q-fcf (fcf_conversion) in the stalwart template: this is a bank holding company bound by capital requirements, so how much it can return is set by regulatory capital, and once the credit cycle turns and provisions swing from net releases to net builds, buybacks stop first [src:AXP-RPT1-2026-09-17#p6]. \"Operating cash flow less capital expenditure\" moves with card balances and other liabilities and does not represent money that can be paid out to shareholders, so the test uses what the report calls \"the share of common net income returned over the last three years\" instead. It mainly tests capital allocation: it measures the payout share, not whether distributable earnings are growing, which AXP-Q15 tracks. The threshold borrows the default of the template's Q-fcf, but this is a different quantity; it amounts to a buffer of six percentage points below the 76% three-year payout the report records [src:AXP-RPT1-2026-09-17#p6], a judgment criterion this archive wrote down in advance. A failure caused by buybacks paused in a credit downturn is expected and has to be read together with AXP-Q7 and AXP-Q12."
+      period: FY2023–FY2025
+      as_of: 2025-12-31
+      source: AXP-10K-FY2025#p63
+      note: "This archive's computation: buybacks plus common dividends of $5.3 billion (2023), $7.9 billion (2024) and $7.6 billion (2025), $20.8 billion in all [src:AXP-10K-FY2023#p64] [src:AXP-10K-FY2024#p66] [src:AXP-10K-FY2025#p63], against net income available to common shareholders of $8,316 million, $10,071 million and $10,775 million, $29,162 million in all [src:AXP-10K-FY2025#p146]. The company discloses no three-year ratio, and its annual ratios use two different bases: about 62% (2023) and 76% (2024) of \"total capital generated\", and about 71% (2025) of net income available to common shareholders [src:AXP-10K-FY2023#p64] [src:AXP-10K-FY2024#p66] [src:AXP-10K-FY2025#p63]."
+    note: "Replaces Q-fcf (fcf_conversion) in the stalwart template: this is a bank holding company bound by capital requirements, so how much it can return is set by regulatory capital [src:AXP-10K-FY2025#Item1], and once the credit cycle turns and provisions swing from net releases to net builds, buybacks stop first [src:AXP-RPT1-2026-09-17#p6]. \"Operating cash flow less capital expenditure\" moves with card balances and other liabilities and does not represent money that can be paid out to shareholders, so the test uses the share of net income available to common shareholders returned through buybacks and common dividends over three fiscal years instead. It mainly tests capital allocation: it measures the payout share, not whether distributable earnings are growing, which AXP-Q15 tracks. The threshold is the default of the template's Q-fcf, borrowed for a different quantity and written down in advance; it was not derived from any payout reading. Against the FY2023–FY2025 baseline of 71.3% it leaves a buffer of about one percentage point (this archive's computation) [src:AXP-10K-FY2025#p63], so a fail when buybacks pause in a credit downturn is expected and has to be read together with AXP-Q7 and AXP-Q12. On the cash-flow lines the XBRL metric reads (repurchases of common shares \"and other\", and dividends paid including preferred), the same three years give 73.8% ($21,534 million against $29,162 million, this archive's computation) [src:AXP-10K-FY2025#p95] [src:AXP-10K-FY2025#p146]; the basis is to be settled before the first reading (see todo)."
 
   - id: AXP-L1
     type: qualitative
@@ -290,11 +305,11 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: In July 2026, full-year revenue guidance raised to +10% and EPS guidance kept unchanged, with the stated reason of reinvesting the excess revenue
+      value: In July 2026, full-year revenue growth guidance raised to 10% (from 9% to 10%) and EPS guidance of $17.30 to $17.90 kept unchanged; management plans to reinvest the outperformance in growth initiatives
       as_of: 2026-09-17
-      source: AXP-RPT1-2026-09-17#p9
-      note: "Section one of the report describes it as putting the excess revenue back into technology and benefits [src:AXP-RPT1-2026-09-17#p3]; EPS guidance was kept unchanged, and the report uses the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-RPT1-2026-09-17#p12]."
-    note: "Corresponds to L-guidance in the stalwart template. The report records no current medium-term financial targets for Amex, only the full-year 2026 guidance: revenue growth raised to +10% and EPS guidance unchanged [src:AXP-RPT1-2026-09-17#p9], with the report using the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-RPT1-2026-09-17#p12] [src:AXP-8K-2026-07-24#EX-99.1]. So the question also covers the full-year guidance, and both items are recorded in the say-do ledger (AXP-M-2026-01, AXP-M-2026-02). The rule of judging a \"cut\" in the EPS range by its midpoint (see judge_notes) and the 10-Q MD&A added to where were both written out during the migration to spec 0.2, before the first judgment under this test (FY2026Q3)."
+      source: AXP-8K-2026-07-24#EX-99.1
+      note: "The EPS range was first given on 2026-01-30 [src:AXP-8K-2026-01-30#EX-99.1] and reaffirmed on 2026-04-23 [src:AXP-8K-2026-04-23#EX-99.1]; its midpoint is $17.60 [src:AXP-8K-2026-07-24#EX-99.1]. That the excess revenue goes back into technology and benefits is the owner's report's account of the Q2 2026 call [src:AXP-RPT1-2026-09-17#p3]; the release says only \"growth initiatives\" [src:AXP-8K-2026-07-24#EX-99.1], and the call slides do not say where the money goes [src:AXP-CALL-FY2026Q2#p2]."
+    note: "Corresponds to L-guidance in the stalwart template. The report records no current medium-term financial targets for Amex, only the full-year 2026 guidance [src:AXP-RPT1-2026-09-17#p9]: revenue growth raised to 10% and EPS guidance of $17.30 to $17.90, midpoint $17.60, unchanged [src:AXP-8K-2026-07-24#EX-99.1]. So the question also covers the full-year guidance, and both items are recorded in the say-do ledger (AXP-M-2026-01, AXP-M-2026-02). The rule of judging a \"cut\" in the EPS range by its midpoint (see judge_notes) and the 10-Q MD&A added to where were both written out during the migration to spec 0.2, before the first judgment under this test (FY2026Q3)."
 
   - id: AXP-L7
     type: qualitative
@@ -312,10 +327,10 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: Buybacks run at about 3% of shares a year, at prices near intrinsic value; acquisitions are all small and close to the core business; there has been no large buyback that would prove an ability to time the market
+      value: "Buybacks retired 3.0%, 3.3% and 2.4% of the shares outstanding at the start of 2023, 2024 and 2025 (22, 24 and 17 million shares) [src:AXP-10K-FY2025#p139], after 2.6% in 2022 and 5.7% in 2021 (20 and 46 million shares) [src:AXP-10K-FY2022#p139]; the owner's report judges them made at prices near intrinsic value [src:AXP-RPT1-2026-09-17#p3]. Recent acquisitions sit close to the core business: Center, an expense-management software company (2025) [src:AXP-10K-FY2025#p2], and the proposed acquisition of TheFork, a European restaurant-booking platform, announced in July 2026 and awaiting approvals [src:AXP-8K-2026-07-24#EX-99.1]; the company has not disclosed their prices, so \"small\" is the owner's report's reading [src:AXP-RPT1-2026-09-17#p3]"
       as_of: 2026-09-17
-      source: AXP-RPT1-2026-09-17#p3
-    note: "Applies L-cycle-capalloc from the secondary cyclical template; the definition of \"sharply\" is an operationalization this archive wrote down in advance. The report rates capital allocation B [src:AXP-RPT1-2026-09-17#p3]; current profits include net reserve releases: Q2 growth on the reported basis, +15%, includes reserve releases, and excluding the change in provisions it is only +4.0% [src:AXP-RPT1-2026-09-17#p15]; part of a \"record\" profit is the cycle's gift, and stepping up buybacks at the cycle peak is exactly the mistake this test guards against."
+      source: AXP-10K-FY2025#p139
+    note: "Applies L-cycle-capalloc from the secondary cyclical template; the definition of \"sharply\" is an operationalization this archive wrote down in advance. The report rates capital allocation B [src:AXP-RPT1-2026-09-17#p3]; current profits include net reserve releases: Q2 2026 pretax income grew 14.7% on the reported basis ($4,071 million against $3,550 million), which includes a reserve release, and 4.0% before provisions ($5,155 million against $4,955 million), both this archive's computation [src:AXP-10Q-FY2026Q2#p2] [src:AXP-10Q-FY2026Q2#p39]. Part of a \"record\" profit is the cycle's gift, and stepping up buybacks at the cycle peak is exactly the mistake this test guards against."
 
   # ---------- Section ten of the report: thesis breakers (if any one holds, this judgment has to be rewritten) ----------
   - id: AXP-Q5
@@ -341,13 +356,13 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2027-02
     baseline:
-      value: 1
+      value: 1.5
       unit: pp
       period: FY2025
       as_of: 2025-12-31
-      source: AXP-RPT1-2026-09-17#p8
-      note: "Delta received $8.2 billion of co-brand remuneration from Amex in 2025, +11% year on year, while Amex's revenue grew 10% [src:AXP-RPT1-2026-09-17#p8]; the difference subtracts the two rounded readings, serves only as the baseline and does not count toward the two consecutive years. Forward readings: Delta's remuneration guidance for 2026 is $9 billion, about +9.8% on $8.2 billion (this archive's calculation) [src:AXP-RPT1-2026-09-17#p8], and Amex's 2026 revenue guidance was raised to +10% [src:AXP-RPT1-2026-09-17#p9]; the difference between the two guidance figures is about −0.2 percentage points, within rounding error [src:AXP-RPT1-2026-09-17#p8] [src:AXP-RPT1-2026-09-17#p9]."
-    note: "The remuneration-growth leg of breaker #1 in section ten of the report; the other two event conditions (whether a renewal is announced before the end of 2028, and whether exclusivity is kept after renewal) are in the qualitative test AXP-L6; the two tests are joined by \"or\", and a failure of either means breaker #1 holds. The earliest readable point the report gives for this breaker is \"from the second half of 2027, decisive point end of 2028\" [src:AXP-RPT1-2026-09-17#p14], and it does not say that FY2025 counts toward \"two consecutive years\"; if FY2025 counted, a single FY2026 reading would trigger it in early 2027, earlier than the report's timing, so the consecutive count starts from FY2026, a choice written down before either company publishes its FY2026 figures. On both companies' 2026 guidance, the FY2026 difference falls near zero (see the baseline), so a single-year reading only records a warning; first_readable is 2027-02, when both companies publish their FY2026 annual reports, and the earliest possible failure is in early 2028, when both publish their FY2027 annual reports, still earlier than the report's decisive point. The current agreement was renewed in 2019 and expires at the end of 2029 [src:AXP-RPT1-2026-09-17#p8]."
+      source: DAL-10K-FY2025#Item7
+      note: "Delta received $8.2 billion of remuneration from American Express in 2025, 11% more than in 2024 as Delta rounds it [src:DAL-10K-FY2025#Item1] [src:DAL-10K-FY2025#Item7], while Amex's total revenues net of interest expense grew 9.5% (this archive's computation, which the company rounds to 10%) [src:AXP-10K-FY2025#p43]. Delta gives no unrounded rate, so the difference is uncertain by about half a point either way; it serves only as the baseline and does not count toward the two consecutive years. Forward readings: Delta's remuneration was $4.5 billion in the first half of 2026, up 13% as Delta rounds it [src:DAL-10Q-FY2026Q2#Item2], while Amex's revenue grew 10.7% in the same half ($38,544 million against $34,823 million, this archive's computation) [src:AXP-10Q-FY2026Q2#p40]. For the full year, Delta's expectation of $9 billion, about 9.8% above 2025, is an earnings-call remark as reported by third parties and in the owner's report, not in Delta's filings [src:DAL-CALL-FY2026Q2] [src:AXP-RPT1-2026-09-17#p8], and Amex has raised its revenue growth guidance to 10% [src:AXP-8K-2026-07-24#EX-99.1]."
+    note: "The remuneration-growth leg of breaker #1 in section ten of the report; the other two event conditions (whether a renewal is announced before the end of 2028, and whether exclusivity is kept after renewal) are in the qualitative test AXP-L6; the two tests are joined by \"or\", and a failure of either means breaker #1 holds. The earliest readable point the report gives for this breaker is \"from the second half of 2027, decisive point end of 2028\" [src:AXP-RPT1-2026-09-17#p14], and it does not say that FY2025 counts toward \"two consecutive years\"; if FY2025 counted, a single FY2026 reading would trigger it in early 2027, earlier than the report's timing, so the consecutive count starts from FY2026, a choice written down before either company publishes its FY2026 figures. Delta's call remark and Amex's guidance put the FY2026 difference near zero, although the first half of 2026 ran above it (see the baseline); a single-year reading only records a warning, and first_readable is 2027-02, when both companies publish their FY2026 annual reports, and the earliest possible failure is in early 2028, when both publish their FY2027 annual reports, still earlier than the report's decisive point. The current agreement was renewed in 2019 [src:AXP-10K-FY2019#p3] and runs through the end of 2029 [src:AXP-10K-FY2025#p4]."
 
   - id: AXP-L6
     type: qualitative
@@ -365,9 +380,9 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2027-07
     baseline:
-      value: The current agreement was renewed in 2019 and expires at the end of 2029
+      value: The current agreement was renewed in 2019 for eleven years and runs through the end of 2029
       as_of: 2026-09-17
-      source: AXP-RPT1-2026-09-17#p8
+      source: AXP-10K-FY2025#p4
     note: "The two event conditions of breaker #1 in section ten of the report; the remuneration-growth leg is in AXP-Q5; the two tests are joined by \"or\", and a failure of either means breaker #1 holds. The earliest readable point the report gives is \"from the second half of 2027, decisive point end of 2028\" [src:AXP-RPT1-2026-09-17#p14], so first_readable is 2027-07; (a) cannot hold before January 2029, and (b) can be judged as soon as a renewal is announced. Both conditions are textual events, judged as a qualitative test by an independent model against the original text, with sources cited."
 
   - id: AXP-Q6
@@ -411,9 +426,9 @@ tests:
       unit: "%"
       period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p4
-      note: "Net card fees year on year; in the same quarter Card Member services expense was +50% year on year, and +49% in the first half [src:AXP-RPT1-2026-09-17#p10]."
-    note: "Breaker #2 in section ten of the report. The body of the report sets the first full quarter after the price-increase cycle is complete as Q2 2027 [src:AXP-RPT1-2026-09-17#p6], and the monitoring table says it is readable in \"April–July 2027\" [src:AXP-RPT1-2026-09-17#p14]; the Q2 earnings 8-K comes out in late July (2026-07-24 for Q2 2026 [src:AXP-RPT1-2026-09-17#p17]), so first_readable is 2027-07, and AXP-Q9 tracks the quarters before that. warn_rule comes from section seven of the report: the bear case weakens only if by then net card fee growth is still 10% or more while Card Member services expense growth has fallen below 15% [src:AXP-RPT1-2026-09-17#p10]; anything in between records a warning."
+      source: AXP-10Q-FY2026Q2#p39
+      note: "Net card fees year on year, $2,862 million against $2,480 million [src:AXP-10Q-FY2026Q2#p39]. In the same quarter Card Member services expense rose 49.8% ($1,949 million against $1,301 million, which the company rounds to 50%) [src:AXP-10Q-FY2026Q2#p39], and 49.3% in the first half ($3,924 million against $2,629 million) [src:AXP-10Q-FY2026Q2#p40]; all three rates are this archive's computation."
+    note: "Breaker #2 in section ten of the report. The body of the report sets the first full quarter after the price-increase cycle is complete as Q2 2027 [src:AXP-RPT1-2026-09-17#p6], and the monitoring table says it is readable in \"April–July 2027\" [src:AXP-RPT1-2026-09-17#p14]; the Q2 earnings 8-K comes out in late July (2026-07-24 for Q2 2026 [src:AXP-8K-2026-07-24]), so first_readable is 2027-07, and AXP-Q9 tracks the quarters before that. warn_rule comes from section seven of the report: the bear case weakens only if by then net card fee growth is still 10% or more while Card Member services expense growth has fallen below 15% [src:AXP-RPT1-2026-09-17#p10]; anything in between records a warning."
 
   - id: AXP-Q7
     type: quantitative
@@ -433,7 +448,7 @@ tests:
         industry_card_nco_rate:
           description: Industry card net charge-off rate (credit card loans at commercial banks, not seasonally adjusted, quarterly)
           unit: "%"
-          where: FRED series CORCCACBN (source tag FRED-CORCCACBN), updated about two months after quarter end
+          where: FRED series CORCCACBN (source tag FRED-CORCCACBN), a copy of the Federal Reserve Board's charge-off release [src:FRB-CHGOFF-2026-08-25], updated about two months after quarter end [src:FRB-CHGOFF-2026-08-25]
     fail_if: The industry card net charge-off rate back at or above its 2024 peak of 4.73%, while Amex has made net reserve builds for two consecutive quarters
     rule:
       all_of:
@@ -448,9 +463,9 @@ tests:
       unit: USD
       period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p11
-      note: "A negative value is a net release: Q2 provisions include a net release of $191 million [src:AXP-RPT1-2026-09-17#p11]. The industry card net charge-off rate in the same quarter was 3.92% (not seasonally adjusted), against a peak of 4.73% in Q2 2024 [src:AXP-RPT1-2026-09-17#p11]."
-    note: "Breaker #3 in section ten of the report, which says it is readable \"from the Q4 results in January 2027\" [src:AXP-RPT1-2026-09-17#p14]. The Amex leg is readable in January 2027, but the industry reading for the same quarter is updated only about two months after quarter end (the Q2 2026 reading the report uses comes from the series as updated on 2026-08-25 [src:AXP-RPT1-2026-09-17#p17]), so the earliest same-quarter judgment of both legs is in March 2027, and first_readable is 2027-03. The threshold is kept as the report wrote it; but card balances are growing (+8% year on year in the first half of 2026 [src:AXP-RPT1-2026-09-17#p5]), and with an unchanged reserve rate the reserve must grow with loans, so the Amex leg holds almost automatically while loans grow, and in practice this breaker is decided mainly by the industry charge-off leg (see AXP-Q12 and todo)."
+      source: AXP-10Q-FY2026Q2#p5
+      note: "A negative value is a net release: Q2 2026 provisions of $1,084 million less net write-offs of $1,275 million [src:AXP-10Q-FY2026Q2#p5]. The industry card net charge-off rate in the same quarter was 3.92% (not seasonally adjusted), against 4.73% in Q2 2024, the highest reading since Q3 2011 [src:FRB-CHGOFF-2026-08-25]."
+    note: "Breaker #3 in section ten of the report, which says it is readable \"from the Q4 results in January 2027\" [src:AXP-RPT1-2026-09-17#p14]. The Amex leg is readable in January 2027, but the industry reading for the same quarter is updated only about two months after quarter end (the Q2 2026 reading was published on 2026-08-25 [src:FRB-CHGOFF-2026-08-25]), so the earliest same-quarter judgment of both legs is in March 2027, and first_readable is 2027-03. The threshold is kept as the report wrote it; the 4.73% in fail_if is the Q2 2024 reading of the industry series, the highest since Q3 2011 [src:FRB-CHGOFF-2026-08-25]. But Card balances are growing (8.0% higher at 2026-06-30 than a year earlier, $218,054 million against $201,873 million [src:AXP-10Q-FY2026Q2#p8]), and with an unchanged reserve rate the reserve must grow with balances, so the Amex leg holds almost automatically while balances grow, and in practice this breaker is decided mainly by the industry charge-off leg (see AXP-Q12 and todo)."
 
   - id: AXP-L2
     type: qualitative
@@ -467,11 +482,13 @@ tests:
     lookback: 4
     effective_from: FY2026Q3
     baseline:
-      value: Mastercard Agent Pay launched in April 2025 and the Visa Trusted Agent Protocol in October 2025; on 2026-04-14 Amex released the ACE developer kit and launched purchase protection for purchases by registered agents; when the report was written, no major platform had published default payment rules
+      value: "Mastercard launched Agent Pay on 2025-04-29 [src:MA-WEB-2025-04-29-1] and Visa unveiled its Trusted Agent Protocol on 2025-10-14 [src:V-WEB-2025-10-14-1]. On 2026-04-14 Amex introduced its ACE developer kit, with two of its five services (Agent Registration and Cart Context) still in development, and announced Amex Agent Purchase Protection for purchases by registered agents as a commitment for the future, with terms and conditions to apply [src:AXP-WEB-2026-04-14-1]; no filing through the Q2 2026 10-Q reports the protection in effect. That no major platform had published default payment rules when the report was written (2026-09-17) is the owner's report's statement, not checked against the platforms' own documents [src:AXP-RPT1-2026-09-17#p8]"
       as_of: 2026-09-17
-      source: AXP-RPT1-2026-09-17#p8
+      source: AXP-WEB-2026-04-14-1
     note: "Breaker #4 in section ten of the report, timing uncertain (2027–2029). This path has no current reading: the first hard reading will be either Amex disclosing the share of transactions by registered agents, or some platform publishing default payment rules [src:AXP-RPT1-2026-09-17#p8]. Platform rules are not in EDGAR filings, and the EDGAR-triggered pipeline cannot see them, so at each quarterly update the company manager searches platform announcements once; when signpost PAY-SP6 (agent-initiated purchases and network tokens) in the payments-card-networks industry module crosses its line, this test is reviewed with it. The criterion for a \"major AI platform\" is an operationalization this archive wrote down in advance; the report names none."
 
+  # AXP-Q8 is retired from FY2026Q4 and superseded by AXP-Q17 (HQ ruling A5, 2026-09-27). It never produced a reading;
+  # the entry stays as written, as the record, and only its baseline (a fact) was corrected.
   - id: AXP-Q8
     type: quantitative
     claim: The decline in the merchant rate is still a slow structural change that the rising co-brand share can explain, not a cliff in merchant bargaining power
@@ -509,15 +526,64 @@ tests:
           note: "Same judgment period as the first leg: when the first leg is a decline in two consecutive years, compute the cumulative change over those two years; when the first leg is a drop below the threshold, compute the cumulative change from the FY2025 baseline to the year of the drop."
     data: filing_text
     effective_from: FY2026Q3
+    retired_at: FY2026Q4
     first_readable: 2027-02
     baseline:
       value: 2.226
       unit: "%"
       period: 1H26
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p7
-      note: "FY2024 was 2.269% and FY2025 2.240% [src:AXP-RPT1-2026-09-17#p7]; the co-brand share of billed business was 18% in 2022, 21% in 2023 and 26% in 2025 [src:AXP-RPT1-2026-09-17#p7]."
+      source: AXP-10Q-FY2026Q2#p2
+      note: "First half of 2026: discount revenue of $19,675 million over billed business of $883.8 billion [src:AXP-10Q-FY2026Q2#p40] [src:AXP-10Q-FY2026Q2#p2]; FY2024 2.269% and FY2025 2.240% [src:AXP-10K-FY2025#p43] [src:AXP-10K-FY2025#p45]; all this archive's computation. The co-brand share was about 18% (2022) and 21% (2023) of worldwide network volumes [src:AXP-10K-FY2022#p24] [src:AXP-10K-FY2023#p24] and about 25% (2024) and 26% (2025) of worldwide billed business [src:AXP-10K-FY2024#p25] [src:AXP-10K-FY2025#p24]. The company changed the denominator in its FY2024 10-K; restated on billed business, 2022 and 2023 come to about 21% and 24% (this archive's computation) [src:AXP-10K-FY2023#p48]."
     note: "Breaker #5 in section ten of the report, judged on each year's annual report. The rate proxy is the report's own calculation; the average discount rate the company discloses is a different basis [src:AXP-RPT1-2026-09-17#p17]. \"Correspondingly\" is judged by formula four in section four: under the extreme assumption that the whole decline is structural, 2.9 basis points ÷ 2.5 percentage points = 1.16 percentage points is the upper bound on the net rate gap between co-brand and proprietary, i.e. each 1 percentage point rise in the co-brand share explains at most about 1.16 basis points of decline in the proxy [src:AXP-RPT1-2026-09-17#p7]; only when the part above this bound is positive is the co-brand share treated as not having risen correspondingly. The report explains that the true structural contribution lies somewhere between zero and this bound [src:AXP-RPT1-2026-09-17#p7]; taking the bound attributes as much of the decline as possible to structure and is the most lenient reading; this archive chooses it on purpose, because only a decline above the bound can be known not to be structural."
+
+  - id: AXP-Q17
+    type: quantitative
+    claim: The decline in the merchant rate is still a slow structural change that the rising co-brand share can explain, not a cliff in merchant bargaining power
+    origin: report:breaker
+    severity: breaker
+    covers: [pricing_power, moat]
+    pillar: P2
+    supersedes: AXP-Q8
+    metric: discount_revenue_to_billed_business
+    metric_def:
+      description: "Merchant rate proxy = discount revenue ÷ billed business, judged on annual readings, together with the co-brand share of billed business in the same period. The company prints the same ratio, rounded to two decimals, as \"Discount revenue as a % of Billed business\" in 10-K Table 5. Its average discount rate, a share of network volumes and so a different basis, was last disclosed in the FY2022 10-K."
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: Discount revenue in the 10-K consolidated statements of income and billed business in MD&A Table 1 or Table 5; the co-brand share in the 10-K risk factor on business partners (Item 1A)
+      components:
+        cobrand_share_of_billed_business:
+          description: Co-brand share of worldwide billed business (the company's basis from the FY2024 10-K), as the company rounds it to whole percent
+          unit: "%"
+          where: 'The 10-K risk factor on business partners (Item 1A): "All of our cobrand portfolios in the aggregate accounted for approximately N percent of our worldwide billed business"'
+        merchant_rate_unexplained_decline_bp:
+          description: "The part of the proxy's decline that the rising co-brand share cannot explain: the decline of the proxy in basis points, minus the rise in the co-brand share over the same period in percentage points times the maximum number of basis points each percentage point can explain. The coefficient is 2.8 basis points per percentage point of billed-business share, the midpoint of the two same-basis, full-attribution estimates (about 2.7 for FY2023 to FY2025 and 2.9 for FY2024 to FY2025); because the company rounds the share to whole percent, the coefficient is approximate. A positive value means the co-brand share did not rise correspondingly. Formula: -(discount_revenue_to_billed_business_t1 - discount_revenue_to_billed_business_t0) * 100 - 2.8 * (cobrand_share_of_billed_business_t1 - cobrand_share_of_billed_business_t0)"
+          unit: bp
+          where: Computed from discount_revenue_to_billed_business and cobrand_share_of_billed_business
+    fail_if: The merchant rate proxy falls by more than 5 basis points a year for two consecutive years, or drops below 2.15%, and the co-brand share of billed business did not rise correspondingly over the same period (otherwise the decline is structural; see the decomposition in section four)
+    rule:
+      all_of:
+        - any_of:
+            - {metric: discount_revenue_to_billed_business, op: decrease, threshold: 0.05, unit: pp, consecutive: 2, period: year, note: "The decline from the previous year exceeds this value, i.e. the five basis points in fail_if."}
+            - {metric: discount_revenue_to_billed_business, op: "<", threshold: 2.15, unit: "%", consecutive: 1, period: year}
+        - metric: discount_revenue_to_billed_business.merchant_rate_unexplained_decline_bp
+          op: ">"
+          threshold: 0
+          unit: bp
+          period: year
+          note: "Same judgment period as the first leg: when the first leg is a decline in two consecutive years, compute the cumulative change over those two years; when the first leg is a drop below the threshold, compute the cumulative change from the FY2025 baseline to the year of the drop."
+    data: filing_text
+    effective_from: FY2026Q4
+    first_readable: 2027-02
+    baseline:
+      value: 2.226
+      unit: "%"
+      period: 1H26
+      as_of: 2026-06-30
+      source: AXP-10Q-FY2026Q2#p2
+      note: "First half of 2026: discount revenue of $19,675 million over billed business of $883.8 billion [src:AXP-10Q-FY2026Q2#p40] [src:AXP-10Q-FY2026Q2#p2]; FY2024 2.269% and FY2025 2.240% [src:AXP-10K-FY2025#p43] [src:AXP-10K-FY2025#p45]; all this archive's computation. The co-brand share was about 18% (2022) and 21% (2023) of worldwide network volumes [src:AXP-10K-FY2022#p24] [src:AXP-10K-FY2023#p24] and about 25% (2024) and 26% (2025) of worldwide billed business [src:AXP-10K-FY2024#p25] [src:AXP-10K-FY2025#p24]. The company changed the denominator in its FY2024 10-K; restated on billed business, 2022 and 2023 come to about 21% and 24% (this archive's computation) [src:AXP-10K-FY2023#p48]."
+    note: "Breaker #5 in section ten of the report, judged on each year's annual report. It supersedes AXP-Q8 from FY2026Q4 (HQ ruling A5, 2026-09-27). AXP-Q8 used a coefficient of 1.16 basis points per point, the report's formula four [src:AXP-RPT1-2026-09-17#p7], which divides a one-year fall in the proxy (2.9 basis points, FY2024 to FY2025) by an average two-year rise in the co-brand share (2.5 percentage points a year, from 21% in 2023 to 26% in 2025) that crosses the company's change of denominator from network volumes to billed business in its FY2024 10-K [src:AXP-10K-FY2023#p24] [src:AXP-10K-FY2025#p24]. On one basis and one window the full-attribution bound is about 2.7 basis points per point for FY2023 to FY2025 (proxy 2.289% to 2.240%, share about 24% to 26%) and 2.9 for FY2024 to FY2025 (2.269% to 2.240%, 25% to 26%), both this archive's computation [src:AXP-10K-FY2025#p43] [src:AXP-10K-FY2025#p45] [src:AXP-10K-FY2024#p25] [src:AXP-10K-FY2023#p48]. This test takes the midpoint, 2.8. The claim, severity, thresholds, direction and both legs of the rule are those of AXP-Q8; the co-brand share is read on the billed-business basis the company has used since its FY2024 10-K, and where points to Item 1A, where the company discloses it. AXP-Q8 produced no reading (its first annual reading was due with the FY2026 10-K, around 2027-02), so the change applies only from FY2026Q4 (§G7). The bound attributes as much of the decline as possible to structure, and the true structural contribution lies somewhere between zero and the bound [src:AXP-RPT1-2026-09-17#p7]; taking the bound is the most lenient reading, chosen on purpose, because only a decline above the bound can be known not to be structural. The company's former average discount rate, last disclosed for 2022, is a different basis [src:AXP-10K-FY2022#p47]."
 
   - id: AXP-L3
     type: qualitative
@@ -536,10 +602,10 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2027-01
     baseline:
-      value: On 2026-06-01 the U.S. District Court for the Northern District of Illinois permanently enjoined enforcement of Illinois's interchange fee limits against national banks, federal savings associations, out-of-state state banks and payment card networks; the state law's effective date was pushed back to 2027-07-01, and the case is on appeal in the Seventh Circuit; Amex's issuing entity is a national bank and Amex is itself a payment card network, so both of its roles fall within the exemption
+      value: "On 2026-06-01 the U.S. District Court for the Northern District of Illinois permanently enjoined enforcement of Illinois's interchange fee limits against national banks, federal savings associations, banks chartered by other states and payment card networks [src:NDILL-2026-06-01]; a state law approved on 2026-06-26 pushed the Act's effective date back to 2027-07-01 [src:IL-PA-104-0532]; per the owner's report the case is on appeal in the Seventh Circuit, not checked against the appeals docket [src:AXP-RPT1-2026-09-17#p8]; Amex's issuing bank is a national bank and Amex is itself a payment card network, so both of its roles fall within the injunction [src:AXP-10K-FY2025#Item1]"
       as_of: 2026-09-17
-      source: AXP-RPT1-2026-09-17#p8
-      note: "For the ruling date and the April 2026 preemption determination of the Office of the Comptroller of the Currency (OCC) see [src:AXP-RPT1-2026-09-17#p7]; the report's appendix lists this ruling and the OCC's preemption rule as primary sources [src:AXP-RPT1-2026-09-17#p17]."
+      source: NDILL-2026-06-01
+      note: "On 2026-04-24 the Office of the Comptroller of the Currency issued an interim final order confirming that federal law preempts the Illinois Interchange Fee Prohibition Act for national banks and federal savings associations [src:OCC-NR-2026-32], published on 2026-04-29 [src:FR-91-23150]. The June ruling was made on an interim remand from the Seventh Circuit, where the court's February 2026 ruling had been on cross-appeal; the court's later opinion of 2026-09-22, which extends the injunction to federal credit unions, says the parties had not yet re-instituted their appeal when the National Credit Union Administration issued its own preemption rule in June 2026 [src:NDILL-2026-09-22]."
     note: "Breaker #6 in section ten of the report, readable from 2027 [src:AXP-RPT1-2026-09-17#p14]. \"Passes\" is judged as signed into law, because the bill changes Amex's position only once it is law; \"five or more states\" includes Illinois and counts five itself, the stricter of the two readings, which triggers a review sooner. Both points are operationalizations this archive wrote down in advance. The report's reading of the bill's scope provisions was not checked clause by clause against the full text [src:AXP-RPT1-2026-09-17#p13]. Court decisions and state legislative records are not in EDGAR filings and are registered as external sources when judged; when signpost PAY-SP1 (credit card routing mandates and the CCCA) in the payments-card-networks industry module crosses its line, this test is reviewed with it."
 
   - id: AXP-L4
@@ -557,7 +623,7 @@ tests:
     lookback: 4
     judge_notes: Anything still only at the proposal, hearing or bill-review stage does not count as having taken effect.
     effective_from: FY2026Q3
-    note: "Breaker #7 in section ten of the report, timing uncertain. It hits the interest line, about 24% of revenue (net interest income on section one's basis), not the merchant rate [src:AXP-RPT1-2026-09-17#p14] [src:AXP-RPT1-2026-09-17#p3]. The report says \"in any form\", so the question is not limited to laws and final rules."
+    note: "Breaker #7 in section ten of the report, timing uncertain. It hits the interest line, not the merchant rate [src:AXP-RPT1-2026-09-17#p14]: net interest income was 24.0% of total revenues net of interest expense in FY2025 and 24.2% in the first half of 2026 (this archive's computation) [src:AXP-10K-FY2025#p45] [src:AXP-10Q-FY2026Q2#p40], the period behind the claim's \"about 24%\". The report says \"in any form\", so the question is not limited to laws and final rules."
 
   - id: AXP-L5
     type: qualitative
@@ -575,9 +641,9 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2027-01
     baseline:
-      value: CEO Stephen Squeri took office on 2018-02-01; he joined in 1985 and has spent his whole career at Amex; the CFO joined in 1997; an organization run by insiders
+      value: "CEO Stephen Squeri took office on 2018-02-01 [src:AXP-DEF14A-2018-03-19]; he joined American Express in 1985 and has been with the company for over 40 years [src:AXP-DEF14A-2026-03-25]; the CFO, Christophe Le Caillec, joined in 1997 [src:AXP-DEF14A-2026-03-25]; an organization run by insiders, in the owner's report's reading [src:AXP-RPT1-2026-09-17#p9]"
       as_of: 2026-09-17
-      source: AXP-RPT1-2026-09-17#p9
+      source: AXP-DEF14A-2026-03-25
     note: "Breaker #8 in section ten of the report; the earliest readable point is the 2027–2030 proxy statements [src:AXP-RPT1-2026-09-17#p14]. Section six of the report explains that the \"excellent management\" verdict is tied to specific people and years, and that the same company made wrong decisions in 1981–1993 [src:AXP-RPT1-2026-09-17#p10]: in those twelve years acquisitions turned a traveler's cheque and charge card company into a financial supermarket, so \"acquisitions outside payments and membership services\" is listed as one of the signs of a strategic turn. The criteria for \"outside\" and \"a clear strategic turn\" are operationalizations this archive wrote down in advance; the report does not spell them out."
 
   # ---------- Section ten of the report: quarterly watch indicators ----------
@@ -612,9 +678,9 @@ tests:
       unit: x
       period: 1H26
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p15
-      note: "On growth rates it would be 17% ÷ 49% ≈ 0.35× [src:AXP-RPT1-2026-09-17#p15]."
-    note: "Watch indicator #1 in section ten of the report gives only a reading, no threshold [src:AXP-RPT1-2026-09-17#p15]; the criteria were written by this archive before the first reading. The report holds that a pricing mismatch cannot be told apart from structural deterioration before Q2 2027: the costs come first, and existing card members start paying the new prices only from January 2, 2026, each on their own renewal date [src:AXP-RPT1-2026-09-17#p10]. If the mismatch is being absorbed, the ratio should recover quarter by quarter while renewals roll over, so failure looks at quarter-on-quarter declines in two consecutive quarters. The warning line is set where the two increases are equal (a ratio of one), the dividing line of section three's \"how much more is spent on benefits for each extra dollar of annual fees\", which was eighty-four cents before the price increases and a dollar sixty after [src:AXP-RPT1-2026-09-17#p6]. The case in which the report says the bear case weakens is net card fee growth of 10% or more with Card Member services expense growth below 15% [src:AXP-RPT1-2026-09-17#p10]; since the net card fee base is larger than Card Member services expense (this archive's inference from the report's increments and growth rates), the ratio can still be below one in that case, so a ratio below one only records a warning, and the one-off judgment is left to AXP-Q6."
+      source: AXP-10Q-FY2026Q2#p40
+      note: "From the first half of 2025 to the first half of 2026 net card fees rose $801 million and Card Member services expense $1,295 million [src:AXP-10Q-FY2026Q2#p40]. On growth rates the ratio is 16.6% ÷ 49.3% = 0.34× (this archive's computation, or 17% ÷ 49% ≈ 0.35× on the company's rounding) [src:AXP-10Q-FY2026Q2#p40]. Q2 2026 alone, the starting point of the first quarter-on-quarter comparison: +$382 million against +$648 million, 0.59× (this archive's computation) [src:AXP-10Q-FY2026Q2#p39]."
+    note: "Watch indicator #1 in section ten of the report gives only a reading, no threshold [src:AXP-RPT1-2026-09-17#p15]; the criteria were written by this archive before the first reading. The report holds that a pricing mismatch cannot be told apart from structural deterioration before Q2 2027: the costs come first [src:AXP-RPT1-2026-09-17#p10], and existing U.S. Consumer Platinum Card Members (accounts opened before 2025-09-18) pay the new $895 fee from their first renewal on or after 2026-01-02, U.S. Business Platinum Card Members from their first renewal on or after 2025-12-02 [src:AXP-WEB-2025-09-18-1]. If the mismatch is being absorbed, the ratio should recover quarter by quarter while renewals roll over, so failure looks at quarter-on-quarter declines in two consecutive quarters. The warning line is set where the two increases are equal (a ratio of one), the dividing line of section three's \"how much more is spent on benefits for each extra dollar of annual fees\", which was $0.83 from FY2024 to FY2025 ($1,275 million ÷ $1,544 million) and $1.62 from the first half of 2025 to the first half of 2026 ($1,295 million ÷ $801 million), both this archive's computation [src:AXP-10K-FY2025#p45] [src:AXP-10K-FY2025#p47] [src:AXP-10Q-FY2026Q2#p40]. The case in which the report says the bear case weakens is net card fee growth of 10% or more with Card Member services expense growth below 15% [src:AXP-RPT1-2026-09-17#p10]; since the net card fee base is larger than Card Member services expense ($5,614 million against $3,924 million in the first half of 2026) [src:AXP-10Q-FY2026Q2#p40], the ratio can still be below one in that case, so a ratio below one only records a warning, and the one-off judgment is left to AXP-Q6."
 
   - id: AXP-Q10
     type: quantitative
@@ -630,12 +696,12 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: -10
+      value: -11.2
       unit: pp
-      period: 1H26
+      period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p15
-      note: "Interest expense −3% and interest income +7% year on year [src:AXP-RPT1-2026-09-17#p15]; the difference subtracts the two readings."
+      source: AXP-10Q-FY2026Q2#p39
+      note: "The metric is quarterly, so the baseline is the Q2 2026 quarter: interest expense −5.7% ($1,958 million against $2,077 million) and interest income +5.5% ($6,607 million against $6,264 million), this archive's computation [src:AXP-10Q-FY2026Q2#p39]. For the first half of 2026 the difference is −9.8 percentage points (−2.8% and +7.0%, or −10 on the company's rounding of −3% and +7%) [src:AXP-10Q-FY2026Q2#p40]. The first reading under the test comes with the Q3 2026 results in October 2026."
     note: "Watch indicator #2 in section ten of the report: both lines rising together is normal repricing, and interest expense turning to growth is not an alarm on its own; only expense growth persistently above income growth shows strain on the liability side [src:AXP-RPT1-2026-09-17#p15]. The report gives no number of periods for \"persistently\"; this test counts two consecutive quarters, the lower end of watch indicator #5's \"two to three consecutive quarters make a trend\"."
 
   - id: AXP-Q11
@@ -647,17 +713,17 @@ tests:
     pillar: P5
     metric_def:
       id: nco_spread_industry_minus_axp
-      description: Industry card net charge-off rate (not seasonally adjusted) minus the main net write-off rate on Amex card loans (what the report calls the "main net write-off rate"; which company basis it corresponds to is to be checked, see todo)
+      description: Industry card net charge-off rate (not seasonally adjusted) minus Amex's net write-off rate, principal only, consumer and small business Card balances (the company's definition; the report's "main net write-off rate" was checked against the Q2 2026 filings and is this rate, see the baseline)
       unit: pp
       frequency: quarter
       data: mixed
-      where: "Industry side: FRED series CORCCACBN (source tag FRED-CORCCACBN); Amex side: the net write-off rate on card loans in earnings 8-K Exhibit 99.2"
+      where: "Industry side: FRED series CORCCACBN (source tag FRED-CORCCACBN), a copy of the Federal Reserve Board's charge-off release; Amex side: \"Net write-off rate (principal only) — consumer and small business\" in earnings 8-K Exhibit 99.2"
       formula: industry_card_nco_rate - net_write_off_rate
       components:
         industry_card_nco_rate:
           description: Industry card net charge-off rate (credit card loans at commercial banks, not seasonally adjusted, quarterly)
           unit: "%"
-          where: FRED series CORCCACBN (source tag FRED-CORCCACBN), updated about two months after quarter end
+          where: FRED series CORCCACBN (source tag FRED-CORCCACBN), a copy of the Federal Reserve Board's charge-off release [src:FRB-CHGOFF-2026-08-25], updated about two months after quarter end [src:FRB-CHGOFF-2026-08-25]
         nco_spread_yoy_change:
           description: Change in the spread above against the same quarter a year earlier, i.e. nco_spread_industry_minus_axp_t - nco_spread_industry_minus_axp_{t-4q}; negative means the spread is narrowing
           unit: pp
@@ -671,8 +737,8 @@ tests:
       unit: pp
       period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p15
-      note: "Industry 3.92% against Amex 2.0% [src:AXP-RPT1-2026-09-17#p15]."
+      source: AXP-8K-2026-07-24#EX-99.2
+      note: "Industry 3.92% in Q2 2026 (annualized, net of recoveries, not seasonally adjusted) [src:FRB-CHGOFF-2026-08-25] against Amex's 2.0% in the same quarter (principal only, consumer and small business Card balances, as the company defines it) [src:AXP-8K-2026-07-24#EX-99.2]. The two series are defined differently (Amex's covers pay-in-full charge balances and excludes corporate cards, while the industry series covers credit card loans only), so the spread is a proxy. A June 2026 sale of previously written-off Card balances lowered June's U.S. Consumer net write-off rate by about 0.3 points, and the quarterly 2.0% includes those proceeds [src:AXP-8K-2026-09-15]."
     note: "Watch indicator #3 in section ten of the report: a narrowing of this spread shows the erosion of the customer advantage earlier than a rise in Amex's own write-off rate [src:AXP-RPT1-2026-09-17#p15]. The report gives neither the size nor the number of periods of narrowing; this test counts two consecutive quarters of year-on-year narrowing. The industry series is updated about two months after quarter end, so first_readable is later than Amex's earnings release."
 
   - id: AXP-Q12
@@ -712,9 +778,9 @@ tests:
       unit: USD
       period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p15
-      note: "A negative value is a net release: Q2 includes a net release of $191 million [src:AXP-RPT1-2026-09-17#p15]. The reserve rate is 2.7%, a three-year low, down from 3.0% [src:AXP-RPT1-2026-09-17#p11]."
-    note: "Watch indicator #4 in section ten of the report looks at \"the reserve rate and the net direction of provisions\": current earnings include the cycle's share, and a swing from releases to builds is the first signal on the credit path [src:AXP-RPT1-2026-09-17#p15]. Card balances are growing (+8% year on year in the first half of 2026 [src:AXP-RPT1-2026-09-17#p5]), and with an unchanged reserve rate the reserve must grow with loans, so a positive net build on its own would misread growth as deterioration; failure therefore also requires the reserve rate to be up year on year, and a net build alone records only a warning. The report gives no threshold for this indicator; this is a criterion this archive wrote down before the first reading. Net builds in two consecutive quarters with the industry charge-off rate back at or above its peak trigger breaker AXP-Q7."
+      source: AXP-10Q-FY2026Q2#p5
+      note: "A negative value is a net release: Q2 2026 provisions of $1,084 million less net write-offs of $1,275 million [src:AXP-10Q-FY2026Q2#p5]. The reserve rate (reserve as a % of Card balances, the company's definition since Q1 2026, with prior periods reclassified) was 2.7% at 2026-06-30, down from 3.0% at 2025-06-30 [src:AXP-10Q-FY2026Q2#p8], the lowest quarter-end reading since 2023-06-30, when it was 2.66% on the same combined basis (this archive's computation) [src:AXP-8K-2024-07-19#EX-99.2]. It is not comparable with the earlier \"reserve as a % of Card Member loans\" (4.1% at 2024-06-30) [src:AXP-8K-2024-07-19#EX-99.2]."
+    note: "Watch indicator #4 in section ten of the report looks at \"the reserve rate and the net direction of provisions\": current earnings include the cycle's share, and a swing from releases to builds is the first signal on the credit path [src:AXP-RPT1-2026-09-17#p15]. Card balances are growing (8.0% higher at 2026-06-30 than a year earlier [src:AXP-10Q-FY2026Q2#p8]), and with an unchanged reserve rate the reserve must grow with balances, so a positive net build on its own would misread growth as deterioration; failure therefore also requires the reserve rate to be up year on year, and a net build alone records only a warning. The report gives no threshold for this indicator; this is a criterion this archive wrote down before the first reading. Net builds in two consecutive quarters with the industry charge-off rate back at or above its peak trigger breaker AXP-Q7. Since Q1 2026 the company discloses the reserve rate as a share of Card balances and restates the prior periods on that basis, so the year-on-year leg compares like with like."
 
   - id: AXP-Q13
     type: quantitative
@@ -755,12 +821,12 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: [-3, 6]
+      value: [-3.2, 6.1]
       unit: "%"
       period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p15
-      note: "In order: proprietary new cards YoY, marketing expense YoY; −5% against +3% in the first half [src:AXP-RPT1-2026-09-17#p15]; 3 million proprietary new cards in Q2 [src:AXP-RPT1-2026-09-17#p7]."
+      source: AXP-8K-2026-07-24#EX-99.2
+      note: "In order: proprietary new cards acquired, year on year (3.0 million against 3.1 million, a line for which the company prints no growth rate) [src:AXP-8K-2026-07-24#EX-99.2], and marketing expense, year on year ($1,650 million against $1,555 million, which the company rounds to 6%) [src:AXP-10Q-FY2026Q2#p39], both this archive's computation from the printed figures. In the first half of 2026: new cards −4.7% (6.1 million against 6.4 million) [src:AXP-8K-2026-07-24#EX-99.2] and marketing +2.9% ($3,130 million against $3,041 million, which the company rounds to 3%) [src:AXP-10Q-FY2026Q2#p40]."
     note: "Watch indicator #5 in section ten of the report: the cost of the price increases at the acquisition end, where two to three consecutive quarters in the same direction make a trend [src:AXP-RPT1-2026-09-17#p15]; accordingly two consecutive quarters record a warning and three consecutive quarters a failure. Q2 2026 is the first clean quarter after the price increases; the direction is unfavorable, but one quarter is not a trend [src:AXP-RPT1-2026-09-17#p7]; the single-quarter reading for Q1 2026 is still to be backfilled, to settle from which quarter the consecutive count starts."
 
   - id: AXP-Q14
@@ -788,9 +854,9 @@ tests:
       unit: "%"
       period: 1H26
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p15
-      note: "Q2 alone +4.0%, against +15% on the reported basis, which includes reserve releases [src:AXP-RPT1-2026-09-17#p15]."
-    note: "Watch indicator #6 in section ten of the report: the first-year growth assumption of the report's base case is 8.5%, while operating growth excluding the change in provisions is only 4.0% [src:AXP-RPT1-2026-09-17#p15]; either the gap closes in the first half of 2027 or the first-year assumption has to be re-estimated [src:AXP-RPT1-2026-09-17#p15]. \"Converged\" is judged as first-half 2027 growth year on year not below that assumption; the assumption belongs to the first year only, so this test is judged only once (rule.evaluate_on) and then retired, or registered again with the next year's assumption; quarterly readings are recorded as usual."
+      source: AXP-10Q-FY2026Q2#p40
+      note: "Pretax income plus provisions of $10,185 million against $9,435 million in the first half (this archive's computation) [src:AXP-10Q-FY2026Q2#p40]. Q2 2026 alone: +4.0% ($5,155 million against $4,955 million), against +14.7% for pretax income on the reported basis, which includes a reserve release [src:AXP-10Q-FY2026Q2#p39]."
+    note: "Watch indicator #6 in section ten of the report: the first-year growth assumption of the report's base case is 8.5%, while operating growth excluding provisions was only 4.0% in Q2 2026 and 7.9% in the first half of 2026 (this archive's computation) [src:AXP-10Q-FY2026Q2#p39] [src:AXP-10Q-FY2026Q2#p40]; either the gap closes in the first half of 2027 or the first-year assumption has to be re-estimated [src:AXP-RPT1-2026-09-17#p15]. \"Converged\" is judged as first-half 2027 growth year on year not below that assumption; the assumption belongs to the first year only, so this test is judged only once (rule.evaluate_on) and then retired, or registered again with the next year's assumption; quarterly readings are recorded as usual."
 
   # ---------- Watch tests added by this archive (not in section ten of the report; added after the audit) ----------
   - id: AXP-Q15
@@ -813,7 +879,7 @@ tests:
     data: xbrl
     effective_from: FY2026Q3
     first_readable: 2027-02
-    note: "The touchstone in constitution rule 2 is growing free cash flow. For a bank holding company bound by capital requirements, operating cash flow less capital expenditure does not represent money that can be distributed (see AXP-Q4), so growth in diluted EPS stands in here for growth in distributable earnings per share; it complements the payout share in AXP-Q4: if the payout share holds while earnings fall for two consecutive years, the touchstone is weakening all the same. The threshold keeps the templates' usual two-year window and is a standard this archive wrote down in advance. In credit recessions Amex's EPS has historically fallen by half [src:AXP-RPT1-2026-09-17#p12], so a one-year decline is not a signal on its own. The report does not give FY2025 EPS, and the baseline is to be backfilled; the company's 2026 EPS guidance is a range, and the report uses the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-RPT1-2026-09-17#p12]."
+    note: "The touchstone in constitution rule 2 is growing free cash flow. For a bank holding company bound by capital requirements, operating cash flow less capital expenditure does not represent money that can be distributed (see AXP-Q4), so growth in diluted EPS stands in here for growth in distributable earnings per share; it complements the payout share in AXP-Q4: if the payout share holds while earnings fall for two consecutive years, the touchstone is weakening all the same. The threshold keeps the templates' usual two-year window and is a standard this archive wrote down in advance. In credit recessions Amex's diluted EPS has fallen by about half: from $3.34 in 2007 to $1.54 in 2009, −53.9% [src:AXP-10K-FY2009#Ex13], and from $7.99 in 2019 to $3.77 in 2020, −52.8% [src:AXP-10K-FY2021#p92], both this archive's computation; a one-year decline is not a signal on its own. The report does not give FY2025 EPS, and the baseline is to be backfilled; the company's 2026 EPS guidance is a range, and the report uses the midpoint $17.60 of the guidance range $17.30–$17.90 [src:AXP-8K-2026-07-24#EX-99.1] [src:AXP-RPT1-2026-09-17#p12]."
 
   - id: AXP-Q16
     type: quantitative
@@ -831,12 +897,12 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2027-02
     baseline:
-      value: 13
+      value: 13.2
       unit: "%"
       period: 2026Q2
       as_of: 2026-06-30
-      source: AXP-RPT1-2026-09-17#p6
-      note: "The report gives a margin of about 13% and Q2 pretax income of $477 million, against about 22% for U.S. Consumer Services [src:AXP-RPT1-2026-09-17#p6]; this is a single-quarter reading, and the annual baseline is to be backfilled from the segment note of the annual report."
+      source: AXP-8K-2026-07-24#EX-99.2
+      note: "Q2 2026 pretax segment income of $477 million over total revenues net of interest expense of $3,619 million, against 21.7% for U.S. Consumer Services ($2,065 million over $9,524 million), both this archive's computation [src:AXP-8K-2026-07-24#EX-99.2]. This is a single-quarter reading; the annual baseline is to be backfilled from the segment note of the annual report."
     note: "Section three of the report asks for the reinvestment runway to be written out separately: International Card Services is the only runway with room for both growth and margin, and if its margin moved toward that of U.S. Consumer Services, the same revenue would yield nearly twice the pretax income [src:AXP-RPT1-2026-09-17#p6]. The report does not list it in section ten and gives no threshold; this is a watch test added by this archive, and \"down in two consecutive years\" is a standard written down in advance, meaning the runway is heading the wrong way. It does not correspond to any of the four load-bearing mechanisms, so it has no pillar."
 
   - id: AXP-L8
@@ -855,10 +921,10 @@ tests:
     effective_from: FY2026Q3
     first_readable: 2026-10
     baseline:
-      value: The most recent was the settlement of about $230 million with the Department of Justice in January 2025 ($138.7 million under a non-prosecution agreement plus a $108.7 million civil penalty), over deceptive credit card marketing to small businesses in 2014–2017; earlier there were the 1989 Safra affair and the 2012 Consumer Financial Protection Bureau refunds of about $85 million
+      value: "The most recent was the January 2025 resolution of Department of Justice investigations and, in principle, a Federal Reserve matter over sales practices toward U.S. small businesses in 2014–2021, for about $230 million in total after crediting (the company's figure) [src:AXP-8K-2025-01-16#Item8.01]. Its parts were a non-prosecution agreement with the U.S. Attorney's Office for the Eastern District of New York, $138.4 million ($77.7 million criminal fine plus $60.7 million forfeiture), covering only the Payroll Rewards and Premium Wire wire products sold in 2018–2021 [src:USAO-EDNY-2025-01-16], and a $108.7 million civil penalty over deceptive card marketing and falsified applicant income in 2014–2017, \"dummy\" employer identification numbers in 2015 and the first half of 2016, and the same wire products [src:DOJ-OPA-2025-01-16]; these gross amounts do not add up to the company's net total. The company says it ended the practices in 2021 or earlier, so time since the last sales-conduct episode is counted from 2021 [src:AXP-8K-2025-01-16#Item8.01]. Earlier: in 1989 Amex publicly apologized to Edmond Safra for its efforts to injure his reputation and announced an $8 million donation to charities of his choosing [src:SDNY-1993-12-22], and in 2012 the Consumer Financial Protection Bureau ordered three Amex subsidiaries to refund an estimated $85 million to customers [src:CFPB-2012-10-01]"
       as_of: 2026-09-17
-      source: AXP-RPT1-2026-09-17#p9
-    note: "Section five of the report: culture at the servicing end and conduct at the sales end are not the same thing; Amex's trust risk lies at the acquisition end, which is also one of the starting points of the bear case [src:AXP-RPT1-2026-09-17#p9]; culture is rated B+ precisely because the sales side has a record pointing the other way [src:AXP-RPT1-2026-09-17#p3]. Section ten of the report does not list this as a breaker; it is handled here as a watch test added by this archive."
+      source: AXP-8K-2025-01-16#Item8.01
+    note: "Section five of the report: culture at the servicing end and conduct at the sales end are not the same thing; Amex's trust risk lies at the acquisition end, which is also one of the starting points of the bear case [src:AXP-RPT1-2026-09-17#p9]; culture is rated B+ precisely because the sales side has a record pointing the other way [src:AXP-RPT1-2026-09-17#p3]. Section ten of the report does not list this as a breaker; it is handled here as a watch test added by this archive. The Q2 2026 10-Q says Amex expects an enforcement action over its anti-money-laundering programs, which could include civil money penalties [src:AXP-10Q-FY2026Q2#p29]; that matter is not about sales or marketing practices, so on its own it would not decide this question, and the quarterly update watches it."
 
   # ---------- _common: staleness tests ----------
   - id: AXP-S1
@@ -900,13 +966,12 @@ todo:
   - "AXP-Q2 (ROE) has no reading from the report: before the FY2026 annual report is published (around 2027-02), backfill the baseline from the XBRL of the FY2025 annual report and review whether the threshold borrowed from the template suits return on equity; write the conclusion and date into that test's note."
   - The report gives neither FY2025 diluted EPS for AXP-Q15 nor the FY2024 and FY2025 annual pretax margins of International Card Services for AXP-Q16; backfill the baselines from the annual reports.
   - AXP-Q13 needs the single-quarter Q1 2026 year-on-year figures for proprietary new cards and marketing expense (the report gives only Q2 and the first half) to fix the start of the consecutive count; register and read the Q1 earnings 8-K.
-  - "AXP-Q9 needs the single-quarter Q2 2026 increases in net card fees and Card Member services expense as the starting point of the first quarter-on-quarter comparison (the report gives only the first-half 0.62× [src:AXP-RPT1-2026-09-17#p15]); backfill from the Q2 earnings 8-K."
-  - "AXP-Q12 needs the reserve rates for the same quarters of 2025 for the year-on-year reserve-rate leg (the report gives only the current 2.7% and the earlier 3.0% [src:AXP-RPT1-2026-09-17#p11]); also check which basis of reserves over card loans the report's reserve rate uses."
-  - "The Amex side of AXP-Q11 uses what the report calls the \"main net write-off rate\" (2.0% [src:AXP-RPT1-2026-09-17#p11]); check against Exhibit 99.2 of the Q2 earnings 8-K which company basis it corresponds to (principal only, or including interest and fees), and keep that basis from then on."
-  - "AXP-Q8 needs the 2024 co-brand share of billed business (the report gives only 2022, 2023 and 2025 [src:AXP-RPT1-2026-09-17#p7]); backfill from the FY2024 annual report."
+  - "AXP-Q4 reads XBRL, but Amex tags no PaymentsOfDividendsCommonStock, and its cash-flow lines (repurchases of common shares \"and other\", dividends paid including preferred) give 73.8% for FY2023–FY2025 against 71.3% on the company's reported buyback and dividend amounts [src:AXP-10K-FY2025#p95] [src:AXP-10K-FY2025#p63]. Before the first reading (around 2027-02), decide which basis the metric reads and write it into the test, as a definition, not a threshold change."
   - Verify the XBRL concepts Amex actually uses for revenue, interest income and interest expense, pretax income, provisions for credit losses and diluted EPS (AXP-Q1, AXP-Q10, AXP-Q14, AXP-Q15); where they cannot be obtained, change data for the corresponding test to filing_text.
-  - The Amex leg of AXP-Q7 holds almost automatically while loans grow (see that test's note); the threshold is kept as the report wrote it. To change it to "a net build with the reserve rate up year on year", write that down as an operationalization, with the reason, before 2027-01 (the first relevant reading).
+  - The Amex leg of AXP-Q7 holds almost automatically while balances grow (see that test's note); the threshold is kept as the report wrote it. To change it to "a net build with the reserve rate up year on year", write that down as an operationalization, with the reason, before 2027-01 (the first relevant reading).
   - "Most of the evidence for AXP-L2 and AXP-L3 is outside EDGAR (platform rules and developer documentation, court decisions, state legislative records), where the EDGAR-triggered pipeline cannot see it; when judging, register the external sources used in sources.yml (kind web or press_release), and have the company manager search once at each quarterly update. Suggestion for the industry researcher: add a neutral signpost to the payments-card-networks module: a major platform publishes default payment rules that rank by total cost and do not let users lock in a card."
+  - "Before AXP-L2 is first judged, check the published agent-payment specifications of the major platforms (OpenAI's Agentic Commerce Protocol, Google's Agent Payments Protocol) for a default payment-method rule; the baseline's statement that none exists rests on the owner's report."
+  - "Before AXP-L3 is first judged (2027-01), read the Seventh Circuit docket (Nos. 26-1354, 26-1371, 26-1440, 26-1441) to confirm whether an appeal from the June 2026 ruling is pending; the district court's opinion of 2026-09-22 says the parties had not yet re-instituted their appeal [src:NDILL-2026-09-22]."
   - "The company does not disclose renewal rates, attrition rates or service metrics (section twelve of the report): member retention can for now be read only indirectly from net card fee growth; once the company discloses them, add a retention test."
   - "The separate \"internal promotion and talent retention\" dimension in the rating table is left blank by the report; it is not scored and not treated as neutral [src:AXP-RPT1-2026-09-17#p3]."
-  - "The report's reading of the scope of the Credit Card Competition Act rests on the section headings and the interpretations of several analysts and was not checked clause by clause against the full text of the bill [src:AXP-RPT1-2026-09-17#p13]; a primary source tag for the bill's text is still to be added. The 2026-06-01 ruling in the Illinois interchange case and the OCC's April 2026 preemption rule are listed as primary sources in the report's appendix [src:AXP-RPT1-2026-09-17#p17]; source tags are still to be registered for both."
+  - "The report's reading of the scope of the Credit Card Competition Act rests on the section headings and the interpretations of several analysts and was not checked clause by clause against the full text of the bill [src:AXP-RPT1-2026-09-17#p13]; a primary source tag for the bill's text is still to be added. The Illinois ruling of 2026-06-01 and the OCC's April 2026 order are registered (NDILL-2026-06-01, OCC-NR-2026-32, FR-91-23150); on 2026-09-22 the court extended the injunction to federal credit unions [src:NDILL-2026-09-22]."

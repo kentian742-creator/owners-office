@@ -1,20 +1,21 @@
 # MSFT two-way say-do ledger (thesis-ci spec §2; schema: spec/schemas/ledger.schema.json)
 # DESIGN puts the ledger in phase 3, but the management commitments below come due before then, so when the archive was created, those in the 02 report with a date and a source were recorded first,
 # written down before the results come in. Later management commitments and the system's and the owner's expectations are recorded one by one at each earnings event.
-# made_at is the date of the document or call that contains the commitment (the report's footnote number is in the note); where the primary text is available the primary document is cited, otherwise the report page that relays it, with the primary document listed in sources.yml.
-# Settlement criteria (the tolerance for approximate figures, the range of “high teens”, the Xbox definition) must be written before each entry settles; see the todo in thesis.yml.
+# made_at is the date of the document or call that contains the commitment. Microsoft posts full transcripts of its earnings calls on its investor-relations site,
+# so entries cite the call itself (MSFT-CALL-*); the report's footnote number is kept in the note as a pointer.
+# Settlement criteria (the tolerance for approximate figures, the range of “high teens”, the XBOX measure) must be written before each entry settles; see the todo in thesis.yml.
 company: MSFT
 entries:
   - id: MSFT-MGT-01
     side: management
     kind: capex_plan
-    statement: "Calendar 2026 capex of about $175 billion (company definition) [src:MSFT-RPT1-2026-09-17#p4]."
+    statement: "Calendar 2026 capex of about $175 billion (company definition, which includes finance leases) [src:MSFT-CALL-FY2026Q4]."
     made_at: 2026-07-29
     due: 2026-12-31
-    source: MSFT-RPT1-2026-09-17#p4
+    source: MSFT-CALL-FY2026Q4
     status: pending
     settlement_source: null
-    note: "Report footnote [4] (FY26 Q4 call, 2026-07-29). The figure changed from about $190 billion to about $175 billion because, from FY2027, data center leases are mostly booked as operating leases [src:MSFT-RPT1-2026-09-17#p4]. At settlement, add up capex for FY26 Q3 and Q4 and FY27 Q1 and Q2 on the company's definition; readable around the end of January 2027."
+    note: "Given on the FY26 Q4 call of 2026-07-29 [src:MSFT-CALL-FY2026Q4] (report footnote [4], relayed at #p4). The figure changed from about $190 billion, given on the FY26 Q3 call of 2026-04-29 [src:MSFT-CALL-FY2026Q3], to about $175 billion because, effective FY2027, Microsoft extended the estimated useful lives of datacenters and office buildings from 15 to 25 years, so more of its future datacenter leases are classified as operating rather than finance leases, and only finance leases count in capex; the company says its calendar-2026 investment expectations are otherwise unchanged [src:MSFT-CALL-FY2026Q4]. At settlement, add up capex for FY26 Q3 and Q4 and FY27 Q1 and Q2 on the company's definition; the first two were $31.9 billion and $41 billion [src:MSFT-CALL-FY2026Q3] [src:MSFT-CALL-FY2026Q4]; readable around the end of January 2027."
 
   - id: MSFT-MGT-02
     side: management
@@ -25,37 +26,37 @@ entries:
     source: MSFT-8K-2026-09-02#EX-99.1-slide21
     status: pending
     settlement_source: null
-    note: "From Exhibit 99.1, slide 21, FY27 Q1 Outlook Detail: on the new segment basis, the company only mechanically adjusted the FY27 Q1 guidance given on 2026-07-29, moving M365 commercial cloud from about 15% to about 17% in constant currency, and, adjusted for in-period revenue recognition in the prior-year period, from about 16% to about 18% [src:MSFT-8K-2026-09-02#EX-99.1-slide21]. The figure of about 17% first appears in this 8-K [src:MSFT-8K-2026-09-02#EX-99.1-slide21], so made_at takes its date; it is what section four of the report cites (footnote [9]) [src:MSFT-RPT1-2026-09-17#p6]. The original guidance of July 29 was given on that day's earnings call and webcast [src:MSFT-8K-2026-07-29#EX-99.1-Business-Outlook]. Settles with the FY27 Q1 results around the end of October 2026."
+    note: "From Exhibit 99.1, slide 21, FY27 Q1 Outlook Detail: on the new segment basis, the company only mechanically adjusted the FY27 Q1 guidance given on 2026-07-29, moving M365 commercial cloud from about 15% to about 17% in constant currency, and, adjusted for in-period revenue recognition in the prior-year period, from about 16% to about 18% [src:MSFT-8K-2026-09-02#EX-99.1-slide21]. The figure of about 17% first appears in this 8-K [src:MSFT-8K-2026-09-02#EX-99.1-slide21], so made_at takes its date; it is what section four of the report cites (footnote [9]) [src:MSFT-RPT1-2026-09-17#p6]. The original guidance of July 29 was given on that day's earnings call and webcast [src:MSFT-8K-2026-07-29#EX-99.1-Business-Outlook] [src:MSFT-CALL-FY2026Q4]. Settles with the FY27 Q1 results around the end of October 2026."
 
   - id: MSFT-MGT-03
     side: management
     kind: numeric_target
-    statement: "FY2027 Windows OEM and Devices to decline in the high teens [src:MSFT-RPT1-2026-09-17#p3]."
+    statement: "FY2027 Windows OEM and Devices revenue to decline in the high teens [src:MSFT-CALL-FY2026Q4]."
     made_at: 2026-07-29
     due: 2027-06-30
     source: MSFT-CALL-FY2026Q4
     status: pending
     settlement_source: null
-    note: "The guidance was given on the FY26 Q4 earnings call of 2026-07-29: that day's earnings press release says forward-looking guidance is given on the call and webcast [src:MSFT-8K-2026-07-29#EX-99.1-Business-Outlook], and the FY2026 10-K does not contain this guidance [src:MSFT-10K-FY2026]. This archive does not have the full transcript of the call; the wording is taken from section two of the report, which relays it [src:MSFT-RPT1-2026-09-17#p3], and the report footnotes its source as the 10-K and the press release (footnote [1]). made_at is the date of the call. Read as revenue year on year; settles with the FY2027 annual report."
+    note: "Given in the CFO's full-year FY2027 commentary on the FY26 Q4 earnings call of 2026-07-29 [src:MSFT-CALL-FY2026Q4]; that day's earnings press release says forward-looking guidance is given on the call and webcast [src:MSFT-8K-2026-07-29#EX-99.1-Business-Outlook], and the FY2026 10-K does not contain this guidance [src:MSFT-10K-FY2026]. The FY27 Q1 guidance on the same call is a separate figure, a decline in the low twenties [src:MSFT-CALL-FY2026Q4]. The report attributes the guidance to the 10-K and the press release (footnote [1]) [src:MSFT-RPT1-2026-09-17#p3]. Read as revenue year on year; settles with the FY2027 annual report."
 
   - id: MSFT-MGT-04
     side: management
     kind: other
-    statement: "Xbox expected to return to growth in FY2027 after its reset [src:MSFT-RPT1-2026-09-17#p3]."
+    statement: "The CEO expects to return XBOX “to growth in fiscal 2027” [src:MSFT-CALL-FY2026Q4]."
     made_at: 2026-07-29
     due: 2027-06-30
     source: MSFT-CALL-FY2026Q4
     status: pending
     settlement_source: null
-    note: "Same source as MSFT-MGT-03: the FY26 Q4 earnings call; this archive does not have the full transcript, and the wording is taken from section two of the report [src:MSFT-RPT1-2026-09-17#p3]. Before settling, confirm which Xbox measure the guidance refers to (for example Xbox content and services revenue); settles with the FY2027 annual report."
+    note: "Said in Nadella's prepared remarks on the FY26 Q4 earnings call of 2026-07-29, after decisions across content, platform and operations to reset the business for long-term growth [src:MSFT-CALL-FY2026Q4]. The call's only numeric XBOX guidance is for FY27 Q1: content and services revenue to decline in the mid-single digits, and hardware revenue to decline [src:MSFT-CALL-FY2026Q4]; there is no full-year FY2027 XBOX figure. The report presents the remark as FY2027 guidance (footnote [1]) [src:MSFT-RPT1-2026-09-17#p3]. Before settling, fix the measure: this entry reads “the business” as XBOX revenue (content and services plus hardware) year on year in FY2027; settles with the FY2027 annual report."
 
   - id: MSFT-MGT-05
     side: management
     kind: other
-    statement: "The CFO expects headcount to keep falling in FY2027; it was 223,000 at the end of FY2026 [src:MSFT-RPT1-2026-09-17#p7]."
+    statement: "The CFO expects headcount to decrease year over year in FY2027 [src:MSFT-CALL-FY2026Q3]; it was about 223,000 at 2026-06-30 [src:MSFT-10K-FY2026#p9]."
     made_at: 2026-04-29
     due: 2027-06-30
-    source: MSFT-RPT1-2026-09-17#p7
+    source: MSFT-CALL-FY2026Q3
     status: pending
     settlement_source: null
-    note: "Report footnote [28] (FY26 Q3 call, 2026-04-29; the primary source is registered as MSFT-CALL-FY2026Q3). Settlement: kept if the headcount in Part I of the FY2027 annual report is below the end-of-FY2026 figure."
+    note: "FY26 Q3 call, 2026-04-29, in the CFO's closing thoughts on the next fiscal year [src:MSFT-CALL-FY2026Q3] (report footnote [28], relayed at #p7). Settlement: kept if the headcount in Part I of the FY2027 annual report is below the end-of-FY2026 figure."
