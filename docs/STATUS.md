@@ -9,8 +9,8 @@
 
 Phase 0 is complete: acceptance A1–A7 PASS, and the Phase 0 letter to the owner is written (`letters/2026-09.md`). The three repositories have been created on GitHub and pushed (2026-09-25), and CI passed everywhere after the push:
 
-- thesis-ci (public), release tags `v0.2.0`, `v0.2.1` and `v0.3.0` (English first, `C-LANGUAGE`): https://github.com/kentian742-creator/thesis-ci
-- owners-office (public), CI pinned to thesis-ci `v0.3.0`: https://github.com/kentian742-creator/owners-office
+- thesis-ci (public), release tags `v0.2.0`, `v0.2.1`, `v0.3.0` (English first) and `v0.4.0` (the evaluation engine for quantitative tests): https://github.com/kentian742-creator/thesis-ci
+- owners-office (public), CI pinned to thesis-ci `v0.4.0`: https://github.com/kentian742-creator/owners-office
 - owners-office-private (private): https://github.com/kentian742-creator/owners-office-private
 
 Owner decisions on 2026-09-25:
@@ -58,7 +58,7 @@ Timing and acceptance criteria are copied from the roadmap in `DESIGN.md`. Once 
 
 Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped before the results are released; an update merged within 7 days after each report is filed. Sorted by deadline:
 
-- [ ] T22 First fact audit of the PDD archive: 16A extracted 372 facts; 04A (six slices) found 304 accurate, 32 consistent with citation, 20 L2 only, 4 basis issues, 12 errors; HQ rulings written; the company manager's revision is in progress in late November
+- [x] T22 First fact audit of the PDD archive: 16A extracted 372 facts; 04A (six slices) found 304 accurate, 32 consistent with citation, 20 L2 only, 4 basis issues, 12 errors; HQ rulings written; revised on 2026-09-25
 - [x] T18 EDGAR fetching moved into `pipeline/edgar.py` (`decisions/0017`, 64 tests). Estimates (`placeholder: true`; update with `--announced` once the company announces its date): APP FY2026Q3 release around 2026-11-02, deadline 2026-11-01T23:59:59-05:00, **merge by 2026-10-30T00:59:59-04:00 at the latest**; PDD FY2026Q3 release around 2026-11-13, deadline 2026-11-12T23:59:59-05:00, merge by 2026-11-09T23:59:59-05:00 at the latest. Expected release dates for the candidates: AXP 10-14, MSFT 10-21, SPGI 10-21 (BRK is archived)
 - [x] T8 OpenTimestamps (`pipeline/timestamp.py`, `decisions/0018`): CI timestamps pre-registration files automatically once they are merged into main, and upgrades pending proofs every 6 hours; thesis-ci v0.2.1 compares hashes locally first, so an unreachable calendar server no longer causes a false error. Files in which the owner rewrites probabilities are merged at least one day early, so the Bitcoin confirmation lands before the deadline
 - [x] Phase 1 acceptance script (`scripts/accept.py --phase 1`): P1 pre-registrations, P2 updates within 7 days, P3 first monthly letter, P4 phase 0 criteria; items not yet due report PENDING (exit code 3)
@@ -69,7 +69,9 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 - [ ] T11 PDD FY2026Q3 pre-registration (results around late November, 6-K)
 - [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)
 - [ ] T12 The first monthly letter (covering October), by November 2 at the latest
-- [ ] T22 Fact audits of the other four archives (AXP, MSFT, SPGI, BRK)
+- [x] T22 AXP and MSFT fact audits (2026-09-27): AXP 338 facts, 17 errors, revised (test AXP-Q8 superseded by AXP-Q17 from FY2026Q4; baselines of AXP-Q4 and AXP-Q10 corrected); MSFT 460 facts, 41 errors (one later withdrawn), revised (baselines of MSFT-Q12, MSFT-Q4's history and MSFT-L3 corrected). No threshold of a test in force changed. Both are in `mistakes.md`; the report errors are in the private errata table
+- [ ] T22 SPGI (448 facts extracted; audit next) and BRK (extraction next)
+- [ ] Open from the AXP and MSFT audits: AXP-Q4's data basis (XBRL tags vs reported capital returns) decided by the FY2026Q4 update at the latest; MSFT's capital-allocation grade re-examined in the FY2027Q1 update (the incremental return now reads 23.7% and 38.9%, above the report's 20% upgrade line)
 - [ ] T21 Source for price references; T17 source for earnings call transcripts
 
 ## Phase 0 checklist (done)
