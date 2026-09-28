@@ -42,6 +42,14 @@ Owner's Office 是一位个人投资者的研究档案，全文称这位投资�
 
 格式规范、lint 和打分工具单独发布为 [thesis-ci](https://github.com/kentian742-creator/thesis-ci)，任何按同样方式建立的档案都能使用。
 
+## 适合谁看
+
+- **写投资论点的投资者：** [thesis-ci](https://github.com/kentian742-creator/thesis-ci) 能像检查这个档案一样检查你自己的档案：测试在数据公布前写好，每个数字都有出处，业绩公布后门槛即被冻结。`pip install thesis-ci`，再运行 `thesis-ci init`。
+- **为研究搭建大模型流水线的人：** [agents/](../agents/) 里的角色章程（每个角色能读什么、绝不能看什么）；[流水线代码](../pipeline/)（每次调用都记录输入的哈希，输出先校验再使用，过大的步骤拆成分片）；[决策记录](../docs/decisions/)可以当作设计日志来读，其中也记下了哪里出过错。
+- **关注这些公司的读者：** 每份档案都写明论点、能证明它错了的测试，以及审计在其中发现的每一个错误。
+
+提示词暂未公开。
+
 ## 仓库地图
 
 | 路径 | 内容 |
@@ -62,6 +70,10 @@ Owner's Office 是一位个人投资者的研究档案，全文称这位投资�
 - 不给交易信号，不做回测，不预测股价。
 - 不获取每日股价。价格只作为估值用的私有参考数据存在；公开文件唯一可以出现的价格，是公司自己披露的历史平均回购价。
 - 不执行交易。资金永远由主人亲自决定、亲自操作。
+
+## 反馈
+
+最有价值的贡献，是附有一手来源的事实更正：见 [CONTRIBUTING.md](../CONTRIBUTING.md)。对方法的疑问和批评，欢迎发到 [Discussions](https://github.com/kentian742-creator/owners-office/discussions)。
 
 ## 许可
 

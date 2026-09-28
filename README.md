@@ -69,6 +69,20 @@ constitutional amendments always go to the owner.
 The format, linter and scoring tools are published separately as [thesis-ci](https://github.com/kentian742-creator/thesis-ci),
 which works for any archive built the same way.
 
+## Who this is for
+
+- **Investors who keep a written thesis:** [thesis-ci](https://github.com/kentian742-creator/thesis-ci) checks your
+  own archive the way it checks this one: tests written before the data, a source for every number, thresholds frozen
+  once results are out. `pip install thesis-ci`, then `thesis-ci init`.
+- **People building LLM pipelines for research:** the role charters in [agents/](agents/) (what each role may read and
+  what it must never see), the [pipeline](pipeline/) (every call recorded with the hashes of its inputs, outputs
+  validated before use, oversized steps split into slices), and the [decision records](docs/decisions/) as a design
+  log that includes what went wrong.
+- **Readers of these companies:** each archive states the thesis, the tests that would prove it wrong, and every error
+  the audits found in it.
+
+The prompts are not published yet.
+
 ## Repository map
 
 | Path | Contents |
@@ -91,6 +105,12 @@ position sizes, the full research reports and the prompts.
 - No daily share prices. Prices exist only as private reference data for valuation; the only price a public file may
   show is a company's own disclosed average buyback price.
 - No trade execution. Money is always decided and moved by the owner personally.
+
+## Feedback
+
+A correction of fact backed by a primary source is the most useful contribution: see [CONTRIBUTING.md](CONTRIBUTING.md).
+Questions and critique of the method are welcome in
+[Discussions](https://github.com/kentian742-creator/owners-office/discussions).
 
 ## License
 

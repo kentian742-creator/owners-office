@@ -1,0 +1,38 @@
+name: Factual correction
+description: A number, date or statement that its cited primary source does not support.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Corrections go through the same fact audit as the system's own findings, and confirmed ones are
+        recorded in mistakes.md. This archive carries no share prices, valuations or advice, so reports about those are
+        out of scope.
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The file and the sentence, or the test id.
+      placeholder: companies/AXP/thesis.yml, test AXP-Q4 baseline
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: What the archive says
+    validations:
+      required: true
+  - type: textarea
+    id: correct
+    attributes:
+      label: What the primary source says
+      description: Quote the sentence or give the figure.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Link to the primary source, and where in it
+      placeholder: https://www.sec.gov/Archives/edgar/data/... page 43, Table 5
+    validations:
+      required: true

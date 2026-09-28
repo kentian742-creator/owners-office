@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and critique of the method
+    url: https://github.com/kentian742-creator/owners-office/discussions
+    about: A thesis test, a rule, a role's design or a decision record you would change, and why.
+  - name: The format, linter and scoring tools
+    url: https://github.com/kentian742-creator/thesis-ci/issues
+    about: Bugs and false positives of thesis-ci belong in its own repository.
