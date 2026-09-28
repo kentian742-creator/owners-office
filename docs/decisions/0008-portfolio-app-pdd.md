@@ -1,6 +1,7 @@
 # 0008 Holdings and candidate list corrected: holdings APP, PDD
 
-> Supersedes [0002](0002-holdings-and-candidates.md).
+> Supersedes [0002](0002-holdings-and-candidates.md). Its lists are superseded by [0027](0027-holdings-app-spgi-mcd.md)
+> (2026-09-28); its reasons for keeping BRK as the hurdle stand.
 
 ## Background
 

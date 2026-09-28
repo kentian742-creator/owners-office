@@ -2,8 +2,8 @@
 
 - Updated: 2026-09-28
 - Current phase: **Phase 1 · Run one season semi-automatically (in preparation; the Q3 earnings season starts in mid-October)**
-- Portfolio: holdings APP, PDD; candidates AXP, MSFT, SPGI; BRK archived (`decisions/0008`, confirmed by the owner). The `thesis.yml` and `story.md` of all six companies are labeled accordingly.
-- Next hard deadline: APP's FY2026Q3 pre-registration, to be merged by **2026-10-30** at the latest on a conservative estimate (the deadline is the end of 11-01; to be updated once APP announces its release date, to-do T11).
+- Portfolio (owner, 2026-09-28, `decisions/0027`): holdings APP, SPGI, MCD; research coverage (`candidate`) MSFT, AXP, GOOG, AAPL, NVDA; archived BRK, PDD. MCD, GOOG, AAPL and NVDA have no archive yet: they are built from the SEC filings by the pipeline, MCD first.
+- Next hard deadline: SPGI's FY2026Q3 pre-registration, to be merged by **2026-10-17** at the latest on the estimate (release about 10-21, deadline the end of 10-20); then MCD's (archive first; merge about 10-22) and APP's (10-30).
 
 ## Current
 
@@ -36,10 +36,12 @@ From `pipeline.edgar next-release`: three calendar days before the earliest past
 | --- | --- | --- | --- | --- | --- |
 | AXP | candidate | FY2026Q3 | **2026-10-23, about 7:00 ET, announced** (release of 2026-09-23) | — | — |
 | MSFT | candidate | FY2027Q1 | 2026-10-21 | — | — |
-| SPGI | candidate | FY2026Q3 | 2026-10-21 | — | — |
+| SPGI | holding | FY2026Q3 | 2026-10-21 | 2026-10-20T23:59:59-04:00 | **2026-10-17T23:59:59-04:00** |
 | BRK | archive | FY2026Q3 | 2026-10-29 | — | — |
 | APP | holding | FY2026Q3 | 2026-11-02 | 2026-11-01T23:59:59-05:00 | 2026-10-30T00:59:59-04:00 |
-| PDD | holding | FY2026Q3 | 2026-11-13 | 2026-11-12T23:59:59-05:00 | 2026-11-09T23:59:59-05:00 |
+| MCD | holding | FY2026Q3 | about 10-26 (archive first; last three Q3 releases 10-29 to 11-05) | about 10-25 | about 10-22 |
+| GOOG, AAPL, NVDA | candidate | next quarter | computed once each archive exists | — | — |
+| PDD | archive | FY2026Q3 | 2026-11-13 | — (no longer held, `decisions/0027`) | — |
 
 ## Phase overview
 
@@ -69,7 +71,10 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 - [x] Post-earnings pipeline, phase B: the holdings' steps (`decisions/0024`): 15B with blind items and the settlement file (`companies/<T>/prereg/<period>.settlement.yml`, the pipeline's header, a settled result never rewritten); 04B-lite; 14B; 17A, HQ's gate, for every quarterly update, whose decision steers the chain; the second audit round on what 03R changed (16A-r2, 04A-r2) and one return loop (03R-r2, 17A-r2); 14T cut to the sections each test's `where` names (APP about 257k tokens, PDD about 245k); thesis-ci v0.4.0 in `requirements.txt`. Dry runs end to end on AXP, APP and PDD FY2026Q3 (rehearsals on the FY2026Q2 filings until the events exist)
 - [x] Real-backend rehearsal of the post-earnings chain (AXP FY2026Q2 filings, copies of both repositories, 2026-09-27): the 03 draft passed on the first try; 16A succeeded in one call but used 118k of 128k output tokens; 04A could not be sent (about 1.3 million input tokens). Fixed by slices (`decisions/0026`): 16A and 04A run as several calls when one cannot take them, and the outputs are merged; every fact gets exactly one verdict; a request that cannot fit is refused at assembly; better source excerpts. Rehearsed on the real model the same evening: eight slices, each valid on the first try; 385 verdicts (335 accurate, 32 unconfirmed, 11 consistent with citation, 4 L2 only, 3 errors), 34 must-fix findings; about 1.7 million input tokens. The chain stopped at the audit review as designed. Follow-ups: most unconfirmed facts cite documents the pipeline cannot supply yet (other issuers' EDGAR filings, Federal Reserve releases, court dockets). Fixed on 2026-09-28: the pipeline wrote its own fields into the draft's thesis.yml (00 §G8) without the repositories' quotes ("0000004962" became 0000004962, which YAML 1.2 parsers read as a number), so the diff showed 16A and 04A changes the model had not made
 - [ ] T11 APP FY2026Q3 pre-registration (results around early November): freeze the question list → write the pre-registration → merge and timestamp at least 72 hours before the deadline
-- [ ] T11 PDD FY2026Q3 pre-registration (results around late November, 6-K)
+- [ ] T11 SPGI FY2026Q3 pre-registration (now a holding, `decisions/0027`): merge by 2026-10-17 on the estimate
+- [ ] MCD archive from the SEC filings (prompt 01 wired into the runner, then 16A → 04A), then its FY2026Q3 pre-registration (merge about 10-22)
+- [ ] GOOG, AAPL, NVDA archives from the SEC filings (research coverage, `decisions/0027`)
+- [x] ~~T11 PDD FY2026Q3 pre-registration~~: not due; PDD is no longer held (`decisions/0027`)
 - [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)
 - [ ] T12 The first monthly letter (covering October), by November 2 at the latest
 - [x] T22 AXP and MSFT fact audits (2026-09-27): AXP 338 facts, 17 errors, revised (test AXP-Q8 superseded by AXP-Q17 from FY2026Q4; baselines of AXP-Q4 and AXP-Q10 corrected); MSFT 460 facts, 41 errors (one later withdrawn), revised (baselines of MSFT-Q12, MSFT-Q4's history and MSFT-L3 corrected). No threshold of a test in force changed. Both are in `mistakes.md`; the report errors are in the private errata table

@@ -14,8 +14,8 @@ quarter of 2026, will be registered by 2026-10-30, so nothing has been scored ye
 [docs/STATUS.md](docs/STATUS.md).
 
 > **Not investment advice.** This repository records one private investor's method and forecast record. It recommends
-> no security, publishes no valuations or prices, and executes no trades. The owner holds shares of AppLovin and PDD
-> Holdings and follows the other four companies as candidates or for reference; position sizes are never published.
+> no security, publishes no valuations or prices, and executes no trades. The owner holds shares of AppLovin, S&P
+> Global and McDonald's, and follows other companies as research or for reference; position sizes are never published.
 
 A Chinese version of this page is in [zh-CN/README.md](zh-CN/README.md).
 

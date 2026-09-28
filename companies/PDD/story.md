@@ -1,7 +1,7 @@
 ---
 company: PDD
 as_of: 2026-09-24
-status: holding
+status: archive
 category: stalwart
 ---
 

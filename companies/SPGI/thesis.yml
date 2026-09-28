@@ -24,7 +24,7 @@ schema_version: "0.2"
 company: SPGI
 name: S&P Global Inc.
 exchange: NYSE
-status: candidate
+status: holding
 filer:
   cik: "0000064040"
   type: domestic
