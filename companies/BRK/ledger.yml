@@ -14,7 +14,7 @@ entries:
     due: "2028"
     source: BRK-LTR-2025#p12
     status: pending
-    note: "“The next few years” gives no number of years; this archive settles the commitment over three years, on BNSF's operating margin and its gap to the best peer in the FY2028 annual report, an operationalisation written down in advance. The report estimates the gap at about 5.5 percentage points of operating ratio [src:BRK-RPT1-2026-09-18#p7]. The matching question is BRK-L1 in thesis.yml."
+    note: "“The next few years” gives no number of years; this archive settles the commitment over three years, on BNSF's operating margin and its gap to the best peer in the FY2028 annual report, an operationalisation written down in advance. In 2025 the gap to the best peer was about 5.7 percentage points of operating ratio: BNSF 65.5% on Berkshire's segment basis [src:BRK-10K-FY2025#pK-42] against 59.8% at Union Pacific [src:UNP-10K-FY2025#Item7], the lowest reported ratio among the six Class I railroads (this archive's computation, see the note of BRK-L1 in thesis.yml); the report put the gap at about 5.5 points [src:BRK-RPT1-2026-09-18#p7]. At the letter's $230 million of operating cash flow for each percentage point of margin, the gap is worth about $1.3 billion a year (this archive's computation) [src:BRK-LTR-2025#p12]. The matching question is BRK-L1 in thesis.yml."
 
   - id: BRK-M2
     side: management
@@ -24,17 +24,17 @@ entries:
     due: "2027"
     source: BRK-LTR-2025#p10
     status: pending
-    note: "The letter gives no deadline; this archive settles the commitment over two years, on GEICO's year-on-year change in policies in force and its combined ratio in the FY2027 annual report, an operationalisation written down in advance; in between, BRK-Q10 tracks it every quarter. In Q1 2026 policies in force were +2% year on year, against +11% at Progressive over the same period [src:BRK-RPT1-2026-09-18#p6]. The matching question is BRK-L1 in thesis.yml."
+    note: "The letter gives no deadline; this archive settles the commitment over two years, on GEICO's year-on-year change in policies in force and its combined ratio in the FY2027 annual report, an operationalisation written down in advance (since FY2025 the 10-K has given only the direction of the change in policies in force) [src:BRK-10K-FY2025#pK-36]; in between, BRK-Q10 tracks it every quarter. GEICO's policies in force at 2026-03-31 were about 2% above a year earlier, as the CEO said at the annual meeting of 2026-05-02 (evidence level L2: third-party accounts of the meeting, not in any filing) [src:BRK-NEWS-2026-05-04-CARRIERMANAGEMENT] [src:BRK-RPT1-2026-09-18#p6], against 10.9% for Progressive's personal auto policies in force (9% for all its personal lines policies) [src:PGR-10Q-FY2026Q1#p23] [src:PGR-10Q-FY2026Q1#p33]. The matching question is BRK-L1 in thesis.yml."
 
   - id: BRK-M3
     side: management
     kind: other
-    statement: "The current CEO has committed to put his entire after-tax salary into Berkshire Class A shares every year while in office [src:BRK-RPT1-2026-09-18#p8]; on 4 March 2026 he bought 21 Class A shares, at the prices shown in the Form 4 [src:BRK-4-2026-03-05#TableII]."
-    made_at: 2026-03-13
+    statement: "On 2026-03-05, in an interview on CNBC's “Squawk Box”, the CEO committed to put his entire after-tax salary into Berkshire shares every year while he is CEO (stated in the interview, not in any filing) [src:BRK-NEWS-2026-03-05-CNBC]. His salary is $25 million a year from 2026-01-01 [src:BRK-8KA-2026-01-06#Item5.02]; on 2026-03-04 he bought 21 Class A shares for about $15.3 million, at the prices shown in the Form 4 [src:BRK-4-2026-03-05#TableII]."
+    made_at: 2026-03-05
     due: "2027"
-    source: BRK-RPT1-2026-09-18#p8
+    source: BRK-NEWS-2026-03-05-CNBC
     status: pending
-    note: "The report gives the 2026 proxy statement and the Form 4 as its sources [src:BRK-RPT1-2026-09-18#p8]; made_at takes the date of the proxy statement [src:BRK-RPT1-2026-09-18#p17], an inference by this archive, to be checked once EDGAR is reachable. The purchase for 2026 has been made; this entry settles on the 2027 Form 4, and one entry will be recorded for each year after that."
+    note: "The commitment's only record is the interview, which CNBC published as an unofficial transcript (evidence level L2); the 2026 proxy statement, which the report names as its source [src:BRK-RPT1-2026-09-18#p8], contains neither the commitment nor the 2026 salary [src:BRK-DEF14A-2026-03-13]. The first purchase is on the Form 4, dated 2026-03-04, the day before the interview [src:BRK-4-2026-03-05#TableII]. Abel said each later purchase follows the filing of the 10-K and the letter and a 48-hour cooling-off period [src:BRK-NEWS-2026-03-05-CNBC], so the first check of the promise is a Form 4 in early March 2027; this entry settles on it, and one entry will be recorded for each year after that."
 
   - id: BRK-M4
     side: management

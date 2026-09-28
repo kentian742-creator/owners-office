@@ -1,6 +1,10 @@
 # BRK source tags (public; thesis-ci spec §3; schema: spec/schemas/sources.schema.json)
 # Locator convention: N in BRK-RPT1-2026-09-18#pN, BRK-LTR-2025#pN and BRK-LTR-2024#pN is the physical PDF page number,
-# matching the ===== [page N] ===== markers of the text extraction (see docs/decisions/0006).
+# matching the ===== [page N] ===== markers of the text extraction (see docs/decisions/0006). For filings, #pN is the
+# page number printed in the filing (#pK-34 for page K-34 of a Berkshire 10-K); #ItemN names a part of a filing.
+# The entries after BHE-10K-FY2025 were added in the revision after the first fact audit (2026-09-27); every EDGAR entry
+# was checked that day against its filing index page on EDGAR (form, filing date, period of report, accession), and
+# every web document against the publisher's own page.
 sources:
   - tag: BRK-RPT1-2026-09-18
     kind: report
@@ -20,7 +24,7 @@ sources:
     filed: 2026-08-10
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526341032/0001193125-26-341032-index.htm
     primary: true
-    note: The 2026-08-08 (a Saturday) given in the report's appendix is the date of the earnings press release, and the 10-Q was signed on the same day; the EDGAR filing date is 2026-08-10. The report uses it for the balance sheet, segment earnings, float, buybacks, share count and the Taylor Morrison timeline.
+    note: The 2026-08-08 (a Saturday) given in the report's appendix is the date of the earnings press release (BRK-8K-2026-08-11, Item 2.02), of the 10-Q's signatures and of its posting on berkshirehathaway.com; EDGAR accepted the 10-Q on Monday 2026-08-10 at 06:01:51 ET, which is its filing date. The report uses it for the balance sheet, segment earnings, float, buybacks, share count and the Taylor Morrison timeline; the cover gives the shares outstanding at 2026-07-29 (#cover).
 
   - tag: BRK-10Q-FY2026Q1
     kind: filing
@@ -44,7 +48,7 @@ sources:
     filed: 2026-03-02
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526083899/0001193125-26-083899-index.htm
     primary: true
-    note: The report uses it for the breakdown of operating earnings, the segment tables, the combined ratio, and the statement that the parent company does not guarantee the borrowings of BHE, BNSF and their subsidiaries; the shareholder letter attached to the annual report is registered separately (BRK-LTR-2025).
+    note: The report uses it for the breakdown of operating earnings, the segment tables, the unit loss and expense ratios (the Form 10-K does not use the term “combined ratio”; the group combined ratio is stated in the letter, BRK-LTR-2025#p9), and the statement that the parent company does not guarantee the borrowings of BHE, BNSF and their subsidiaries. The shareholder letter is not part of the Form 10-K; it opens the 2025 Annual Report to shareholders (posted on berkshirehathaway.com on 2026-02-28 and filed on EDGAR as form ARS, BRK-ARS-FY2025, on 2026-03-13) and is registered separately (BRK-LTR-2025).
 
   - tag: BRK-DEF14A-2026-03-13
     kind: filing
@@ -57,7 +61,7 @@ sources:
     date: 2026-03-13
     url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526106253/0001193125-26-106253-index.htm
     primary: true
-    note: The report uses it for the CEO's pay structure and shareholding, the terms of the directors and the employee count.
+    note: The report uses it for the CEO's pay structure and shareholding, the terms of the directors and the employee count. It contains neither the CEO's commitment to buy Berkshire shares with his salary nor his 2026 salary (see BRK-NEWS-2026-03-05-CNBC and BRK-8KA-2026-01-06), and no headquarters headcount.
 
   - tag: BRK-4-2026-03-05
     kind: filing
@@ -104,20 +108,578 @@ sources:
     filed: 2026-03-02
     url: https://www.sec.gov/Archives/edgar/data/1081316/000108131626000003/0001081316-26-000003-index.htm
     primary: true
-    note: A combined filing with PacifiCorp and other subsidiaries. The report uses it for BHE's three-year capital expenditure plan; the basis for the contracted data-centre load comes from BHE's investor materials, which are not registered separately.
+    note: A combined filing with PacifiCorp and other subsidiaries. The report uses it for BHE's three-year capital expenditure plan; the contracted data-centre load comes from BHE's 2026 investor presentation (BHE-WEB-2026-03-24-1). This archive also cites it for the wildfire accrual at 2025-12-31 (p190), the redemption of the last BHE preferred stock held by Berkshire subsidiaries (p194) and PacifiCorp's credit ratings (p208).
 
   - tag: BRK-LTR-2025
     kind: letter
     title: Letter to Berkshire shareholders (for 2025, signed by Greg Abel, 2026-02-28)
     date: 2026-02-28
+    url: https://www.berkshirehathaway.com/letters/2025ltr.pdf
     location: private:reports/2025Greg(read-ed).pdf
     primary: true
-    note: The shareholder letter attached to the company's 2025 annual report, in the owner's annotated copy; the year in the tag is the fiscal year the letter covers.
+    note: The CEO's letter that opens Berkshire's 2025 Annual Report to shareholders (posted on berkshirehathaway.com on 2026-02-28 and filed on EDGAR as form ARS on 2026-03-13, BRK-ARS-FY2025); it is not part of the Form 10-K. The url is the company's own PDF, listed on berkshirehathaway.com/letters/gealetters.html (Greg Abel's letters); the location is the owner's annotated copy, which has the same pagination (checked on p9, p11 and p18, the signature page). The year in the tag is the fiscal year the letter covers.
 
   - tag: BRK-LTR-2024
     kind: letter
     title: Letter to Berkshire shareholders (for 2024, signed by Warren Buffett, 2025-02-22)
     date: 2025-02-22
+    url: https://www.berkshirehathaway.com/letters/2024ltr.pdf
     location: private:reports/2024Warren.pdf
     primary: true
-    note: The shareholder letter attached to the company's 2024 annual report; the year in the tag is the fiscal year the letter covers. This archive uses it for 2024 after-tax operating earnings by segment (p5, the baseline of BRK-Q1), the one and only cash dividend, in 1967 (p6; P4, BRK-L3, BRK-Q15 and ledger entry BRK-M4), and to check a statement about a share issue (p4; see the todo in thesis.yml).
+    note: The chairman's letter that opens Berkshire's 2024 Annual Report to shareholders; it is not part of the Form 10-K. The url is the company's own PDF (berkshirehathaway.com/letters/letters.html); the location is the owner's annotated copy, which has the same pagination (checked on p4, p6 and p13, the signature page). The year in the tag is the fiscal year the letter covers. This archive uses it for 2024 after-tax operating earnings by segment (p5), the change of control in 1965 (p5), the one and only cash dividend, paid on 1967-01-03 (p6), and the purchase of the BHE minority stake (p4).
+
+  - tag: BRK-ARS-FY2025
+    kind: filing
+    title: Berkshire Hathaway Inc. 2025 Annual Report to shareholders (form ARS)
+    issuer_cik: "0001067983"
+    form: ARS
+    period: FY2025
+    accession: 0001193125-26-106284
+    filed: 2026-03-13
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526106284/0001193125-26-106284-index.htm
+    primary: true
+    note: The annual report sent to shareholders, which opens with the CEO's letter (BRK-LTR-2025) and reproduces the Owner's Manual; the same document is posted on berkshirehathaway.com (2025ar/2025ar.pdf). Period of report 2025-12-31.
+
+  - tag: BRK-10K-FY1998
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 1998 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY1998
+    accession: 0000950150-99-000379
+    filed: 1999-03-30
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000095015099000379/0000950150-99-000379-index.htm
+    primary: true
+    note: "Note 2, business acquisitions (p34): General Re acquired in December 1998 for about 272,200 Class A equivalent shares, total consideration about $22 billion; with 1,234,127 Class A equivalent shares outstanding at 1997-12-31, the issue diluted shareholders by 22.1% (this archive's computation)."
+
+  - tag: BRK-10K-FY2001
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 2001 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY2001
+    accession: 0000950150-02-000303
+    filed: 2002-03-29
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000095015002000303/0000950150-02-000303-index.htm
+    primary: true
+    note: "MD&A, insurance underwriting: pre-tax underwriting losses of all Berkshire insurance of $1,394 million, $1,615 million and $4,067 million in 1999–2001 (p18), of which General Re $1,184 million, $1,254 million and $3,671 million (p20)."
+
+  - tag: BRK-10K-FY2008
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 2008 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY2008
+    accession: 0001193125-09-042055
+    filed: 2009-03-02
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312509042055/0001193125-09-042055-index.htm
+    primary: true
+    note: "Item 7, financial condition: in the fourth quarter of 2008 Berkshire put $6.5 billion into Wrigley subordinated notes and preferred stock, $5 billion into Goldman Sachs perpetual preferred stock with warrants and $3 billion into General Electric perpetual preferred stock with warrants."
+
+  - tag: BRK-10K-FY2010
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 2010 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY2010
+    accession: 0001193125-11-048914
+    filed: 2011-02-28
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312511048914/0001193125-11-048914-index.htm
+    primary: true
+    note: "MD&A, financial condition (p44): about $10.6 billion of shareholders' equity came from the Berkshire shares issued in the BNSF acquisition."
+
+  - tag: BRK-10K-FY2015
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 2015 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY2015
+    accession: 0001193125-16-483023
+    filed: 2016-02-29
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312516483023/0001193125-16-483023-index.htm
+    primary: true
+    note: "Item 5 (p30): the repurchase program then allowed buybacks at prices no higher than a 20% premium over book value. Item 6 (p31): Berkshire shareholders' equity per Class A equivalent share of $155,501 at 2015-12-31. Item 7 (p32): net earnings attributable to Berkshire of $24,083 million, of which $6,725 million were investment and derivative gains. Float approximated $88 billion at 2015-12-31."
+
+  - tag: BRK-10K-FY2020
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 2020 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY2020
+    accession: 0001564590-21-009611
+    filed: 2021-03-01
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000156459021009611/0001564590-21-009611-index.htm
+    primary: true
+    note: "Item 8, consolidated statements of cash flows for 2020: purchases of equity securities $30,161 million, sales $38,756 million; acquisition of treasury stock $24,706 million; purchases of property, plant and equipment $13,012 million; acquisitions of businesses $2,532 million; purchases of Treasury bills and fixed maturities $208,429 million against sales of $31,873 million and redemptions and maturities of $149,709 million."
+
+  - tag: BRK-10K-FY2022
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 2022 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY2022
+    accession: 0000950170-23-004451
+    filed: 2023-02-27
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000095017023004451/0000950170-23-004451-index.htm
+    primary: true
+    note: "Item 8, consolidated statements of cash flows: acquisition of treasury stock of $27,061 million in 2021 and $7,854 million in 2022."
+
+  - tag: BRK-10K-FY2023
+    kind: filing
+    title: Berkshire Hathaway Inc. annual report for fiscal 2023 (Form 10-K)
+    issuer_cik: "0001067983"
+    form: 10-K
+    period: FY2023
+    accession: 0000950170-24-019719
+    filed: 2024-02-26
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000095017024019719/0000950170-24-019719-index.htm
+    primary: true
+    note: "Item 8, consolidated statements of cash flows: net cash flows from operating activities of $39,427 million (2021), $37,350 million (2022) and $49,196 million (2023). The common stock note shows no shares issued in 2021–2023 other than through Class A to Class B conversions."
+
+  - tag: BRK-10Q-FY2011Q2
+    kind: filing
+    title: Berkshire Hathaway Inc. quarterly report for Q2 2011 (Form 10-Q, period ended 2011-06-30)
+    issuer_cik: "0001067983"
+    form: 10-Q
+    period: FY2011Q2
+    accession: 0001157523-11-004793
+    filed: 2011-08-05
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000115752311004793/0001157523-11-004793-index.htm
+    primary: true
+    note: Six-month cash-flow statement, subtracted from the nine-month statement of BRK-10Q-FY2011Q3 to give the third quarter of 2011.
+
+  - tag: BRK-10Q-FY2011Q3
+    kind: filing
+    title: Berkshire Hathaway Inc. quarterly report for Q3 2011 (Form 10-Q, period ended 2011-09-30)
+    issuer_cik: "0001067983"
+    form: 10-Q
+    period: FY2011Q3
+    accession: 0001157523-11-006500
+    filed: 2011-11-04
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000115752311006500/0001157523-11-006500-index.htm
+    primary: true
+    note: "Q3 2011 on the cash-flow statements (nine months less six months): equity purchases $6,898 million, other investments $5,000 million (Bank of America 6% preferred stock with warrants, 2011-09-01) and business acquisitions net of cash $7,812 million (Lubrizol, completed 2011-09-16), $19.7 billion in total (this archive's computation)."
+
+  - tag: BRK-10Q-FY2022Q1
+    kind: filing
+    title: Berkshire Hathaway Inc. quarterly report for Q1 2022 (Form 10-Q, period ended 2022-03-31)
+    issuer_cik: "0001067983"
+    form: 10-Q
+    period: FY2022Q1
+    accession: 0001564590-22-016907
+    filed: 2022-05-02
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000156459022016907/0001564590-22-016907-index.htm
+    primary: true
+    note: "Cash-flow statement: purchases of equity securities $51,119 million, sales $9,724 million; notes: agreement of 2022-03-21 to acquire Alleghany for about $11.6 billion in cash."
+
+  - tag: BRK-10Q-FY2024Q2
+    kind: filing
+    title: Berkshire Hathaway Inc. quarterly report for Q2 2024 (Form 10-Q, period ended 2024-06-30)
+    issuer_cik: "0001067983"
+    form: 10-Q
+    period: FY2024Q2
+    accession: 0000950170-24-090305
+    filed: 2024-08-05
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000095017024090305/0000950170-24-090305-index.htm
+    primary: true
+    note: "Part II, Item 2 (p49): the last share repurchase before the pause, 100 Class A shares in May 2024, none in June. GEICO: policies in force down 4.3% over the year to 2024-06-30."
+
+  - tag: BRK-10Q-FY2025Q3
+    kind: filing
+    title: Berkshire Hathaway Inc. quarterly report for Q3 2025 (Form 10-Q, period ended 2025-09-30)
+    issuer_cik: "0001067983"
+    form: 10-Q
+    period: FY2025Q3
+    accession: 0001193125-25-261548
+    filed: 2025-11-03
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312525261548/0001193125-25-261548-index.htm
+    primary: true
+    note: "GEICO section of the MD&A: premiums written rose, “reflecting an increase in policies-in-force”, with no number for the change."
+
+  - tag: BRK-8K-2018-07-19
+    kind: filing
+    title: Berkshire Hathaway Inc. current report (Form 8-K, event date 2018-07-17)
+    issuer_cik: "0001067983"
+    form: 8-K
+    accession: 0001193125-18-221490
+    filed: 2018-07-19
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312518221490/0001193125-18-221490-index.htm
+    primary: true
+    note: "Item 8.01 and Exhibit 99.1: on 2018-07-17 the board amended the share repurchase program, which since then permits buybacks when the CEO, in consultation with the chairman, believes the price is below intrinsic value, conservatively determined."
+
+  - tag: BRK-8K-2025-12-11
+    kind: filing
+    title: Berkshire Hathaway Inc. current report (Form 8-K, event date 2025-12-08)
+    issuer_cik: "0001067983"
+    form: 8-K
+    accession: 0001193125-25-314935
+    filed: 2025-12-11
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312525314935/0001193125-25-314935-index.htm
+    primary: true
+    note: "Items 5.02 and 9.01; Exhibit 99.1, release of 2025-12-08: Adam M. Johnson appointed President of the Consumer Products, Service and Retailing businesses; Michael J. O'Sullivan appointed Senior Vice President and General Counsel from 2026-01-01, a new position; Gregory E. Abel to become President and CEO on 2026-01-01; Nancy L. Pierce appointed CEO of GEICO."
+
+  - tag: BRK-8KA-2026-01-06
+    kind: filing
+    title: Berkshire Hathaway Inc. amended current report (Form 8-K/A, filed 2026-01-06)
+    issuer_cik: "0001067983"
+    form: 8-K/A
+    accession: 0001193125-26-004727
+    filed: 2026-01-06
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526004727/0001193125-26-004727-index.htm
+    primary: true
+    note: "Item 5.02(c): on 2026-01-01 Greg Abel became President and Chief Executive Officer, and his annual cash salary increased to $25 million. EDGAR gives 2025-05-03 as the period of report, the date of the original 8-K on his appointment."
+
+  - tag: BRK-8K-2026-03-05
+    kind: filing
+    title: Berkshire Hathaway Inc. current report (Form 8-K, event date 2026-03-04)
+    issuer_cik: "0001067983"
+    form: 8-K
+    accession: 0001193125-26-092557
+    filed: 2026-03-05
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526092557/0001193125-26-092557-index.htm
+    primary: true
+    note: "Item 8.01: Berkshire commenced repurchasing its shares under its repurchase policy on Wednesday, 2026-03-04."
+
+  - tag: BRK-8K-2026-05-07
+    kind: filing
+    title: Berkshire Hathaway Inc. current report (Form 8-K, event date 2026-05-02)
+    issuer_cik: "0001067983"
+    form: 8-K
+    accession: 0001193125-26-212148
+    filed: 2026-05-07
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526212148/0001193125-26-212148-index.htm
+    primary: true
+    note: "Items 2.02, 5.02, 5.03, 5.07 and 9.01: first-quarter 2026 earnings release; Item 5.07 gives the votes of the annual meeting of 2026-05-02, at which all thirteen directors, Ajit Jain among them, were re-elected; the Item 5.02 matter is a change of chief financial officer."
+
+  - tag: BRK-8K-2026-08-11
+    kind: filing
+    title: Berkshire Hathaway Inc. current report (Form 8-K, event date 2026-08-08)
+    issuer_cik: "0001067983"
+    form: 8-K
+    accession: 0001193125-26-344495
+    filed: 2026-08-11
+    date: 2026-08-08
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526344495/0001193125-26-344495-index.htm
+    primary: true
+    note: "Item 2.02: on 2026-08-08 Berkshire issued a press release announcing its earnings for the second quarter and first six months of 2026 (Exhibit 99.1). The 8-K was filed after the 10-Q (BRK-10Q-FY2026Q2), as Berkshire's results 8-Ks usually are."
+
+  - tag: BRK-13FHR-FY2025Q4
+    kind: filing
+    title: Berkshire Hathaway Inc. quarterly holdings report of institutional managers (Form 13F-HR, period ended 2025-12-31)
+    issuer_cik: "0001067983"
+    form: 13F-HR
+    period: FY2025Q4
+    accession: 0001193125-26-054580
+    filed: 2026-02-17
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526054580/0001193125-26-054580-index.htm
+    primary: true
+    note: "Information table: 17,846,142 Alphabet Class A shares at 2025-12-31, no Class C shares."
+
+  - tag: BRK-13FHR-FY2026Q2
+    kind: filing
+    title: Berkshire Hathaway Inc. quarterly holdings report of institutional managers (Form 13F-HR, period ended 2026-06-30)
+    issuer_cik: "0001067983"
+    form: 13F-HR
+    period: FY2026Q2
+    accession: 0001193125-26-352200
+    filed: 2026-08-14
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526352200/0001193125-26-352200-index.htm
+    primary: true
+    note: "Information table: 78,791,167 Alphabet Class A and 27,188,433 Class C shares at 2026-06-30, 88,133,458 more than at 2025-12-31 (this archive's computation). A 13F-HR gives shares and fair value, not cost."
+
+  - tag: BRK-4-2026-07-15
+    kind: filing
+    title: Form 4 of Warren E. Buffett (conversion and gift of Berkshire shares, transaction date 2026-07-14)
+    issuer_cik: "0001067983"
+    form: "4"
+    accession: 0001193125-26-304843
+    filed: 2026-07-15
+    url: https://www.sec.gov/Archives/edgar/data/1067983/000119312526304843/0001193125-26-304843-index.htm
+    primary: true
+    note: "On 2026-07-14 Warren Buffett converted 8,000 Class A shares into 12,000,000 Class B shares and gave the Class B shares away in four gifts (code G), leaving 188,290 Class A and 1,162 Class B shares."
+
+  - tag: BHE-10K-FY2020
+    kind: filing
+    title: Berkshire Hathaway Energy Company annual report for fiscal 2020 (Form 10-K)
+    issuer_cik: "0001081316"
+    form: 10-K
+    period: FY2020
+    accession: 0001081316-21-000011
+    filed: 2021-03-01
+    url: https://www.sec.gov/Archives/edgar/data/1081316/000108131621000011/0001081316-21-000011-index.htm
+    primary: true
+    note: "Item 7 (p112) and the shareholders' equity note (p190): on 2020-10-29 BHE issued 3,750,000 shares of 4.00% perpetual preferred stock, $3.75 billion, to subsidiaries of Berkshire Hathaway to fund the cash consideration of the GT&S and Q-Pipe gas transmission and storage acquisitions."
+
+  - tag: PGR-10Q-FY2026Q1
+    kind: filing
+    title: The Progressive Corporation quarterly report for Q1 2026 (Form 10-Q, period ended 2026-03-31)
+    issuer_cik: "0000080661"
+    form: 10-Q
+    period: FY2026Q1
+    accession: 0000080661-26-000177
+    filed: 2026-05-04
+    url: https://www.sec.gov/Archives/edgar/data/80661/000008066126000177/0000080661-26-000177-index.htm
+    primary: true
+    note: "MD&A: personal auto policies in force “were up 11% compared to March 2025” (p23); the policies-in-force table (p33) gives agency auto 11,056 thousand and direct auto 16,572 thousand against 10,146 and 14,771 thousand a year earlier, +10.9% (this archive's computation), and 9% growth for all Personal Lines policies (p23)."
+
+  - tag: PGR-10Q-FY2026Q2
+    kind: filing
+    title: The Progressive Corporation quarterly report for Q2 2026 (Form 10-Q, period ended 2026-06-30)
+    issuer_cik: "0000080661"
+    form: 10-Q
+    period: FY2026Q2
+    accession: 0000080661-26-000308
+    filed: 2026-08-03
+    url: https://www.sec.gov/Archives/edgar/data/80661/000008066126000308/0000080661-26-000308-index.htm
+    primary: true
+    note: "Policies-in-force table (p37): personal auto 27,932 thousand at 2026-06-30 against 25,668 thousand a year earlier, +8.8% (this archive's computation)."
+
+  - tag: UNP-10K-FY2025
+    kind: filing
+    title: Union Pacific Corporation annual report for fiscal 2025 (Form 10-K)
+    issuer_cik: "0000100885"
+    form: 10-K
+    period: FY2025
+    accession: 0000100885-26-000037
+    filed: 2026-02-06
+    url: https://www.sec.gov/Archives/edgar/data/100885/000010088526000037/0000100885-26-000037-index.htm
+    primary: true
+    note: "Item 7: operating ratio of 59.8% in 2025; operating income $9,846 million on operating revenues of $24,510 million, a 40.2% operating margin (this archive's computation)."
+
+  - tag: CSX-10K-FY2025
+    kind: filing
+    title: CSX Corporation annual report for fiscal 2025 (Form 10-K)
+    issuer_cik: "0000277948"
+    form: 10-K
+    period: FY2025
+    accession: 0000277948-26-000006
+    filed: 2026-02-12
+    url: https://www.sec.gov/Archives/edgar/data/277948/000027794826000006/0000277948-26-000006-index.htm
+    primary: true
+    note: "Operating income $4,521 million on revenue of $14,092 million in 2025, a 32.1% operating margin (this archive's computation)."
+
+  - tag: NSC-10K-FY2025
+    kind: filing
+    title: Norfolk Southern Corporation annual report for fiscal 2025 (Form 10-K)
+    issuer_cik: "0000702165"
+    form: 10-K
+    period: FY2025
+    accession: 0001628280-26-006268
+    filed: 2026-02-09
+    url: https://www.sec.gov/Archives/edgar/data/702165/000162828026006268/0001628280-26-006268-index.htm
+    primary: true
+    note: "Operating income $4,356 million on revenue of $12,180 million in 2025, a 35.8% operating margin (this archive's computation)."
+
+  - tag: CP-10K-FY2025
+    kind: filing
+    title: Canadian Pacific Kansas City Limited annual report for fiscal 2025 (Form 10-K)
+    issuer_cik: "0000016875"
+    form: 10-K
+    period: FY2025
+    accession: 0000016875-26-000008
+    filed: 2026-02-26
+    url: https://www.sec.gov/Archives/edgar/data/16875/000001687526000008/0000016875-26-000008-index.htm
+    primary: true
+    note: "Operating income C$5,609 million on total revenues of C$15,078 million in 2025, a 37.2% operating margin (this archive's computation)."
+
+  - tag: CNI-6K-2026-02-04
+    kind: filing
+    title: Canadian National Railway Company report of a foreign private issuer (Form 6-K, 2025 annual financial statements)
+    issuer_cik: "0000016868"
+    form: 6-K
+    period: FY2025
+    accession: 0000016868-26-000011
+    filed: 2026-02-04
+    url: https://www.sec.gov/Archives/edgar/data/16868/000001686826000011/0000016868-26-000011-index.htm
+    primary: true
+    note: "Financial statements for fiscal 2025 furnished on Form 6-K (period of report 2025-12-31): operating income C$6,587 million on revenues of C$17,304 million, a 38.1% operating margin (this archive's computation). CN's annual report on Form 40-F was filed the same day under another accession."
+
+  - tag: GOOGL-8K-2026-06-04
+    kind: filing
+    title: Alphabet Inc. current report (Form 8-K, filed 2026-06-04)
+    issuer_cik: "0001652044"
+    form: 8-K
+    accession: 0001193125-26-257724
+    filed: 2026-06-04
+    url: https://www.sec.gov/Archives/edgar/data/1652044/000119312526257724/0001193125-26-257724-index.htm
+    primary: true
+    note: "Item 8.01: on 2026-06-01 Alphabet agreed to sell 14,212,035 Class A and 14,359,656 Class C shares to an affiliate of Berkshire Hathaway in a private placement, for gross proceeds of $10 billion."
+
+  - tag: OXY-8K-2025-10-03
+    kind: filing
+    title: Occidental Petroleum Corporation current report (Form 8-K, event date 2025-10-01)
+    issuer_cik: "0000797468"
+    form: 8-K
+    accession: 0001140361-25-037234
+    filed: 2025-10-03
+    url: https://www.sec.gov/Archives/edgar/data/797468/000114036125037234/0001140361-25-037234-index.htm
+    primary: true
+    note: "Item 1.01: agreement of 2025-10-01 under which Berkshire Hathaway acquires OxyChem in an all-cash transaction for $9.7 billion, subject to customary adjustments."
+
+  - tag: BRK-LTR-2009
+    kind: letter
+    title: Letter to Berkshire shareholders (for 2009, signed by Warren Buffett, 2010-02-26)
+    date: 2010-02-26
+    url: https://www.berkshirehathaway.com/letters/2009ltr.pdf
+    primary: true
+    note: "p15: the BNSF acquisition required Berkshire to issue about 95,000 Class A equivalent shares, 6.1% of those previously outstanding."
+
+  - tag: BRK-LTR-2013
+    kind: letter
+    title: Letter to Berkshire shareholders (for 2013, signed by Warren Buffett, 2014-02-28)
+    date: 2014-02-28
+    url: https://www.berkshirehathaway.com/letters/2013ltr.pdf
+    primary: true
+    note: "p8: General Re, bought in 1998, described as a reinsurance powerhouse whose float has been better than cost-free."
+
+  - tag: BRK-LTR-2014
+    kind: letter
+    title: Letter to Berkshire shareholders (for 2014, signed by Warren Buffett, 2015-02-27)
+    date: 2015-02-27
+    url: https://www.berkshirehathaway.com/letters/2014ltr.pdf
+    primary: true
+    note: "p26: the most gruesome of Buffett's mistakes was the purchase of Dexter Shoe in 1993, paid for in Berkshire stock; several later errors also used Berkshire shares."
+
+  - tag: BRK-LTR-2015
+    kind: letter
+    title: Letter to Berkshire shareholders (for 2015, signed by Warren Buffett, 2016-02-27)
+    date: 2016-02-27
+    url: https://www.berkshirehathaway.com/letters/2015ltr.pdf
+    primary: true
+    note: "pp10–11: General Re's float has been considerably better than cost-free under its management."
+
+  - tag: BRK-LTR-2016
+    kind: letter
+    title: Letter to Berkshire shareholders (for 2016, signed by Warren Buffett, 2017-02-25)
+    date: 2017-02-25
+    url: https://www.berkshirehathaway.com/letters/2016ltr.pdf
+    primary: true
+    note: "p3: issuing 272,200 Berkshire shares to buy General Re was a terrible mistake, though General Re itself became a fine insurance operation."
+
+  - tag: BRK-LTR-2017
+    kind: letter
+    title: Letter to Berkshire shareholders (for 2017, signed by Warren Buffett, 2018-02-24)
+    date: 2018-02-24
+    url: https://www.berkshirehathaway.com/letters/2017ltr.pdf
+    primary: true
+    note: "p2: under the new accounting rule, the net change in unrealised gains and losses on stocks held must be included in net income."
+
+  - tag: BRK-LTR-2018
+    kind: letter
+    title: Letter to Berkshire shareholders (for 2018, signed by Warren Buffett, 2019-02-23)
+    date: 2019-02-23
+    url: https://www.berkshirehathaway.com/letters/2018ltr.pdf
+    primary: true
+    note: "p2: shareholders are advised to focus on operating earnings; book value per share makes its last appearance as the opening yardstick."
+
+  - tag: BRK-WEB-2026-09-27-1
+    kind: web
+    title: "Berkshire Hathaway, An Owner's Manual (owner-related business principles)"
+    date: 2026-09-27
+    url: https://www.berkshirehathaway.com/ownman.pdf
+    primary: true
+    note: "Read on 2026-09-27 (the PDF was created on 2018-02-23; the manual dates from June 1996 and is reproduced in each annual report). p1: the 13 owner-related business principles were set down in 1983, at the time of the Blue Chip merger. p3, principle 10: Berkshire will issue common stock only when it receives as much in business value as it gives. p4: Berkshire does not give earnings guidance; it reaches shareholders through the annual report, quarterly reports posted on the internet and the annual meeting."
+
+  - tag: BRK-WEB-2026-09-27-2
+    kind: web
+    title: "The Giving Pledge: Warren Buffett's pledge letter"
+    date: 2026-09-27
+    url: https://www.givingpledge.org/pledger/warren-buffett/
+    primary: true
+    note: "Read on 2026-09-27. Buffett's own pledge letter (2010), hosted by the Giving Pledge: at the latest, the proceeds from all of his Berkshire shares will be spent on philanthropic purposes by 10 years after his estate is settled."
+
+  - tag: BRK-WEB-2025-11-10-1
+    kind: press_release
+    title: "Berkshire Hathaway news release of 2025-11-10, with Warren Buffett's letter to his fellow shareholders"
+    date: 2025-11-10
+    url: https://www.berkshirehathaway.com/news/nov1025.pdf
+    primary: true
+    note: "Buffett converts Class A shares and gives the Class B shares to four family foundations; his letter says he will step up the pace of lifetime gifts to his children's foundations (p5) and that the acceleration reflects no change in his view of Berkshire's prospects (p6)."
+
+  - tag: BRK-WEB-2024-11-25-1
+    kind: press_release
+    title: "Berkshire Hathaway news release of 2024-11-25, with Warren Buffett's letter to shareholders"
+    date: 2024-11-25
+    url: https://www.berkshirehathaway.com/news/nov2524.pdf
+    primary: true
+    note: "p1: upon his death his three children will have full responsibility for gradually distributing all of his Berkshire holdings, 99½% of his wealth; p2: all foundation actions require a unanimous vote."
+
+  - tag: BHE-WEB-2026-03-24-1
+    kind: presentation
+    title: 2026 Berkshire Hathaway Energy Investor Presentation
+    date: 2026-03-24
+    url: https://www.berkshirehathaway.com/bhenergy/BHE2026InvestPresent.pdf
+    primary: true
+    note: "BHE's investor-conference slides, listed on berkshirehathaway.com/bhenergy/bhenergypresentations.html; the cover carries no date, so the date is the PDF's creation date. p10: BHE's utilities have contracted approximately 11,000 MW of data-centre load, in service or under construction."
+
+  - tag: OR-COA-A183140-2026-04-08
+    kind: other
+    title: "Court of Appeals of the State of Oregon, James v. PacifiCorp, A183140 (Multnomah County Circuit Court 20CV33885), opinion filed 2026-04-08"
+    date: 2026-04-08
+    url: https://www.pacificorp.com/content/dam/pcorp/documents/en/pacificorp/about/wildfire_litigation/appeals/Oregon-Court-of-Appeals-April-8-Decision.pdf
+    primary: true
+    note: "The court's opinion, read in the copy PacifiCorp posts on its wildfire-litigation page. p2 and p41: “Reversed and remanded” (the Phase I liability verdict, for an erroneous jury instruction); p41: on remand the trial court may reconsider its class-certification decision; p3: prevailing party, the appellants (PacifiCorp)."
+
+  - tag: OR-SC-S072933-2026-06-25
+    kind: other
+    title: "Supreme Court of the State of Oregon, James v. PacifiCorp, S072933, order allowing review (2026-06-25)"
+    date: 2026-06-25
+    url: https://www.pacificorp.com/content/dam/pcorp/documents/en/pacificorp/about/wildfire_litigation/oregon-supreme-court/Order_Miscellaneous_Case_Order.pdf
+    primary: true
+    note: "The court's order, read in the copy PacifiCorp posts on its wildfire-litigation page. p2: the plaintiffs' petition for review is allowed; oral argument is set for 2026-11-03."
+
+  - tag: FED-FOMC-2026-09-16
+    kind: press_release
+    title: "Board of Governors of the Federal Reserve System: FOMC statement (2026-09-16)"
+    date: 2026-09-16
+    url: https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm
+    primary: true
+    note: "The target range for the federal funds rate was raised by 1/4 percentage point to 3.75%–4.00%."
+
+  - tag: FED-OPENMARKET-2026-09-27
+    kind: web
+    title: "Board of Governors of the Federal Reserve System: Open Market Operations, changes in the target range for the federal funds rate"
+    date: 2026-09-27
+    url: https://www.federalreserve.gov/monetarypolicy/openmarket.htm
+    primary: true
+    note: "Read on 2026-09-27. Changes effective 2025-09-18 (−25 bp to 4.00%–4.25%), 2025-10-30 (−25 bp to 3.75%–4.00%), 2025-12-11 (−25 bp to 3.50%–3.75%) and 2026-09-17 (+25 bp to 3.75%–4.00%); the previous increase was effective 2023-07-27 (to 5.25%–5.50%), and 4.25%–4.50% was in force from 2024-12-19."
+
+  - tag: UST-BILLRATES-2026-09-24
+    kind: web
+    title: "U.S. Department of the Treasury, Daily Treasury Bill Rates: 2026"
+    date: 2026-09-24
+    url: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_bill_rates&field_tdr_date_value=2026
+    primary: true
+    note: "Official rate data; 13-week bills, coupon equivalent: 3.83% on 2026-06-30 and 4.18% on 2026-09-24 (26-week: 3.98% and 4.37%)."
+
+  - tag: SEC-FORM8K
+    kind: other
+    title: "U.S. Securities and Exchange Commission, Form 8-K and its general instructions (OMB 3235-0060)"
+    date: 2026-09-27
+    url: https://www.sec.gov/files/form8-k.pdf
+    primary: true
+    note: "Read on 2026-09-27. Item 5.02 covers the departure of directors and certain officers; information under Item 2.02 (results of operations) is furnished, not filed."
+
+  - tag: BRK-NEWS-2026-03-05-CNBC
+    kind: transcript
+    title: "CNBC: Transcript: Berkshire Hathaway CEO Greg Abel speaks with CNBC's “Squawk Box” (2026-03-05)"
+    date: 2026-03-05
+    url: https://www.cnbc.com/2026/03/05/cnbc-exclusive-transcript-berkshire-hathaway-ceo-greg-abel-speaks-with-cnbcs-squawk-box-today.html
+    primary: false
+    note: "CNBC's unofficial transcript of the interview of 2026-03-05, not a company record (evidence level L2). Abel says he has put all of his after-tax 2026 salary, about $15.3 million, into Berkshire shares, that he is committed to doing so every year while he is CEO, and that each purchase follows the 10-K, the letter and a 48-hour cooling-off period."
+
+  - tag: BRK-NEWS-2026-05-04-CARRIERMANAGEMENT
+    kind: news
+    title: "Carrier Management: Growth Going to be Hard: Abel Talks GEICO, Berkshire Tech Transformation (Susanne Sclafane, 2026-05-04)"
+    date: 2026-05-04
+    url: https://www.carriermanagement.com/news/2026/05/04/287521.htm
+    primary: false
+    note: "A report of the annual meeting of 2026-05-02 (evidence level L2; Berkshire publishes no transcript of the meeting). Abel said GEICO's policies in force at 2026-03-31 were 2% above a year earlier, against 11% growth in personal auto policies at Progressive."
+
+  - tag: BRK-NEWS-2026-05-05-INSURANCEJOURNAL
+    kind: news
+    title: "Insurance Journal (Reuters): Berkshire Selects Gen Re's Shamieh to Succeed Jain as Insurance Chief, WSJ Reports (2026-05-05)"
+    date: 2026-05-05
+    url: https://www.insurancejournal.com/news/national/2026/05/05/868621.htm
+    primary: false
+    note: "Carries the Wall Street Journal's report of 2026-05-04, citing people familiar with the matter, that Gen Re chairman Charlie Shamieh has been chosen to succeed Ajit Jain; Reuters could not verify it and Berkshire did not comment (evidence level L2)."
