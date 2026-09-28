@@ -855,6 +855,7 @@ def filing_documents(cik: Any, accession: str, *, client: EdgarClient | None = N
     folder = f"{ARCHIVES_BASE}/{int(cik10)}/{accession.replace('-', '')}"
     data = client.get_json(f"{folder}/index.json")
     items = ((data.get("directory") or {}).get("item")) or []
+    names = [str(item.get("name") or "") for item in items]
     docs = []
     for item in items:
         name = str(item.get("name") or "")
@@ -864,7 +865,38 @@ def filing_documents(cik: Any, accession: str, *, client: EdgarClient | None = N
         size = item.get("size")
         size = int(size) if isinstance(size, int) or (isinstance(size, str) and size.isdigit()) else None
         docs.append(Document(name=name, url=f"{folder}/{name}", kind=kind, exhibit=exhibit, size=size))
+    unnamed = [d for d in docs if d.kind == "other" and d.name.lower().endswith((".htm", ".html", ".txt"))
+               and not d.name.startswith(accession)]
+    if unnamed and primary_document:  # an exhibit whose name does not say EX-99: the filing index says what it is
+        types = document_types(client, folder, accession, names)
+        for i, doc in enumerate(docs):
+            kind = types.get(doc.name, "").upper()
+            if doc in unnamed and _INDEX_EX99_RE.match(kind):
+                docs[i] = dataclasses.replace(doc, kind="exhibit", exhibit=kind)
     return docs
+
+
+_INDEX_ROW_RE = re.compile(r"<tr[^>]*>(.*?)</tr>", re.S | re.I)
+_INDEX_CELL_RE = re.compile(r"<td[^>]*>(.*?)</td>", re.S | re.I)
+_INDEX_EX99_RE = re.compile(r"^EX-99(?:\.\d{1,2})?$")
+
+
+def document_types(client: EdgarClient, folder: str, accession: str, names: Sequence[str]) -> dict[str, str]:
+    """Document name -> the type the filing index page gives it (EX-99.1, GRAPHIC, 8-K ...); empty when the page is
+    missing or cannot be read (the file-name rules of classify_document() then stand alone)."""
+    page = next((n for n in (f"{accession}-index.html", f"{accession}-index.htm") if n in names), None)
+    if page is None:
+        return {}
+    try:
+        raw = client.get_bytes(f"{folder}/{page}", max_age=None).decode("utf-8", "replace")
+    except EdgarError:
+        return {}
+    types: dict[str, str] = {}
+    for row in _INDEX_ROW_RE.findall(raw):
+        cells = [re.sub(r"<[^>]+>|&nbsp;", " ", c).split() for c in _INDEX_CELL_RE.findall(row)]
+        if len(cells) >= 4 and cells[2] and cells[3]:
+            types[cells[2][0]] = cells[3][0]
+    return types
 
 
 def download_filing(cik: Any, accession: str, dest: str | os.PathLike, *, client: EdgarClient | None = None,

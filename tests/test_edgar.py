@@ -432,6 +432,29 @@ def test_download_takes_the_primary_document_and_ex99_but_never_xbrl_viewer_page
     assert stat.S_IMODE(paths[0].stat().st_mode) == 0o644
 
 
+def test_an_exhibit_whose_file_name_does_not_say_ex99_is_found_through_the_filing_index(tmp_path):
+    """S&P Global names its release spgi2q2026-earningsrelease.htm; the index page says it is EX-99.1."""
+    folder = f"{edgar.ARCHIVES_BASE}/64040/000006404026000040"
+    listing = {"directory": {"item": [{"name": n, "size": "10"} for n in (
+        "spgi-20260728.htm", "spgi2q2026-earningsrelease.htm", "image.jpg", "0000064040-26-000040-index.html")]}}
+    page = (b"<table><tr><td>1</td><td>8-K</td><td><a>spgi-20260728.htm</a> &nbsp;&nbsp;iXBRL</td><td>8-K</td></tr>"
+            b"<tr><td>2</td><td>EX-99.1</td><td><a>spgi2q2026-earningsrelease.htm</a></td><td>EX-99.1</td></tr>"
+            b"<tr><td>6</td><td>GRAPHIC</td><td>image.jpg</td><td>GRAPHIC</td></tr></table>")
+    transport = FixtureTransport({f"{folder}/index.json": json.dumps(listing).encode(),
+                                  f"{folder}/0000064040-26-000040-index.html": page})
+    docs = {d.name: d for d in edgar.filing_documents("64040", "0000064040-26-000040",
+                                                        client=make_client(tmp_path, transport=transport),
+                                                        primary_document="spgi-20260728.htm")}
+    assert (docs["spgi2q2026-earningsrelease.htm"].kind, docs["spgi2q2026-earningsrelease.htm"].exhibit) == \
+        ("exhibit", "EX-99.1")
+    assert docs["spgi-20260728.htm"].kind == "primary" and docs["image.jpg"].kind == "other"
+    del transport.responses[f"{folder}/0000064040-26-000040-index.html"]  # no index page: the name rules stand alone
+    docs = {d.name: d for d in edgar.filing_documents("64040", "0000064040-26-000040",
+                                                        client=make_client(tmp_path / "b", transport=transport),
+                                                        primary_document="spgi-20260728.htm")}
+    assert docs["spgi2q2026-earningsrelease.htm"].kind == "other"
+
+
 def test_results_headline_and_dateline_are_read_from_the_press_release():
     text = edgar.html_to_text(
         "<P><FONT><B>PDD Holdings\nAnnounces </B></FONT><B>Fourth Quarter 2025 and Fiscal Year 202</B><B>5 "
