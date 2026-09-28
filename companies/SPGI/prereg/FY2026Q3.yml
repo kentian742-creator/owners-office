@@ -1,0 +1,70 @@
+company: SPGI
+event:
+  period: FY2026Q3
+  expected_release: "2026-10-21"
+  form: 8-K
+  placeholder: true
+deadline: "2026-10-20T23:59:59-04:00"
+author: system
+horizon: mixed
+items:
+  - id: SPGI-FY2026Q3-1
+    statement: "Ratings total billed issuance for the three months ended 2026-09-30 is at least 10% higher than for the three months ended 2025-09-30."
+    probability: 0.6
+    criterion: "Source: the Ratings “Billed Issuance Volumes” table in Item 2 (MD&A) of S&P Global's 10-Q for the quarter ended 2026-09-30. Take the two “Total billed issuance” figures for the three-month columns (2026 and 2025), in USD billions as printed in that table. If the table restates the 2025 quarter, use both figures from the new table as printed. Compute growth = 2026 figure ÷ 2025 figure − 1, rounded to one decimal place of a percent. The item happened if growth ≥ 10.0%; exactly 10.0% counts as happened. Billed issuance is not an XBRL fact, so the text table is the source. If the printed “% Change” disagrees with the computed value, record both and decide on the computed value. For reference, the same table showed $1,268 billion against $1,017 billion for FY2026Q2 [src:SPGI-10Q-FY2026Q2#p49]. Record undetermined in either of two cases: the 10-Q has not been filed by 2026-11-30, or the table no longer reports total billed issuance for both three-month periods."
+    data_source: "SPGI 10-Q for the quarter ended 2026-09-30, Item 2 MD&A, Ratings segment, Billed Issuance Volumes table (three-month columns)"
+    horizon: quarter
+    resolves_by: "2026-10-31"
+    domain: payments_financial_data
+    added_by: system
+    pillar: P5
+    falsifies_thesis: false
+    reference: "Reference class: this company's own quarterly billed issuance growth in 2026. It was +13.6% in FY2026Q1, derived as $1,230 billion against $1,083 billion from the six-month total less Q2, and +24.7% in FY2026Q2 (this computation) [src:SPGI-10Q-FY2026Q2#p49]. Both 2026 quarters were above 10%. The one clean downturn on record is 2022, when ratings segment revenue fell 26% [src:SPGI-10K-FY2022#p49]. Starting point 0.7 (judgment). Lowered to 0.6 for two reasons: the 10-year par yield closed above 5% on 2026-09-16 [src:UST-PARYIELD-2026-09-16], and the 2025 comparison quarter falls in a period the thesis already treats as a high point of the issuance cycle."
+  - id: SPGI-FY2026Q3-2
+    statement: "S&P Global's cash spent on repurchasing its own shares in the nine months ended 2026-09-30 is at least $4.0 billion; that is, at least $2.5 billion in FY2026Q3."
+    probability: 0.65
+    criterion: "Source: the line “Repurchase of treasury shares” in the Consolidated Statements of Cash Flows for the nine months ended 2026-09-30, in S&P Global's 10-Q for that quarter. Take the absolute amount in USD millions. If the XBRL fact (us-gaap:PaymentsForRepurchaseOfCommonStock or the company's equivalent tag for this line) disagrees with the printed statement, record both; XBRL prevails. The item happened if the nine-month amount ≥ $4,000 million; equality counts as happened. The six-month amount was $1,500 million [src:SPGI-10Q-FY2026Q2#p7]. Excise tax payments and employee withholding are on a separate line and are excluded. If the line is renamed, use the line for cash paid to repurchase common stock, excluding excise tax. Record undetermined if the 10-Q has not been filed by 2026-11-30."
+    data_source: "SPGI 10-Q for the quarter ended 2026-09-30, Item 1, Consolidated Statements of Cash Flows (nine months), financing activities"
+    horizon: quarter
+    resolves_by: "2026-10-31"
+    domain: payments_financial_data
+    added_by: system
+    pillar: P6
+    falsifies_thesis: false
+    reference: "The company targets more than $7 billion of 2026 buybacks [src:SPGI-8K-2026-07-28#EX99.1-p1]. It spent $1,500 million in the first half [src:SPGI-10Q-FY2026Q2#p7], so at least $5.5 billion remains for the second half. It held $4,134 million of cash at 2026-06-30 [src:SPGI-10Q-FY2026Q2#p6]. It has executed its 2026 buybacks through ASRs whose cash is paid at initiation: $1,000 million in February and $500 million in May [src:SPGI-10Q-FY2026Q2#p20]. An even split of the second-half remainder gives about $2.75 billion per quarter. Starting point 0.7 (judgment). Lowered to 0.65 because the planned second-half debt issuance, heard on the call and carried by third-party transcripts [src:SPGI-CALL-FY2026Q2], could push part of the program into Q4."
+  - id: SPGI-FY2026Q3-3
+    statement: "Market Intelligence's organic, constant-currency revenue growth for full-year FY2027, as defined by the company, is at least 5.0%."
+    probability: 0.7
+    criterion: "Source: the company's schedule reconciling Market Intelligence revenue to organic, constant currency revenue for the full year 2027. It is in the Q4 and full-year 2027 earnings release furnished on Form 8-K; for FY2026Q2 the schedule was titled “Market Intelligence Adjusted (As Recast) Organic, Constant Currency Revenue”. Compute growth from the printed USD million amounts (FY2027 organic constant-currency revenue ÷ the comparable FY2026 amount − 1), rounded to one decimal place of a percent. The item happened if growth ≥ 5.0%; equality counts as happened. If the schedule prints only a percentage, use it: a figure printed to one decimal is decided directly; a whole-number figure is decided directly unless it reads exactly 5%, in which case the item is undetermined. If segment definitions change again, use the comparison basis the company itself presents in that schedule. This is not an XBRL fact. Record undetermined if the company publishes no full-year Market Intelligence organic constant-currency figure for FY2027 by 2028-03-28."
+    data_source: "SPGI 8-K earnings release for Q4 and full year 2027, schedule of Market Intelligence organic, constant currency revenue"
+    horizon: 18m
+    resolves_by: "2028-02-29"
+    domain: payments_financial_data
+    added_by: system
+    pillar: P3
+    falsifies_thesis: true
+    reference: "This company's own record. Market Intelligence organic constant-currency growth was 6.2% in FY2025 on the pre-recast definition [src:SPGI-8K-2026-02-10#EX99-Exh7] and 6.4% in 1H26 on the recast definition [src:SPGI-8K-2026-07-28#EX99.1-Exh8]. Earlier readings were 6.7% in FY2023 and 6.1% in FY2024, on mixed bases [src:SPGI-8K-2024-02-08#EX99-Exh5] [src:SPGI-10K-FY2025#p50]. None of the readings available is below 5%. Starting point 0.8 (judgment). Lowered to 0.7 for three reasons: the thesis's most fragile point, AI interfaces pressuring seat-based renewals, has no observed precedent in these years; the 6%–8% medium-term target was set before the recast [src:SPGI-8K-2025-11-13#EX99]; and the owner's report works with 5%–6% [src:SPGI-RPT1-2026-09-18#p11]."
+  - id: SPGI-FY2026Q3-4
+    statement: "In FY2027, S&P Global's buybacks plus dividends are no more than 110% of its adjusted free cash flow."
+    probability: 0.35
+    criterion: "Numerator: the sum of the lines “Repurchase of treasury shares” and “Dividends paid to shareholders” in the FY2027 Consolidated Statement of Cash Flows of the FY2027 10-K, in USD millions, absolute values. XBRL facts prevail if they disagree with the printed statement; record both. Denominator: FY2027 adjusted free cash flow as the company reports it in the non-GAAP reconciliation of its Q4 and full-year 2027 earnings release. If the company no longer reports an “adjusted” free cash flow, use the free cash flow in the 10-K MD&A reconciliation (cash from operations less capital expenditures and distributions to noncontrolling interest holders), and record which measure was used. Ratio = numerator ÷ denominator, rounded to one decimal place of a percent. The item happened if the ratio ≤ 110.0%; equality counts as happened. For reference, FY2025 was ($5,001 million + $1,170 million) ÷ $5,481 million = 112.6% [src:SPGI-10K-FY2025#p81] [src:SPGI-8K-2026-02-10#EX99-Exh7]. If the FY2027 figures are later restated, use the figures in the first FY2027 10-K and earnings release. Record undetermined if either the numerator or the denominator is not available by 2028-03-28."
+    data_source: "SPGI 10-K for FY2027, Consolidated Statement of Cash Flows; SPGI 8-K earnings release for Q4 and full year 2027, non-GAAP free cash flow reconciliation"
+    horizon: 18m
+    resolves_by: "2028-02-29"
+    domain: payments_financial_data
+    added_by: system
+    pillar: P6
+    falsifies_thesis: false
+    reference: "This company's own readings. FY2025 returns were 112.6% of adjusted free cash flow (this computation) [src:SPGI-10K-FY2025#p81] [src:SPGI-8K-2026-02-10#EX99-Exh7]. For 2026 the company expects to return 100% or more [src:SPGI-8K-2026-04-28#EX99-p1]. Its medium-term framework is to return about 85% [src:SPGI-8K-2025-11-13#EX99]. Both readings available are above 110%, and the 2026 excess is funded partly with debt. Starting point 0.4 (judgment), because 2027 has no spin-off distribution or large disposal proceeds to fund a return above free cash flow. Lowered to 0.35 because management announced plans to issue debt for buybacks (call, third-party transcripts) [src:SPGI-CALL-FY2026Q2]."
+  - id: SPGI-FY2026Q3-5
+    statement: "Ratings segment non-transaction revenue for FY2027 is at least 6.0% higher than for FY2026."
+    probability: 0.7
+    criterion: "Source: the Ratings segment revenue table in Item 7 (MD&A) of the FY2027 10-K. Take the “Non-transaction revenue” figures for FY2027 and FY2026 as printed in that table, in USD millions. These include the intersegment royalty, as the segment reports it. If the same 10-K presents FY2026 restated, use the restated figure; if an XBRL segment and revenue-type fact exists and disagrees, record both, and XBRL prevails. Compute growth = FY2027 ÷ FY2026 − 1, rounded to one decimal place of a percent. The item happened if growth ≥ 6.0%; equality counts as happened. Acquisitions are not stripped out; the reported segment figure is used. For reference, 1H26 was $1,183 million against $1,080 million [src:SPGI-10Q-FY2026Q2#p48]. Record undetermined if the FY2027 10-K has not been filed by 2028-03-28, or if it no longer separates non-transaction from transaction revenue."
+    data_source: "SPGI 10-K for FY2027, Item 7 MD&A, Ratings segment revenue table (transaction / non-transaction)"
+    horizon: 18m
+    resolves_by: "2028-02-29"
+    domain: payments_financial_data
+    added_by: system
+    pillar: P1
+    falsifies_thesis: false
+    reference: "This company's own record. Ratings non-transaction revenue grew 9.5% in 1H26 and 7.6% in FY2026Q2, $593 million against $551 million (this computation) [src:SPGI-10Q-FY2026Q2#p48]. It fell 1.9% in the 2022 issuance drought [src:SPGI-10K-FY2022#p49]. Starting point 0.75 (judgment), from the 2026 run-rate. Lowered to 0.7 for two reasons: growth slowed from the first half to Q2, and part of the growth comes from RES activity [src:SPGI-10Q-FY2026Q2#p48], which is transaction-linked by nature (judgment) and would weaken if issuance turns down."
