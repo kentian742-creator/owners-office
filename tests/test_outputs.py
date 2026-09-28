@@ -171,6 +171,15 @@ def test_pipeline_fields_keep_the_repositories_quoting_so_an_unchanged_field_sho
         'a: "2026-07-24"\nb: "yes"\nc: 8-K\nd: "12,256"\n'
 
 
+def test_a_list_output_written_under_its_own_name_is_unwrapped():
+    """MCD's 01A wrote questions:\n  - id: ... twice (2026-09-28); the rows are the same, one level down."""
+    raw = "questions:\n  - id: Q1\n    issue: Which basis?\n    options: [a, b]\n    interim: a\n    blocking: false\n"
+    parsed, errors = outputs._parse_yaml("questions", raw, None, {}, {"model": "m"}, None)
+    assert errors == [] and parsed.data == [{"id": "Q1", "issue": "Which basis?", "options": ["a", "b"],
+                                             "interim": "a", "blocking": False}]
+    assert outputs.load_yaml_text(parsed.text)[0]["id"] == "Q1"
+
+
 def test_pipeline_fields_fall_back_to_a_full_dump_when_text_cannot_be_patched():
     text = "{company: TEST, trust_level: 3}"
     new_text, merged = outputs.apply_fields(text, outputs.load_yaml_text(text), {"trust_level": 1})

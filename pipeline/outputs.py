@@ -421,6 +421,11 @@ def _parse_yaml(
     if data is None:
         return None, [f"{name}: the YAML is empty; with no content, write \"{EMPTY_MARK}\" (00 §F0)"]
     text = raw
+    structure = STRUCTURES.get(name)
+    if (schema is None and structure is not None and structure.list_key is None and isinstance(data, dict)
+            and set(data) == {name} and isinstance(data[name], list)):
+        data = data[name]  # "questions:\n  - id: ..." for a list output: the same rows, one level down
+        text = dump_yaml(data)
     applied: tuple[str, ...] = ()
     if fields:
         if not isinstance(data, dict):

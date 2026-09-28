@@ -2512,7 +2512,9 @@ def _build_sources(ctx: RunContext, name: str) -> BuiltInput:
     lines += [f"Not supplied: {documents.NOT_ON_EDGAR}.",
               "Cite the documents below by the tag in their header line, and add a sources_additions entry (with the "
               "accession) for every document you cite that the source table does not list. An EDGAR filing is "
-              "kind: filing, whatever its form; the entries follow this schema (thesis-ci sources.schema.json):", "",
+              "kind: filing, whatever its form. Each entry follows this schema (thesis-ci sources.schema.json) and "
+              "also carries visibility: public or private, the repository whose sources.yml it goes into (public "
+              "when a public file cites it):", "",
               schema_path.read_text(encoding="utf-8").rstrip(), "",
               "===== source table (public and private sources.yml) =====", table.rstrip(), ""]
     docs = sorted((d for _, found, _ in kept for d in found), key=_filing_order)
