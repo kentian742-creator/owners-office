@@ -14,7 +14,7 @@ DESIGN.md gives each of the three repositories its own job: thesis-ci is an open
 
 Option 3.
 
-- Three sibling directories under the local workspace `/Users/asuka/OwnersOffice/`: `thesis-ci/`, `owners-office/`, `owners-office-private/`. The raw materials stay in the workspace's `inputs/` and go into no repository; copies of the PDFs go into the private repository's `reports/`.
+- Three sibling directories under one local workspace folder: `thesis-ci/`, `owners-office/`, `owners-office-private/`. The raw materials stay in the workspace's `inputs/` and go into no repository; copies of the PDFs go into the private repository's `reports/`.
 - The root of each of the two archive repositories has a `repo.yml`: `visibility` (public / private), `owner: kentian742-creator`, `spec_version: "0.1"`, `counterpart` (the name of the other repository). thesis-ci decides which checks to run from `visibility`; the private repository's lint reads the public repository through `--counterpart ../owners-office` for the cross-repository checks.
 - The public repository's CI cannot see the private repository; cross-repository checks run only in the private repository's CI, locally and in the acceptance script.
 - Licenses: thesis-ci code MIT, spec CC BY 4.0 (DESIGN.md); owners-office method documents CC BY 4.0 and research content all rights reserved (DESIGN.md), and its glue code (`pipeline/`, `scripts/`, `tests/`, `.github/`) MIT, the same as thesis-ci's code; the private repository is not public. Details in `LICENSE.md`.

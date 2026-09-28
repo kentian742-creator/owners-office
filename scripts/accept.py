@@ -4,7 +4,7 @@
 Usage (from any directory):
 
     .venv/bin/python owners-office/scripts/accept.py --phase 0|1
-        [--workspace /Users/asuka/OwnersOffice] [--json]
+        [--workspace <workspace>] [--json]
         [--write-report docs/acceptance/phase-N.md] [--allow-uncommitted] [--as-of 2026-12-08]
 
 Workspace layout: <workspace>/ holds the sibling directories thesis-ci, owners-office and owners-office-private.

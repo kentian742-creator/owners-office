@@ -67,7 +67,7 @@ The detailed price rules are in 00 §H2: only four kinds of prices may appear, a
 | `../owners-office-private/` | Valuations, L3 memos, escalation requests, series ranking (`hq/`), decision log, PDF reports, prompts v3 (`prompts/`) |
 | `../thesis-ci/` | Format spec, lint, selftest |
 
-## Common commands (from the workspace root `/Users/asuka/OwnersOffice`)
+## Common commands (from the workspace root, the folder that holds thesis-ci, owners-office and owners-office-private)
 
 ```bash
 .venv/bin/thesis-ci lint owners-office
