@@ -494,7 +494,9 @@ def test_dry_run_outputs_are_never_placed(env):
 def test_place_writes_public_outputs_on_a_branch_with_the_pipeline_header(env):
     bundle = env.executed()
     text = (bundle / "outputs" / "prereg.yml").read_text(encoding="utf-8")
-    fx.rewrite_output(bundle, "prereg", text.replace("expected_release: '2026-11-02'", "expected_release: '2026-12-01'"))
+    changed = re.sub(r"expected_release: ['\"]2026-11-02['\"]", "expected_release: '2026-12-01'", text)
+    assert changed != text
+    fx.rewrite_output(bundle, "prereg", changed)
     report = place(env, bundle)
     assert branch_of(env.public) == f"pipeline/APP-{fx.RUN_DATE}-15A" == report["public_branch"]
     placed = yaml.safe_load((env.public / PREREG).read_text(encoding="utf-8"))
