@@ -46,7 +46,7 @@ from typing import Any
 
 import yaml
 
-from . import documents, edgar, evaluation, isolation, llm
+from . import documents, edgar, evaluation, isolation, llm, slicing
 from . import outputs as _outputs
 
 PUBLIC_REPO = "owners-office"
@@ -2356,20 +2356,163 @@ def _sources(ctx: RunContext, name: str) -> BuiltInput:
         return BuiltInput("\n".join(lines) + "\n", "txt", sources)
     texts, docs, unresolved = cited_texts(ctx, tags)
     report_tags = sorted({t.partition("#")[0] for t in tags if "-RPT" in t and t.partition("#")[0] in texts})
-    lines += [CITE_NOTE]
+    text, doc_sources = render_sources(ctx, lines, sorted(docs, key=_filing_order), report_tags, texts, unresolved)
+    return BuiltInput(text, "txt", sources + doc_sources,
+                      note=f"{len(docs)} EDGAR document(s)" + (f"; {len(unresolved)} tag(s) unresolved" if unresolved
+                                                               else ""),
+                      substitute=name if ctx.results().rehearsal_for else None)
+
+
+def _filing_order(doc: FilingText) -> tuple[Any, ...]:
+    return doc.filed, doc.accession, doc.locator or ""
+
+
+def render_sources(ctx: RunContext, lines: list[str], docs: Iterable[FilingText], report_tags: Iterable[str],
+                   texts: Mapping[str, str], unresolved: Iterable[str]) -> tuple[str, list[dict[str, Any]]]:
+    """The body of a `sources` input after its header lines: the citation note, the tags not supplied, each EDGAR
+    document, then the owner's report where it is cited. Returns the text and the documents' source records."""
+    company = _need_company(ctx, "sources")
+    lines = [*lines, CITE_NOTE]
+    unresolved = list(unresolved)
     if unresolved:
         lines.append(f"Not supplied (not resolvable to a document of {company} on EDGAR): {', '.join(unresolved)}.")
-    text, doc_sources = render_documents(lines + [""], sorted(docs, key=lambda d: (d.filed, d.accession,
-                                                                                    d.locator or "")))
+    text, doc_sources = render_documents(lines + [""], docs)
     for tag in report_tags:
         path = ctx.workspace_root / "inputs" / "text" / f"reports__{company}.txt"
         text += f"\n===== [src:{tag}] the owner's report (non-primary; a pointer to its own sources, 00 E2) =====\n\n"
         text += texts[tag].strip() + "\n"
         doc_sources.append(workspace_file_source(ctx.workspace_root, path))
-    return BuiltInput(text, "txt", sources + doc_sources,
-                      note=f"{len(docs)} EDGAR document(s)" + (f"; {len(unresolved)} tag(s) unresolved" if unresolved
-                                                               else ""),
-                      substitute=name if ctx.results().rehearsal_for else None)
+    return text, doc_sources
+
+
+# ---- slices: one part as several calls when one cannot take its inputs (pipeline/slicing.py, decisions/0026)
+
+RARE_CITES = 2  # 04A: a document at most this many facts cite, and not one of the event's, is cut to windows
+
+
+@dataclasses.dataclass
+class SliceInputs:
+    """The inputs of one slice (every input the part declares) and a one-line description for the manifest."""
+
+    inputs: dict[str, BuiltInput]
+    note: str
+
+
+def slice_inputs(ctx: RunContext, built: Mapping[str, BuiltInput]) -> list[SliceInputs] | None:
+    """The part's inputs cut into slices when one call cannot take them; None when one call can (or the part is not
+    sliced)."""
+    slicer = SLICERS.get(ctx.step.step)
+    return slicer(ctx, built) if slicer else None
+
+
+def _slice_16a(ctx: RunContext, built: Mapping[str, BuiltInput]) -> list[SliceInputs] | None:
+    product = built.get("product")
+    pieces = slicing.split_product(product.text) if product is not None else None
+    if not pieces:
+        return None
+    out = []
+    for number, text in enumerate(pieces, 1):
+        blocks = re.findall(r"^===== (?!source table)(.*) =====$", text, flags=re.M)
+        note = f"slice {number} of {len(pieces)}: {'; '.join(blocks)}"
+        out.append(SliceInputs({**built, "product": dataclasses.replace(product, text=text, note=note)}, note))
+    return out
+
+
+def _fact_documents(row: Any, docs: Iterable[FilingText], reports: Iterable[str],
+                    event: Iterable[str]) -> frozenset[str]:
+    """The documents one fact needs: those its source tags name (an exhibit locator picks that exhibit), the owner's
+    report where it is cited; for an untagged fact, the event's own filings."""
+    cites = _tags_of(row.get("source")) if isinstance(row, Mapping) else []
+    if not cites:
+        return frozenset(event)
+    docs, reports = list(docs), set(reports)
+    keys: set[str] = set()
+    for cite in cites:
+        tag, _, locator = cite.partition("#")
+        if tag in reports:
+            keys.add(tag)
+            continue
+        same = [d for d in docs if d.tag == tag]
+        if locator.startswith("EX-"):
+            same = [d for d in same if d.locator == locator] or same
+        keys.update(d.cite for d in same)
+    return frozenset(keys)
+
+
+def _windowed(doc: FilingText, rows: Iterable[Any], why: str) -> FilingText:
+    """A document cut to the lines around the values the given facts state."""
+    rows = [r for r in rows if isinstance(r, Mapping)]
+    patterns = [p for r in rows for p in documents.distinctive_patterns(r.get("value"))]
+    text, hits = slicing.windows(doc.text, patterns)
+    note = (f"cut by the pipeline to the lines around the values {len(rows)} fact(s) state ({hits} matching "
+            f"line(s)), because {why}; a value missing here may still be in the full document at the url above")
+    return dataclasses.replace(doc, text=text if hits else "(no line of this document states one of those values)",
+                               note=f"{doc.note}; {note}" if doc.note else note)
+
+
+def _slice_04a(ctx: RunContext, built: Mapping[str, BuiltInput]) -> list[SliceInputs] | None:
+    table, whole = built.get("fact_table"), built.get("sources")
+    if table is None or whole is None:
+        return None
+    data = yaml.safe_load(table.text)
+    rows = _fact_rows(data)
+    if len(rows) <= slicing.MAX_FACTS and slicing.estimate_tokens(whole.text) <= slicing.HARD_SOURCE_TOKENS:
+        return None
+    tags = [t for r in rows if isinstance(r, dict) for t in _tags_of(r.get("source"))]
+    texts, docs, unresolved = cited_texts(ctx, tags)
+    by_key = {d.cite: d for d in docs}
+    event = [d.cite for d in ctx.results().documents]
+    reports = sorted({t.partition("#")[0] for t in tags if "-RPT" in t and t.partition("#")[0] in texts})
+    fact_docs = [_fact_documents(r, docs, reports, event) for r in rows]
+    cited: dict[str, list[int]] = {}
+    for index, keys in enumerate(fact_docs):
+        for key in keys:
+            cited.setdefault(key, []).append(index)
+    rendered: dict[str, FilingText] = {}
+    for key, indexes in cited.items():
+        if key in by_key:
+            doc = by_key[key]
+            if len(indexes) <= RARE_CITES and key not in event:
+                doc = _windowed(doc, [rows[i] for i in indexes], f"only {len(indexes)} fact(s) cite it")
+            rendered[key] = doc
+    doc_tokens = {key: slicing.estimate_tokens(render_documents([], [doc])[0]) for key, doc in rendered.items()}
+    doc_tokens.update({key: slicing.estimate_tokens(texts[key]) for key in reports})
+    older = sorted((k for k in rendered if k not in event), key=lambda k: _filing_order(rendered[k]), reverse=True)
+    priority = [*event, *reports, *older]
+    packed = slicing.pack_facts(fact_docs, doc_tokens, priority=priority)
+    source_lines_head, table_sources = source_table(ctx)
+    header = [f"Sources for {ctx.company} {ctx.period}.", "", "===== source table (public and private sources.yml) =====",
+              source_lines_head.rstrip(), ""]
+    out = []
+    for number, part in enumerate(packed, 1):
+        count = len(packed)
+        chosen = [rows[i] for i in part.facts]
+        sliced = slicing.slice_fact_table(data, rows, part.facts, number, count)
+        mine = {t for r in chosen if isinstance(r, dict) for t in _tags_of(r.get("source"))}
+        slice_docs = [rendered[k] for k in part.documents if k in rendered]
+        slice_docs += [_windowed(rendered[k], [rows[i] for i in part.facts if k in fact_docs[i]],
+                                 "this slice's documents are over the pipeline's limit")
+                       for k in part.cut if k in rendered]
+        slice_reports = [k for k in reports if k in part.all_documents()]
+        text, doc_sources = render_sources(ctx, header, sorted(slice_docs, key=_filing_order), slice_reports, texts,
+                                           [u for u in unresolved if u in mine])
+        ids = [str(r.get("id")) for r in chosen if isinstance(r, dict)]
+        note = (f"slice {number} of {count}: {len(chosen)} facts ({ids[0]}–{ids[-1]}); documents: "
+                f"{', '.join(part.documents) or 'none'}" + (f"; cut to windows: {', '.join(part.cut)}" if part.cut
+                                                             else ""))
+        out.append(SliceInputs({
+            **built,
+            "fact_table": BuiltInput(dump_yaml(sliced), table.ext, table.sources, note=note),
+            "sources": BuiltInput(text, whole.ext, table_sources + doc_sources, note=note,
+                                  substitute=whole.substitute),
+        }, note))
+    return out
+
+
+SLICERS: dict[str, Callable[[RunContext, Mapping[str, BuiltInput]], list[SliceInputs] | None]] = {
+    "16A": _slice_16a,
+    "04A": _slice_04a,
+}
 
 
 def revised_outputs(ctx: RunContext) -> PriorRun | None:

@@ -1165,6 +1165,20 @@ def test_malformed_audit_outputs_get_a_precise_error_and_one_retry(env, output, 
     assert any(message in e for e in read_log(env.log)[0]["validation_errors"])
 
 
+def test_an_audit_that_skips_a_fact_or_judges_another_is_retried_with_the_ids(env):
+    """04A gives every fact under facts exactly one verdict (decisions/0026); a reply that does not is retried."""
+    table = "facts:\n- id: F001\n  value: 1\n- id: F002\n  value: 2\ncontext_facts:\n- id: F009\n  value: 9\n"
+    good = {"fact_verdicts": VERDICTS + VERDICTS.replace("F001", "F002"), "findings": FINDING.format(id="04A-01"),
+            "questions": "none"}
+    bad = envelope(**{**good, "fact_verdicts": VERDICTS + VERDICTS.replace("F001", "F009")})
+    client = FakeClient(make_response(bad), make_response(envelope(**good)))
+    result = call(env, client, role="auditor", prompt_id="04", part="A",
+                  inputs={"fact_table": table, "sources": "Source text."}, variables={"subject": "quarterly update"})
+    assert result.attempts == 2
+    retried = client.requests[1]["messages"][0]["content"]
+    assert "fact_verdicts: no verdict for F002" in retried and "F009 is not a fact under facts" in retried
+
+
 def test_placements_follow_section_f2(env):
     result = call(env, FakeClient(make_response()))
     placed = {p.output: p for p in result.placements()}

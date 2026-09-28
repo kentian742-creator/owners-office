@@ -29,7 +29,7 @@ import re
 from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
-from . import edgar
+from . import edgar, slicing
 
 # Request kinds (what a clause of `where` asks for).
 EARNINGS_RELEASE = "earnings_release"  # 8-K Item 2.02 and its EX-99 exhibits; a foreign issuer's results 6-K
@@ -645,11 +645,14 @@ MAX_EXCERPT_CHARS = 400
 
 
 def value_forms(value: Any) -> list[str]:
-    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); text as is."""
+    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); a date ->
+    July 24, 2026 and 2026-07-24; text as is, then the numbers in it ("12,256 against 11,200" -> 12,256, 11,200)."""
     if isinstance(value, bool) or value is None:
         return []
     if isinstance(value, (list, tuple)):
         return [form for item in value for form in value_forms(item)]
+    if isinstance(value, (dt.date, dt.datetime)):
+        return slicing.date_forms(value)
     if isinstance(value, (int, float)):
         number = float(value)
         forms = []
@@ -663,18 +666,44 @@ def value_forms(value: Any) -> list[str]:
             forms = [f"({f})" for f in forms] + [f"-{f}" for f in forms] + [f"−{f}" for f in forms]
         return list(dict.fromkeys(f for f in forms if f and f not in ("0",)))
     text = " ".join(str(value).split())
-    return [text] if len(text) >= 3 else []
+    forms = [text] if len(text) >= 3 else []
+    return list(dict.fromkeys(forms + [n for n in slicing.number_forms(text) if n != text]))
+
+
+def value_patterns(value: Any) -> list[re.Pattern[str]]:
+    """value_forms() as patterns: numbers match as whole numbers (16,698 does not match 116,698), text ignores case."""
+    patterns = []
+    for form in value_forms(value):
+        if any(ch.isdigit() for ch in form):
+            patterns.append(re.compile(r"(?<![\d.,])" + re.escape(form) + r"(?![\d]|[.,]\d)"))
+        else:
+            patterns.append(re.compile(re.escape(form), re.I))
+    return patterns
+
+
+_YEAR_RE = re.compile(r"^(19|20)\d{2}$")
+
+
+def distinctive_patterns(value: Any) -> list[re.Pattern[str]]:
+    """value_patterns() without the forms that match almost anywhere in a filing: years, one- and two-digit whole
+    numbers, and text shorter than 15 characters (used to cut a long document to windows, pipeline/slicing.py)."""
+    kept = []
+    for form, pattern in zip(value_forms(value), value_patterns(value)):
+        bare = form.strip("()-−")
+        if any(ch.isdigit() for ch in form):
+            if _YEAR_RE.match(bare) or (bare.isdigit() and len(bare) <= 2):
+                continue
+        elif len(form) < 15:
+            continue
+        kept.append(pattern)
+    return kept
 
 
 def cut_excerpt(document: str, value: Any) -> str | None:
     """The sentence (or table row) of the document that contains the value, at most MAX_EXCERPT_CHARS long; None when
     the value is not found. Numbers are matched as whole numbers (16,698 does not match 116,698)."""
-    for form in value_forms(value):
-        if any(ch.isdigit() for ch in form):
-            pattern = re.compile(r"(?<![\d.,])" + re.escape(form) + r"(?![\d]|[.,]\d)")
-        else:
-            pattern = re.compile(re.escape(form), re.I)
-        lines = document.splitlines()
+    lines = document.splitlines()
+    for pattern in value_patterns(value):
         for index, line in enumerate(lines):
             match = pattern.search(line)
             if not match:

@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from pipeline import chain, documents, edgar, evaluation, fake_client, llm, outputs, registry, runner
+from pipeline import chain, documents, edgar, evaluation, fake_client, llm, outputs, registry, runner, slicing
 from tests import evaluate_shim
 from tests import runner_fixtures as fx
 
@@ -493,6 +493,118 @@ def test_03r_gets_the_draft_the_findings_and_the_sources(env, shim):
     assert record["status"] == "succeeded"
     thesis = yaml.safe_load((bundle / "outputs" / "thesis.yml").read_text(encoding="utf-8"))
     assert thesis["status"] == "candidate" and thesis["trust_level"] == 1  # carried over, G8 fields from the pipeline
+
+
+# ---------------------------------------------------------------------------------------------------- slices (0026)
+
+FACTS = [
+    {"id": "F001", "location": "update 1", "subject": "APP", "what": "installs", "value": 1234, "unit": "million",
+     "period": EVENT, "source": "APP-10Q-FY2026Q2", "excerpt": "Installs grew to 1,234 million"},
+    {"id": "F002", "location": "update 1", "subject": "APP", "what": "margin", "value": 999, "unit": None,
+     "period": None, "source": None, "untagged": True, "excerpt": "..."},
+    {"id": "F003", "location": "update 2", "subject": "APP", "what": "installs again", "value": 1234,
+     "unit": "million", "period": EVENT, "source": "APP-10Q-FY2026Q2#p4", "excerpt": "1,234 million installs"},
+    {"id": "F004", "location": "update 2", "subject": "APP", "what": "growth", "value": 5, "unit": "%",
+     "period": EVENT, "source": "APP-10Q-FY2026Q2", "excerpt": "up 5%", "derived": True, "inputs": ["F001"],
+     "formula": "1,234 / 1,175 - 1"},
+]
+
+
+def sliced_audit(env, monkeypatch, max_facts: int) -> Path:
+    draft_chain(env)
+    extraction = run(env, "16A")
+    fx.rewrite_output(extraction, "fact_table", yaml.safe_dump({"as_of": "2026-10-20", "facts": FACTS}))
+    monkeypatch.setattr(slicing, "MAX_FACTS", max_facts)
+    return env.assemble("04A", period=EVENT)
+
+
+def slice_input(bundle: Path, part: dict, name: str) -> str:
+    entry = next(e for e in part["inputs"] if e["name"] == name)
+    return (bundle / entry["file"]).read_text(encoding="utf-8")
+
+
+def test_a_long_fact_table_is_audited_in_slices_whose_outputs_are_merged(env, shim, monkeypatch):
+    """decisions/0026: each slice judges its own facts against its own documents; outputs/ holds the merged outputs,
+    which the revision reads as it would one call's."""
+    audit = sliced_audit(env, monkeypatch, max_facts=1)
+    manifest = manifest_of(audit)
+    assert manifest["inputs"] == [] and [s["id"] for s in manifest["slices"]] == ["s01", "s02", "s03", "s04"]
+    assert manifest["request_sha256"] is None and manifest["estimate"]["slices"] == 4
+    tables = [yaml.safe_load(slice_input(audit, s, "fact_table")) for s in manifest["slices"]]
+    assert [[f["id"] for f in t["facts"]] for t in tables] == [["F001"], ["F002"], ["F003"], ["F004"]]
+    assert tables[3]["slice"] == {"number": 4, "of": 4, "note": tables[3]["slice"]["note"]}
+    assert [f["id"] for f in tables[3]["context_facts"]] == ["F001"] and "context_facts" not in tables[0]
+    assert tables[0]["facts"][0]["source_excerpt"] == "Installs grew to 1,234 million in the quarter."
+    assert "[src:APP-10Q-FY2026Q2]" in slice_input(audit, manifest["slices"][0], "sources")
+    assert "slice s04" in runner.describe_bundle(audit)
+
+    record = env.execute(audit)
+    assert record["status"] == "succeeded" and [r["status"] for r in record["slices"]] == ["succeeded"] * 4
+    assert record["requests"] == 4 and record["merged"]["slices"] == 4
+    verdicts = yaml.safe_load((audit / "outputs" / "fact_verdicts.yml").read_text(encoding="utf-8"))
+    findings = yaml.safe_load((audit / "outputs" / "findings.yml").read_text(encoding="utf-8"))
+    assert [v["id"] for v in verdicts] == ["F001", "F002", "F003", "F004"]
+    assert [f["id"] for f in findings] == ["04A-01", "04A-02", "04A-03", "04A-04"]
+    assert record["outputs"]["findings"]["merged_from_slices"] is True
+    assert all((audit / "slices" / s / "run.yml").is_file() for s in ("s01", "s02", "s03", "s04"))
+    revision = env.assemble("03R", period=EVENT)
+    assert "04A-04" in read_input(revision, "findings_04A")
+
+
+def test_a_failed_slice_is_the_only_one_run_again(env, shim, monkeypatch):
+    audit = sliced_audit(env, monkeypatch, max_facts=2)
+    called: list[int] = []
+    real = llm.complete
+
+    def flaky(*args, **kwargs):
+        number = yaml.safe_load(args[2]["fact_table"])["slice"]["number"]
+        called.append(number)
+        if number == 2 and called.count(2) == 1:
+            raise RuntimeError("the connection dropped")
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(runner.llm, "complete", flaky)
+    first = env.execute(audit)
+    assert first["status"] == "failed" and first["error"]["type"] == "SlicesFailed"
+    assert [(r["id"], r["status"]) for r in first["slices"]] == [("s01", "succeeded"), ("s02", "failed")]
+    assert not (audit / "outputs").exists()
+    with pytest.raises(runner.RunnerError, match="--retry"):
+        env.execute(audit)
+    second = env.execute(audit, retry=True)
+    assert second["status"] == "succeeded" and called == [1, 2, 2]
+    assert second["attempt"] == 2 and second["slices"][0]["this_run"] is False
+    assert (audit / "attempts" / "1" / "run.yml").is_file()
+    assert (audit / "slices" / "s02" / "attempts" / "1" / "run.yml").is_file()
+
+
+def test_a_long_draft_is_extracted_in_slices_and_the_fact_ids_run_on(env, shim, monkeypatch):
+    draft_chain(env)
+    monkeypatch.setattr(slicing, "PRODUCT_TOKENS", 60)
+    extraction = env.assemble("16A", period=EVENT)
+    parts = manifest_of(extraction)["slices"]
+    assert len(parts) >= 2
+    first = slice_input(extraction, parts[0], "product")
+    assert f"[Pipeline note: this call gets slice 1 of {len(parts)} of the product" in first
+    assert all(slice_input(extraction, part, "product").count("===== source table") == 1 for part in parts)
+    record = env.execute(extraction)
+    assert record["status"] == "succeeded"
+    table = yaml.safe_load((extraction / "outputs" / "fact_table.yml").read_text(encoding="utf-8"))
+    assert [f["id"] for f in table["facts"]] == [f"F{i:03d}" for i in range(1, len(parts) + 1)]
+    assert record["merged"]["fact_ids"]["s02"] == "F002–F002"
+    audit = env.assemble("04A", period=EVENT)  # the merged table, in one call again
+    assert [f["id"] for f in yaml.safe_load(read_input(audit, "fact_table"))["facts"]] == \
+        [f"F{i:03d}" for i in range(1, len(parts) + 1)]
+
+
+def test_a_request_that_cannot_fit_the_context_is_refused_before_anything_is_written(env, shim, monkeypatch):
+    set_thesis(env, status="candidate")
+    run(env, "16B")
+    evaluate(env)
+    monkeypatch.setattr(slicing, "MAX_INPUT_TOKENS", 1000)
+    with pytest.raises(runner.RunnerError, match=r"03-draft: the request is estimated at [\d,]+ input tokens, more "
+                                                 r"than the 1,000"):
+        env.assemble("03-draft", period=EVENT)
+    assert not (env.private / "runs" / "APP" / "2026-10-20-03-draft").exists()
 
 
 # ---------------------------------------------------------------------------------------------------- placement

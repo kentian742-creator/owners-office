@@ -1648,6 +1648,8 @@ def complete(
             pipeline_fields=pipeline_fields,
             where=call.label,
         )
+        if not errors:
+            errors = _outputs.coverage_errors(call.label, inputs, parsed)
         if errors:
             record["validation_errors"] = errors[:50]
         _append_log(log, record)

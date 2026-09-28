@@ -585,6 +585,25 @@ def structure_errors(name: str, data: Any) -> list[str]:
     return errors
 
 
+def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """Checks of a reply against the inputs it answers: 04A gives every fact under facts in its fact_table exactly one
+    verdict and no other (a slice's context_facts get none; pipeline/slicing.py)."""
+    if part_id != "04A" or "fact_table" not in inputs or "fact_verdicts" not in parsed:
+        return []
+    from . import slicing
+
+    try:
+        table = load_yaml_text(inputs["fact_table"])
+    except Exception:  # the input was checked when it was assembled; nothing to compare against otherwise
+        return []
+    ids = slicing.fact_ids(table)
+    if not ids:  # no fact carries an id: nothing to compare against
+        return []
+    verdicts = parsed["fact_verdicts"]
+    rows = verdicts.data if not verdicts.empty and isinstance(verdicts.data, list) else []
+    return slicing.verdict_coverage(ids, rows)
+
+
 def _cap(errors: list[str]) -> list[str]:
     if len(errors) <= MAX_ERRORS_PER_OUTPUT:
         return errors

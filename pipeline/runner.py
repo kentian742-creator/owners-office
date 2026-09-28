@@ -21,7 +21,7 @@ after an earnings event, 0024.
    the workspace .env. A missing required input fails the assembly with the full list of what is missing.
 2. execute. Verifies the bundle against its manifest (input hashes, prompt hashes, the pinned public commit, the
    thesis-ci schemas), runs llm.complete() once and writes outputs/, run.yml, calls.jsonl and reply.txt next to the
-   inputs; every request is also appended to runs/llm-log.jsonl, the call log the budget guard reads (T7). Backends
+   inputs (a bundle assembled in slices runs once per slice and merges the slices' outputs, docs/decisions/0026); every request is also appended to runs/llm-log.jsonl, the call log the budget guard reads (T7). Backends
    (passed to llm.complete() as backend=; docs/decisions/0022):
    - claude-code (default): the Claude Code CLI on the owner's Claude subscription, run locally; no API spend;
    - api: the Anthropic API (the fallback), locally or in the private repository's Actions (pipeline-step.yml, the
@@ -67,7 +67,7 @@ from typing import Any, TextIO
 
 import yaml
 
-from . import documents, edgar, evaluation, fake_client, isolation, llm, registry
+from . import documents, edgar, evaluation, fake_client, isolation, llm, registry, slicing
 from . import outputs as _outputs
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -80,6 +80,7 @@ REPLY = "reply.txt"
 INPUTS_DIR = "inputs"
 OUTPUTS_DIR = registry.OUTPUTS_DIR_NAME
 ATTEMPTS_DIR = registry.ATTEMPTS_DIR_NAME
+SLICES_DIR = "slices"  # slices/s01/{inputs,outputs}/..., run.yml, calls.jsonl, reply.txt (decisions/0026)
 MANIFEST_VERSION = 1
 RUN_RECORD_VERSION = 1
 DRY_RUN_DIR = Path("work") / "pipeline-dry-run"  # under the workspace root, outside both repositories
@@ -92,7 +93,7 @@ SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 # Public paths whose uncommitted changes would make the pinned commit misstate the code and roles that run.
 PIN_PATHS = ("pipeline", "agents", "constitution/decision-rights.yml", "requirements.txt", "requirements-lint.txt")
 DEFAULT_BRANCHES = ("main", "master")
-CONTEXT_WARN_TOKENS = 800_000  # the drafting and supervising models have a 1M-token context window
+CONTEXT_WARN_TOKENS = 600_000  # a request this large still fits (slicing.MAX_INPUT_TOKENS) but is noted
 # CJK ideographs, kana, hangul, CJK punctuation and full-width forms: public outputs must be English (2026-09-25).
 CJK_RE = re.compile(
     "[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\uf900-\ufaff\uff00-\uffef"
@@ -243,10 +244,16 @@ def inputs_digest(entries: Sequence[Mapping[str, Any]]) -> str:
     return registry.sha256_text(llm.canonical_json({str(e["name"]): str(e["sha256"]) for e in entries}))
 
 
+def slice_entries(manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Every slice's input entries, each named <slice id>/<input name> (the names inputs_sha256 covers)."""
+    return [{**entry, "name": f"{part['id']}/{entry['name']}"} for part in manifest.get("slices") or []
+            for entry in part.get("inputs") or []]
+
+
 def verify_bundle(bundle_dir: Path, manifest: Mapping[str, Any]) -> None:
-    """Every input file is present with the manifest's sha256, and inputs/ holds nothing else."""
+    """Every input file (of every slice) is present with the manifest's sha256, and inputs/ holds nothing else."""
     problems, listed = [], set()
-    entries = manifest.get("inputs") or []
+    entries = (manifest.get("inputs") or []) + slice_entries(manifest)
     for entry in entries:
         rel = str(entry.get("file"))
         listed.add(rel)
@@ -257,9 +264,9 @@ def verify_bundle(bundle_dir: Path, manifest: Mapping[str, Any]) -> None:
         actual = _sha(path.read_bytes())
         if actual != entry.get("sha256"):
             problems.append(f"{rel}: sha256 {actual[:12]} differs from the manifest's {str(entry.get('sha256'))[:12]}")
-    inputs_dir = bundle_dir / INPUTS_DIR
-    extra = sorted(p.relative_to(bundle_dir).as_posix() for p in inputs_dir.rglob("*")
-                   if p.is_file() and p.relative_to(bundle_dir).as_posix() not in listed) if inputs_dir.is_dir() else []
+    input_dirs = [bundle_dir / INPUTS_DIR, *sorted((bundle_dir / SLICES_DIR).glob(f"*/{INPUTS_DIR}"))]
+    extra = sorted(p.relative_to(bundle_dir).as_posix() for d in input_dirs if d.is_dir() for p in d.rglob("*")
+                   if p.is_file() and p.relative_to(bundle_dir).as_posix() not in listed)
     problems += [f"{rel}: not listed in the manifest" for rel in extra]
     if entries and manifest.get("inputs_sha256") != inputs_digest(entries):
         problems.append("inputs_sha256 does not match the listed inputs")
@@ -325,8 +332,10 @@ def verify_schemas(manifest: Mapping[str, Any], call: Any, schemas_dir: Path | N
                               "commit or assemble again")
 
 
-def read_inputs(bundle_dir: Path, manifest: Mapping[str, Any]) -> dict[str, str]:
-    return {str(e["name"]): (bundle_dir / str(e["file"])).read_text(encoding="utf-8") for e in manifest["inputs"]}
+def read_inputs(bundle_dir: Path, manifest: Mapping[str, Any], entries: Sequence[Mapping[str, Any]] | None = None
+                ) -> dict[str, str]:
+    entries = manifest["inputs"] if entries is None else entries
+    return {str(e["name"]): (bundle_dir / str(e["file"])).read_text(encoding="utf-8") for e in entries}
 
 
 # ---------------------------------------------------------------------------------------------------- assemble
@@ -374,9 +383,9 @@ def _estimate(prompt: Any, rules: Any, design: Any, call: Any, variables: Mappin
               inputs: Mapping[str, str], model: str | None) -> dict[str, Any]:
     content = llm.render_user_content(call, inputs)
     text = "\n\n".join([*_system_texts(prompt, rules, design, variables), content if isinstance(content, str) else ""])
-    tokens = fake_client.estimate_tokens(text)
-    estimate = {"input_tokens": tokens, "method": "rough: ASCII characters / 4 + one per other character",
-                "model": model}
+    tokens = slicing.estimate_tokens(text)
+    estimate = {"input_tokens": tokens, "method": f"ASCII characters / {slicing.CHARS_PER_TOKEN} + one per other "
+                "character (calibrated on real calls, pipeline/slicing.py)", "model": model}
     if model in llm.PRICES_PER_MTOK:
         estimate["input_cost_usd_uncached"] = round(tokens * llm.PRICES_PER_MTOK[model][0] / 1_000_000, 4)
     return estimate
@@ -499,27 +508,67 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
             raise RunnerError(f"{step}: {exc}") from None
         schema_records[name] = {"digest": registry.schema_digest(json.loads(path.read_text(encoding="utf-8"))),
                                 "origin": origin}
-    texts = {name: b.text for name, b in built.items()}
     model = role.model.get("id")
+    try:
+        sliced = registry.slice_inputs(ctx, built)
+    except (registry.MissingInput, edgar.EdgarError) as exc:
+        raise RunnerError(f"{step}: cutting the inputs into slices: {exc}") from None
 
-    entries = []
-    for name, required in call.inputs:
-        if name not in built:
-            continue
-        b = built[name]
-        data = b.text.encode("utf-8")
-        entry: dict[str, Any] = {"name": name, "file": f"{INPUTS_DIR}/{name}.{b.ext}", "required": required,
-                                 "bytes": len(data), "sha256": _sha(data), "sources": b.sources}
-        if b.empty:
-            entry["empty"] = True
-        if b.substitute:
-            entry["substitute"] = b.substitute
-        if b.note:
-            entry["note"] = b.note
-        entries.append(entry)
-    estimate = _estimate(prompt, rules, design, call, variables, texts, model)
-    if estimate["input_tokens"] > CONTEXT_WARN_TOKENS:
-        notes.append(f"estimated input {estimate['input_tokens']:,} tokens is close to the 1M context window")
+    def input_entries(parts: Mapping[str, registry.BuiltInput], folder: str) -> list[dict[str, Any]]:
+        entries = []
+        for name, required in call.inputs:
+            if name not in parts:
+                continue
+            b = parts[name]
+            data = b.text.encode("utf-8")
+            entry: dict[str, Any] = {"name": name, "file": f"{folder}{INPUTS_DIR}/{name}.{b.ext}",
+                                     "required": required, "bytes": len(data), "sha256": _sha(data),
+                                     "sources": b.sources}
+            if b.empty:
+                entry["empty"] = True
+            if b.substitute:
+                entry["substitute"] = b.substitute
+            if b.note:
+                entry["note"] = b.note
+            entries.append(entry)
+        return entries
+
+    def fits(estimate: Mapping[str, Any], what: str) -> None:
+        if estimate["input_tokens"] > slicing.MAX_INPUT_TOKENS:
+            raise RunnerError(f"{step}: {what} is estimated at {estimate['input_tokens']:,} input tokens, more than the "
+                              f"{slicing.MAX_INPUT_TOKENS:,} the context window leaves beside the output; nothing was "
+                              "written (cut the inputs, or add a slicer for this part: pipeline/slicing.py)")
+        if estimate["input_tokens"] > CONTEXT_WARN_TOKENS:
+            notes.append(f"{what}: estimated input {estimate['input_tokens']:,} tokens")
+
+    slices_meta: list[dict[str, Any]] = []
+    files: dict[str, str] = {}
+    if sliced:
+        entries = []
+        for number, part in enumerate(sliced, 1):
+            sid = f"s{number:02d}"
+            own = input_entries(part.inputs, f"{SLICES_DIR}/{sid}/")
+            texts_k = {name: b.text for name, b in part.inputs.items()}
+            estimate_k = _estimate(prompt, rules, design, call, variables, texts_k, model)
+            fits(estimate_k, f"slice {sid}")
+            slices_meta.append({"id": sid, "note": part.note, "inputs": own, "inputs_sha256": inputs_digest(own),
+                                "request_sha256": _request_hash(prompt, rules, design, call, variables, texts_k),
+                                "estimate": estimate_k})
+            files.update({e["file"]: part.inputs[e["name"]].text for e in own})
+        tokens = sum(m["estimate"]["input_tokens"] for m in slices_meta)
+        estimate = {**slices_meta[0]["estimate"], "input_tokens": tokens, "slices": len(slices_meta)}
+        if "input_cost_usd_uncached" in estimate:
+            estimate["input_cost_usd_uncached"] = round(sum(m["estimate"]["input_cost_usd_uncached"]
+                                                            for m in slices_meta), 4)
+        digest, request = inputs_digest([*slice_entries({"slices": slices_meta})]), None
+        notes.append(f"sliced into {len(slices_meta)} calls (decisions/0026); outputs/ holds the merged outputs")
+    else:
+        entries = input_entries(built, "")
+        texts = {name: b.text for name, b in built.items()}
+        estimate = _estimate(prompt, rules, design, call, variables, texts, model)
+        fits(estimate, "the request")
+        digest, request = inputs_digest(entries), _request_hash(prompt, rules, design, call, variables, texts)
+        files.update({e["file"]: built[e["name"]].text for e in entries})
     manifest = {
         "manifest_version": MANIFEST_VERSION,
         "pipeline_commit": commit,
@@ -546,11 +595,13 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         "private": {"commit": git_head(roots.private)},
         "inputs": entries,
         "omitted": omitted,
-        "inputs_sha256": inputs_digest(entries),
-        "request_sha256": _request_hash(prompt, rules, design, call, variables, texts),
+        "inputs_sha256": digest,
+        "request_sha256": request,
         "estimate": estimate,
         "notes": notes,
     }
+    if slices_meta:
+        manifest["slices"] = slices_meta
     if round_ > 1:
         manifest["round"] = round_
     if rehearsal:
@@ -560,8 +611,8 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
     tmp = Path(tempfile.mkdtemp(prefix=".assemble-", dir=bundle_dir.parent))
     try:
         os.chmod(tmp, 0o755)
-        for entry in entries:
-            _write_atomic(tmp / entry["file"], built[entry["name"]].text.encode("utf-8"))
+        for rel_file, text in files.items():
+            _write_atomic(tmp / rel_file, text.encode("utf-8"))
         write_yaml(tmp / MANIFEST, manifest)
         tmp.rename(bundle_dir)
     except BaseException:
@@ -801,6 +852,10 @@ def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backe
     verify_schemas(manifest, call, schemas)
     inputs = read_inputs(bundle_dir, manifest)
     attempt = _archive_failed_attempt(bundle_dir) + 1 if executed else 1
+    if manifest.get("slices"):
+        return _execute_slices(bundle_dir, manifest, call, formats, backend=backend, backend_args=backend_args,
+                               client=client, attempt=attempt, pin=pin, env=env, log_path=log_path, roots=roots,
+                               schemas=schemas, out=out)
     if backend == "fake" and client is None:
         client = fake_client.FakeClient(fake_client.placeholder_reply(call.outputs, formats,
                                                                       _fake_context(manifest, inputs)))
@@ -863,6 +918,194 @@ def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backe
     return record
 
 
+# ---------------------------------------------------------------------------------------------------- slices
+
+# Failures after which the other slices are not tried in the same attempt: the backend itself is unavailable.
+_STOPPING_ERRORS = ("ClaudeCodeUnavailable", "PlanLimitReached", "BudgetExceeded")
+
+
+def _slice_order_key(fact_id: str) -> tuple[int, str]:
+    digits = fact_id[1:] if fact_id[:1] == "F" else ""
+    return (int(digits), fact_id) if digits.isdigit() else (10**9, fact_id)
+
+
+def merge_slice_outputs(step: str, bundle_dir: Path, manifest: Mapping[str, Any]
+                        ) -> tuple[dict[str, str | None], dict[str, Any]]:
+    """The slices' outputs merged into the part's outputs ({name: YAML text, or None for an empty output}) and what
+    the merge did (pipeline/slicing.py). Raises RunnerError when the merged outputs are not well formed."""
+    parts = manifest["slices"]
+
+    def output(part: Mapping[str, Any], name: str) -> Any:
+        path = bundle_dir / SLICES_DIR / part["id"] / OUTPUTS_DIR / f"{name}.yml"
+        return registry.load_yaml_file(path) if path.is_file() else None
+
+    info: dict[str, Any] = {"slices": len(parts)}
+    if step == "16A":
+        tables = [output(part, "fact_table") for part in parts]
+        merged, maps = slicing.merge_fact_tables(tables)
+        info["fact_ids"] = {part["id"]: f"{min(m.values())}–{max(m.values())}" if m else "none"
+                            for part, m in zip(parts, maps)}
+        texts: dict[str, str | None] = {"fact_table": registry.dump_yaml(merged)}
+        data = {"fact_table": merged}
+    elif step == "04A":
+        order: list[str] = []
+        for part in parts:
+            entry = next(e for e in part["inputs"] if e["name"] == "fact_table")
+            order += slicing.fact_ids(registry.load_yaml_file(bundle_dir / entry["file"]))
+        order.sort(key=_slice_order_key)
+        merged_lists, maps = slicing.merge_audits(
+            [{name: output(part, name) for name in ("fact_verdicts", "findings", "questions")} for part in parts],
+            order)
+        errors = slicing.verdict_coverage(order, merged_lists["fact_verdicts"])
+        if errors:
+            raise RunnerError("the merged fact_verdicts do not cover the fact table:\n- " + "\n- ".join(errors))
+        info["renumbered"] = {part["id"]: m for part, m in zip(parts, maps) if m}
+        texts = {name: registry.dump_yaml(rows) if rows else None for name, rows in merged_lists.items()}
+        data = dict(merged_lists)
+    else:
+        raise RunnerError(f"{step} has no merge for slices (pipeline/slicing.py)")
+    problems = [e for name, value in data.items() if value for e in _outputs.structure_errors(name, value)]
+    if problems:
+        raise RunnerError("the merged outputs are not well formed:\n- " + "\n- ".join(problems[:20]))
+    return texts, info
+
+
+def _write_merged(bundle_dir: Path, call: Any, texts: Mapping[str, str | None]) -> dict[str, dict[str, Any]]:
+    out_dir = bundle_dir / OUTPUTS_DIR
+    out_dir.mkdir(parents=True, exist_ok=False)
+    entries: dict[str, dict[str, Any]] = {}
+    for name, required in call.outputs:
+        text = texts.get(name)
+        if text is None:
+            entries[name] = {"status": "empty", "format": _outputs.YAML}
+            continue
+        data = text.encode("utf-8")
+        _write_atomic(out_dir / f"{name}.yml", data)
+        entries[name] = {"status": "written", "file": f"{OUTPUTS_DIR}/{name}.yml", "format": _outputs.YAML,
+                         "bytes": len(data), "sha256": _sha(data), "merged_from_slices": True}
+    return entries
+
+
+def _execute_slices(bundle_dir: Path, manifest: Mapping[str, Any], call: Any, formats: Mapping[str, str], *,
+                    backend: str, backend_args: Mapping[str, Any], client: Any, attempt: int, pin: Mapping[str, Any],
+                    env: Mapping[str, str], log_path: str | os.PathLike[str] | None, roots: Roots,
+                    schemas: Path | None, out: TextIO) -> dict[str, Any]:
+    """execute() for a sliced bundle (decisions/0026): each slice not yet succeeded runs as its own call and is
+    recorded under slices/<id>/ like a bundle; once every slice has succeeded, the outputs are merged into outputs/.
+    A retry runs only the slices that failed or never ran."""
+    rel = manifest["bundle"]
+    log = Path(log_path) if log_path else roots.private / registry.LLM_LOG_REL
+    record: dict[str, Any] = {
+        "run_version": RUN_RECORD_VERSION, "bundle": rel, "step": manifest["step"], "status": "failed",
+        "backend": backend, "client": "injected" if client is not None else ("fake" if backend == "fake" else backend),
+        "attempt": attempt, "started_at": _iso(_utcnow()), "github": github_context(env), "pipeline": dict(pin),
+    }
+    all_lines = b""
+    rows: list[dict[str, Any]] = []
+    failed: list[str] = []
+    first: dict[str, Any] | None = None
+    stopped = None
+    for part in manifest["slices"]:
+        sid = part["id"]
+        sdir = bundle_dir / SLICES_DIR / sid
+        previous = registry.load_yaml_file(sdir / RUN_RECORD)
+        if isinstance(previous, dict) and previous.get("status") == "succeeded" and (sdir / OUTPUTS_DIR).is_dir():
+            rows.append({"id": sid, "status": "succeeded", "attempt": previous.get("attempt"), "this_run": False})
+            first = first or previous
+            continue
+        if stopped:
+            rows.append({"id": sid, "status": "not run", "reason": stopped})
+            failed.append(sid)
+            continue
+        s_attempt = _archive_failed_attempt(sdir) + 1 if (sdir / RUN_RECORD).exists() else 1
+        inputs = read_inputs(bundle_dir, manifest, part["inputs"])
+        s_client = client
+        if backend == "fake" and client is None:
+            s_client = fake_client.FakeClient(fake_client.placeholder_reply(call.outputs, formats,
+                                                                            _fake_context(manifest, inputs)))
+        start = log.stat().st_size if log.is_file() else 0
+        srec: dict[str, Any] = {"run_version": RUN_RECORD_VERSION, "bundle": rel, "slice": sid, "note": part.get("note"),
+                                "status": "failed", "attempt": s_attempt, "started_at": _iso(_utcnow())}
+        result, failure = None, None
+        try:
+            result = llm.complete(
+                str(manifest["role"]), str(manifest["prompt"]["id"]), inputs,
+                part=manifest["prompt"].get("part"), variables=manifest.get("variables") or {},
+                pipeline_fields=manifest.get("pipeline_fields") or None, client=s_client, log_path=log,
+                repo_root=roots.public, prompts_dir=roots.private / "prompts", schemas_dir=schemas, **backend_args,
+            )
+        except Exception as exc:  # recorded in the slice's run.yml; only error_summary() is printed
+            failure = exc
+            srec["error"] = describe_error(exc)
+        lines = _new_log_lines(log, start)
+        all_lines += lines
+        srec.update(summarize_calls(lines))
+        if result is not None:
+            entries = _write_outputs(sdir, call, result)
+            srec.update(
+                status="succeeded", model=result.model, requested_model=result.requested_model, effort=result.effort,
+                served_by_fallback=result.served_by_fallback, attempts=result.attempts, stop_reason=result.stop_reason,
+                input_sha256=result.input_sha256, request_matches_manifest=result.input_sha256 == part.get(
+                    "request_sha256"),
+                versions={k: getattr(result, k) for k in ("prompt_version", "prompt_revision", "rules_version",
+                                                           "rules_revision", "design_version", "design_revision")},
+                generated_by=dict(result.generated_by), outputs=entries)
+            first = first or srec
+        reply = result.text if result is not None else getattr(getattr(failure, "result", None), "text", None)
+        sdir.mkdir(parents=True, exist_ok=True)
+        if reply is not None:
+            _write_atomic(sdir / REPLY, reply.encode("utf-8"))
+            srec["reply"] = {"file": REPLY, "sha256": registry.sha256_text(reply)}
+        if lines:
+            _write_atomic(sdir / CALLS, lines)
+            srec["calls_file"] = CALLS
+        srec["finished_at"] = _iso(_utcnow())
+        write_yaml(sdir / RUN_RECORD, srec)
+        row = {"id": sid, "status": srec["status"], "attempt": s_attempt, "this_run": True,
+               "requests": srec.get("requests", 0)}
+        if srec.get("notional_cost_usd"):
+            row["notional_cost_usd"] = srec["notional_cost_usd"]
+        if failure is not None:
+            row["error"] = srec["error"].get("type")
+            failed.append(sid)
+            if srec["error"].get("type") in _STOPPING_ERRORS:
+                stopped = f"{srec['error'].get('type')} in {sid}"
+        rows.append(row)
+        print(f"  slice {sid}: {srec['status']}" + (f" ({error_summary(failure)})" if failure is not None else "")
+              + f"; {srec.get('requests', 0)} request(s)", file=out)
+    record.update(summarize_calls(all_lines))
+    record["slices"] = rows
+    failure_exc: BaseException | None = None
+    if failed:
+        failure_exc = RunnerError(f"{len(failed)} of {len(rows)} slice(s) did not succeed: {', '.join(failed)}; "
+                                  "--retry runs only those again")
+        record["error"] = {"type": "SlicesFailed", "message": str(failure_exc)}
+    else:
+        try:
+            texts, info = merge_slice_outputs(str(manifest["step"]), bundle_dir, manifest)
+        except RunnerError as exc:
+            failure_exc = exc
+            record["error"] = {"type": "MergeFailed", "message": str(exc)[:2000]}
+        else:
+            entries = _write_merged(bundle_dir, call, texts)
+            first = first or {}
+            record.update(
+                status="succeeded", model=first.get("model"), requested_model=first.get("requested_model"),
+                effort=first.get("effort"), served_by_fallback=first.get("served_by_fallback"),
+                attempts=first.get("attempts"), stop_reason=first.get("stop_reason"),
+                versions=first.get("versions"), generated_by=first.get("generated_by"), merged=info,
+                outputs=entries, placements=planned_placements(manifest, entries))
+    if all_lines:
+        _write_atomic(bundle_dir / CALLS, all_lines)
+        record["calls_file"] = CALLS
+    record["call_log"] = (log.resolve().relative_to(roots.private.resolve()).as_posix()
+                          if _inside(log, roots.private) else str(log))
+    record["finished_at"] = _iso(_utcnow())
+    write_yaml(bundle_dir / RUN_RECORD, record)
+    _print_execution(record, failure_exc, out)
+    return record
+
+
 def _print_execution(record: Mapping[str, Any], failure: BaseException | None, out: TextIO) -> None:
     head = f"execute {record['bundle']} (backend {record['backend']}, attempt {record['attempt']}): {record['status']}"
     if failure is not None:
@@ -877,8 +1120,11 @@ def _print_execution(record: Mapping[str, Any], failure: BaseException | None, o
     if record.get("status") == "succeeded":
         print(f"  model {record.get('model')} (requested {record.get('requested_model')}), attempts "
               f"{record.get('attempts')}, stop {record.get('stop_reason')}", file=out)
-        print(f"  input_sha256 {record.get('input_sha256')} (matches the manifest: "
-              f"{'yes' if record.get('request_matches_manifest') else 'NO'})", file=out)
+        if record.get("slices"):
+            print(f"  {len(record['slices'])} slices merged into outputs/ (decisions/0026)", file=out)
+        else:
+            print(f"  input_sha256 {record.get('input_sha256')} (matches the manifest: "
+                  f"{'yes' if record.get('request_matches_manifest') else 'NO'})", file=out)
         for name, entry in (record.get("outputs") or {}).items():
             if entry.get("status") == "written":
                 print(f"  output {name}: {entry['format']}, {entry['bytes']:,} bytes, sha256 {entry['sha256'][:12]}",
@@ -1191,7 +1437,8 @@ def describe_bundle(bundle_dir: Path) -> str:
         f"pipeline commit {str(manifest.get('pipeline_commit'))[:12]}; pushed {pipeline.get('pushed')}; "
         f"uncommitted: {_paths_summary(pipeline.get('dirty_paths') or []) or 'none'}",
         f"request_sha256 {manifest.get('request_sha256')}",
-        f"inputs ({len(manifest.get('inputs') or [])}):",
+        f"inputs ({len(manifest.get('inputs') or [])}" + (f"; {len(manifest['slices'])} slices" if manifest.get("slices")
+                                                          else "") + "):",
     ]
     for entry in manifest.get("inputs") or []:
         flags = []
@@ -1205,6 +1452,11 @@ def describe_bundle(bundle_dir: Path) -> str:
                      f"{sources}{'  [' + ', '.join(flags) + ']' if flags else ''}")
         if entry.get("note"):
             lines.append(f"      note: {entry['note']}")
+    for part in manifest.get("slices") or []:
+        estimate = part.get("estimate") or {}
+        lines.append(f"  slice {part['id']}: ~{estimate.get('input_tokens', 0):,} input tokens; {part.get('note')}")
+        for entry in part.get("inputs") or []:
+            lines.append(f"      {entry['name']:<16} {entry['bytes']:>9,} B  sha256 {str(entry['sha256'])[:12]}")
     for item in manifest.get("omitted") or []:
         lines.append(f"  omitted {item['name']}: {item['reason']}")
     fields = manifest.get("pipeline_fields") or {}
@@ -1222,6 +1474,9 @@ def describe_bundle(bundle_dir: Path) -> str:
         lines.append(f"run: {record.get('status')} (backend {record.get('backend')}, client {record.get('client')}, "
                      f"attempt {record.get('attempt')}); {record.get('requests', 0)} request(s); cost "
                      f"{record.get('cost_usd', 0.0)} USD")
+        for row in record.get("slices") or []:
+            lines.append(f"  slice {row['id']}: {row.get('status')} (attempt {row.get('attempt')})"
+                         + (f", {row['error']}" if row.get("error") else ""))
         for name, entry in (record.get("outputs") or {}).items():
             if entry.get("status") == "written":
                 lines.append(f"  output {name:<16} {entry['format']:<8} {entry['bytes']:>8,} B  sha256 "
