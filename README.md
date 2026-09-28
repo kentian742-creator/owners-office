@@ -8,9 +8,10 @@ the results are written down with probabilities and timestamped; afterwards they
 advance. Mistakes are published. The research is drafted and audited by AI agents working under the owner's written
 investment constitution; the owner decides only where the money goes and whether the constitution changes.
 
-**Status on 2026-09-27:** six companies are archived, and every archive has been checked fact by fact against the
-companies' filings; each error found is in [mistakes.md](mistakes.md). The first forecasts, on AppLovin's results for the third
-quarter of 2026, will be registered by 2026-10-30, so nothing has been scored yet. Progress is tracked in
+**Status on 2026-09-28:** six companies are archived, and every archive has been checked fact by fact against the
+companies' filings; each error found is in [mistakes.md](mistakes.md). Four more (McDonald's, Alphabet, Apple and NVIDIA)
+are being built by the pipeline straight from their SEC filings. The first forecasts, on S&P Global's results for the
+third quarter of 2026, will be registered by 2026-10-17, so nothing has been scored yet. Progress is tracked in
 [docs/STATUS.md](docs/STATUS.md).
 
 > **Not investment advice.** This repository records one private investor's method and forecast record. It recommends
@@ -37,8 +38,8 @@ close those gaps:
 ## Start here
 
 - **A company:** AppLovin's [two-minute story](companies/APP/story.md), then its full [thesis and tests](companies/APP/thesis.yml).
-  The other archives are [PDD](companies/PDD/), [American Express](companies/AXP/), [Microsoft](companies/MSFT/),
-  [S&P Global](companies/SPGI/) and [Berkshire Hathaway](companies/BRK/).
+  The other archives are [S&P Global](companies/SPGI/), [American Express](companies/AXP/),
+  [Microsoft](companies/MSFT/), [Berkshire Hathaway](companies/BRK/) and [PDD](companies/PDD/).
 - **The rules:** the [investment constitution](constitution/owner.md): fourteen rules and five hard limits, each
   mapped to a check a machine can run.
 - **The mistakes:** [mistakes.md](mistakes.md), every error found so far and what changed because of it.
