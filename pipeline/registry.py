@@ -46,7 +46,7 @@ from typing import Any
 
 import yaml
 
-from . import documents, edgar, evaluation, isolation, llm, slicing
+from . import archive, documents, edgar, evaluation, isolation, llm, slicing
 from . import outputs as _outputs
 
 PUBLIC_REPO = "owners-office"
@@ -299,6 +299,8 @@ class RunContext:
     runs_roots: tuple[Path, ...] = ()  # directories searched for upstream runs before the private repository (dry runs)
     rehearsal: bool = False  # dry run before the event: the last reported quarter's filings stand in
     round: int = 1  # the round of this step in its event (2: the audit after 03R, the revision after HQ returns)
+    subject: str | None = None  # prompt 04's and 16's {{subject}} when it is not the step's default ("archive")
+
     @property
     def scope(self) -> str:
         return self.step.storage_scope(self.company) if self.company else "hq"
@@ -311,11 +313,22 @@ class RunContext:
     def thesis_path(self) -> Path:
         return self.public_root / "companies" / str(self.company) / "thesis.yml"
 
+    def intake(self) -> dict[str, Any] | None:
+        """The companies/intake.yml entry of a company whose archive is not built yet (decisions/0028)."""
+        if self.thesis_path().is_file():
+            return None
+        return intake_entries(self.public_root).get(str(self.company).upper())
+
     def thesis(self) -> dict[str, Any]:
         def load() -> dict[str, Any]:
             path = self.thesis_path()
+            entry = self.intake()
+            if entry is not None:  # a new archive: what the owner decided, until 01B writes thesis.yml
+                return {"company": str(self.company).upper(), "name": entry.get("name"),
+                        "status": entry.get("status"), "intake": True}
             if not path.is_file():
-                raise MissingInput(f"companies/{self.company}/thesis.yml does not exist in {PUBLIC_REPO}")
+                raise MissingInput(f"companies/{self.company}/thesis.yml does not exist in {PUBLIC_REPO}, and "
+                                   f"{INTAKE_REL} does not list {self.company}")
             data = yaml.safe_load(path.read_text(encoding="utf-8"))
             if not isinstance(data, dict):
                 raise MissingInput(f"companies/{self.company}/thesis.yml is not a mapping")
@@ -325,6 +338,12 @@ class RunContext:
 
     def filer(self) -> edgar.Filer:
         def load() -> edgar.Filer:
+            entry = self.intake()
+            if entry is not None:
+                if not entry.get("cik"):
+                    raise MissingInput(f"{INTAKE_REL}: {self.company} has no cik")
+                subs = edgar.submissions(entry["cik"], client=self.gateway().client)
+                return edgar.filer_from_submissions(subs, str(self.company).upper())
             try:
                 return edgar.load_filer(str(self.company), self.public_root)
             except ValueError as exc:
@@ -427,7 +446,31 @@ def _update_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
             "ledger": {"company": ctx.company}}
 
 
+THESIS_SCHEMA_VERSION = "0.2"
+
+
+def _build_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
+    """01B: the header fields the pipeline maintains (00 §G8). A new archive takes its name and status from
+    companies/intake.yml, its filer block from EDGAR, and starts at trust level 1; a rebuild copies them from the
+    current thesis.yml, as a quarterly update does."""
+    if ctx.intake() is None:
+        return _update_fields(ctx)
+    thesis, filer = ctx.thesis(), ctx.filer()
+    block = {"cik": filer.cik, "type": filer.type, "fiscal_year_end": filer.fiscal_year_end,
+             "earnings_form": filer.earnings_form, "annual_form": filer.annual_form}
+    fields = {"schema_version": THESIS_SCHEMA_VERSION, "company": ctx.company, "name": thesis.get("name"),
+              "status": thesis.get("status"), "filer": {k: v for k, v in block.items() if v}, "trust_level": 1}
+    return {"thesis": {k: v for k, v in fields.items() if v is not None}, "ledger": {"company": ctx.company}}
+
+
 STEPS: dict[str, StepSpec] = {
+    # A company archive (prompt 01; decisions/0028): the dossier, audited by 16A and 04A with the subject "archive",
+    # revised once in round 2, then turned into system files. The period is the last reported quarter the data covers.
+    "01A": StepSpec("01A", "01", "A", "company", "quarter", False,
+                    "dossier of a company archive, from the SEC filings (company manager)"),
+    "01B": StepSpec("01B", "01", "B", "company", "quarter", False,
+                    "system files of a company archive: thesis.yml, story.md, ledger.yml (company manager)",
+                    _build_fields),
     "14Q": StepSpec("14Q", "14", "Q", "company", "quarter", True,
                     "neutral question list, frozen before the results event (HQ)"),
     "15A": StepSpec("15A", "15", "A", "company", "quarter", True,
@@ -462,7 +505,7 @@ STEPS: dict[str, StepSpec] = {
     "17A": StepSpec("17A", "17", "A", "hq", "quarter", False,
                     "review and release gate of the quarterly update (HQ)", post_event=True, about_company=True),
 }
-ROUNDS = {"16A": 2, "04A": 2, "03R": 2, "17A": 2}  # steps that may run a second time in one event (docs/decisions/0024)
+ROUNDS = {"16A": 2, "04A": 2, "03R": 2, "17A": 2, "01A": 2}  # steps that may run a second time in one event (docs/decisions/0024)
 
 
 def step_spec(step: str) -> StepSpec:
@@ -491,6 +534,8 @@ def variables_for(ctx: RunContext) -> dict[str, str]:
     if ctx.step.period_kind == "quarter":
         out[VAR_PERIOD] = ctx.period
     out.update(ctx.step.variables)
+    if ctx.subject:
+        out[llm.VAR_SUBJECT] = ctx.subject
     return out
 
 
@@ -503,7 +548,7 @@ def placement_context(ctx: RunContext) -> dict[str, Any]:
         "run_date": ctx.run_date.isoformat(),
         "month": ctx.period if ctx.step.period_kind == "month" else None,
         "doc": None,
-        "subject": ctx.step.variables.get(llm.VAR_SUBJECT),
+        "subject": ctx.subject or ctx.step.variables.get(llm.VAR_SUBJECT),
         "scope": ctx.scope,
         "run_dir": ctx.step.bundle_name(ctx.run_date, ctx.company, ctx.round),
     }
@@ -743,6 +788,16 @@ def source_tag(ticker: str, filing: edgar.Filing, cal: edgar.FiscalCalendar) -> 
         except ValueError:
             pass
     return f"{ticker}-{form}-{filing.filing_date.isoformat()}"
+
+
+INTAKE_REL = "companies/intake.yml"  # companies the owner added whose archive is not built yet (decisions/0028)
+
+
+def intake_entries(public_root: Path) -> dict[str, dict[str, Any]]:
+    """ticker -> entry of companies/intake.yml (ticker, name, cik, status, decided)."""
+    data = load_yaml_file(public_root / INTAKE_REL)
+    rows = data.get("companies") if isinstance(data, dict) else None
+    return {str(r["ticker"]).upper(): r for r in rows or [] if isinstance(r, dict) and r.get("ticker")}
 
 
 def known_filing_tags(roots: Iterable[Path], company: str) -> dict[str, str]:
@@ -1072,6 +1127,15 @@ def _thesis(ctx: RunContext, name: str) -> BuiltInput:
 @assembler("dossier")
 def _dossier(ctx: RunContext, name: str) -> BuiltInput:
     company = _need_company(ctx, name)
+    if ctx.step.step in ("01B", "01C"):
+        run = final_dossier_run(ctx)
+        if run is None:
+            raise MissingInput(f"{name}: no succeeded 01A run for {company} {ctx.period} (01B and 01C take 01A's final "
+                               "version)")
+        text = run.read_output("dossier")
+        if text is None:
+            raise MissingInput(f"{name}: {run.rel} has no dossier output")
+        return BuiltInput(text, "md", run.outputs_used(["dossier"]), note=f"01A's final version: {run.rel}")
     places = [(ctx.public_root, PUBLIC_REPO)] if company in _outputs.PUBLIC_DOSSIERS else []
     places.append((ctx.private_root, PRIVATE_REPO))
     for root, repo in places:
@@ -2174,6 +2238,8 @@ def _product(ctx: RunContext, name: str) -> BuiltInput:
     """16A in update mode: the 03 draft's outputs that carry facts, the changes to thesis.yml and ledger.yml as diffs
     against the current files, and the source table. In the second round, the revision's changes only."""
     company = _need_company(ctx, name)
+    if ctx.subject == ARCHIVE_SUBJECT:
+        return _archive_product(ctx, name)
     if ctx.round > 1:
         return _revision_product(ctx, name)
     run = ctx.require_run("03-draft", name, why="16A extracts the facts of the draft before the audit")
@@ -2240,6 +2306,8 @@ def cited_texts(ctx: RunContext, tags: Iterable[str]) -> tuple[dict[str, str], l
         for entry in (data.get("sources") if isinstance(data, dict) else None) or []:
             if isinstance(entry, dict) and entry.get("tag"):
                 registered.setdefault(str(entry["tag"]), entry)
+    for entry in archive_source_entries(ctx):  # a new archive's sources are in 01A's sources_additions until placed
+        registered.setdefault(str(entry["tag"]), entry)
     unresolved: list[str] = []
     gateway = ctx.gateway()
     filer = ctx.filer()
@@ -2335,6 +2403,8 @@ def _sources(ctx: RunContext, name: str) -> BuiltInput:
     primary documents: the event's filings and the documents the facts (04A) or the findings (03R) cite. Written as
     .txt: thesis-ci validates any file named sources.yml."""
     company = _need_company(ctx, name)
+    if ctx.step.step == "01A":
+        return _build_sources(ctx, name)
     table, sources = source_table(ctx)
     lines = [f"Sources for {company} {ctx.period}.", "", "===== source table (public and private sources.yml) =====",
              table.rstrip(), ""]
@@ -2383,6 +2453,190 @@ def render_sources(ctx: RunContext, lines: list[str], docs: Iterable[FilingText]
         text += texts[tag].strip() + "\n"
         doc_sources.append(workspace_file_source(ctx.workspace_root, path))
     return text, doc_sources
+
+
+# ---- a company archive from the SEC filings (prompt 01; pipeline/archive.py, decisions/0028)
+
+ARCHIVE_SUBJECT = "archive"  # prompt 04's {{subject}} for an archive
+
+
+def final_dossier_run(ctx: RunContext) -> PriorRun | None:
+    """01A's final version for this period: the revision after the audit (round 2) when there is one."""
+    for round_ in sorted(range(1, ROUNDS["01A"] + 1), reverse=True):
+        run = ctx.latest_run("01A", period=ctx.period, round_=round_)
+        if run is not None:
+            return run
+    return None
+
+
+def archive_source_entries(ctx: RunContext) -> list[dict[str, Any]]:
+    """The source entries 01A added (sources_additions of its latest run for this company), for tags that are in no
+    sources.yml yet."""
+    run = final_dossier_run(ctx) if ctx.company else None
+    text = run.read_output("sources_additions") if run is not None else None
+    if not text or _outputs.is_empty_mark(text):
+        return []
+    data = yaml.safe_load(text)
+    rows = data.get("sources") if isinstance(data, dict) else data
+    return [r for r in rows or [] if isinstance(r, dict) and r.get("tag")]
+
+
+def _build_sources(ctx: RunContext, name: str) -> BuiltInput:
+    """01A: the filings a new dossier is written from (archive.build_selection), within archive.SOURCES_TOKENS."""
+    company = _need_company(ctx, name)
+    filer = ctx.filer()
+    gateway = ctx.gateway()
+    subs = edgar.submissions(filer.cik, client=gateway.client)
+    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    kind = filer.type or edgar.infer_filer_type(subs)
+    events = edgar.earnings_events(subs.cik, cal.label, filer_type=kind, since=ctx.run_date - dt.timedelta(days=500),
+                                   until=ctx.run_date, client=gateway.client, subs=subs)
+    picks = archive.build_selection(subs.filings, events, as_of=ctx.run_date, cal=cal, foreign=kind == edgar.FOREIGN)
+    known = known_filing_tags((ctx.public_root, ctx.private_root), company)
+    fetched = []
+    for pick in picks:
+        docs = gateway.selection_documents(pick.selection, ticker=company, cal=cal, subs=subs, known_tags=known)
+        if docs:
+            fetched.append((pick, docs, slicing.estimate_tokens(render_documents([], docs)[0])))
+    kept, left = archive.within_budget(fetched, lambda item: item[2])
+    table, table_sources = source_table(ctx)
+    lines = [f"Sources for the archive of {company}, compiled by the pipeline from EDGAR as of {ctx.run_date}. "
+             "Supplied, in order of priority:"]
+    lines += [f"- {pick.reason}: {pick.selection.filing.form} filed {pick.selection.filing.filing_date} "
+              f"(accession {pick.selection.filing.accession}), about {tokens:,} tokens" for pick, _, tokens in kept]
+    if left:
+        lines.append(f"Not supplied, over the input budget of {archive.SOURCES_TOKENS:,} tokens: " + "; ".join(
+            f"{pick.reason} ({pick.selection.filing.form} filed {pick.selection.filing.filing_date}, accession "
+            f"{pick.selection.filing.accession})" for pick, _, _ in left) + ".")
+    lines += [f"Not supplied: {documents.NOT_ON_EDGAR}.",
+              "Cite the documents below by the tag in their header line, and add a sources_additions entry (with the "
+              "accession) for every document you cite that the source table does not list.", "",
+              "===== source table (public and private sources.yml) =====", table.rstrip(), ""]
+    docs = sorted((d for _, found, _ in kept for d in found), key=_filing_order)
+    text, doc_sources = render_sources(ctx, lines, docs, [], {}, [])
+    return BuiltInput(text, "txt", table_sources + doc_sources,
+                      note=f"{len(kept)} filing(s), {len(docs)} document(s)"
+                           + (f"; {len(left)} left out over the budget" if left else ""))
+
+
+@assembler("xbrl_facts")
+def _xbrl_facts(ctx: RunContext, name: str) -> BuiltInput:
+    """01A, 01C: the ten-year financial summary from EDGAR's XBRL companyfacts (archive.xbrl_summary)."""
+    company = _need_company(ctx, name)
+    filer = ctx.filer()
+    gateway = ctx.gateway()
+    facts, source = gateway.companyfacts(filer.cik)
+    subs = edgar.submissions(filer.cik, client=gateway.client)
+    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    known = known_filing_tags((ctx.public_root, ctx.private_root), company)
+    lookup = archive.tag_lookup(subs.filings, lambda f: known.get(f.accession)
+                                or documents.tag_with_ordinal(company, f, cal, subs.filings))
+    summary = archive.xbrl_summary(facts, cal=cal, tags=lookup)
+    note = f"{len(summary['items'])} line items over {len(summary['fiscal_years'])} fiscal years"
+    if summary["missing"]:
+        note += f"; not tagged: {', '.join(summary['missing'])}"
+    return BuiltInput(archive.render_summary(summary, company), "yml", [source], note=note)
+
+
+@assembler("industries")
+def _industries(ctx: RunContext, name: str) -> BuiltInput:
+    """01A: the industry modules in the system, each with its id, name, as-of date and summary."""
+    rows, sources = [], []
+    for path in sorted((ctx.public_root / "industries").glob("*/industry.yml")):
+        data = load_yaml_file(path)
+        if not isinstance(data, dict):
+            continue
+        rows.append({k: data.get(k) for k in ("id", "name", "as_of", "summary") if data.get(k) is not None})
+        sources.append(repo_file_source(ctx.public_root, path, PUBLIC_REPO))
+    if not rows:
+        return empty_document(ctx, name, "the system has no industry module yet")
+    return BuiltInput(dump_yaml({"industries": rows}), "yml", sources)
+
+
+@assembler("existing_dossier")
+def _existing_dossier(ctx: RunContext, name: str) -> BuiltInput:
+    """01A round 2: the first draft, to be revised after the audit; a rebuild: the current dossier."""
+    company = _need_company(ctx, name)
+    if ctx.round > 1:
+        run = ctx.latest_run("01A", period=ctx.period, round_=ctx.round - 1)
+        text = run.read_output("dossier") if run is not None else None
+        if text is None:
+            raise MissingInput(f"{name}: no succeeded 01A run (round {ctx.round - 1}) for {company} {ctx.period}")
+        return BuiltInput(text, "md", run.outputs_used(["dossier"]), note=f"the draft under revision: {run.rel}")
+    if ctx.intake() is not None:
+        raise Omit("a new archive: there is no dossier yet")
+    for root, repo in ((ctx.public_root, PUBLIC_REPO), (ctx.private_root, PRIVATE_REPO)):
+        path = root / "companies" / company / "dossier.md"
+        if path.is_file():
+            return BuiltInput(path.read_text(encoding="utf-8"), "md", [repo_file_source(root, path, repo)])
+    raise Omit(f"companies/{company}/dossier.md does not exist in either repository")
+
+
+@assembler("findings_04B")
+def _findings_04b(ctx: RunContext, name: str) -> BuiltInput:
+    raise Omit("04B (red team and argument review) does not run for archives in the pipeline yet (decisions/0028)")
+
+
+@assembler("existing_system_files")
+def _existing_system_files(ctx: RunContext, name: str) -> BuiltInput:
+    """01B on a rebuild: the current thesis.yml, story.md and ledger.yml."""
+    company = _need_company(ctx, name)
+    if ctx.intake() is not None:
+        raise Omit("a new archive: there are no system files yet")
+    chunks, sources = [], []
+    for file in ("thesis.yml", "story.md", "ledger.yml"):
+        path = ctx.public_root / "companies" / company / file
+        if path.is_file():
+            chunks.append(f"===== {file} =====\n{path.read_text(encoding='utf-8').rstrip()}\n")
+            sources.append(repo_file_source(ctx.public_root, path, PUBLIC_REPO))
+    if not chunks:
+        raise Omit(f"companies/{company} has no system files")
+    return BuiltInput("\n".join(chunks), "txt", sources)
+
+
+def spec_file(rel: str, schemas_dir: Path | None) -> tuple[Path, str]:
+    """A file of thesis-ci's spec/ (templates, metrics registry), next to the schemas schema_file() finds."""
+    schema, origin = schema_file("thesis", schemas_dir)
+    path = schema.parent.parent / rel
+    if not path.exists():
+        raise MissingInput(f"thesis-ci spec/{rel} not found next to the schemas ({origin})")
+    return path, origin
+
+
+@assembler("lynch_template")
+def _lynch_template(ctx: RunContext, name: str) -> BuiltInput:
+    """01B: every Lynch category template and _common.yml (the category is 01B's own judgment)."""
+    directory, origin = spec_file("templates/lynch", ctx.schemas_dir)
+    chunks, sources = [], []
+    for path in sorted(directory.glob("*.yml")):
+        text = path.read_text(encoding="utf-8")
+        chunks.append(f"===== {path.name} =====\n{text.rstrip()}\n")
+        sources.append({"kind": "thesis-ci", "file": f"spec/templates/lynch/{path.name}", "origin": origin,
+                        "sha256": sha256_text(text)})
+    return BuiltInput("\n".join(chunks), "txt", sources, note="all six categories and _common.yml")
+
+
+@assembler("metrics_registry")
+def _metrics_registry(ctx: RunContext, name: str) -> BuiltInput:
+    path, origin = spec_file("metrics.yml", ctx.schemas_dir)
+    text = path.read_text(encoding="utf-8")
+    return BuiltInput(text, "yml", [{"kind": "thesis-ci", "file": "spec/metrics.yml", "origin": origin,
+                                     "sha256": sha256_text(text)}])
+
+
+def _archive_product(ctx: RunContext, name: str) -> BuiltInput:
+    """16A for an archive: the dossier's first draft and the sources it added, then the source table."""
+    company = _need_company(ctx, name)
+    run = ctx.latest_run("01A", period=ctx.period, round_=1)
+    if run is None:
+        raise MissingInput(f"{name}: no succeeded 01A run for {company} {ctx.period}; 16A audits its dossier")
+    text, sources = run_outputs_text(
+        run, [n for n in ("dossier", "sources_additions") if run.output_file(n) is not None],
+        f"The product under audit: the first draft of the archive dossier of {company} ({run.rel}) and the source "
+        "entries it added, then the source table.")
+    table, table_sources = source_table(ctx)
+    text += f"===== source table (public and private sources.yml) =====\n{table}"
+    return BuiltInput(text, "txt", sources + table_sources, note=f"archive mode: the dossier {run.rel}")
 
 
 # ---- slices: one part as several calls when one cannot take its inputs (pipeline/slicing.py, decisions/0026)
@@ -2538,6 +2792,8 @@ def _draft_outputs(ctx: RunContext, name: str) -> BuiltInput:
 
 @assembler("findings_04A")
 def _findings_04a(ctx: RunContext, name: str) -> BuiltInput:
+    if ctx.step.step == "01A" and ctx.round == 1:
+        raise Omit("the first draft of the dossier: the fact audit runs on it afterwards")
     run, text = _run_output(ctx, name, "04A", "findings", why="04A audits the draft before the revision")
     return BuiltInput(text, "yml", run.outputs_used(["findings"]))
 

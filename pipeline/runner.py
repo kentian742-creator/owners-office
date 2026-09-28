@@ -394,13 +394,15 @@ def _estimate(prompt: Any, rules: Any, design: Any, call: Any, variables: Mappin
 def assemble(step: str, company: str, period: str, *, run_date: dt.date | None = None, roots: Roots | None = None,
              out_root: str | os.PathLike[str] | None = None, edgar_gateway: Any = None, offline: bool = False,
              allow_dirty: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
-             today: dt.date | None = None, rehearsal: bool = False, round_: int = 1) -> Path:
+             today: dt.date | None = None, rehearsal: bool = False, round_: int = 1,
+             subject: str | None = None) -> Path:
     """Build the input bundle of one step and return its directory. Nothing is written when anything is missing.
 
     Upstream runs are looked up under `out_root` first when it is not the private repository (a dry run reads its own
     chain). `rehearsal` (dry runs only) lets the last reported quarter's filings stand in for an event that has not
     happened yet. `round_` 2 assembles the second round of a step in one event (registry.ROUNDS): the bundle is
-    <run_date>-<step>-r2 and its inputs are the round's."""
+    <run_date>-<step>-r2 and its inputs are the round's. `subject` "archive" runs 16A and 04A on a new archive's
+    dossier instead of a quarterly update (decisions/0028)."""
     roots = roots or resolve_roots()
     try:
         spec = registry.step_spec(step)
@@ -436,8 +438,11 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         private_root=roots.private, workspace_root=roots.workspace, call=call, formats=formats,
         edgar=edgar_gateway if edgar_gateway is not None else registry.EdgarGateway(offline=offline),
         schemas_dir=schemas, runs_roots=(base,) if base != roots.private else (), rehearsal=rehearsal,
-        round=round_,
+        round=round_, subject=subject,
     )
+    if subject is not None and (subject != registry.ARCHIVE_SUBJECT or spec.step not in ("16A", "04A")):
+        raise RunnerError(f"{step}: --subject {subject} is not supported (only 16A and 04A take "
+                          f"{registry.ARCHIVE_SUBJECT!r})")
     notes: list[str] = []
     if ticker:
         try:
@@ -2321,6 +2326,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("assemble", parents=[roots, step_args], help="build an input bundle in the private repository")
     p.add_argument("--allow-dirty", action="store_true",
                    help="assemble from uncommitted pipeline code (recorded; execute will then need --allow-unpinned)")
+    p.add_argument("--subject", choices=[registry.ARCHIVE_SUBJECT], default=None,
+                   help="16A and 04A on a new archive's dossier (decisions/0028)")
+    p.add_argument("--round", dest="round_", type=int, default=1, help="the round of a step (01A 2: the revision)")
     p = sub.add_parser("dry-run", parents=[roots, step_args], help="assemble and execute with the fake backend")
     p.add_argument("--out", type=Path, default=None, help=f"output directory (default: <workspace>/{DRY_RUN_DIR})")
     p.add_argument("--replace", action="store_true", help="replace an earlier dry-run bundle of the same step and date")
@@ -2395,7 +2403,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "assemble":
             bundle_dir = assemble(args.step, args.company, args.period, run_date=args.run_date, roots=roots,
-                                  offline=args.offline, allow_dirty=args.allow_dirty, schemas_dir=args.schemas_dir)
+                                  offline=args.offline, allow_dirty=args.allow_dirty, schemas_dir=args.schemas_dir,
+                                  subject=args.subject, round_=args.round_)
             print(describe_bundle(bundle_dir))
             return 0
         if args.command == "dry-run":

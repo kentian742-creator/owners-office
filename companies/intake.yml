@@ -1,0 +1,25 @@
+# Companies the owner has added whose archive the pipeline has not built yet (decisions/0027, 0028).
+# The pipeline builds each archive from the SEC filings: 01A (dossier) -> 16A and 04A (fact audit, subject "archive")
+# -> 01A round 2 (revision) -> 01B (thesis.yml, story.md, ledger.yml). A company leaves this list when its thesis.yml
+# is placed. The filer block (fiscal year end, forms) is read from EDGAR's submissions.
+companies:
+  - ticker: MCD
+    name: McDonald's Corporation
+    cik: "0000063908"
+    status: holding
+    decided: "2026-09-28"
+  - ticker: GOOG
+    name: Alphabet Inc.
+    cik: "0001652044"
+    status: candidate
+    decided: "2026-09-28"
+  - ticker: AAPL
+    name: Apple Inc.
+    cik: "0000320193"
+    status: candidate
+    decided: "2026-09-28"
+  - ticker: NVDA
+    name: NVIDIA Corporation
+    cik: "0001045810"
+    status: candidate
+    decided: "2026-09-28"

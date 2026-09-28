@@ -1654,6 +1654,17 @@ def load_filer(company: str, repo_root: str | os.PathLike | None = None) -> File
     )
 
 
+def filer_from_submissions(subs: Submissions, ticker: str | None = None) -> Filer:
+    """The filer block of a company that has no thesis.yml yet (a new archive, decisions/0028), from its submissions:
+    the fiscal year end EDGAR gives (MMDD) and the forms it files."""
+    kind = infer_filer_type(subs)
+    fye = str(subs.fiscal_year_end or "")
+    return Filer(ticker=ticker or (subs.tickers[0] if subs.tickers else None), cik=subs.cik, type=kind,
+                 fiscal_year_end=f"{fye[:2]}-{fye[2:]}" if len(fye) == 4 and fye.isdigit() else None,
+                 earnings_form="6-K" if kind == FOREIGN else "8-K", annual_form="20-F" if kind == FOREIGN else "10-K",
+                 name=subs.name or None)
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # Accession-number check for sources tables (thesis-ci SPEC §3.3, §3.5)
 # ---------------------------------------------------------------------------------------------------------------

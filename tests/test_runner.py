@@ -20,7 +20,7 @@ import yaml
 from pipeline import edgar, fake_client, llm, outputs, registry, runner
 from tests import runner_fixtures as fx
 
-STEPS = ("14Q", "15A", "18", "16B", "14T", "14A", "15B", "03-draft", "16A", "04A", "04B-lite", "14B", "03R", "17A")
+STEPS = ("01A", "01B", "14Q", "15A", "18", "16B", "14T", "14A", "15B", "03-draft", "16A", "04A", "04B-lite", "14B", "03R", "17A")
 NOW = dt.datetime(2026, 10, 20, 12, 0, tzinfo=dt.timezone.utc)
 RUN_DATE = dt.date.fromisoformat(fx.RUN_DATE)
 REAL_PROMPTS = fx.REPO_ROOT.parent / registry.PRIVATE_REPO / "prompts"
@@ -95,10 +95,11 @@ def test_the_supported_steps():
     assert list(registry.STEPS) == list(STEPS)
     assert registry.STEPS["15A"].pipeline_fields is not None and registry.STEPS["03R"].pipeline_fields is not None
     assert registry.STEPS["04A"].variables == {"subject": "quarterly update"}
-    assert all(registry.STEPS[s].post_event for s in STEPS[3:]) and not registry.STEPS["15A"].post_event
+    assert all(registry.STEPS[s].post_event for s in STEPS[5:]) and not registry.STEPS["15A"].post_event
+    assert not registry.STEPS["01A"].post_event and registry.STEPS["01B"].pipeline_fields is not None
     assert registry.STEPS["17A"].about_company and registry.STEPS["17A"].scope == "hq"
     assert registry.STEPS["17A"].bundle_name(RUN_DATE, "APP", 2) == f"{fx.RUN_DATE}-17A-APP-r2"
-    assert registry.ROUNDS == {"16A": 2, "04A": 2, "03R": 2, "17A": 2}
+    assert registry.ROUNDS == {"16A": 2, "04A": 2, "03R": 2, "17A": 2, "01A": 2}
     assert registry.STEPS["14Q"].holdings_only and registry.STEPS["15A"].holdings_only
     assert registry.STEPS["18"].scope == "hq" and registry.STEPS["18"].period_kind == "month"
 

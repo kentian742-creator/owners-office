@@ -204,9 +204,28 @@ def carried_over(context: Mapping[str, Any], name: str) -> str | None:
     return None
 
 
+def starter_file(name: str, context: Mapping[str, Any]) -> str | None:
+    """A new archive (01B) has no current thesis, story or ledger to hand back: the dry run hands back thesis-ci's
+    lint-clean starter archive instead (thesis-ci init), and an empty ledger."""
+    if name == "ledger":
+        return _dump({"entries": [], "buybacks": []})
+    try:
+        from thesis_ci import scaffold
+    except ImportError:
+        return None
+    rel = {"thesis": "companies/ACME/thesis.yml", "story": "companies/ACME/story.md"}.get(name)
+    try:
+        files = scaffold.plan(today=dt.date.fromisoformat(str(context["run_date"])))
+    except (KeyError, ValueError):
+        return None
+    return files.get(rel) if rel else None
+
+
 def _carry(name: str) -> Any:
     def build(context: Mapping[str, Any]) -> str:
         text = carried_over(context, name)
+        if text is None and context.get("label") == "01B":
+            text = starter_file(name, context)
         if text is None:
             return _dump({"dry_run": True, "output": name, "note": DRY_RUN_NOTE})
         data = yaml.safe_load(text)
@@ -294,6 +313,11 @@ def _gate_decision(context: Mapping[str, Any]) -> str:
     return _dump({"decision": "hold", "reasons": [DRY_RUN_NOTE]})
 
 
+def _story(context: Mapping[str, Any]) -> str | None:
+    return carried_over(context, "story") or (starter_file("story", context) if context.get("label") == "01B"
+                                               else None)
+
+
 SPECIAL = {"prereg": _prereg, "question_list": _question_list, "questions": _questions, "thesis": _carry("thesis"),
            "ledger": _carry("ledger"), "metric_values": _metric_values, "qualitative_verdicts": _qualitative_verdicts,
            "fact_table": _fact_table, "fact_verdicts": _fact_verdicts, "findings": _findings,
@@ -309,6 +333,8 @@ SPECIAL = {"prereg": _prereg, "question_list": _question_list, "questions": _que
 def placeholder_output(name: str, fmt: str, context: Mapping[str, Any]) -> str:
     if name in SPECIAL:
         return SPECIAL[name](context)
+    if name == "story" and (story := _story(context)):
+        return story
     if fmt == _outputs.YAML:
         return _dump({"dry_run": True, "output": name, "note": DRY_RUN_NOTE})
     if fmt == _outputs.MARKDOWN:

@@ -50,6 +50,19 @@ Synthetic rules for the runner tests.
 
 # The front matter of the real prompts, part by part (test_the_real_prompts_are_covered_and_match_the_fixtures
 # compares them); the prompt text is synthetic.
+PROMPT_01 = """---
+id: "01"
+title: synthetic company archive
+version: "9.0"
+role: company_manager
+parts:
+  A: {name: Dossier, inputs: [run_date, sources, xbrl_facts, industries, "existing_dossier?", "findings_04A?", "findings_04B?"], outputs: [dossier, sources_additions, questions, "mistakes_entry?"]}
+  B: {name: System files, inputs: [run_date, dossier, schema, lynch_template, metrics_registry, "existing_system_files?"], outputs: [thesis, story, ledger, questions]}
+---
+
+Synthetic prompt 01 about {{company}} ({{ticker}}), status {{status}}.
+"""
+
 PROMPT_03 = """---
 id: "03"
 title: synthetic quarterly update
@@ -137,7 +150,7 @@ outputs: [letter, private_appendix]
 Synthetic prompt 18.
 """
 
-PROMPTS = {"00-rules.md": RULES, "03-update.md": PROMPT_03, "04-audit.md": PROMPT_04, "14-questions.md": PROMPT_14,
+PROMPTS = {"00-rules.md": RULES, "01-archive.md": PROMPT_01, "03-update.md": PROMPT_03, "04-audit.md": PROMPT_04, "14-questions.md": PROMPT_14,
            "15-prereg.md": PROMPT_15, "16-extraction.md": PROMPT_16, "17-hq.md": PROMPT_17, "18-letter.md": PROMPT_18}
 
 THESIS_APP = {
