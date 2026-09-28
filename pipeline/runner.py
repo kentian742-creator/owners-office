@@ -61,7 +61,7 @@ import shutil
 import sys
 import tempfile
 import traceback
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -114,6 +114,15 @@ class Roots:
     public: Path  # owners-office (this checkout): pipeline code, agents/, the public archive
     private: Path  # owners-office-private: prompts/, runs/, the private archive
     workspace: Path  # the directory holding both checkouts, .env and inputs/
+
+
+def use_workspace_env_file(roots: Roots, environ: MutableMapping[str, str] | None = None) -> None:
+    """Make EDGAR and the Claude Code backend read the chosen workspace's .env (the SEC User-Agent, the subscription
+    token) unless OWNERS_OFFICE_ENV_FILE already names one. Without this, both would read the .env next to the code,
+    which is wrong when --workspace-root points elsewhere (for example, a rehearsal in a clone)."""
+    environ = os.environ if environ is None else environ
+    if not (environ.get(edgar.ENV_FILE_ENV) or "").strip():
+        environ[edgar.ENV_FILE_ENV] = str(roots.workspace / ".env")
 
 
 def resolve_roots(public: str | os.PathLike[str] | None = None, private: str | os.PathLike[str] | None = None,
@@ -2126,6 +2135,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"{spec.step:<5} prompt {spec.prompt_id}{part}; {spec.scope}; period {spec.period_kind}; {spec.summary}")
         return 0
     roots = resolve_roots(args.public_root, args.private_root, args.workspace_root)
+    saved_env_file = os.environ.get(edgar.ENV_FILE_ENV)
+    use_workspace_env_file(roots)
     try:
         if args.command == "assemble":
             bundle_dir = assemble(args.step, args.company, args.period, run_date=args.run_date, roots=roots,
@@ -2184,6 +2195,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise  # local commands: the traceback helps, and nothing is logged anywhere
         print(f"error: {error_summary(exc)}", file=sys.stderr)  # no traceback: it could carry content into the log
         return 1
+    finally:
+        if saved_env_file is None:
+            os.environ.pop(edgar.ENV_FILE_ENV, None)
+        else:
+            os.environ[edgar.ENV_FILE_ENV] = saved_env_file
     return 2
 
 

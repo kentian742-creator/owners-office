@@ -635,3 +635,14 @@ def test_the_private_workflow_is_manual_minimal_and_quiet():
     assert len(keyed) == 1 and "python -m pipeline.runner execute" in keyed[0]["run"]
     assert "--backend api" in keyed[0]["run"]
     assert runner.cjk_lines(text) == []
+
+
+def test_the_workspace_root_names_the_env_file(tmp_path):
+    """--workspace-root decides which .env EDGAR and the CLI backend read, unless one is already named."""
+    roots = runner.resolve_roots(tmp_path / "pub", tmp_path / "priv", tmp_path / "ws")
+    environ: dict[str, str] = {}
+    runner.use_workspace_env_file(roots, environ)
+    assert environ["OWNERS_OFFICE_ENV_FILE"] == str((tmp_path / "ws").resolve() / ".env")
+    environ = {"OWNERS_OFFICE_ENV_FILE": "/elsewhere/.env"}
+    runner.use_workspace_env_file(roots, environ)
+    assert environ["OWNERS_OFFICE_ENV_FILE"] == "/elsewhere/.env"
