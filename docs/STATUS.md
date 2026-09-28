@@ -72,7 +72,8 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 - [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)
 - [ ] T12 The first monthly letter (covering October), by November 2 at the latest
 - [x] T22 AXP and MSFT fact audits (2026-09-27): AXP 338 facts, 17 errors, revised (test AXP-Q8 superseded by AXP-Q17 from FY2026Q4; baselines of AXP-Q4 and AXP-Q10 corrected); MSFT 460 facts, 41 errors (one later withdrawn), revised (baselines of MSFT-Q12, MSFT-Q4's history and MSFT-L3 corrected). No threshold of a test in force changed. Both are in `mistakes.md`; the report errors are in the private errata table
-- [ ] T22 SPGI (448 facts extracted; audit next) and BRK (extraction next)
+- [x] T22 SPGI and BRK fact audits (2026-09-27): SPGI 448 facts, 24 errors (SPGI-L7's claim made forward-looking, the 2022 SEC order recorded); BRK 495 facts, 16 errors (three "never" statements corrected; the BRK-L3 and BRK-Q12 claims reworded). Every archive has now been fact-checked against the filings; all errors are in `mistakes.md`
+- [ ] Open from the SPGI and BRK audits: one index anchor for the second hurdle, set by HQ in the next quarterly ranking (17C); BRK-Q14's template threshold reviewed before its first reading (2027-02)
 - [ ] Open from the AXP and MSFT audits: AXP-Q4's data basis (XBRL tags vs reported capital returns) decided by the FY2026Q4 update at the latest; MSFT's capital-allocation grade re-examined in the FY2027Q1 update (the incremental return now reads 23.7% and 38.9%, above the report's 20% upgrade line)
 - [ ] T21 Source for price references; T17 source for earnings call transcripts
 
