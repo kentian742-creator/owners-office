@@ -8,7 +8,8 @@ the results are written down with probabilities and timestamped; afterwards they
 advance. Mistakes are published. The research is drafted and audited by AI agents working under the owner's written
 investment constitution; the owner decides only where the money goes and whether the constitution changes.
 
-**Status on 2026-09-27:** six companies are archived. The first forecasts, on AppLovin's results for the third
+**Status on 2026-09-27:** six companies are archived, and every archive has been checked fact by fact against the
+companies' filings; each error found is in [mistakes.md](mistakes.md). The first forecasts, on AppLovin's results for the third
 quarter of 2026, will be registered by 2026-10-30, so nothing has been scored yet. Progress is tracked in
 [docs/STATUS.md](docs/STATUS.md).
 
