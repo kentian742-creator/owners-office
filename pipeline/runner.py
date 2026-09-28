@@ -716,6 +716,22 @@ def _new_log_lines(log: Path, start: int) -> bytes:
         return handle.read()
 
 
+def own_log_lines(lines: bytes, input_sha256: str | None) -> bytes:
+    """The log lines of this bundle's (or slice's) own requests: another execution running at the same time appends
+    to the same call log, so lines are kept by the request hash the manifest recorded."""
+    if not input_sha256:
+        return lines
+    kept = []
+    for line in lines.splitlines(keepends=True):
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(record, dict) and record.get("input_sha256") == input_sha256:
+            kept.append(line)
+    return b"".join(kept)
+
+
 def summarize_calls(lines: bytes) -> dict[str, Any]:
     """Requests, API cost and token usage of the new log lines; the Claude Code CLI's own estimate is kept apart as
     notional_cost_usd (it is not API spend, decisions/0022)."""
@@ -894,7 +910,7 @@ def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backe
         failure = exc
         record["error"] = describe_error(exc)
     reply = result.text if result is not None else getattr(getattr(failure, "result", None), "text", None)
-    lines = _new_log_lines(log, start)
+    lines = own_log_lines(_new_log_lines(log, start), manifest.get("request_sha256"))
     record.update(summarize_calls(lines))
     if result is not None:
         entries = _write_outputs(bundle_dir, call, result)
@@ -1042,7 +1058,7 @@ def _execute_slices(bundle_dir: Path, manifest: Mapping[str, Any], call: Any, fo
         except Exception as exc:  # recorded in the slice's run.yml; only error_summary() is printed
             failure = exc
             srec["error"] = describe_error(exc)
-        lines = _new_log_lines(log, start)
+        lines = own_log_lines(_new_log_lines(log, start), part.get("request_sha256"))
         all_lines += lines
         srec.update(summarize_calls(lines))
         if result is not None:

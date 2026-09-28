@@ -2508,9 +2508,12 @@ def _build_sources(ctx: RunContext, name: str) -> BuiltInput:
         lines.append(f"Not supplied, over the input budget of {archive.SOURCES_TOKENS:,} tokens: " + "; ".join(
             f"{pick.reason} ({pick.selection.filing.form} filed {pick.selection.filing.filing_date}, accession "
             f"{pick.selection.filing.accession})" for pick, _, _ in left) + ".")
+    schema_path, _ = schema_file("sources", ctx.schemas_dir)
     lines += [f"Not supplied: {documents.NOT_ON_EDGAR}.",
               "Cite the documents below by the tag in their header line, and add a sources_additions entry (with the "
-              "accession) for every document you cite that the source table does not list.", "",
+              "accession) for every document you cite that the source table does not list. An EDGAR filing is "
+              "kind: filing, whatever its form; the entries follow this schema (thesis-ci sources.schema.json):", "",
+              schema_path.read_text(encoding="utf-8").rstrip(), "",
               "===== source table (public and private sources.yml) =====", table.rstrip(), ""]
     docs = sorted((d for _, found, _ in kept for d in found), key=_filing_order)
     text, doc_sources = render_sources(ctx, lines, docs, [], {}, [])
