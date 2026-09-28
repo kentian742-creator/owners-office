@@ -151,9 +151,24 @@ def test_pipeline_fields_replace_nested_blocks_and_keep_comments():
     assert merged == {"schema_version": "0.2", "company": "TEST", "filer": {"type": "foreign"}, "category": "stalwart",
                       "trust_level": 1}
     assert outputs.load_yaml_text(new_text) == merged
-    assert new_text.startswith("# file header comment\ntrust_level: 1\nschema_version: '0.2'\n")
+    assert new_text.startswith("# file header comment\ntrust_level: 1\nschema_version: \"0.2\"\n")
     assert "\n# comment of the next section\ncategory: stalwart\n" in new_text
     assert "0000000001" not in new_text
+
+
+def test_pipeline_fields_keep_the_repositories_quoting_so_an_unchanged_field_shows_no_diff():
+    """The rehearsal of 2026-09-27: the fields came back as cik: 0000004962 and schema_version: '0.2', so the diff
+    16A reads showed changes the model had not made (and YAML 1.2 parsers read 0000004962 as a number)."""
+    current = ('schema_version: "0.2"\ncompany: AXP\nstatus: candidate\nfiler:\n  cik: "0000004962"\n  type: domestic\n'
+               '  fiscal_year_end: "12-31"\n  earnings_form: 8-K\n  annual_form: 10-K\n# claims\nclaim: text\n')
+    data = outputs.load_yaml_text(current)
+    fields = {k: data[k] for k in ("schema_version", "company", "status", "filer")}
+    new_text, merged = outputs.apply_fields(current, data, fields)
+    assert new_text == current and merged == data
+    changed, _ = outputs.apply_fields(current, data, {"filer": {**data["filer"], "cik": "0000000042"}})
+    assert '  cik: "0000000042"\n' in changed and '  fiscal_year_end: "12-31"\n' in changed
+    assert outputs.dump_fields({"a": "2026-07-24", "b": "yes", "c": "8-K", "d": "12,256"}) == \
+        'a: "2026-07-24"\nb: "yes"\nc: 8-K\nd: "12,256"\n'
 
 
 def test_pipeline_fields_fall_back_to_a_full_dump_when_text_cannot_be_patched():

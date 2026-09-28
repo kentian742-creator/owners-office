@@ -141,6 +141,31 @@ def dump_yaml(data: Any) -> str:
     return _yaml().safe_dump(data, allow_unicode=True, sort_keys=False, default_flow_style=False)
 
 
+_NUMBER_LIKE = re.compile(r"^[-+]?[0-9][0-9_.,:/-]*$")
+
+
+@functools.lru_cache(maxsize=None)
+def _field_dumper() -> type:
+    yaml = _yaml()
+
+    class FieldDumper(yaml.SafeDumper):
+        pass
+
+    def represent_str(dumper: Any, value: str) -> Any:
+        other_type = dumper.resolve(yaml.ScalarNode, value, (True, False)) != "tag:yaml.org,2002:str"
+        style = '"' if other_type or _NUMBER_LIKE.match(value) else None
+        return dumper.represent_scalar("tag:yaml.org,2002:str", value, style=style)
+
+    FieldDumper.add_representer(str, represent_str)
+    return FieldDumper
+
+
+def dump_fields(data: Any) -> str:
+    """dump_yaml(), but a string that a YAML parser could read as another type ("0.2", "0000004962", "12-31") is
+    double-quoted, as the repositories write it: YAML 1.2 parsers read 0000004962 as a number."""
+    return _yaml().dump(data, Dumper=_field_dumper(), allow_unicode=True, sort_keys=False, default_flow_style=False)
+
+
 def jsonable(obj: Any) -> Any:
     """Map YAML data onto the JSON data model before schema validation: dates become ISO strings, keys become strings
     (consistent with thesis-ci)."""
@@ -658,14 +683,15 @@ def apply_fields(text: str, data: dict, fields: Mapping[str, Any]) -> tuple[str,
     """Write the pipeline-maintained top-level fields (00 §G8) into YAML text: existing keys are replaced in place,
     missing ones are added after the leading comments.
 
-    Keeps the model's comments and formatting where possible; when the edited text does not parse to the expected
-    data, falls back to dumping the whole document again (the comments are lost).
+    Keeps the model's comments and formatting where possible; the fields are written as the repositories write them
+    (dump_fields), so a draft that keeps a field unchanged shows no change in a diff. When the edited text does not
+    parse to the expected data, falls back to dumping the whole document again (the comments are lost).
     """
     merged = {**data, **fields}
     lines = text.split("\n")
     missing = []
     for key, value in fields.items():
-        block = dump_yaml({key: value}).rstrip("\n").split("\n")
+        block = dump_fields({key: value}).rstrip("\n").split("\n")
         start = next((i for i, line in enumerate(lines) if _top_key(line) == key), None)
         if start is None:
             missing.extend(block)
