@@ -13,4 +13,4 @@ certifi
 # thesis-ci: the pipeline imports it at run time (the evaluation of the quantitative tests, the output schemas, the
 # lint before placing, the section H4 wording of PR bodies; docs/decisions/0024). The same release tag as
 # requirements-lint.txt; change both together.
-thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@v0.5.2
+thesis-ci @ git+https://github.com/kentian742-creator/thesis-ci@v0.5.3
