@@ -1040,11 +1040,27 @@ def test_retry_note_is_english_and_lists_the_errors(env):
     assert retried[len(original):] == (
         "\n\n<validation_errors>\n"
         "An earlier attempt at this part failed the pipeline's validation (00 §F0, §F6) with the errors below. "
-        "That attempt is not shown here. Produce all outputs of this part again, as originally asked, and avoid "
-        "these errors:\n"
+        "That attempt is not shown here. The outputs update, thesis passed and are kept as they were: do not produce "
+        "them again. Produce only questions again, complete and as originally asked, and avoid these errors:\n"
         "- output 'questions' is missing; with no content, write \"none\" instead of leaving it out (00 §F0)\n"
         "</validation_errors>"
     )
+
+
+def test_a_retry_produces_only_the_outputs_that_failed_and_keeps_the_rest(env):
+    """MCD's 01A (2026-09-28): a full retry rewrote a dossier that had passed and broke it; only the failed outputs
+    are produced again, and the ones that passed stand as they were."""
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_YML, questions="- oops: [unclosed"))
+    retry = make_response(envelope(questions="none", update="---\nbroken: [\n---\nchanged\n"))  # update resent: ignored
+    result = call(env, FakeClient(bad, retry))
+    assert result.attempts == 2 and result.outputs["questions"].empty
+    assert "changed" not in result.outputs["update"].text  # the update that passed stands; the resent one is ignored
+    assert llm.RETRY_MARK.format("questions") in result.text
+
+
+def test_an_error_that_names_no_output_retries_every_output():
+    assert llm.failed_outputs(["the reply has no <output> blocks (00 §F0)"], ["update", "questions"]) is None
+    assert llm.failed_outputs(["questions: the YAML does not parse: line 2"], ["update", "questions"]) == {"questions"}
 
 
 def test_second_invalid_reply_raises_with_the_errors(env):

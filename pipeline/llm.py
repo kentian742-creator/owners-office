@@ -897,12 +897,33 @@ def _content_bytes(content: str | list[dict[str, Any]]) -> int:
     return sum(len(b["source"]["data"]) if b["type"] == "image" else len(b["text"].encode("utf-8")) for b in content)
 
 
-def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str]) -> str | list[dict[str, Any]]:
-    """Retry: append the validation errors to the original request."""
+RETRY_MARK = "===== retry: only {} produced again; the other outputs are those of the first attempt ====="
+
+
+def failed_outputs(errors: Sequence[str], names: Sequence[str]) -> set[str] | None:
+    """The outputs the validation errors name; None when an error names none of them (the reply as a whole failed,
+    so every output is produced again)."""
+    failed: set[str] = set()
+    for error in errors:
+        hit = {n for n in names if error.startswith((f"{n}:", f"{n}[", f"{n} (")) or f"'{n}'" in error}
+        if not hit:
+            return None
+        failed |= hit
+    return failed
+
+
+def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str],
+                 redo: Sequence[str] | None = None, kept: Sequence[str] = ()) -> str | list[dict[str, Any]]:
+    """Retry: append the validation errors to the original request. With `redo`, only those outputs are asked for
+    again; the outputs in `kept` passed and are kept as they were."""
+    if redo:
+        ask = (f"The outputs {', '.join(kept)} passed and are kept as they were: do not produce them again. Produce "
+               f"only {', '.join(redo)} again, complete and as originally asked, and avoid these errors:\n")
+    else:
+        ask = "Produce all outputs of this part again, as originally asked, and avoid these errors:\n"
     note = (
         "<validation_errors>\nAn earlier attempt at this part failed the pipeline's validation (00 §F0, §F6) with the "
-        "errors below. That attempt is not shown here. Produce all outputs of this part again, as originally asked, "
-        "and avoid these errors:\n"
+        "errors below. That attempt is not shown here. " + ask
         + "\n".join(f"- {e}" for e in errors)
         + "\n</validation_errors>"
     )
@@ -1517,6 +1538,9 @@ def complete(
     total_cost = 0.0
     total_notional = 0.0
     errors: list[str] = []
+    kept: dict[str, _outputs.ParsedOutput] = {}  # outputs that passed in the first attempt (partial retry)
+    redo: list[str] | None = None
+    first_text = ""
     for attempt in (1, 2):
         if backend != CLAUDE_CODE:
             spent = month_spend(log)
@@ -1550,7 +1574,7 @@ def complete(
             "cost_usd": 0.0,
             "stop_reason": None,
         }
-        attempt_content = content if attempt == 1 else _with_errors(content, errors)  # retry: errors appended
+        attempt_content = content if attempt == 1 else _with_errors(content, errors, redo, list(kept))
         try:
             if backend == CLAUDE_CODE:
                 reply = _claude_code_reply(model_id, chosen_effort, "\n\n".join(system_texts), attempt_content,
@@ -1639,15 +1663,21 @@ def complete(
                 raise LLMTruncated(result, record.get("cli_output_limit"))
             return result  # truncated replies are not validated and yield no outputs; the caller handles text itself
 
+        declared = [(n, req and n not in kept) for n, req in call.outputs]  # kept outputs need not come again
         parsed, errors = _outputs.parse_reply(
             text,
-            call.outputs,
+            declared,
             formats=formats,
             generated_by=generated_by,
             validators=validators,
             pipeline_fields=pipeline_fields,
             where=call.label,
         )
+        if kept:  # the retry asked only for the failed outputs; the kept ones stand as they passed
+            errors = [e for e in errors if failed_outputs([e], list(kept)) is None]
+            parsed = {**kept, **{n: o for n, o in parsed.items() if n not in kept}}
+            result = dataclasses.replace(result, text=first_text + "\n\n" + RETRY_MARK.format(", ".join(redo or ()))
+                                         + "\n\n" + text)
         if not errors:
             errors = _outputs.coverage_errors(call.label, inputs, parsed)
         if errors:
@@ -1657,4 +1687,10 @@ def complete(
             return dataclasses.replace(result, outputs=parsed)
         if attempt == 2:
             raise LLMOutputInvalid(errors, result)
+        names = [n for n, _ in call.outputs]
+        failed = failed_outputs(errors, names)
+        if failed is not None and failed != set(names):
+            kept = {n: o for n, o in parsed.items() if n not in failed}
+            redo = [n for n in names if n in failed]
+            first_text = text
     raise AssertionError("unreachable")  # pragma: no cover

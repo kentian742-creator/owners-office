@@ -449,7 +449,7 @@ def test_invalid_output_is_recorded_in_the_bundle_and_never_printed(env, capsys)
     record = env.execute(bundle, backend="api", client=fake_client.FakeClient(reply), out=out)
     assert record["status"] == "failed" and record["error"]["type"] == "LLMOutputInvalid"
     assert record["error"]["validation_errors"] and record["requests"] == 2
-    assert (bundle / runner.REPLY).read_text(encoding="utf-8") == reply and not (bundle / "outputs").exists()
+    assert (bundle / runner.REPLY).read_text(encoding="utf-8").startswith(reply) and not (bundle / "outputs").exists()
     printed = out.getvalue() + "".join(capsys.readouterr())
     assert "LLMOutputInvalid" in printed
     assert not [canary for canary in fx.CANARIES if canary in printed]
