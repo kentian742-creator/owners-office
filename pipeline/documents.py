@@ -699,19 +699,37 @@ def distinctive_patterns(value: Any) -> list[re.Pattern[str]]:
     return kept
 
 
-def cut_excerpt(document: str, value: Any) -> str | None:
+_STOP_WORDS = frozenset({"with", "from", "that", "this", "than", "into", "over", "under", "each", "year", "years",
+                         "total", "fiscal", "period", "against", "current", "prior", "company", "million", "billion",
+                         "percent", "which", "their", "were", "have", "been", "also"})
+
+
+def _keywords(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z]{4,}", text.lower()) if w not in _STOP_WORDS}
+
+
+def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
     """The sentence (or table row) of the document that contains the value, at most MAX_EXCERPT_CHARS long; None when
-    the value is not found. Numbers are matched as whole numbers (16,698 does not match 116,698)."""
+    the value is not found. Numbers are matched as whole numbers (16,698 does not match 116,698). With `words` (what
+    the fact is about), a sentence that also shares one of those words is preferred, and a bare short number found
+    only in sentences that share none is left out rather than attached to an unrelated sentence."""
     lines = document.splitlines()
-    for pattern in value_patterns(value):
+    wanted = _keywords(words)
+    fallback = None
+    for form, pattern in zip(value_forms(value), value_patterns(value)):
         for index, line in enumerate(lines):
             match = pattern.search(line)
             if not match:
                 continue
             sentence = next((s for s in _sentences(line) if pattern.search(s)), line)
             label = _row_label(lines, index) if _is_cell(sentence) else None
-            return _clip(f"{label} … {sentence.strip()}" if label else sentence, pattern)
-    return None
+            text = f"{label} … {sentence.strip()}" if label else sentence
+            if not wanted or _keywords(text) & wanted:
+                return _clip(text, pattern)
+            weak = len(form.strip("()-−")) <= 4 and "," not in form
+            if fallback is None and not weak:
+                fallback = _clip(text, pattern)
+    return fallback
 
 
 _LETTERS_RE = re.compile(r"[A-Za-z]{3,}")

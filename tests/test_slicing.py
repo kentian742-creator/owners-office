@@ -136,3 +136,12 @@ def test_values_are_matched_as_filings_print_them():
     assert any(p.search("rose to 12,256 million") for p in distinctive) and any(p.search("8.3%") for p in distinctive)
     assert documents.distinctive_patterns(5) == [] and documents.distinctive_patterns("growth") == []
     assert yaml.safe_load(yaml.safe_dump({"v": documents.value_forms(-3)})) == {"v": ["(3)", "-3", "−3"]}
+
+
+def test_an_excerpt_prefers_a_sentence_about_the_fact_and_skips_a_bare_coincidence():
+    """MCD's audit (2026-09-28): excerpts matched bare numbers in unrelated sentences."""
+    doc = "Foreign currency translation 5.7\nThe effective tax rate was 5.7 points lower.\nOperating margin was 45.6%.\n"
+    assert documents.cut_excerpt(doc, 5.7, words="effective tax rate change") == \
+        "The effective tax rate was 5.7 points lower."
+    assert documents.cut_excerpt(doc, 5.7, words="restaurant count") is None  # a bare short number, nothing shared
+    assert documents.cut_excerpt(doc, 45.6, words="operating margin") == "Operating margin was 45.6%."

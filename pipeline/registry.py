@@ -2276,6 +2276,12 @@ def source_table(ctx: RunContext) -> tuple[str, list[dict[str, Any]]]:
             continue
         entries += [{**e, "visibility": visibility} for e in data.get("sources") or [] if isinstance(e, dict)]
         sources.append(repo_file_source(root, path, repo))
+    if not entries and ctx.intake() is not None and ctx.step.step != "01A":
+        added = archive_source_entries(ctx)  # a new archive's sources, until 01A's additions are placed
+        if added:
+            entries = added
+            run = final_dossier_run(ctx)
+            sources += run.outputs_used(["sources_additions"]) if run is not None else []
     return dump_yaml({"sources": entries}), sources
 
 
@@ -2376,7 +2382,8 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
                 continue
             if "-RPT" in tag:
                 document = _report_page(document, locator)
-            excerpt = documents.cut_excerpt(document, fact.get("value"))
+            excerpt = documents.cut_excerpt(document, fact.get("value"),
+                                            words=f"{fact.get('what') or ''} {fact.get('subject') or ''}")
             if excerpt:
                 break
         if excerpt:
@@ -2722,6 +2729,10 @@ def _slice_04a(ctx: RunContext, built: Mapping[str, BuiltInput]) -> list[SliceIn
     by_key = {d.cite: d for d in docs}
     event = [d.cite for d in ctx.results().documents]
     reports = sorted({t.partition("#")[0] for t in tags if "-RPT" in t and t.partition("#")[0] in texts})
+    if ctx.subject == ARCHIVE_SUBJECT:  # an archive's untagged lines mostly come from the latest annual report
+        annual = [d for d in docs if d.form in ("10-K", "20-F", "40-F")]
+        if annual:
+            event = [*event, max(annual, key=_filing_order).cite]
     fact_docs = [_fact_documents(r, docs, reports, event) for r in rows]
     cited: dict[str, list[int]] = {}
     for index, keys in enumerate(fact_docs):
