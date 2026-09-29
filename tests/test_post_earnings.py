@@ -673,7 +673,8 @@ def test_a_quarterly_update_at_trust_level_2_is_placed_with_every_f2_action(env,
     public_tags = [e["tag"] for e in yaml.safe_load((env.public / "companies/APP/sources.yml").read_text())["sources"]]
     private = yaml.safe_load((env.private / "companies/APP/sources.yml").read_text())["sources"]
     assert public_tags == ["APP-8K-2026-08-05", "APP-10Q-FY2026Q2"]
-    assert [e["tag"] for e in private] == ["APP-RPT1-2026-09-20", "APP-NOTE-2026-10-20"]
+    assert [e["tag"] for e in private] == ["APP-RPT1-2026-09-20", "APP-10Q-FY2026Q2",
+                                           "APP-NOTE-2026-10-20"]  # the run's public additions are mirrored
     assert all("visibility" not in e for e in private)
     dossier = (env.private / "companies" / "APP" / "dossier.md").read_text(encoding="utf-8")
     assert "## 3. Moat\n\nNew moat text." in dossier and "Old moat text" not in dossier

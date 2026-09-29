@@ -658,13 +658,16 @@ def _without_visibility(entry: Any) -> Any:
 
 def split_sources_additions(data: Any) -> dict[str, list[dict[str, Any]]]:
     """Split sources_additions between the two repositories by visibility, and remove visibility (the sources schema
-    does not accept that key)."""
+    does not accept that key). A public entry goes into the private sources.yml as well: thesis-ci resolves a tag only
+    within its own repository, and the private files (the dossier, the valuation) cite public sources too."""
     entries = data.get("sources") if isinstance(data, dict) and set(data) == {"sources"} else data
     out: dict[str, list[dict[str, Any]]] = {v: [] for v in SOURCE_VISIBILITIES}
     for entry in entries or []:
         if not isinstance(entry, dict) or entry.get("visibility") not in SOURCE_VISIBILITIES:
             raise ValueError(f"a sources_additions entry has no visibility: {entry!r}")
         out[entry["visibility"]].append(_without_visibility(entry))
+        if entry["visibility"] == PUBLIC:
+            out[PRIVATE].append(_without_visibility(entry))
     return out
 
 

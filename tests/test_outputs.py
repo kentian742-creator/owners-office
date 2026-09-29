@@ -127,7 +127,7 @@ def test_sources_additions_need_visibility_and_match_the_sources_schema(schemas)
     assert errors == []
     split = outputs.split_sources_additions(parsed["sources_additions"].data)
     assert [e["tag"] for e in split["public"]] == ["T-10K-FY2025"]
-    assert [e["tag"] for e in split["private"]] == ["T-RPT1-2026-09-23"]
+    assert [e["tag"] for e in split["private"]] == ["T-10K-FY2025", "T-RPT1-2026-09-23"]  # public ones mirrored
     assert all("visibility" not in e for e in split["public"] + split["private"])
 
     bad = "- {tag: T-1, kind: filing, title: x}\n- {tag: T-2, title: y, visibility: public}"
