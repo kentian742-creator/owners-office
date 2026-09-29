@@ -615,9 +615,62 @@ def structure_errors(name: str, data: Any) -> list[str]:
     return errors
 
 
+SOURCED_PROSE = ("dossier", "story", "update")  # Markdown outputs whose every fact number needs a [src:] tag (00 §E1)
+MAX_PROSE_ERRORS = 40
+
+
+def prose_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """A fact number without a [src:] tag in its sentence, in the outputs thesis-ci lint will check once placed
+    (C-SRC-TAG; the same scan, thesis_ci.textscan)."""
+    try:
+        from thesis_ci.textscan import untagged_facts
+    except ImportError:  # thesis-ci is not installed: lint catches it at placement
+        return []
+    errors: list[str] = []
+    for name in SOURCED_PROSE:
+        out = parsed.get(name)
+        if out is None or out.empty:
+            continue
+        parts = split_front_matter(out.text)
+        body = parts[1] if parts else out.text
+        found = untagged_facts(body, True)
+        for line, sentence, number in found[:MAX_PROSE_ERRORS]:
+            errors.append(f"{name}: fact number '{number}' has no [src:] tag in its sentence (00 §E1): "
+                          f"{' '.join(sentence.split())[:160]}")
+        if len(found) > MAX_PROSE_ERRORS:
+            errors.append(f"{name}: ... and {len(found) - MAX_PROSE_ERRORS} more sentences with an untagged number")
+    return errors
+
+
+def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """01B turns the dossier into system files: they may cite only the sources the dossier cites (a tag for the
+    dossier itself, which is private, cannot be resolved in the public files)."""
+    if part_id != "01B" or "dossier" not in inputs:
+        return []
+    allowed = set(re.findall(r"\[src:([A-Za-z0-9][A-Za-z0-9._-]*)", inputs["dossier"]))
+    errors, seen = [], set()
+    for name in ("thesis", "story", "ledger"):
+        out = parsed.get(name)
+        if out is None or out.empty:
+            continue
+        cited = set(re.findall(r"\[src:([A-Za-z0-9][A-Za-z0-9._-]*)", out.text))
+        cited |= set(re.findall(r"(?m)^\s*(?:source|settlement_source|acknowledged_source):\s*['\"]?([A-Z][A-Za-z0-9._-]*)",
+                                out.text))
+        for tag in sorted(t.split("#")[0] for t in cited):
+            if tag not in allowed and tag not in seen:
+                seen.add(tag)
+                errors.append(f"{name}: source {tag} is not a source the dossier cites; cite the filing the dossier "
+                              "cites for that fact instead (the dossier is private and cannot be cited)")
+    return errors
+
+
 def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """Checks of a reply against the inputs it answers: 04A gives every fact under facts in its fact_table exactly one
-    verdict and no other (a slice's context_facts get none; pipeline/slicing.py)."""
+    verdict and no other (a slice's context_facts get none; pipeline/slicing.py); prose carries its source tags; 01B
+    cites only what the dossier cites."""
+    errors = prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed)
+    if errors:
+        return errors
     if part_id != "04A" or "fact_table" not in inputs or "fact_verdicts" not in parsed:
         return []
     from . import slicing

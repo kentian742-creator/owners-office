@@ -382,3 +382,17 @@ def test_missing_template_fields_are_reported():
         outputs.place("thesis", prompt_id="03", part_id="03-draft", run_date="2026-11-02")
     with pytest.raises(outputs.PlacementError, match="ext"):  # without a format, no extension is guessed
         outputs.place("rulings", prompt_id="17", part_id="17A", run_date="2026-11-02")
+
+
+def test_prose_needs_a_source_tag_for_every_fact_number_and_01b_cites_only_the_dossier_s_sources():
+    """MCD's first build (2026-09-28): 106 untagged numbers reached placement, and the ledger cited the dossier."""
+    dossier = outputs.ParsedOutput("dossier", outputs.MARKDOWN,
+                                   "---\ndoc: dossier\n---\nRevenue was $26.9B [src:MCD-10K-FY2025#p40].\n"
+                                   "Margin was 46.1%.\n")
+    assert outputs.prose_errors({"dossier": dossier}) == [
+        "dossier: fact number '46.1%' has no [src:] tag in its sentence (00 §E1): Margin was 46.1%."]
+    ledger = outputs.ParsedOutput("ledger", outputs.YAML, "entries:\n- id: M1\n  source: MCD-DOSSIER-2026-09-30#s7\n"
+                                                           "- id: M2\n  source: MCD-10K-FY2025#p40\n")
+    errors = outputs.cited_tag_errors("01B", {"dossier": dossier.text}, {"ledger": ledger})
+    assert errors == ["ledger: source MCD-DOSSIER-2026-09-30 is not a source the dossier cites; cite the filing the "
+                      "dossier cites for that fact instead (the dossier is private and cannot be cited)"]
