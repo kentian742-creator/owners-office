@@ -118,6 +118,7 @@ class StepSpec:
     variables: Mapping[str, str] = dataclasses.field(default_factory=dict)  # fixed prompt variables ({{subject}})
     post_event: bool = False  # reads an earnings event that must be on EDGAR (and closed) by the run date
     about_company: bool = False  # an HQ step about one company: runs/hq/<run_date>-<step>-<TICKER>/
+    mode: str | None = None  # the mode of a prompt with modes (02: report, valuation_refresh)
 
     def bundle_name(self, run_date: dt.date, company: str | None, round_: int = 1) -> str:
         """The run directory's name: <run_date>-<step>, plus -<TICKER> for an HQ step about one company, plus -r<n>
@@ -473,6 +474,8 @@ STEPS: dict[str, StepSpec] = {
                     _build_fields),
     "01C": StepSpec("01C", "01", "C", "company", "quarter", False,
                     "valuation of a company archive, private (company manager)"),
+    "02": StepSpec("02", "02", None, "company", "quarter", False,
+                   "research report from the archive and its valuation (company manager; private)", mode="report"),
     "14Q": StepSpec("14Q", "14", "Q", "company", "quarter", True,
                     "neutral question list, frozen before the results event (HQ)"),
     "15A": StepSpec("15A", "15", "A", "company", "quarter", True,
@@ -2746,6 +2749,31 @@ def _series_roster(ctx: RunContext, name: str) -> BuiltInput:
     if not rows:
         return empty_document(ctx, name, "no other company has a valuation yet")
     return BuiltInput(dump_yaml({"series": rows}), "yml", sources)
+
+
+@assembler("valuation")
+def _valuation(ctx: RunContext, name: str) -> BuiltInput:
+    """02: the company's valuation: the placed private valuation.yml and valuation.md, or else the latest 01C run's
+    proposed version (which 04C has not reviewed; the report says so)."""
+    company = _need_company(ctx, name)
+    folder = ctx.private_root / "companies" / company
+    placed = [folder / "valuation.yml", folder / "valuation.md"]
+    if placed[0].is_file():
+        chunks = [f"===== {p.name} =====\n{p.read_text(encoding='utf-8').rstrip()}\n" for p in placed if p.is_file()]
+        return BuiltInput("\n".join(chunks), "txt", [repo_file_source(ctx.private_root, p, PRIVATE_REPO)
+                                                     for p in placed if p.is_file()])
+    run = ctx.latest_run("01C", period=ctx.period)
+    if run is None:
+        raise MissingInput(f"{name}: {company} has no valuation.yml and no succeeded 01C run for {ctx.period}")
+    text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
+                                     f"The proposed valuation of {company} ({run.rel}), not yet reviewed by 04C.")
+    return BuiltInput(text, "txt", sources, note=f"proposed, not yet reviewed: {run.rel}")
+
+
+@assembler("wordmark")
+def _wordmark(ctx: RunContext, name: str) -> BuiltInput:
+    return empty_document(ctx, name, "no official wordmark image is on file yet; typesetting (19) places it later "
+                                     "(STATUS T20), so the report uses the company name as its title")
 
 
 @assembler("findings_04C")

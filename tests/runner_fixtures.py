@@ -64,6 +64,23 @@ parts:
 Synthetic prompt 01 about {{company}} ({{ticker}}), status {{status}}.
 """
 
+PROMPT_02 = """---
+id: "02"
+title: synthetic research report
+version: "9.0"
+role: company_manager
+design: 00D §D1
+modes:
+  report:
+    inputs: [run_date, dossier, thesis, valuation, series_roster, sources, price_reference, anchors, wordmark]
+    outputs: [report, cover, charts, archive_patch, "valuation_input_notes?", sources_additions, questions]
+inputs: [run_date, dossier, thesis, valuation, series_roster, sources, price_reference, anchors, wordmark]
+outputs: [report, cover, charts, archive_patch, "valuation_input_notes?", sources_additions, questions]
+---
+
+Synthetic prompt 02 about {{company}} ({{ticker}}).
+"""
+
 PROMPT_03 = """---
 id: "03"
 title: synthetic quarterly update
@@ -151,7 +168,7 @@ outputs: [letter, private_appendix]
 Synthetic prompt 18.
 """
 
-PROMPTS = {"00-rules.md": RULES, "01-archive.md": PROMPT_01, "03-update.md": PROMPT_03, "04-audit.md": PROMPT_04, "14-questions.md": PROMPT_14,
+PROMPTS = {"00-rules.md": RULES, "01-archive.md": PROMPT_01, "02-report.md": PROMPT_02, "03-update.md": PROMPT_03, "04-audit.md": PROMPT_04, "14-questions.md": PROMPT_14,
            "15-prereg.md": PROMPT_15, "16-extraction.md": PROMPT_16, "17-hq.md": PROMPT_17, "18-letter.md": PROMPT_18}
 
 THESIS_APP = {

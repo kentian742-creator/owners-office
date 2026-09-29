@@ -20,7 +20,7 @@ import yaml
 from pipeline import edgar, fake_client, llm, outputs, registry, runner
 from tests import runner_fixtures as fx
 
-STEPS = ("01A", "01B", "01C", "14Q", "15A", "18", "16B", "14T", "14A", "15B", "03-draft", "16A", "04A", "04B-lite", "14B", "03R", "17A")
+STEPS = ("01A", "01B", "01C", "02", "14Q", "15A", "18", "16B", "14T", "14A", "15B", "03-draft", "16A", "04A", "04B-lite", "14B", "03R", "17A")
 NOW = dt.datetime(2026, 10, 20, 12, 0, tzinfo=dt.timezone.utc)
 RUN_DATE = dt.date.fromisoformat(fx.RUN_DATE)
 REAL_PROMPTS = fx.REPO_ROOT.parent / registry.PRIVATE_REPO / "prompts"
@@ -95,7 +95,7 @@ def test_the_supported_steps():
     assert list(registry.STEPS) == list(STEPS)
     assert registry.STEPS["15A"].pipeline_fields is not None and registry.STEPS["03R"].pipeline_fields is not None
     assert registry.STEPS["04A"].variables == {"subject": "quarterly update"}
-    assert all(registry.STEPS[s].post_event for s in STEPS[6:]) and not registry.STEPS["15A"].post_event
+    assert all(registry.STEPS[s].post_event for s in STEPS[7:]) and not registry.STEPS["15A"].post_event
     assert not registry.STEPS["01A"].post_event and registry.STEPS["01B"].pipeline_fields is not None
     assert registry.STEPS["17A"].about_company and registry.STEPS["17A"].scope == "hq"
     assert registry.STEPS["17A"].bundle_name(RUN_DATE, "APP", 2) == f"{fx.RUN_DATE}-17A-APP-r2"
@@ -107,7 +107,7 @@ def test_the_supported_steps():
 @pytest.mark.parametrize("step", STEPS)
 def test_every_declared_input_has_an_assembler(env, step):
     spec = registry.STEPS[step]
-    call = llm.prompt_part(llm.load_prompt(spec.prompt_id, env.private / "prompts"), spec.part)
+    call = llm.prompt_part(llm.load_prompt(spec.prompt_id, env.private / "prompts"), spec.part, mode=spec.mode)
     assert call.label == step
     assert [name for name, _ in call.inputs if name not in registry.INPUTS] == []
 
@@ -116,7 +116,7 @@ def test_every_declared_input_has_an_assembler(env, step):
 def test_the_real_roles_may_see_every_input_of_their_step(env, step):
     """agents/*.yml of this repository (the only role table) allow each step's inputs (00 section G6)."""
     spec = registry.STEPS[step]
-    call = llm.prompt_part(llm.load_prompt(spec.prompt_id, env.private / "prompts"), spec.part)
+    call = llm.prompt_part(llm.load_prompt(spec.prompt_id, env.private / "prompts"), spec.part, mode=spec.mode)
     role = llm.role_definition(call.role, fx.REPO_ROOT)
     llm.check_inputs(call, role, [name for name, _ in call.inputs])
     assert step in role.prompts or spec.prompt_id in role.prompts
@@ -126,8 +126,8 @@ def test_the_real_roles_may_see_every_input_of_their_step(env, step):
 @pytest.mark.parametrize("step", STEPS)
 def test_the_real_prompts_are_covered_and_match_the_fixtures(env, step):
     spec = registry.STEPS[step]
-    real = llm.prompt_part(llm.load_prompt(spec.prompt_id, REAL_PROMPTS), spec.part)
-    fixture = llm.prompt_part(llm.load_prompt(spec.prompt_id, env.private / "prompts"), spec.part)
+    real = llm.prompt_part(llm.load_prompt(spec.prompt_id, REAL_PROMPTS), spec.part, mode=spec.mode)
+    fixture = llm.prompt_part(llm.load_prompt(spec.prompt_id, env.private / "prompts"), spec.part, mode=spec.mode)
     assert [n for n, _ in real.inputs if n not in registry.INPUTS] == []
     assert (real.label, real.role, real.inputs, real.outputs) == (fixture.label, fixture.role, fixture.inputs,
                                                                  fixture.outputs)

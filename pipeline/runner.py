@@ -297,7 +297,7 @@ def verify_prompts(manifest: Mapping[str, Any], private_root: Path) -> tuple[Any
     try:
         prompt = llm.load_prompt(str(record.get("id")), prompts_dir)
         rules = llm.load_prompt(llm.RULES_ID, prompts_dir)
-        call = llm.prompt_part(prompt, record.get("part"))
+        call = llm.prompt_part(prompt, record.get("part"), mode=record.get("mode"))
         design = llm.load_prompt(llm.DESIGN_ID, prompts_dir) if call.design else None
         formats = llm.output_formats(rules, call)
     except llm.PromptError as exc:
@@ -415,7 +415,7 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
     prompts_dir = roots.private / "prompts"
     try:
         prompt = llm.load_prompt(spec.prompt_id, prompts_dir)
-        call = llm.prompt_part(prompt, spec.part)
+        call = llm.prompt_part(prompt, spec.part, mode=spec.mode)
         rules = llm.load_prompt(llm.RULES_ID, prompts_dir)
         design = llm.load_prompt(llm.DESIGN_ID, prompts_dir) if call.design else None
         formats = llm.output_formats(rules, call)
@@ -587,7 +587,8 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         "run_date": run_date.isoformat(),
         "created_at": _iso(_utcnow()),
         "created_by": "python -m pipeline.runner assemble",
-        "prompt": _prompt_record(prompt, roots.private, part=spec.part, label=call.label),
+        "prompt": _prompt_record(prompt, roots.private, part=spec.part, label=call.label,
+                                 **({"mode": spec.mode} if spec.mode else {})),
         "rules": _prompt_record(rules, roots.private),
         "design": _prompt_record(design, roots.private) if design else None,
         "model": {k: role.model.get(k) for k in ("id", "effort", "fallbacks") if role.model.get(k) is not None},
@@ -902,7 +903,8 @@ def execute(bundle: str | os.PathLike[str], *, roots: Roots | None = None, backe
     try:
         result = llm.complete(
             str(manifest["role"]), str(manifest["prompt"]["id"]), inputs,
-            part=manifest["prompt"].get("part"), variables=manifest.get("variables") or {},
+            part=manifest["prompt"].get("part"), mode=manifest["prompt"].get("mode"),
+            variables=manifest.get("variables") or {},
             pipeline_fields=manifest.get("pipeline_fields") or None, client=client, log_path=log,
             repo_root=roots.public, prompts_dir=roots.private / "prompts", schemas_dir=schemas, **backend_args,
         )
@@ -1051,7 +1053,8 @@ def _execute_slices(bundle_dir: Path, manifest: Mapping[str, Any], call: Any, fo
         try:
             result = llm.complete(
                 str(manifest["role"]), str(manifest["prompt"]["id"]), inputs,
-                part=manifest["prompt"].get("part"), variables=manifest.get("variables") or {},
+                part=manifest["prompt"].get("part"), mode=manifest["prompt"].get("mode"),
+            variables=manifest.get("variables") or {},
                 pipeline_fields=manifest.get("pipeline_fields") or None, client=s_client, log_path=log,
                 repo_root=roots.public, prompts_dir=roots.private / "prompts", schemas_dir=schemas, **backend_args,
             )
