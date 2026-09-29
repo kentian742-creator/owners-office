@@ -913,12 +913,32 @@ def failed_outputs(errors: Sequence[str], names: Sequence[str]) -> set[str] | No
 
 
 def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str],
-                 redo: Sequence[str] | None = None, kept: Sequence[str] = ()) -> str | list[dict[str, Any]]:
+                 redo: Sequence[str] | None = None, kept: Sequence[str] = (),
+                 repairs: Mapping[str, Sequence[str]] | None = None) -> str | list[dict[str, Any]]:
     """Retry: append the validation errors to the original request. With `redo`, only those outputs are asked for
-    again; the outputs in `kept` passed and are kept as they were."""
+    again; the outputs in `kept` passed and are kept as they were. With `repairs`, an output whose only fault is
+    untagged numbers is not written again: the model returns a replacement for each listed sentence."""
+    if repairs:
+        lines = [f"Do not write {', '.join(repairs)} again. Each of these sentences states a fact number without a "
+                 "[src:] tag (00 §E1). For each, return one item in a block of its own, "
+                 + ", ".join(f"<output name=\"{n}_repairs\">" for n in repairs) + ", "
+                 "as a YAML list of {find: the sentence exactly as listed, replace: the same sentence with the source "
+                 "tag of each number (a calculation cites its inputs' tags; a judgment names the facts it rests on, "
+                 "with their tags)}. Put every other output you are asked for in its own <output name=\"...\"> block."]
+        for name, sentences in repairs.items():
+            lines.append(f"Sentences of {name}:")
+            lines += [f"{i}. {sentence}" for i, sentence in enumerate(sentences, 1)]
+        other = [e for e in errors if not any(_outputs.is_prose_error(e, n) for n in repairs)]
+        ask_redo = f" Also produce {', '.join(redo)} again, complete, and avoid these errors:\n" + \
+            "\n".join(f"- {e}" for e in other) if redo else ""
+        note = ("<validation_errors>\nAn earlier attempt at this part failed the pipeline's validation. "
+                + (f"The outputs {', '.join(kept)} are kept. " if kept else "") + "\n".join(lines) + ask_redo
+                + "\n</validation_errors>")
+        return content + "\n\n" + note if isinstance(content, str) else [*content, {"type": "text", "text": note}]
     if redo:
         ask = (f"The outputs {', '.join(kept)} passed and are kept as they were: do not produce them again. Produce "
-               f"only {', '.join(redo)} again, complete and as originally asked, and avoid these errors:\n")
+               f"only {', '.join(redo)} again, complete and as originally asked, each in its own <output name=\"...\"> "
+               "block, and avoid these errors:\n")
     else:
         ask = "Produce all outputs of this part again, as originally asked, and avoid these errors:\n"
     note = (
@@ -1540,6 +1560,7 @@ def complete(
     errors: list[str] = []
     kept: dict[str, _outputs.ParsedOutput] = {}  # outputs that passed in the first attempt (partial retry)
     redo: list[str] | None = None
+    repairs: dict[str, list[str]] | None = None  # outputs whose only fault is untagged numbers: patched, not rewritten
     first_text = ""
     for attempt in (1, 2):
         if backend != CLAUDE_CODE:
@@ -1574,7 +1595,7 @@ def complete(
             "cost_usd": 0.0,
             "stop_reason": None,
         }
-        attempt_content = content if attempt == 1 else _with_errors(content, errors, redo, list(kept))
+        attempt_content = content if attempt == 1 else _with_errors(content, errors, redo, list(kept), repairs)
         try:
             if backend == CLAUDE_CODE:
                 reply = _claude_code_reply(model_id, chosen_effort, "\n\n".join(system_texts), attempt_content,
@@ -1663,19 +1684,37 @@ def complete(
                 raise LLMTruncated(result, record.get("cli_output_limit"))
             return result  # truncated replies are not validated and yield no outputs; the caller handles text itself
 
+        repair_blocks: dict[str, str] = {}
+        if repairs:  # take the <name>_repairs blocks out before the reply is parsed against the part's outputs
+            for name in repairs:
+                match = re.search(rf'<output name="{re.escape(name)}_repairs">\n?(.*?)</output>', text, re.S)
+                if match:
+                    repair_blocks[name] = match.group(1)
+                    text = text.replace(match.group(0), "")
         declared = [(n, req and n not in kept) for n, req in call.outputs]  # kept outputs need not come again
-        parsed, errors = _outputs.parse_reply(
-            text,
-            declared,
-            formats=formats,
-            generated_by=generated_by,
-            validators=validators,
-            pipeline_fields=pipeline_fields,
-            where=call.label,
-        )
+        if repairs and not redo:  # only repairs were asked for: nothing else to parse
+            parsed, errors = {}, []
+        else:
+            parsed, errors = _outputs.parse_reply(
+                text,
+                declared,
+                formats=formats,
+                generated_by=generated_by,
+                validators=validators,
+                pipeline_fields=pipeline_fields,
+                where=call.label,
+            )
         if kept:  # the retry asked only for the failed outputs; the kept ones stand as they passed
             errors = [e for e in errors if failed_outputs([e], list(kept)) is None]
             parsed = {**kept, **{n: o for n, o in parsed.items() if n not in kept}}
+            for name in repairs or {}:
+                if name not in repair_blocks:
+                    errors.append(f"{name}_repairs: missing; give one replacement for each sentence listed")
+                    continue
+                repaired, trouble = _outputs.apply_repairs(name, parsed[name], repair_blocks[name])
+                errors += trouble
+                if repaired is not None:
+                    parsed[name] = repaired
             result = dataclasses.replace(result, text=first_text + "\n\n" + RETRY_MARK.format(", ".join(redo or ()))
                                          + "\n\n" + text)
         if not errors:
@@ -1689,8 +1728,13 @@ def complete(
             raise LLMOutputInvalid(errors, result)
         names = [n for n, _ in call.outputs]
         failed = failed_outputs(errors, names)
-        if failed is not None and failed != set(names):
-            kept = {n: o for n, o in parsed.items() if n not in failed}
-            redo = [n for n in names if n in failed]
+        if failed is not None:
+            fixable = {n: _outputs.untagged_sentences(parsed[n].text) for n in failed if n in parsed
+                       and n in _outputs.SOURCED_PROSE and all(_outputs.is_prose_error(e, n) for e in errors
+                                                               if failed_outputs([e], [n]))}
+            repairs = {n: sentences for n, sentences in fixable.items() if sentences} or None
+        if failed is not None and (failed != set(names) or repairs):
+            kept = {n: o for n, o in parsed.items() if n not in failed or n in (repairs or {})}
+            redo = [n for n in names if n in failed and n not in (repairs or {})]
             first_text = text
     raise AssertionError("unreachable")  # pragma: no cover

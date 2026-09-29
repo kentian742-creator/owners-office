@@ -642,6 +642,55 @@ def prose_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
     return errors
 
 
+def untagged_sentences(text: str) -> list[str]:
+    """The sentences of a Markdown output (after its front matter) that state a fact number without a [src:] tag, as
+    they are written in it (so each can be found and replaced)."""
+    try:
+        from thesis_ci import textscan
+    except ImportError:
+        return []
+    parts = split_front_matter(text)
+    body = parts[1] if parts else text
+    masked = textscan.mask(body, True)
+    out = []
+    for start, end in textscan.sentence_spans(masked):
+        sentence = masked[start:end]
+        if textscan.FACT_RE.search(sentence) and not textscan.TAG_RE.search(sentence) and not \
+                getattr(textscan, "PROBABILITY_JUDGMENT_RE", re.compile("(?!)")).search(sentence):
+            original = body[start:end].strip()
+            if original and original not in out:
+                out.append(original)
+    return out
+
+
+def is_prose_error(error: str, name: str) -> bool:
+    return error.startswith((f"{name}: fact number ", f"{name}: ... and "))
+
+
+def apply_repairs(name: str, output: ParsedOutput, raw: str) -> tuple[ParsedOutput | None, list[str]]:
+    """A retry's <output name="<name>_repairs">: a YAML list of {find, replace}, each find a sentence of the output
+    exactly as written. Returns the repaired output, or the errors."""
+    try:
+        items = load_yaml_text(raw)
+    except Exception as exc:
+        return None, [f"{name}_repairs: the YAML does not parse: {_yaml_problem(exc)}"]
+    if not isinstance(items, list):
+        return None, [f"{name}_repairs: should be a list of {{find, replace}}"]
+    text, errors = output.text, []
+    for i, item in enumerate(items):
+        find = item.get("find") if isinstance(item, Mapping) else None
+        replace = item.get("replace") if isinstance(item, Mapping) else None
+        if not isinstance(find, str) or not isinstance(replace, str) or not find.strip():
+            errors.append(f"{name}_repairs[{i}]: needs find and replace, both text")
+        elif find not in text:
+            errors.append(f"{name}_repairs[{i}]: find is not a sentence of the {name} as written: {find[:100]}")
+        else:
+            text = text.replace(find, replace, 1)
+    if errors:
+        return None, errors
+    return dataclasses.replace(output, text=text), []
+
+
 def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """01B turns the dossier into system files: they may cite only the sources the dossier cites (a tag for the
     dossier itself, which is private, cannot be resolved in the public files)."""

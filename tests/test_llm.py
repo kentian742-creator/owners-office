@@ -1041,7 +1041,8 @@ def test_retry_note_is_english_and_lists_the_errors(env):
         "\n\n<validation_errors>\n"
         "An earlier attempt at this part failed the pipeline's validation (00 §F0, §F6) with the errors below. "
         "That attempt is not shown here. The outputs update, thesis passed and are kept as they were: do not produce "
-        "them again. Produce only questions again, complete and as originally asked, and avoid these errors:\n"
+        "them again. Produce only questions again, complete and as originally asked, each in its own <output "
+        "name=\"...\"> block, and avoid these errors:\n"
         "- output 'questions' is missing; with no content, write \"none\" instead of leaving it out (00 §F0)\n"
         "</validation_errors>"
     )
@@ -1295,3 +1296,18 @@ def test_missing_sdk_gives_clear_error(env, monkeypatch):
 
 
 REPORT_MD = "---\ncompany: TEST\ndoc: report_02\nas_of: 2026-09-24\ndoc_status: draft\n---\n## 1. Conclusion\nBody text.\n"
+
+
+def test_untagged_numbers_are_repaired_sentence_by_sentence_not_rewritten(env):
+    """MCD's dossier (2026-10-03): only untagged numbers were wrong, and each full rewrite broke something else. The
+    retry asks for a replacement per listed sentence and patches the first attempt's text."""
+    update = UPDATE_MD + "Revenue grew 12% in the quarter. Margins held [src:TEST-10Q-FY2026Q2#p3].\n"
+    bad = make_response(envelope(update=update, thesis=THESIS_YML, questions="none"))
+    repairs = ('<output name="update_repairs">\n- find: "Revenue grew 12% in the quarter."\n'
+               '  replace: "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]."\n</output>\n')
+    client = FakeClient(bad, make_response(repairs))
+    result = call(env, client)
+    retried = client.messages.stream_calls[1]["messages"][0]["content"]
+    assert "1. Revenue grew 12% in the quarter." in retried and "update_repairs" in retried
+    assert "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]." in result.outputs["update"].text
+    assert "Margins held [src:TEST-10Q-FY2026Q2#p3]." in result.outputs["update"].text and result.attempts == 2
