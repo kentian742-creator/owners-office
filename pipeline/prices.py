@@ -124,3 +124,59 @@ def year_end_closes(closes: Sequence[Close], year_end: str = "12-31", years: int
                 break
         year -= 1
     return out
+
+
+# ---------------------------------------------------------------------------------------------------- Treasury
+
+TREASURY_URL = ("https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/"
+                "{year}/all?type=daily_treasury_yield_curve&field_tdr_date_value={year}&page&_format=csv")
+TREASURY_NOTE = "U.S. Treasury daily par yield curve rate, 10-year constant maturity (home.treasury.gov)"
+
+
+@dataclasses.dataclass(frozen=True)
+class Yield:
+    date: dt.date
+    percent: float
+    source: str
+    note: str = TREASURY_NOTE
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"date": self.date.isoformat(), "ten_year_percent": self.percent, "source": self.source,
+                "note": self.note}
+
+
+def _fetch_text(url: str) -> str:
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/csv"})
+    with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 (a fixed https host)
+        return response.read().decode("utf-8")
+
+
+def parse_treasury(text: str, url: str) -> list[Yield]:
+    lines = [line for line in text.splitlines() if line.strip()]
+    if not lines:
+        return []
+    header = [h.strip().strip('"') for h in lines[0].split(",")]
+    if "10 Yr" not in header:
+        return []
+    column = header.index("10 Yr")
+    out = []
+    for line in lines[1:]:
+        cells = line.split(",")
+        try:
+            out.append(Yield(dt.datetime.strptime(cells[0].strip('"'), "%m/%d/%Y").date(), float(cells[column]), url))
+        except (IndexError, ValueError):
+            continue
+    return sorted(out, key=lambda y: y.date)
+
+
+def ten_year_yield(as_of: dt.date, *, fetch: Callable[[str], str] = _fetch_text) -> Yield:
+    """The 10-year Treasury par yield of `as_of`, or of the last business day before it."""
+    for year in (as_of.year, as_of.year - 1):
+        url = TREASURY_URL.format(year=year)
+        try:
+            readings = [y for y in parse_treasury(fetch(url), url) if y.date <= as_of]
+        except Exception as exc:  # network or format
+            raise PriceError(f"the 10-year Treasury yield could not be read ({type(exc).__name__})") from None
+        if readings:
+            return readings[-1]
+    raise PriceError(f"no 10-year Treasury yield on or before {as_of}")

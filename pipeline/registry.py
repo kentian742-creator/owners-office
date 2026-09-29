@@ -46,7 +46,7 @@ from typing import Any
 
 import yaml
 
-from . import archive, documents, edgar, evaluation, isolation, llm, slicing
+from . import archive, documents, edgar, evaluation, isolation, llm, prices, slicing
 from . import outputs as _outputs
 
 PUBLIC_REPO = "owners-office"
@@ -471,6 +471,8 @@ STEPS: dict[str, StepSpec] = {
     "01B": StepSpec("01B", "01", "B", "company", "quarter", False,
                     "system files of a company archive: thesis.yml, story.md, ledger.yml (company manager)",
                     _build_fields),
+    "01C": StepSpec("01C", "01", "C", "company", "quarter", False,
+                    "valuation of a company archive, private (company manager)"),
     "14Q": StepSpec("14Q", "14", "Q", "company", "quarter", True,
                     "neutral question list, frozen before the results event (HQ)"),
     "15A": StepSpec("15A", "15", "A", "company", "quarter", True,
@@ -2649,6 +2651,106 @@ def _archive_product(ctx: RunContext, name: str) -> BuiltInput:
     table, table_sources = source_table(ctx)
     text += f"===== source table (public and private sources.yml) =====\n{table}"
     return BuiltInput(text, "txt", sources + table_sources, note=f"archive mode: the dossier {run.rel}")
+
+
+# ---- prices and anchors for the valuation (01C; pipeline/prices.py, decisions/0029)
+
+PRICE_SYMBOLS = {"BRK": "BRK.B"}  # the class of shares the archive values, as Nasdaq.com names it
+INDEX_ANCHOR = "VOO"
+
+
+def price_history(ctx: RunContext, symbol: str) -> list[prices.Close]:
+    def load() -> list[prices.Close]:
+        try:
+            return prices.history(symbol, ctx.run_date, cache_dir=ctx.workspace_root / "inputs" / "prices")
+        except prices.PriceError as exc:
+            raise MissingInput(str(exc)) from None
+
+    return ctx.remember(f"prices:{symbol}", load)
+
+
+def _price_source(close: prices.Close) -> dict[str, Any]:
+    return {"kind": "price", "symbol": close.symbol, "date": close.date.isoformat(), "url": close.source,
+            "note": close.note}
+
+
+@assembler("price_reference")
+def _price_reference(ctx: RunContext, name: str) -> BuiltInput:
+    """The company's close on the run date (or the trading day before), with its source (00 §H2)."""
+    company = _need_company(ctx, name)
+    symbol = PRICE_SYMBOLS.get(company, company)
+    close = prices.close_on_or_before(price_history(ctx, symbol), ctx.run_date)
+    return BuiltInput(dump_yaml({"price_reference": close.to_dict()}), "yml", [_price_source(close)])
+
+
+@assembler("year_end_closes")
+def _year_end_closes(ctx: RunContext, name: str) -> BuiltInput:
+    """The closes at the last five fiscal year ends, for the backtest (§V5, §V12): split-adjusted, not
+    dividend-adjusted, as the note on each says."""
+    company = _need_company(ctx, name)
+    symbol = PRICE_SYMBOLS.get(company, company)
+    closes = prices.year_end_closes(price_history(ctx, symbol), ctx.filer().fiscal_year_end or "12-31", 5,
+                                    ctx.run_date)
+    return BuiltInput(dump_yaml({"year_end_closes": [c.to_dict() for c in closes]}), "yml",
+                      [_price_source(c) for c in closes])
+
+
+def _valuation_reading(root: Path, company: str) -> dict[str, Any] | None:
+    data = load_yaml_file(root / "companies" / company / "valuation.yml")
+    if not isinstance(data, dict):
+        return None
+    keep = ("as_of", "doc_status", "implied_return", "price_rating", "quality_rating", "discount_rate",
+            "value_ranges", "price_reference")
+    return {"company": company, **{k: data[k] for k in keep if k in data}}
+
+
+@assembler("anchors")
+def _anchors(ctx: RunContext, name: str) -> BuiltInput:
+    """The two reference anchors of §V6 with their dates: Berkshire (its archive's current valuation reading and its
+    close) and the index (VOO's close; HQ has not set the index anchor's return yet, ruling S11), and the 10-year
+    Treasury par yield."""
+    brk = _valuation_reading(ctx.private_root, "BRK")
+    brk_close = prices.close_on_or_before(price_history(ctx, "BRK.B"), ctx.run_date)
+    voo_close = prices.close_on_or_before(price_history(ctx, INDEX_ANCHOR), ctx.run_date)
+    try:
+        treasury = prices.ten_year_yield(ctx.run_date)
+    except prices.PriceError as exc:
+        raise MissingInput(str(exc)) from None
+    data = {"berkshire": {"valuation": brk, "close": brk_close.to_dict()},
+            "index": {"close": voo_close.to_dict(),
+                      "note": "HQ has not set the index anchor's expected return yet (ruling S11, next 17C); "
+                              "this is its price only"},
+            "treasury_10y": treasury.to_dict()}
+    sources = [_price_source(brk_close), _price_source(voo_close),
+               {"kind": "treasury", "date": treasury.date.isoformat(), "url": treasury.source}]
+    if brk is not None:
+        sources.append(repo_file_source(ctx.private_root, ctx.private_root / "companies/BRK/valuation.yml",
+                                        PRIVATE_REPO))
+    return BuiltInput(dump_yaml(data), "yml", sources)
+
+
+@assembler("series_roster")
+def _series_roster(ctx: RunContext, name: str) -> BuiltInput:
+    """The current valuation readings of the other companies in the series (their private valuation.yml)."""
+    rows, sources = [], []
+    for path in sorted((ctx.private_root / "companies").glob("*/valuation.yml")):
+        company = path.parent.name
+        if company == ctx.company:
+            continue
+        reading = _valuation_reading(ctx.private_root, company)
+        if reading is not None:
+            thesis = load_yaml_file(ctx.public_root / "companies" / company / "thesis.yml")
+            reading["status"] = thesis.get("status") if isinstance(thesis, dict) else None
+            rows.append(reading)
+            sources.append(repo_file_source(ctx.private_root, path, PRIVATE_REPO))
+    if not rows:
+        return empty_document(ctx, name, "no other company has a valuation yet")
+    return BuiltInput(dump_yaml({"series": rows}), "yml", sources)
+
+
+@assembler("findings_04C")
+def _findings_04c(ctx: RunContext, name: str) -> BuiltInput:
+    raise Omit("04C (valuation model review) has not reviewed this valuation yet")
 
 
 # ---- slices: one part as several calls when one cannot take its inputs (pipeline/slicing.py, decisions/0026)

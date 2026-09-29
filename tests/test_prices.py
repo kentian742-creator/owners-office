@@ -34,3 +34,9 @@ def test_the_close_on_a_day_is_the_last_trading_day_on_or_before_it_and_year_end
         prices.close_on_or_before(closes, dt.date(2020, 1, 1))
     with pytest.raises(prices.PriceError, match="no closing prices"):
         prices.history("X", dt.date(2026, 1, 5), fetch=lambda url: {"data": {"tradesTable": {"rows": None}}})
+
+
+def test_the_ten_year_yield_is_the_reading_of_the_day_or_the_last_business_day_before():
+    csv = ('Date,"1 Mo","10 Yr","30 Yr"\n09/29/2026,4.04,5.26,5.59\n09/25/2026,4.01,5.20,5.55\n')
+    reading = prices.ten_year_yield(dt.date(2026, 9, 27), fetch=lambda url: csv)
+    assert (reading.date.isoformat(), reading.percent) == ("2026-09-25", 5.20) and "10-year" in reading.note
