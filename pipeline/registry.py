@@ -438,6 +438,7 @@ def _prereg_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
 # 00 section G8: the thesis.yml fields the pipeline maintains; 03 hands back the current values unchanged.
 PIPELINE_THESIS_FIELDS = ("schema_version", "company", "status", "filer", "trust_level", "domain")
 QUARTERLY_UPDATE = "quarterly update"  # {{subject}} of prompt 04 when it audits a quarterly update
+PROPOSED_VALUATION = "proposed valuation version"  # {{subject}} of prompt 04 when 04C reviews a valuation
 
 
 def _update_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
@@ -476,6 +477,10 @@ STEPS: dict[str, StepSpec] = {
                     "valuation of a company archive, private (company manager)"),
     "02": StepSpec("02", "02", None, "company", "quarter", False,
                    "research report from the archive and its valuation (company manager; private)", mode="report"),
+    # A proposed valuation version takes effect only when the model review approves it (00 §V20).
+    "04C": StepSpec("04C", "04", "C", "company", "quarter", False,
+                    "model review of the proposed valuation version (model reviewer; private)",
+                    variables={"subject": PROPOSED_VALUATION}),
     "14Q": StepSpec("14Q", "14", "Q", "company", "quarter", True,
                     "neutral question list, frozen before the results event (HQ)"),
     "15A": StepSpec("15A", "15", "A", "company", "quarter", True,
@@ -2754,10 +2759,17 @@ def _series_roster(ctx: RunContext, name: str) -> BuiltInput:
 @assembler("valuation")
 def _valuation(ctx: RunContext, name: str) -> BuiltInput:
     """02: the company's valuation: the placed private valuation.yml and valuation.md, or else the latest 01C run's
-    proposed version (which 04C has not reviewed; the report says so)."""
+    proposed version (which 04C has not reviewed; the report says so). 04C reviews the latest 01C run's proposed
+    version when there is one, and the placed version otherwise."""
     company = _need_company(ctx, name)
     folder = ctx.private_root / "companies" / company
     placed = [folder / "valuation.yml", folder / "valuation.md"]
+    if ctx.step.step == "04C":
+        run = ctx.latest_run("01C", period=ctx.period)
+        if run is not None:
+            text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
+                                             f"The proposed valuation version of {company} ({run.rel}).")
+            return BuiltInput(text, "txt", sources, note=f"proposed version: {run.rel}")
     if placed[0].is_file():
         chunks = [f"===== {p.name} =====\n{p.read_text(encoding='utf-8').rstrip()}\n" for p in placed if p.is_file()]
         return BuiltInput("\n".join(chunks), "txt", [repo_file_source(ctx.private_root, p, PRIVATE_REPO)
@@ -2792,7 +2804,30 @@ def _wordmark(ctx: RunContext, name: str) -> BuiltInput:
 
 @assembler("findings_04C")
 def _findings_04c(ctx: RunContext, name: str) -> BuiltInput:
-    raise Omit("04C (valuation model review) has not reviewed this valuation yet")
+    """01C and 02's valuation refresh: the findings of the 04C run that returned the proposed version, if the latest
+    04C run of the period returned it."""
+    review = ctx.latest_run("04C", period=ctx.period)
+    decision = _valuation_decision(review)
+    if review is None or decision != "returned":
+        raise Omit("04C (valuation model review) has not returned this valuation")
+    text = review.read_output("findings")
+    if not text or _outputs.is_empty_mark(text):
+        raise Omit(f"04C returned the valuation without findings ({review.rel})")
+    return BuiltInput(text, "yml", review.outputs_used(["findings"]), note=f"04C returned it: {review.rel}")
+
+
+def _valuation_decision(review: Any) -> str | None:
+    """approved / returned from a 04C run's valuation_decision (a bare word or a mapping with a decision key)."""
+    text = review.read_output("valuation_decision") if review is not None else None
+    data = yaml.safe_load(text) if text else None
+    if isinstance(data, dict):
+        data = data.get("valuation_decision", data.get("decision"))
+    return str(data).strip().lower() if isinstance(data, str) else None
+
+
+@assembler("report_valuation_section")
+def _report_valuation_section(ctx: RunContext, name: str) -> BuiltInput:
+    raise Omit("04C reviews the proposed valuation version, not a research report")
 
 
 # ---- slices: one part as several calls when one cannot take its inputs (pipeline/slicing.py, decisions/0026)

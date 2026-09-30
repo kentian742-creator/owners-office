@@ -2082,6 +2082,37 @@ def supplied_documents(private_root: Path, company: str) -> dict[str, dict[str, 
     return out
 
 
+VALUATION_OUTPUTS = ("valuation_yml", "valuation_md")
+_PROPOSED_RE = re.compile(r"(?m)^(doc_status:\s*)['\"]?proposed['\"]?\s*$")
+
+
+def approving_review(private_root: Path, manifest: Mapping[str, Any]) -> tuple[str | None, str]:
+    """The latest succeeded 04C run that reviewed this bundle's proposed valuation (its `valuation` input names the
+    bundle), and its decision: (rel, "approved" | "returned" | ...), or (None, "") when none has (00 §V20)."""
+    rel, company = str(manifest["bundle"]), str(manifest.get("company") or "")
+    latest: tuple[str | None, str] = (None, "")
+    for path in sorted((private_root / "runs" / company).glob("*-04C*/manifest.yml")):
+        review = registry.load_yaml_file(path) or {}
+        record = registry.load_yaml_file(path.parent / RUN_RECORD) or {}
+        if record.get("status") != "succeeded":
+            continue
+        reviewed = {str(src.get("run")) for entry in review.get("inputs") or [] if entry.get("name") == "valuation"
+                    for src in entry.get("sources") or [] if src.get("kind") == "run_output"}
+        if rel not in reviewed:
+            continue
+        decision_file = next(path.parent.glob("outputs/valuation_decision.*"), None)
+        data = yaml.safe_load(decision_file.read_text(encoding="utf-8")) if decision_file else None
+        if isinstance(data, dict):
+            data = data.get("valuation_decision", data.get("decision"))
+        latest = (str(review.get("bundle") or path.parent.name), str(data or "").strip().lower())
+    return latest
+
+
+def mark_effective(text: str) -> str:
+    """doc_status: proposed -> effective (the YAML key, or the Markdown front matter's), once 04C has approved it."""
+    return _PROPOSED_RE.sub(r"\1effective", text, count=1)
+
+
 def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], roots: Roots,
                      warnings: list[str]) -> None:
     """Before lint: (1) a ledger management entry whose statement states a number without a tag gets its own source
@@ -2220,12 +2251,23 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
     merged_prereg: Any = None
     order = ("write", "front_matter", "append", "merge", "patch", "settlement", "pr_body", "pr_attachment")
     planned: list[tuple[int, str, str, list[_outputs.Placement]]] = []
+    review, decision = (approving_review(roots.private, manifest)
+                        if any(n in entries for n in VALUATION_OUTPUTS) else (None, ""))
+    if review is None and any(n in entries for n in VALUATION_OUTPUTS):
+        problems.append("the valuation is a proposed version: 04C has not reviewed it, and it takes effect only when "
+                        "04C approves it (00 §V20)")
+    elif review is not None and decision != "approved":
+        problems.append(f"04C ({review}) did not approve this valuation (decision: {decision or 'none'}); it goes back "
+                        "to 01C with the findings (00 §V20)")
     for name, entry in entries.items():
         data = (bundle_dir / str(entry["file"])).read_bytes()
         if _sha(data) != entry.get("sha256"):
             problems.append(f"{entry['file']}: sha256 differs from {RUN_RECORD}")
             continue
         text = data.decode("utf-8")
+        if name in VALUATION_OUTPUTS and decision == "approved":
+            text = mark_effective(text)
+            warnings.append(f"{name}: approved by 04C ({review}); written as doc_status: effective")
         if name == "prereg" and header is not None:
             text, merged_prereg, notes, prereg_problems = prereg_document(text, header, manifest, schemas)
             warnings += notes

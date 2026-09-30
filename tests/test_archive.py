@@ -160,3 +160,66 @@ def test_the_wordmark_input_names_the_official_logo_file_and_its_source(env):
     fx.write(env.workspace / "inputs" / "logos" / "NEWCO.source.txt", "https://example.com/brand (company media kit)")
     built = registry.INPUTS["wordmark"](ctx, "wordmark")
     assert "inputs/logos/NEWCO.svg" in built.text and "company media kit" in built.text and not built.empty
+
+
+class StubRun:
+    """A succeeded run with the given outputs, as ctx.latest_run returns it."""
+
+    def __init__(self, folder, rel: str, outputs: dict[str, str]):
+        self.rel = rel
+        self.files = {}
+        for name, text in outputs.items():
+            self.files[name] = fx.write(folder / rel / "outputs" / f"{name}.yml", text)
+
+    def output_file(self, name):
+        return self.files.get(name)
+
+    def read_output(self, name):
+        path = self.files.get(name)
+        return path.read_text(encoding="utf-8") if path else None
+
+    def outputs_used(self, names):
+        return [{"kind": "run_output", "run": self.rel, "output": n} for n in names if n in self.files]
+
+
+def test_the_model_review_sees_the_proposed_version_and_its_findings_go_back_only_when_it_returns_it(env, tmp_path,
+                                                                                                    monkeypatch):
+    fx.write(env.private / "companies" / "NEWCO" / "valuation.yml", "doc_status: effective\n")
+    runs = {"01C": StubRun(tmp_path, "runs/NEWCO/2026-09-28-01C", {"valuation_yml": "doc_status: proposed\n"}),
+            "04C": StubRun(tmp_path, "runs/NEWCO/2026-09-29-04C", {"valuation_decision": "approved\n",
+                                                                     "findings": "should_fix: []\n"})}
+    monkeypatch.setattr(registry.RunContext, "latest_run", lambda self, step, **kw: runs.get(step))
+    review = context(env, "04C")
+    assert registry.STEPS["04C"].variables == {"subject": "proposed valuation version"}
+    assert "doc_status: proposed" in registry.INPUTS["valuation"](review, "valuation").text
+    assert "doc_status: effective" in registry.INPUTS["valuation"](context(env, "02"), "valuation").text
+    with pytest.raises(registry.Omit):
+        registry.INPUTS["report_valuation_section"](review, "report_valuation_section")
+    with pytest.raises(registry.Omit, match="has not returned"):
+        registry.INPUTS["findings_04C"](context(env, "01C"), "findings_04C")
+    runs["04C"] = StubRun(tmp_path, "runs/NEWCO/2026-09-30-04C", {"valuation_decision": "valuation_decision: returned\n",
+                                                                   "findings": "must_fix: [double discounting]\n"})
+    assert "double discounting" in registry.INPUTS["findings_04C"](context(env, "01C"), "findings_04C").text
+
+
+def test_a_valuation_is_placed_as_effective_only_after_04c_approved_that_very_run(tmp_path):
+    from pipeline import runner
+    proposed = {"bundle": "runs/NEWCO/2026-09-28-01C", "company": "NEWCO"}
+    assert runner.approving_review(tmp_path, proposed) == (None, "")
+
+    def review(date: str, reviewed: str, decision: str) -> None:
+        folder = tmp_path / "runs" / "NEWCO" / f"{date}-04C"
+        fx.write_yaml(folder / "manifest.yml", {"bundle": f"runs/NEWCO/{date}-04C", "inputs": [
+            {"name": "valuation", "sources": [{"kind": "run_output", "run": reviewed, "output": "valuation_yml"}]}]})
+        fx.write_yaml(folder / runner.RUN_RECORD, {"status": "succeeded"})
+        fx.write(folder / "outputs" / "valuation_decision.yml", decision)
+
+    review("2026-09-29", "runs/NEWCO/2026-09-20-01C", "approved\n")  # another version
+    assert runner.approving_review(tmp_path, proposed) == (None, "")
+    review("2026-09-30", "runs/NEWCO/2026-09-28-01C", "valuation_decision: returned\n")
+    assert runner.approving_review(tmp_path, proposed) == ("runs/NEWCO/2026-09-30-04C", "returned")
+    review("2026-10-01", "runs/NEWCO/2026-09-28-01C", "approved\n")
+    assert runner.approving_review(tmp_path, proposed) == ("runs/NEWCO/2026-10-01-04C", "approved")
+    assert runner.mark_effective("---\ncompany: X\ndoc_status: proposed\n---\n") == \
+        "---\ncompany: X\ndoc_status: effective\n---\n"
+    assert runner.mark_effective('doc_status: "proposed"\nnote: proposed\n') == "doc_status: effective\nnote: proposed\n"
