@@ -673,8 +673,8 @@ def test_a_quarterly_update_at_trust_level_2_is_placed_with_every_f2_action(env,
     public_tags = [e["tag"] for e in yaml.safe_load((env.public / "companies/APP/sources.yml").read_text())["sources"]]
     private = yaml.safe_load((env.private / "companies/APP/sources.yml").read_text())["sources"]
     assert public_tags == ["APP-8K-2026-08-05", "APP-10Q-FY2026Q2"]
-    assert [e["tag"] for e in private] == ["APP-RPT1-2026-09-20", "APP-10Q-FY2026Q2",
-                                           "APP-NOTE-2026-10-20"]  # the run's public additions are mirrored
+    assert [e["tag"] for e in private] == ["APP-RPT1-2026-09-20", "APP-10Q-FY2026Q2", "APP-NOTE-2026-10-20",
+                                           "APP-8K-2026-08-05"]  # public additions and cited public tags mirrored
     assert all("visibility" not in e for e in private)
     dossier = (env.private / "companies" / "APP" / "dossier.md").read_text(encoding="utf-8")
     assert "## 3. Moat\n\nNew moat text." in dossier and "Old moat text" not in dossier
@@ -836,7 +836,7 @@ def test_the_chain_stops_for_review_and_resumes_without_running_anything_twice(e
     assert next(s.detail for s in revise[1] if s.stage == "stop:placement").startswith("HQ's gate: hold; review")
     done = event(env, backend="api", client_factory=factory, lint=False, approve_stops=["placement"])
     assert done[0] == 0 and states(done)["place"] == "placed"
-    assert "2026-10-20-03R: 9 file(s), staged" in done[1][-1].detail
+    assert "2026-10-20-03R: 10 file(s), staged" in done[1][-1].detail
     final = event(env, backend="api", client_factory=factory, lint=False)
     assert final[0] == 0 and states(final)["place"] == "placed" and final[1][-1].detail == "everything was placed already"
     assert executed == ["2026-10-20-16B", "2026-10-20-03-draft", "2026-10-20-16A", "2026-10-20-04A", "2026-10-20-03R",

@@ -2059,6 +2059,85 @@ def plan_actions(name: str, text: str, placements: Sequence[_outputs.Placement],
             problems.append(f"{name}: placement action {p.action!r} is not supported by the runner")
 
 
+_CITED_RE = re.compile(r"(?m)\[src:([A-Za-z0-9][A-Za-z0-9._-]*)|^\s*(?:source|settlement_source):\s*['\"]?([A-Z][A-Za-z0-9._-]*)")
+
+
+def supplied_documents(private_root: Path, company: str) -> dict[str, dict[str, Any]]:
+    """tag -> a sources.yml entry for every EDGAR document the pipeline gave one of the company's runs (01A, the
+    audit and its slices: their manifests record tag, form, accession, filing date and URL), for tags an archive
+    cites but did not register."""
+    out: dict[str, dict[str, Any]] = {}
+    for manifest_path in sorted((private_root / "runs" / company).glob("*/manifest.yml")):
+        data = registry.load_yaml_file(manifest_path) or {}
+        entries = list(data.get("inputs") or []) + [e for part in data.get("slices") or [] for e in part.get("inputs") or []]
+        for entry in entries:
+            for src in entry.get("sources") or []:
+                tag = str(src.get("tag") or "").split("#")[0]
+                if src.get("kind") != "edgar" or not tag or tag in out:
+                    continue
+                out[tag] = {"tag": tag, "kind": "filing", "title": f"{company} {src.get('form')} filed {src.get('filed')}",
+                            "form": src.get("form"), "accession": src.get("accession"), "filed": src.get("filed"),
+                            "url": src.get("url"), "primary": True,
+                            "note": "registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive"}
+    return out
+
+
+def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], roots: Roots,
+                     warnings: list[str]) -> None:
+    """Before lint: (1) a ledger management entry whose statement states a number without a tag gets its own source
+    as the tag; (2) a tag the planned files cite that neither sources.yml registers, and that names a document the
+    pipeline supplied to 01A, is registered in both (decisions/0028)."""
+    company = manifest.get("company")
+    if not company:
+        return
+    try:
+        from thesis_ci.textscan import untagged_facts
+    except ImportError:
+        untagged_facts = None
+    for write in writes:
+        if write.path.endswith("/ledger.yml") and untagged_facts is not None:
+            data = yaml.safe_load(write.text)
+            changed = False
+            for entry in (data.get("entries") if isinstance(data, dict) else None) or []:
+                if not isinstance(entry, dict) or entry.get("side") in ("system", "owner"):
+                    continue
+                statement, source = entry.get("statement"), entry.get("source")
+                if isinstance(statement, str) and isinstance(source, str) and untagged_facts(statement, False):
+                    body = statement.rstrip()
+                    end = body[-1] if body and body[-1] in ".;!?" else ""
+                    entry["statement"] = (body[:-1] if end else body) + f" [src:{source}]" + end  # inside the sentence
+                    changed = True
+            if changed:
+                write.content = registry.dump_yaml(data).encode("utf-8")
+                warnings.append(f"{write.path}: management entries tagged with their own source")
+    supplied = supplied_documents(roots.private, str(company))
+    added: set[str] = set()
+    for repo, visibility in ((registry.PUBLIC_REPO, _outputs.PUBLIC), (registry.PRIVATE_REPO, _outputs.PRIVATE)):
+        # a public file resolves tags in the public sources.yml, a private file in the private one (thesis-ci)
+        cited = {m.group(1) or m.group(2) for w in writes if w.repo == repo and w.path.endswith((".md", ".yml"))
+                 for m in _CITED_RE.finditer(w.text)}
+        if repo == registry.PRIVATE_REPO:
+            cited |= {m.group(1) or m.group(2) for w in writes if w.path.endswith((".md", ".yml"))
+                      for m in _CITED_RE.finditer(w.text)}  # public entries are mirrored privately (0028)
+        path = f"companies/{company}/sources.yml"
+        text = _current_text(writes, roots, repo, path)
+        data = yaml.safe_load(text) if text else None
+        known = {str(e.get("tag")) for e in (data or {}).get("sources") or [] if isinstance(e, dict)}
+        missing = sorted(t for t in cited if t and t not in known and t in supplied)
+        if not missing:
+            continue
+        merged, _, trouble = merge_sources(text, [supplied[t] for t in missing])
+        if trouble:
+            raise ValueError("; ".join(trouble))
+        _upsert(writes, PlannedWrite("sources_additions", repo, visibility, path, str(merged).encode("utf-8"),
+                                     action="merge"))
+        added |= set(missing)
+    missing = sorted(added)
+    if not missing:
+        return
+    warnings.append(f"registered {len(missing)} cited document(s) the pipeline had supplied: {', '.join(missing)}")
+
+
 def route_by_trust(writes: list[PlannedWrite], manifest: Mapping[str, Any], roots: Roots, *, publish: bool,
                    warnings: list[str], problems: list[str]) -> dict[str, Any] | None:
     """00 section G9 for a quarterly update: at trust level 1 or below its public files are staged in the private
@@ -2165,6 +2244,10 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
                          bundle_dir, schemas)
         except (ValueError, yaml.YAMLError) as exc:
             problems.append(f"{name}: {exc}")
+    try:
+        complete_sources(writes, manifest, roots, warnings)
+    except (ValueError, yaml.YAMLError) as exc:
+        problems.append(f"sources: {exc}")
     routing = route_by_trust(writes, manifest, roots, publish=publish, warnings=warnings, problems=problems)
     for write in writes:
         if write.visibility == _outputs.PUBLIC or write.public_bound:

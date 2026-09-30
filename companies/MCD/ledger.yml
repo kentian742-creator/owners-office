@@ -1,0 +1,165 @@
+company: MCD
+entries:
+- id: MCD-M01
+  side: management
+  kind: numeric_target
+  statement: Reach 50,000 restaurants by the end of 2027.
+  made_at: '2026-02-24'
+  due: '2027-12-31'
+  source: MCD-10K-FY2025#p11
+  status: pending
+  note: Restated as targeting 50,000 global units in 2028 in the 10-Q filed 2026-08-07 [src:MCD-10Q-FY2026Q2#p31],
+    without a stated reason; see MCD-M02.
+- id: MCD-M02
+  side: management
+  kind: numeric_target
+  statement: Target 50,000 global restaurants in 2028.
+  made_at: '2026-08-07'
+  due: '2028-12-31'
+  source: MCD-10Q-FY2026Q2#p31
+  status: pending
+  note: Systemwide restaurants were 45,356 at FY2025 year-end [src:MCD-10K-FY2025#p20] and 46,028 at 2026-06-30
+    [src:MCD-10Q-FY2026Q2#p16].
+- id: MCD-M03
+  side: management
+  kind: numeric_target
+  statement: Reach 250 million 90-day active loyalty users by the end of 2027 [src:MCD-10K-FY2025#p9].
+  made_at: '2026-02-24'
+  due: '2027-12-31'
+  source: MCD-10K-FY2025#p9
+  status: pending
+  note: Nearly 220 million 90-day active users at FY2026Q2 end [src:MCD-8K-2026-08-04#EX-99.1-p1].
+- id: MCD-M04
+  side: management
+  kind: numeric_target
+  statement: Have 30% of systemwide delivery sales originate in the company's own app by the end of 2027 [src:MCD-10K-FY2025#p9].
+  made_at: '2026-02-24'
+  due: '2027-12-31'
+  source: MCD-10K-FY2025#p9
+  status: pending
+  note: The current share is not disclosed in the supplied filings.
+- id: MCD-M05
+  side: management
+  kind: numeric_target
+  statement: Open about 2,600 restaurants and add about 2,100 net restaurants in FY2026.
+  made_at: '2026-02-24'
+  due: '2026'
+  source: MCD-10K-FY2025#p11
+  status: pending
+  note: Settled against the FY2026 10-K restaurant tables.
+- id: MCD-M06
+  side: management
+  kind: capex_plan
+  statement: Capital expenditures of $3.7–3.9 billion in FY2026 [src:MCD-10K-FY2025#p11].
+  made_at: '2026-02-24'
+  due: '2026'
+  source: MCD-10K-FY2025#p11
+  status: pending
+  note: FY2025 capital expenditures were $3,365M [src:MCD-10K-FY2025#p42].
+- id: MCD-M07
+  side: management
+  kind: capex_plan
+  statement: Capital expenditures in FY2027 a further $0.3–0.5 billion above FY2026 [src:MCD-10K-FY2025#p11].
+  made_at: '2026-02-24'
+  due: '2027'
+  source: MCD-10K-FY2025#p11
+  status: pending
+- id: MCD-M08
+  side: management
+  kind: numeric_target
+  statement: SG&A of about 2.2% of systemwide sales in FY2026 [src:MCD-10K-FY2025#p11].
+  made_at: '2026-02-24'
+  due: '2026'
+  source: MCD-10K-FY2025#p11
+  status: pending
+- id: MCD-M09
+  side: management
+  kind: numeric_target
+  statement: Net restaurant expansion contributes about 2.5 percentage points to FY2026 systemwide sales growth
+    in constant currencies [src:MCD-10K-FY2025#p11].
+  made_at: '2026-02-24'
+  due: '2026'
+  source: MCD-10K-FY2025#p11
+  status: pending
+- id: MCD-M10
+  side: management
+  kind: numeric_target
+  statement: Free cash flow conversion in the low-to-mid 80% range for FY2026 [src:MCD-10Q-FY2026Q2#p31].
+  made_at: '2026-08-07'
+  due: '2026'
+  source: MCD-10Q-FY2026Q2#p31
+  status: pending
+  note: 'Company definition: free cash flow ÷ net income; 84% in FY2025 [src:MCD-10K-FY2025#p19].'
+- id: MCD-M11
+  side: management
+  kind: numeric_target
+  statement: Interest expense in FY2026 up 4–6% [src:MCD-10Q-FY2026Q2#p31].
+  made_at: '2026-08-07'
+  due: '2026'
+  source: MCD-10Q-FY2026Q2#p31
+  status: pending
+- id: MCD-M12
+  side: management
+  kind: other
+  statement: Restructuring charges under the organizational transformation program of about $250 million for full-year
+    FY2026 [src:MCD-10Q-FY2026Q2#p10].
+  made_at: '2026-08-07'
+  due: '2026'
+  source: MCD-10Q-FY2026Q2#p10
+  status: pending
+  note: $98M incurred in FY2026Q1–Q2 and $795M since 2023 [src:MCD-10Q-FY2026Q2#p10].
+- id: MCD-M13
+  side: management
+  kind: product_timeline
+  statement: Complete the organizational transformation restructuring program during 2027.
+  made_at: '2026-08-07'
+  due: '2027'
+  source: MCD-10Q-FY2026Q2#p10
+  status: pending
+- id: MCD-S01
+  side: system
+  kind: prediction
+  statement: Constant-currency systemwide sales growth averages at least 4% a year over FY2026–FY2028.
+  probability: 0.65
+  made_at: '2026-10-05'
+  due: '2028'
+  source: MCD-10K-FY2025#p14
+  status: pending
+  note: 'From the dossier''s runway part. Settlement: arithmetic mean of the company-reported constant-currency
+    systemwide sales growth for FY2026, FY2027 and FY2028 in the 10-K MD&A ''Systemwide sales'' table; 4.0% or higher
+    is kept. Basis: FY2025 +5% [src:MCD-10K-FY2025#p14], FY2026Q1–Q2 +5% [src:MCD-10Q-FY2026Q2#p25], about 2.5 points
+    from net units guided for FY2026 [src:MCD-10K-FY2025#p11].'
+- id: MCD-S02
+  side: system
+  kind: prediction
+  statement: Systemwide restaurants number at least 50,000 at the end of FY2028.
+  probability: 0.85
+  made_at: '2026-10-05'
+  due: '2028-12-31'
+  source: MCD-10Q-FY2026Q2#p31
+  status: pending
+  note: 'From the dossier''s runway part. Settlement: total systemwide restaurants at FY2028 year-end in the FY2028
+    10-K MD&A ''Systemwide restaurants at year end'' table; 50,000 or more is kept. Basis: about 2,100 net additions
+    guided for FY2026 [src:MCD-10K-FY2025#p11] from 45,356 at FY2025 year-end [src:MCD-10K-FY2025#p20].'
+- id: MCD-S03
+  side: system
+  kind: prediction
+  statement: Company-defined free cash flow conversion is below 90% in both FY2026 and FY2027.
+  probability: 0.75
+  made_at: '2026-10-05'
+  due: '2027'
+  source: MCD-10Q-FY2026Q2#p31
+  status: pending
+  note: 'From the dossier''s runway part. Settlement: company-reported free cash flow ÷ net income in the FY2026
+    and FY2027 10-K MD&A Cash Flows section; kept only if both years are below 90%. Basis: FY2026 guidance of low-to-mid
+    80% [src:MCD-10Q-FY2026Q2#p31]; FY2026 capex guided at $3.7–3.9B with a further $0.3–0.5B increase in FY2027
+    [src:MCD-10K-FY2025#p11].'
+buybacks:
+- period: FY2025Q4
+  avg_price: 306.37
+  shares: null
+  source: MCD-10K-FY2025#p26
+- period: FY2026Q2
+  avg_price: 288.62
+  shares: null
+  source: MCD-10Q-FY2026Q2#p41
