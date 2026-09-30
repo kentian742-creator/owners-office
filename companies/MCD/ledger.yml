@@ -121,7 +121,7 @@ entries:
   kind: prediction
   statement: Constant-currency systemwide sales growth averages at least 4% a year over FY2026–FY2028.
   probability: 0.65
-  made_at: '2026-10-05'
+  made_at: '2026-09-29'
   due: '2028'
   source: MCD-10K-FY2025#p14
   status: pending
@@ -134,7 +134,7 @@ entries:
   kind: prediction
   statement: Systemwide restaurants number at least 50,000 at the end of FY2028.
   probability: 0.85
-  made_at: '2026-10-05'
+  made_at: '2026-09-29'
   due: '2028-12-31'
   source: MCD-10Q-FY2026Q2#p31
   status: pending
@@ -146,7 +146,7 @@ entries:
   kind: prediction
   statement: Company-defined free cash flow conversion is below 90% in both FY2026 and FY2027.
   probability: 0.75
-  made_at: '2026-10-05'
+  made_at: '2026-09-29'
   due: '2027'
   source: MCD-10Q-FY2026Q2#p31
   status: pending

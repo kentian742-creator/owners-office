@@ -10,27 +10,27 @@ trust_level: 1
 schema_version: "0.2"
 company: MCD
 status: holding
-as_of: "2026-10-05"
+as_of: "2026-09-29"
 category: stalwart
 category_secondary: slow_grower
 category_rationale: "A large, mature franchisor growing mid-to-high single digits: constant-currency systemwide sales grew 5% in FY2025 [src:MCD-10K-FY2025#p14] and diluted EPS compounded 9.6% a year from $4.80 in FY2015 to $11.95 in FY2025 (calc from [src:MCD-10K-FY2015#p17][src:MCD-10K-FY2025#p39]), which places it at the slow end of the stalwart range rather than among slow growers."
 domain: consumer
 depends_on: []
 reviewed:
-  business: "2026-10-05"
-  economics: "2026-10-05"
-  moat: "2026-10-05"
-  capital_allocation: "2026-10-05"
-  management: "2026-10-05"
-  culture: "2026-10-05"
-  runway: "2026-10-05"
-  valuation: "2026-10-05"
-  bear_case: "2026-10-05"
-  monitoring: "2026-10-05"
-  thesis: "2026-10-05"
-  breakers: "2026-10-05"
-  munger: "2026-10-05"
-  unknowns: "2026-10-05"
+  business: "2026-09-29"
+  economics: "2026-09-29"
+  moat: "2026-09-29"
+  capital_allocation: "2026-09-29"
+  management: "2026-09-29"
+  culture: "2026-09-29"
+  runway: "2026-09-29"
+  valuation: "2026-09-29"
+  bear_case: "2026-09-29"
+  monitoring: "2026-09-29"
+  thesis: "2026-09-29"
+  breakers: "2026-09-29"
+  munger: "2026-09-29"
+  unknowns: "2026-09-29"
 ratings:
   business: "A-"
   management: "B"
