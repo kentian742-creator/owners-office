@@ -288,3 +288,15 @@ def test_mdna_of_a_10k_laid_out_with_a_cross_reference_index_is_found_by_its_tit
     out, found, missing = documents.extract_sections(text, "10-K", frozenset({"mdna"}))
     assert found == ["mdna"] and missing == [] and "Russia exit charge, line 59." in out
     assert "Revenues 23,183" not in out and "Pages 8-37" not in out
+
+
+def test_the_decline_years_come_first_in_the_valuations_filings():
+    summary = {"items": {
+        "operating_income": {"values": {"FY2019": {"value": 10}, "FY2020": {"value": 7}, "FY2021": {"value": 11}}},
+        "operating_cash_flow": {"values": {"FY2021": {"value": 9}, "FY2022": {"value": 8}, "FY2024": {"value": 1}}}}}
+    assert archive.decline_years(summary) == {2020, 2022}  # FY2024 follows a gap, so it is not compared
+    annual = [filing(f"a-10k-{y}", "10-K", f"{y + 1}-02-20", f"{y}-12-31") for y in range(2016, 2026)]
+    picks = archive.valuation_selection(annual, as_of=dt.date(2026, 9, 28), declines={2018, 2022})
+    assert [p.selection.filing.accession for p in picks][:5] == [
+        "a-10k-2025", "a-10k-2022", "a-10k-2018", "a-10k-2024", "a-10k-2023"]
+    assert "decline year" in picks[1].reason

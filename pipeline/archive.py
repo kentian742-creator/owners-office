@@ -135,14 +135,31 @@ def build_selection(filings: Sequence[edgar.Filing], events: Sequence[edgar.Earn
     return picks
 
 
-VALUATION_SOURCES_TOKENS = 380_000  # 01C's documents: the valuation also carries the dossier and xbrl_facts
+VALUATION_SOURCES_TOKENS = 450_000  # 01C's documents: the valuation also carries the dossier and xbrl_facts
 VALUATION_HISTORY_YEARS = 9  # MD&A of the annual reports this many years back: each explains its year's changes
 
 
-def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date) -> list[Pick]:
+DECLINE_ITEMS = ("operating_income", "operating_cash_flow")  # the declines the premium (§V1) is judged on
+
+
+def decline_years(summary: Mapping[str, Any]) -> set[int]:
+    """Fiscal years in which operating income or operating cash flow fell from the year before (xbrl_summary)."""
+    out: set[int] = set()
+    for item in DECLINE_ITEMS:
+        values = ((summary.get("items") or {}).get(item) or {}).get("values") or {}
+        series = sorted((int(str(k)[2:6]), v.get("value")) for k, v in values.items()
+                        if str(k).startswith("FY") and isinstance(v, Mapping) and isinstance(v.get("value"), (int, float)))
+        out |= {year for (prev_year, prev), (year, value) in zip(series, series[1:])
+                if year == prev_year + 1 and value < prev}
+    return out
+
+
+def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date,
+                        declines: set[int] | frozenset[int] = frozenset()) -> list[Pick]:
     """The filings 01C checks its readings against (04C: a cause given for a past decline must be established from a
     primary filing): the latest annual report and the latest quarterly report in full, then the MD&A of each earlier
-    annual report, newest first, so that every year of the ten-year record has the filing that explains it."""
+    annual report: first those of the years in `declines` (which the premium turns on), then the others, newest first
+    within each group, so that the budget keeps the filings that explain the declines."""
     known = [f for f in filings if f.filing_date <= as_of]
     annual = sorted((f for f in known if f.form in ANNUAL_FORMS and not f.form.endswith("/A")),
                     key=lambda f: (f.report_date or f.filing_date, f.filing_date))
@@ -158,12 +175,11 @@ def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date) -> l
                           "the latest quarterly report, in full"))
     by_year = {f.report_date.year: f for f in annual if f.report_date is not None}
     year = (latest.report_date or latest.filing_date).year
-    for back in range(1, VALUATION_HISTORY_YEARS + 1):
-        older = by_year.get(year - back)
-        if older is not None:
-            picks.append(Pick(documents.Selection(older, True, False, frozenset(), documents.ANNUAL_REPORT,
-                                                  frozenset({"mdna"})),
-                              f"the annual report for fiscal {year - back}: MD&A (the causes of that year's changes)"))
+    years = [year - back for back in range(1, VALUATION_HISTORY_YEARS + 1) if year - back in by_year]
+    for fiscal in sorted(years, key=lambda y: (y not in declines, -y)):
+        why = "a decline year: the causes of its changes" if fiscal in declines else "the causes of that year's changes"
+        picks.append(Pick(documents.Selection(by_year[fiscal], True, False, frozenset(), documents.ANNUAL_REPORT,
+                                              frozenset({"mdna"})), f"the annual report for fiscal {fiscal}: MD&A ({why})"))
     return picks
 
 

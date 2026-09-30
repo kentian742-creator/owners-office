@@ -2565,8 +2565,10 @@ def _valuation_filings(ctx: RunContext, name: str) -> BuiltInput:
     subs = edgar.submissions(filer.cik, client=gateway.client)
     cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
     known = known_filing_tags((ctx.public_root, ctx.private_root), company)
+    facts, _ = gateway.companyfacts(filer.cik)
+    declines = archive.decline_years(archive.xbrl_summary(facts, cal=cal, tags=lambda accession: None))
     fetched = []
-    for pick in archive.valuation_selection(subs.filings, as_of=ctx.run_date):
+    for pick in archive.valuation_selection(subs.filings, as_of=ctx.run_date, declines=declines):
         docs = gateway.selection_documents(pick.selection, ticker=company, cal=cal, subs=subs, known_tags=known)
         if docs:
             fetched.append((pick, docs, slicing.estimate_tokens(render_documents([], docs)[0])))
