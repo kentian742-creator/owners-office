@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime as dt
 
 import pytest
+import yaml
 
 from pipeline import archive, documents, edgar, registry
 
@@ -237,3 +238,25 @@ def test_a_cited_price_history_is_registered_privately_only(tmp_path):
     supplied = runner.supplied_documents(tmp_path, "MCD")
     assert supplied["MCD-PRICES-2026-09-29"]["visibility"] == "private"
     assert supplied["MCD-PRICES-2026-09-29"]["kind"] == "web"
+
+
+def test_each_year_end_close_comes_with_that_days_ten_year_treasury_yield(env, monkeypatch):
+    from pipeline import prices
+    closes = [prices.Close("NEWCO", dt.date(y, 12, 31), 100.0 + y - 2021, "u", tag="NEWCO-PRICES-2026-09-28")
+              for y in range(2020, 2026)]
+    monkeypatch.setattr(registry, "price_history", lambda ctx, symbol: closes)
+
+    def ten_year(day):
+        if day.year == 2021:
+            raise prices.PriceError("no 10-year Treasury yield on or before 2021-12-31")
+        return prices.Yield(day, 4.0 + (day.year - 2021) / 10, "t")
+
+    monkeypatch.setattr(prices, "ten_year_yield", ten_year)
+    built = registry.INPUTS["year_end_closes"](context(env, "01C"), "year_end_closes")
+    rows = yaml.safe_load(built.text)["year_end_closes"]
+    assert [r["date"] for r in rows] == ["2025-12-31", "2024-12-31", "2023-12-31", "2022-12-31", "2021-12-31"]
+    assert rows[0]["treasury_10y"] == {"date": "2025-12-31", "ten_year_percent": 4.4, "source": "t",
+                                       "tag": "UST-PARYIELD-2025-12-31"}
+    assert "missing" in rows[-1]["treasury_10y"]
+    assert {s["tag"] for s in built.sources if s["kind"] == "treasury"} == {
+        "UST-PARYIELD-2025-12-31", "UST-PARYIELD-2024-12-31", "UST-PARYIELD-2023-12-31", "UST-PARYIELD-2022-12-31"}

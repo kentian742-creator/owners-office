@@ -2716,8 +2716,23 @@ def _year_end_closes(ctx: RunContext, name: str) -> BuiltInput:
     symbol = PRICE_SYMBOLS.get(company, company)
     closes = prices.year_end_closes(price_history(ctx, symbol), ctx.filer().fiscal_year_end or "12-31", 5,
                                     ctx.run_date)
-    return BuiltInput(dump_yaml({"year_end_closes": [c.to_dict() for c in closes]}), "yml",
-                      [_price_source(c) for c in closes])
+    rows, sources = [], [_price_source(c) for c in closes]
+    for close in closes:  # the backtest grades each year-end at that day's own risk-free rate (§V5, §V12)
+        row = close.to_dict()
+        try:
+            reading = prices.ten_year_yield(close.date)
+        except prices.PriceError as exc:
+            row["treasury_10y"] = {"missing": str(exc)}
+        else:
+            row["treasury_10y"] = {k: v for k, v in reading.to_dict().items() if k != "note"}
+            sources.append(_treasury_source(reading))
+        rows.append(row)
+    return BuiltInput(dump_yaml({"year_end_closes": rows, "treasury_note": prices.TREASURY_NOTE}), "yml", sources)
+
+
+def _treasury_source(reading: prices.Yield) -> dict[str, Any]:
+    return {"kind": "treasury", "date": reading.date.isoformat(), "url": reading.source, "tag": reading.tag,
+            "entry": reading.source_entry()}
 
 
 def _valuation_reading(root: Path, company: str) -> dict[str, Any] | None:
@@ -2747,8 +2762,7 @@ def _anchors(ctx: RunContext, name: str) -> BuiltInput:
                               "this is its price only"},
             "treasury_10y": treasury.to_dict()}
     sources = [_price_source(brk_close), _price_source(voo_close),
-               {"kind": "treasury", "date": treasury.date.isoformat(), "url": treasury.source, "tag": treasury.tag,
-                "entry": treasury.source_entry()}]
+               _treasury_source(treasury)]
     if brk is not None:
         sources.append(repo_file_source(ctx.private_root, ctx.private_root / "companies/BRK/valuation.yml",
                                         PRIVATE_REPO))
