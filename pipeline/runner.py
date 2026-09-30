@@ -2065,7 +2065,7 @@ _CITED_RE = re.compile(r"(?m)\[src:([A-Za-z0-9][A-Za-z0-9._-]*)|^\s*(?:source|se
 def supplied_documents(private_root: Path, company: str) -> dict[str, dict[str, Any]]:
     """tag -> a sources.yml entry for every EDGAR document the pipeline gave one of the company's runs (01A, the
     audit and its slices: their manifests record tag, form, accession, filing date and URL), for tags an archive
-    cites but did not register."""
+    cites but did not register; and for every price history and Treasury reading (01C, 02), marked private."""
     out: dict[str, dict[str, Any]] = {}
     for manifest_path in sorted((private_root / "runs" / company).glob("*/manifest.yml")):
         data = registry.load_yaml_file(manifest_path) or {}
@@ -2073,6 +2073,9 @@ def supplied_documents(private_root: Path, company: str) -> dict[str, dict[str, 
         for entry in entries:
             for src in entry.get("sources") or []:
                 tag = str(src.get("tag") or "").split("#")[0]
+                if src.get("kind") in ("price", "treasury") and tag and tag not in out \
+                        and isinstance(src.get("entry"), dict):
+                    out[tag] = {**src["entry"], "visibility": _outputs.PRIVATE}  # prices stay private (§H4)
                 if src.get("kind") != "edgar" or not tag or tag in out:
                     continue
                 out[tag] = {"tag": tag, "kind": "filing", "title": f"{company} {src.get('form')} filed {src.get('filed')}",
@@ -2154,10 +2157,12 @@ def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], ro
         text = _current_text(writes, roots, repo, path)
         data = yaml.safe_load(text) if text else None
         known = {str(e.get("tag")) for e in (data or {}).get("sources") or [] if isinstance(e, dict)}
-        missing = sorted(t for t in cited if t and t not in known and t in supplied)
+        missing = sorted(t for t in cited if t and t not in known and t in supplied
+                         and not (repo == registry.PUBLIC_REPO and supplied[t].get("visibility") == _outputs.PRIVATE))
         if not missing:
             continue
-        merged, _, trouble = merge_sources(text, [supplied[t] for t in missing])
+        merged, _, trouble = merge_sources(text, [{k: v for k, v in supplied[t].items() if k != "visibility"}
+                                                  for t in missing])
         if trouble:
             raise ValueError("; ".join(trouble))
         _upsert(writes, PlannedWrite("sources_additions", repo, visibility, path, str(merged).encode("utf-8"),

@@ -2678,8 +2678,12 @@ def price_history(ctx: RunContext, symbol: str) -> list[prices.Close]:
 
 
 def _price_source(close: prices.Close) -> dict[str, Any]:
-    return {"kind": "price", "symbol": close.symbol, "date": close.date.isoformat(), "url": close.source,
-            "note": close.note}
+    out = {"kind": "price", "symbol": close.symbol, "date": close.date.isoformat(), "url": close.source,
+           "note": close.note}
+    if close.tag:
+        out["tag"] = close.tag
+        out["entry"] = prices.source_entry(close)  # registered privately once a placed file cites it
+    return out
 
 
 @assembler("price_reference")
@@ -2730,7 +2734,8 @@ def _anchors(ctx: RunContext, name: str) -> BuiltInput:
                               "this is its price only"},
             "treasury_10y": treasury.to_dict()}
     sources = [_price_source(brk_close), _price_source(voo_close),
-               {"kind": "treasury", "date": treasury.date.isoformat(), "url": treasury.source}]
+               {"kind": "treasury", "date": treasury.date.isoformat(), "url": treasury.source, "tag": treasury.tag,
+                "entry": treasury.source_entry()}]
     if brk is not None:
         sources.append(repo_file_source(ctx.private_root, ctx.private_root / "companies/BRK/valuation.yml",
                                         PRIVATE_REPO))

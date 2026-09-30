@@ -223,3 +223,13 @@ def test_a_valuation_is_placed_as_effective_only_after_04c_approved_that_very_ru
     assert runner.mark_effective("---\ncompany: X\ndoc_status: proposed\n---\n") == \
         "---\ncompany: X\ndoc_status: effective\n---\n"
     assert runner.mark_effective('doc_status: "proposed"\nnote: proposed\n') == "doc_status: effective\nnote: proposed\n"
+
+
+def test_a_cited_price_history_is_registered_privately_only(tmp_path):
+    from pipeline import prices, runner
+    close = prices.Close("MCD", dt.date(2026, 9, 29), 233.98, "https://api.nasdaq.com/x", tag="MCD-PRICES-2026-09-29")
+    fx.write_yaml(tmp_path / "runs" / "MCD" / "2026-09-29-01C" / "manifest.yml", {"inputs": [
+        {"name": "price_reference", "sources": [registry._price_source(close)]}]})
+    supplied = runner.supplied_documents(tmp_path, "MCD")
+    assert supplied["MCD-PRICES-2026-09-29"]["visibility"] == "private"
+    assert supplied["MCD-PRICES-2026-09-29"]["kind"] == "web"

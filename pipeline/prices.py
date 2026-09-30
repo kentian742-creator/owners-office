@@ -37,6 +37,12 @@ class PriceError(RuntimeError):
     """No price could be read (network, format, or no trading day in range)."""
 
 
+def price_tag(symbol: str, as_of: dt.date) -> str:
+    """The source tag of one symbol's price history read on `as_of` (a day's close is cited as <tag>#YYYY-MM-DD).
+    A share class drops its suffix: BRK.B -> BRK-PRICES-<date>."""
+    return f"{symbol.upper().split('.')[0].split('/')[0]}-PRICES-{as_of.isoformat()}"
+
+
 @dataclasses.dataclass(frozen=True)
 class Close:
     symbol: str
@@ -44,10 +50,23 @@ class Close:
     close: float
     source: str
     note: str = SOURCE_NOTE
+    tag: str | None = None  # the history's source tag (price_tag); None for a close built by hand
 
     def to_dict(self) -> dict[str, Any]:
-        return {"symbol": self.symbol, "date": self.date.isoformat(), "close": self.close, "source": self.source,
-                "note": self.note}
+        out = {"symbol": self.symbol, "date": self.date.isoformat(), "close": self.close, "source": self.source,
+               "note": self.note}
+        if self.tag:
+            out["tag"] = f"{self.tag}#{self.date.isoformat()}"
+        return out
+
+
+def source_entry(close: Close) -> dict[str, Any]:
+    """The sources.yml entry (private: prices never go public, §H4) of the history a close comes from."""
+    return {"tag": close.tag, "kind": "web",
+            "title": f"{close.symbol} historical daily closing prices, ten years to {close.tag.rsplit('-PRICES-', 1)[-1]}, "
+                     "Nasdaq.com",
+            "date": close.tag.rsplit("-PRICES-", 1)[-1], "url": close.source, "primary": False,
+            "note": f"{SOURCE_NOTE}. The locator #YYYY-MM-DD names a trading day. Registered by the pipeline."}
 
 
 def _fetch_json(url: str) -> Any:
@@ -60,13 +79,13 @@ def _number(text: Any) -> float:
     return float(str(text).replace("$", "").replace(",", "").strip())
 
 
-def parse_history(data: Any, symbol: str, url: str) -> list[Close]:
+def parse_history(data: Any, symbol: str, url: str, tag: str | None = None) -> list[Close]:
     rows = ((((data or {}).get("data") or {}).get("tradesTable") or {}).get("rows")) or []
     out = []
     for row in rows:
         try:
             day = dt.datetime.strptime(str(row["date"]), "%m/%d/%Y").date()
-            out.append(Close(symbol, day, _number(row["close"]), url))
+            out.append(Close(symbol, day, _number(row["close"]), url, tag=tag))
         except (KeyError, ValueError):
             continue
     return sorted(out, key=lambda c: c.date)
@@ -91,7 +110,7 @@ def history(symbol: str, as_of: dt.date, *, cache_dir: Path | None = None,
             cache.parent.mkdir(parents=True, exist_ok=True)
             cache.write_text(json.dumps(data), encoding="utf-8")
         time.sleep(0.5)  # one request at a time, politely
-    closes = parse_history(data, symbol, url)
+    closes = parse_history(data, symbol, url, price_tag(symbol, as_of))
     if not closes:
         raise PriceError(f"{symbol}: Nasdaq.com returned no closing prices up to {as_of}")
     return closes
@@ -140,9 +159,19 @@ class Yield:
     source: str
     note: str = TREASURY_NOTE
 
+    @property
+    def tag(self) -> str:
+        return f"UST-PARYIELD-{self.date.isoformat()}"
+
     def to_dict(self) -> dict[str, Any]:
         return {"date": self.date.isoformat(), "ten_year_percent": self.percent, "source": self.source,
-                "note": self.note}
+                "note": self.note, "tag": self.tag}
+
+    def source_entry(self) -> dict[str, Any]:
+        return {"tag": self.tag, "kind": "web",
+                "title": f"U.S. Treasury daily par yield curve rates ({self.date.year}), 10-year on {self.date.isoformat()}",
+                "date": self.date.isoformat(), "url": self.source, "primary": True,
+                "note": f"{TREASURY_NOTE}. Registered by the pipeline."}
 
 
 def _fetch_text(url: str) -> str:
