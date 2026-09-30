@@ -2770,10 +2770,24 @@ def _valuation(ctx: RunContext, name: str) -> BuiltInput:
     return BuiltInput(text, "txt", sources, note=f"proposed, not yet reviewed: {run.rel}")
 
 
+LOGOS_DIR = "inputs/logos"  # <TICKER>.svg|png and <TICKER>.source.txt, fetched from official sources (workspace)
+
+
 @assembler("wordmark")
 def _wordmark(ctx: RunContext, name: str) -> BuiltInput:
-    return empty_document(ctx, name, "no official wordmark image is on file yet; typesetting (19) places it later "
-                                     "(STATUS T20), so the report uses the company name as its title")
+    """02: the path of the company's official logo in the workspace (inputs/logos/<TICKER>.svg or .png) and where it
+    came from; the report names it for typesetting and never imitates it in text (00D D1)."""
+    company = _need_company(ctx, name)
+    folder = ctx.workspace_root / LOGOS_DIR
+    files = [folder / f"{company}{suffix}" for suffix in (".svg", ".png", "-wordmark.svg", "-wordmark.png")]
+    found = [f for f in files if f.is_file()]
+    if not found:
+        return empty_document(ctx, name, f"no official logo for {company} in {LOGOS_DIR} yet; the report uses the "
+                                         "company name as its title")
+    record = folder / f"{company}.source.txt"
+    data = {"logos": [f.relative_to(ctx.workspace_root).as_posix() for f in found],
+            "source": record.read_text(encoding="utf-8").strip() if record.is_file() else None}
+    return BuiltInput(dump_yaml(data), "yml", [workspace_file_source(ctx.workspace_root, f) for f in found])
 
 
 @assembler("findings_04C")

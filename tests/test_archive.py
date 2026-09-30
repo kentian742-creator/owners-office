@@ -151,3 +151,12 @@ def test_the_industry_modules_are_listed_with_their_summaries(env):
              "id: burgers\nname: Burgers\nas_of: \"2026-09-01\"\nsummary: Beef in a bun.\nsource: X#p1\n")
     built = registry.INPUTS["industries"](context(env, "01A"), "industries")
     assert "id: burgers" in built.text and "summary: Beef in a bun." in built.text and "source:" not in built.text
+
+
+def test_the_wordmark_input_names_the_official_logo_file_and_its_source(env):
+    ctx = context(env, "01A")
+    assert registry.INPUTS["wordmark"](ctx, "wordmark").empty
+    fx.write(env.workspace / "inputs" / "logos" / "NEWCO.svg", "<svg xmlns='http://www.w3.org/2000/svg'/>")
+    fx.write(env.workspace / "inputs" / "logos" / "NEWCO.source.txt", "https://example.com/brand (company media kit)")
+    built = registry.INPUTS["wordmark"](ctx, "wordmark")
+    assert "inputs/logos/NEWCO.svg" in built.text and "company media kit" in built.text and not built.empty
