@@ -259,10 +259,14 @@ def test_unpushed_commits_are_noted_not_refused(env):
     assert any("no remote branch" in note for note in manifest["notes"])
 
 
-def test_bundles_are_never_overwritten(env):
-    env.assemble()
+def test_bundles_are_never_overwritten_and_a_same_day_rerun_gets_its_own_name(env):
+    first = env.assemble()
     with pytest.raises(runner.RunnerError, match="never overwritten"):
         env.assemble()
+    second, third = env.assemble(rerun=True), env.assemble(rerun=True)
+    assert (second.name, third.name) == (f"{first.name}-rerun2", f"{first.name}-rerun3")
+    assert manifest_of(third)["rerun"] == 3 and manifest_of(third)["context"]["run_dir"] == third.name
+    assert "rerun" not in manifest_of(first)
 
 
 def test_monthly_letter_inputs_say_explicitly_when_there_is_nothing(env):

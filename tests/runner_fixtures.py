@@ -58,7 +58,7 @@ role: company_manager
 parts:
   A: {name: Dossier, inputs: [run_date, sources, xbrl_facts, industries, "existing_dossier?", "findings_04A?", "findings_04B?"], outputs: [dossier, sources_additions, questions, "mistakes_entry?"]}
   B: {name: System files, inputs: [run_date, dossier, schema, lynch_template, metrics_registry, "existing_system_files?"], outputs: [thesis, story, ledger, questions]}
-  C: {name: Valuation, inputs: [run_date, dossier, xbrl_facts, price_reference, year_end_closes, anchors, series_roster, schema, "findings_04C?"], outputs: [valuation_md, valuation_yml, questions]}
+  C: {name: Valuation, inputs: [run_date, dossier, xbrl_facts, price_reference, year_end_closes, anchors, series_roster, schema, "findings_04C?", "valuation?"], outputs: [valuation_md, valuation_yml, questions]}
 ---
 
 Synthetic prompt 01 about {{company}} ({{ticker}}), status {{status}}.

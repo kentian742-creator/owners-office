@@ -120,12 +120,14 @@ class StepSpec:
     about_company: bool = False  # an HQ step about one company: runs/hq/<run_date>-<step>-<TICKER>/
     mode: str | None = None  # the mode of a prompt with modes (02: report, valuation_refresh)
 
-    def bundle_name(self, run_date: dt.date, company: str | None, round_: int = 1) -> str:
+    def bundle_name(self, run_date: dt.date, company: str | None, round_: int = 1, rerun: int = 1) -> str:
         """The run directory's name: <run_date>-<step>, plus -<TICKER> for an HQ step about one company, plus -r<n>
         for the second and later round of a step in one event (the audit after 03R, the revision after HQ returns
-        an update)."""
+        an update), plus -rerun<n> for a same-day rerun (after a code fix or a changed input: bundles are never
+        overwritten, and a later run date would put a false date on the outputs)."""
         suffix = f"-{company}" if self.about_company and company else ""
         suffix += f"-r{round_}" if round_ > 1 else ""
+        suffix += f"-rerun{rerun}" if rerun > 1 else ""
         return f"{run_date.isoformat()}-{self.step}{suffix}"
 
     def storage_scope(self, company: str | None) -> str:
@@ -267,6 +269,12 @@ class PriorRun:
         return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else 1
 
     @property
+    def rerun(self) -> int:
+        """The same-day rerun number (1 unless the manifest says otherwise)."""
+        value = self.manifest.get("rerun") if self.manifest else None
+        return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else 1
+
+    @property
     def succeeded(self) -> bool:
         return self.manifest is not None and self.status == "succeeded"
 
@@ -300,6 +308,7 @@ class RunContext:
     runs_roots: tuple[Path, ...] = ()  # directories searched for upstream runs before the private repository (dry runs)
     rehearsal: bool = False  # dry run before the event: the last reported quarter's filings stand in
     round: int = 1  # the round of this step in its event (2: the audit after 03R, the revision after HQ returns)
+    rerun: int = 1  # a same-day rerun of the step (bundle suffix -rerun<n>)
     subject: str | None = None  # prompt 04's and 16's {{subject}} when it is not the step's default ("archive")
 
     @property
@@ -377,14 +386,14 @@ class RunContext:
         if not found:
             return None
         preferred = [r for r in found if any(_inside(r.path, root) for root in self.runs_roots)] or found
-        return max(preferred, key=lambda r: (r.round, r.run_date, r.rel))
+        return max(preferred, key=lambda r: (r.round, r.run_date, r.rerun, r.rel))
 
     def event_runs(self, step: str) -> list[PriorRun]:
         """Every succeeded run of a step for this company and period, in round order (dry-run directory first)."""
         found = [r for r in self.runs() if r.succeeded and r.step == step and r.company == self.company
                  and r.period == self.period]
         preferred = [r for r in found if any(_inside(r.path, root) for root in self.runs_roots)] or found
-        return sorted(preferred, key=lambda r: (r.round, r.run_date, r.rel))
+        return sorted(preferred, key=lambda r: (r.round, r.run_date, r.rerun, r.rel))
 
     def require_run(self, step: str, name: str, *, why: str = "") -> PriorRun:
         run = self.latest_run(step, period=self.period)
@@ -560,7 +569,7 @@ def placement_context(ctx: RunContext) -> dict[str, Any]:
         "doc": None,
         "subject": ctx.subject or ctx.step.variables.get(llm.VAR_SUBJECT),
         "scope": ctx.scope,
-        "run_dir": ctx.step.bundle_name(ctx.run_date, ctx.company, ctx.round),
+        "run_dir": ctx.step.bundle_name(ctx.run_date, ctx.company, ctx.round, ctx.rerun),
     }
 
 
@@ -1137,7 +1146,11 @@ def _thesis(ctx: RunContext, name: str) -> BuiltInput:
 @assembler("dossier")
 def _dossier(ctx: RunContext, name: str) -> BuiltInput:
     company = _need_company(ctx, name)
-    if ctx.step.step in ("01B", "01C"):
+    placed = ctx.private_root / "companies" / company / "dossier.md"
+    if ctx.step.step == "01B" or (ctx.step.step == "01C" and not placed.is_file()
+                                  and company not in _outputs.PUBLIC_DOSSIERS):
+        # 01B turns 01A's final version into system files before it is placed; 01C values the placed dossier once
+        # it exists (placement may correct it, e.g. its dates), else 01A's final version
         run = final_dossier_run(ctx)
         if run is None:
             raise MissingInput(f"{name}: no succeeded 01A run for {company} {ctx.period} (01B and 01C take 01A's final "
@@ -2769,6 +2782,14 @@ def _valuation(ctx: RunContext, name: str) -> BuiltInput:
     company = _need_company(ctx, name)
     folder = ctx.private_root / "companies" / company
     placed = [folder / "valuation.yml", folder / "valuation.md"]
+    if ctx.step.step == "01C":  # the version 04C returned, to revise
+        review = ctx.latest_run("04C", period=ctx.period)
+        run = ctx.latest_run("01C", period=ctx.period)
+        if review is None or run is None or _valuation_decision(review) != "returned":
+            raise Omit("04C has not returned a valuation; 01C builds it from the dossier")
+        text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
+                                         f"The proposed valuation version of {company} that 04C returned ({run.rel}).")
+        return BuiltInput(text, "txt", sources, note=f"returned by {review.rel}: {run.rel}")
     if ctx.step.step == "04C":
         run = ctx.latest_run("01C", period=ctx.period)
         if run is not None:

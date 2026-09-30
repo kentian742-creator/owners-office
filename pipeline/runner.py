@@ -395,14 +395,16 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
              out_root: str | os.PathLike[str] | None = None, edgar_gateway: Any = None, offline: bool = False,
              allow_dirty: bool = False, schemas_dir: str | os.PathLike[str] | None = None,
              today: dt.date | None = None, rehearsal: bool = False, round_: int = 1,
-             subject: str | None = None) -> Path:
+             subject: str | None = None, rerun: bool = False) -> Path:
     """Build the input bundle of one step and return its directory. Nothing is written when anything is missing.
 
     Upstream runs are looked up under `out_root` first when it is not the private repository (a dry run reads its own
     chain). `rehearsal` (dry runs only) lets the last reported quarter's filings stand in for an event that has not
     happened yet. `round_` 2 assembles the second round of a step in one event (registry.ROUNDS): the bundle is
     <run_date>-<step>-r2 and its inputs are the round's. `subject` "archive" runs 16A and 04A on a new archive's
-    dossier instead of a quarterly update (decisions/0028)."""
+    dossier instead of a quarterly update (decisions/0028). `rerun` assembles the step again on the same run date
+    when its bundle exists (after a code fix or a changed input): the bundle is <name>-rerun<n>, never a later
+    date."""
     roots = roots or resolve_roots()
     try:
         spec = registry.step_spec(step)
@@ -470,9 +472,14 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
                      "can only check out pushed commits")
 
     rel = f"runs/{ctx.scope}/{spec.bundle_name(run_date, ticker, round_)}"
+    if rerun:
+        while (base / rel).exists():
+            ctx.rerun += 1
+            rel = f"runs/{ctx.scope}/{spec.bundle_name(run_date, ticker, round_, ctx.rerun)}"
     bundle_dir = base / rel
     if bundle_dir.exists():
-        raise RunnerError(f"{rel} already exists under {base}; bundles are never overwritten")
+        raise RunnerError(f"{rel} already exists under {base}; bundles are never overwritten (a same-day rerun: "
+                          "--rerun)")
 
     built: dict[str, registry.BuiltInput] = {}
     omitted: list[dict[str, str]] = []
@@ -610,6 +617,8 @@ def assemble(step: str, company: str, period: str, *, run_date: dt.date | None =
         manifest["slices"] = slices_meta
     if round_ > 1:
         manifest["round"] = round_
+    if ctx.rerun > 1:
+        manifest["rerun"] = ctx.rerun
     if rehearsal:
         manifest["rehearsal"] = True
         notes.append("rehearsal: a dry run before the event; inputs marked substitute stand in for the event's")
@@ -2478,6 +2487,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--subject", choices=[registry.ARCHIVE_SUBJECT], default=None,
                    help="16A and 04A on a new archive's dossier (decisions/0028)")
     p.add_argument("--round", dest="round_", type=int, default=1, help="the round of a step (01A 2: the revision)")
+    p.add_argument("--rerun", action="store_true",
+                   help="assemble the step again on the same run date when its bundle exists (-rerun<n>)")
     p = sub.add_parser("dry-run", parents=[roots, step_args], help="assemble and execute with the fake backend")
     p.add_argument("--out", type=Path, default=None, help=f"output directory (default: <workspace>/{DRY_RUN_DIR})")
     p.add_argument("--replace", action="store_true", help="replace an earlier dry-run bundle of the same step and date")
@@ -2553,7 +2564,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "assemble":
             bundle_dir = assemble(args.step, args.company, args.period, run_date=args.run_date, roots=roots,
                                   offline=args.offline, allow_dirty=args.allow_dirty, schemas_dir=args.schemas_dir,
-                                  subject=args.subject, round_=args.round_)
+                                  subject=args.subject, round_=args.round_, rerun=args.rerun)
             print(describe_bundle(bundle_dir))
             return 0
         if args.command == "dry-run":

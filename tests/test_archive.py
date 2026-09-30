@@ -197,9 +197,13 @@ def test_the_model_review_sees_the_proposed_version_and_its_findings_go_back_onl
         registry.INPUTS["report_valuation_section"](review, "report_valuation_section")
     with pytest.raises(registry.Omit, match="has not returned"):
         registry.INPUTS["findings_04C"](context(env, "01C"), "findings_04C")
+    with pytest.raises(registry.Omit, match="builds it from the dossier"):
+        registry.INPUTS["valuation"](context(env, "01C"), "valuation")
     runs["04C"] = StubRun(tmp_path, "runs/NEWCO/2026-09-30-04C", {"valuation_decision": "valuation_decision: returned\n",
                                                                    "findings": "must_fix: [double discounting]\n"})
     assert "double discounting" in registry.INPUTS["findings_04C"](context(env, "01C"), "findings_04C").text
+    returned = registry.INPUTS["valuation"](context(env, "01C"), "valuation")
+    assert "doc_status: proposed" in returned.text and "04C returned" in returned.text
 
 
 def test_a_valuation_is_placed_as_effective_only_after_04c_approved_that_very_run(tmp_path):
