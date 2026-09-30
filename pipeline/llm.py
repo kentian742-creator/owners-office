@@ -1717,8 +1717,7 @@ def complete(
                     parsed[name] = repaired
             result = dataclasses.replace(result, text=first_text + "\n\n" + RETRY_MARK.format(", ".join(redo or ()))
                                          + "\n\n" + text)
-        if not errors:
-            errors = _outputs.coverage_errors(call.label, inputs, parsed)
+        errors = errors + _outputs.coverage_errors(call.label, inputs, parsed)  # all faults at once, parsed or not
         if errors:
             record["validation_errors"] = errors[:50]
         _append_log(log, record)

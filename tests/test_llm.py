@@ -1311,3 +1311,14 @@ def test_untagged_numbers_are_repaired_sentence_by_sentence_not_rewritten(env):
     assert "1. Revenue grew 12% in the quarter." in retried and "update_repairs" in retried
     assert "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]." in result.outputs["update"].text
     assert "Margins held [src:TEST-10Q-FY2026Q2#p3]." in result.outputs["update"].text and result.attempts == 2
+
+
+def test_a_reply_with_a_format_error_is_checked_for_untagged_numbers_too(env):
+    """MCD (2026-10-04): questions failed to parse, so the untagged numbers in the update went unseen until the
+    retry had been used up. Every check runs on the first attempt, and one retry fixes both."""
+    update = UPDATE_MD + "Revenue grew 12% in the quarter.\n"
+    bad = make_response(envelope(update=update, thesis=THESIS_YML, questions="- oops: [unclosed"))
+    retry = ('<output name="questions">\nnone\n</output>\n<output name="update_repairs">\n- find: "Revenue grew 12% '
+             'in the quarter."\n  replace: "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]."\n</output>\n')
+    result = call(env, FakeClient(bad, make_response(retry)))
+    assert "[src:TEST-10Q-FY2026Q2#p2]" in result.outputs["update"].text and result.outputs["questions"].empty
