@@ -8,15 +8,15 @@ the results are written down with probabilities and timestamped; afterwards they
 advance. Mistakes are published. The research is drafted and audited by AI agents working under the owner's written
 investment constitution; the owner decides only where the money goes and whether the constitution changes.
 
-**Status on 2026-09-28:** six companies are archived, and every archive has been checked fact by fact against the
-companies' filings; each error found is in [mistakes.md](mistakes.md). Four more (McDonald's, Alphabet, Apple and NVIDIA)
-are being built by the pipeline straight from their SEC filings. The first forecasts, on S&P Global's results for the
-third quarter of 2026, will be registered by 2026-10-17, so nothing has been scored yet. Progress is tracked in
+**Status on 2026-09-30:** seven companies are archived, and every archive has been checked fact by fact against the
+companies' filings; each error found is in [mistakes.md](mistakes.md). McDonald's was the first archive the pipeline
+built straight from SEC filings; Alphabet, Apple and NVIDIA come next. The first forecasts, on S&P Global's results
+for the third quarter of 2026, will be registered by 2026-10-17, so nothing has been scored yet. Progress is tracked in
 [docs/STATUS.md](docs/STATUS.md).
 
 > **Not investment advice.** This repository records one private investor's method and forecast record. It recommends
 > no security, publishes no valuations or prices, and executes no trades. The owner holds shares of AppLovin, S&P
-> Global and McDonald's, and follows other companies as research or for reference; position sizes are never published.
+> Global and Berkshire Hathaway, and follows other companies as research or for reference; position sizes are never published.
 
 A Chinese version of this page is in [zh-CN/README.md](zh-CN/README.md).
 
@@ -39,7 +39,7 @@ close those gaps:
 
 - **A company:** AppLovin's [two-minute story](companies/APP/story.md), then its full [thesis and tests](companies/APP/thesis.yml).
   The other archives are [S&P Global](companies/SPGI/), [American Express](companies/AXP/),
-  [Microsoft](companies/MSFT/), [Berkshire Hathaway](companies/BRK/) and [PDD](companies/PDD/).
+  [Microsoft](companies/MSFT/), [Berkshire Hathaway](companies/BRK/), [McDonald's](companies/MCD/) and [PDD](companies/PDD/).
 - **The rules:** the [investment constitution](constitution/owner.md): fourteen rules and five hard limits, each
   mapped to a check a machine can run.
 - **The mistakes:** [mistakes.md](mistakes.md), every error found so far and what changed because of it.

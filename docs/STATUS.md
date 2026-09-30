@@ -1,9 +1,9 @@
 # Status
 
-- Updated: 2026-09-28
+- Updated: 2026-09-30
 - Current phase: **Phase 1 · Run one season semi-automatically (in preparation; the Q3 earnings season starts in mid-October)**
-- Portfolio (owner, 2026-09-28, `decisions/0027`): holdings APP, SPGI, MCD; research coverage (`candidate`) MSFT, AXP, GOOG, AAPL, NVDA; archived BRK, PDD. MCD, GOOG, AAPL and NVDA have no archive yet: they are built from the SEC filings by the pipeline, MCD first.
-- Next hard deadline: SPGI's FY2026Q3 pre-registration, to be merged by **2026-10-17** at the latest on the estimate (release about 10-21, deadline the end of 10-20); then MCD's (archive first; merge about 10-22) and APP's (10-30).
+- Portfolio (owner, 2026-09-30, `decisions/0030`): holdings APP, SPGI, BRK; research coverage (`candidate`) MSFT, AXP, MCD, GOOG, AAPL, NVDA; archived PDD. BRK is also still the first hurdle (§V6). GOOG, AAPL and NVDA have no archive yet: the pipeline builds them from the SEC filings, as it built MCD's.
+- Next hard deadline: SPGI's FY2026Q3 pre-registration, to be merged by **2026-10-17** at the latest on the estimate (release about 10-21, deadline the end of 10-20); then BRK's (merge by 10-25, now a holding) and APP's (10-30). MCD, now research coverage, no longer pre-registers.
 
 ## Current
 
@@ -37,9 +37,9 @@ From `pipeline.edgar next-release`: three calendar days before the earliest past
 | AXP | candidate | FY2026Q3 | **2026-10-23, about 7:00 ET, announced** (release of 2026-09-23) | — | — |
 | MSFT | candidate | FY2027Q1 | 2026-10-21 | — | — |
 | SPGI | holding | FY2026Q3 | 2026-10-21 | 2026-10-20T23:59:59-04:00 | **2026-10-17T23:59:59-04:00** |
-| BRK | archive | FY2026Q3 | 2026-10-29 | — | — |
+| BRK | holding | FY2026Q3 | 2026-10-29 (estimate; the last three Q3 releases were Saturdays, 11-01 to 11-04) | 2026-10-28T23:59:59-04:00 | **2026-10-25T23:59:59-04:00** |
 | APP | holding | FY2026Q3 | 2026-11-02 | 2026-11-01T23:59:59-05:00 | 2026-10-30T00:59:59-04:00 |
-| MCD | holding | FY2026Q3 | about 10-26 (archive first; last three Q3 releases 10-29 to 11-05) | about 10-25 | about 10-22 |
+| MCD | candidate | FY2026Q3 | about 10-26 (last three Q3 releases 10-29 to 11-05) | — (no longer held, `decisions/0030`) | — |
 | GOOG, AAPL, NVDA | candidate | next quarter | computed once each archive exists | — | — |
 | PDD | archive | FY2026Q3 | 2026-11-13 | — (no longer held, `decisions/0027`) | — |
 
@@ -73,7 +73,8 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 - [ ] T11 APP FY2026Q3 pre-registration (results around early November): freeze the question list → write the pre-registration → merge and timestamp at least 72 hours before the deadline
 - [ ] T11 SPGI FY2026Q3 pre-registration (now a holding, `decisions/0027`): merge by 2026-10-17 on the estimate
 - [x] Prompt 01 wired into the runner (`decisions/0028`): `companies/intake.yml`, steps 01A and 01B, 16A and 04A with `--subject archive`, a budgeted selection of filings and a ten-year XBRL summary; the whole path runs with the fake backend on McDonald's real filings. The private valuation (01C, with prices from `pipeline/prices.py`, decisions/0029), its model review (04C) and the research report (02) are wired: a proposed valuation is placed only after 04C approved that very run, and is then written as `doc_status: effective` (00 §V20). Not yet: 04B for archives
-- [ ] MCD archive from the SEC filings on the real model (after the weekly reset of 2026-09-30), then its FY2026Q3 pre-registration (merge about 10-22)
+- [x] MCD archive from the SEC filings on the real model (placed 2026-09-29; owners-office#2). Its FY2026Q3 pre-registration is no longer due: MCD is research coverage since 2026-09-30 (`decisions/0030`)
+- [ ] BRK FY2026Q3 pre-registration (a holding again, `decisions/0030`): 14Q then 15A, merge by 2026-10-25 on the estimate
 - [ ] GOOG, AAPL, NVDA archives from the SEC filings (research coverage, `decisions/0027`)
 - [x] ~~T11 PDD FY2026Q3 pre-registration~~: not due; PDD is no longer held (`decisions/0027`)
 - [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)

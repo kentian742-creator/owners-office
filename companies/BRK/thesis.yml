@@ -17,7 +17,7 @@ schema_version: "0.2"
 company: BRK
 name: Berkshire Hathaway Inc.
 exchange: NYSE
-status: archive
+status: holding
 filer:
   cik: "0001067983"
   type: domestic

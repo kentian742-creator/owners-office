@@ -9,7 +9,7 @@ filer:
 trust_level: 1
 schema_version: "0.2"
 company: MCD
-status: holding
+status: candidate
 as_of: "2026-09-29"
 category: stalwart
 category_secondary: slow_grower

@@ -1,7 +1,7 @@
 ---
 company: SPGI
 as_of: 2026-09-24
-status: candidate
+status: holding
 category: stalwart
 ---
 

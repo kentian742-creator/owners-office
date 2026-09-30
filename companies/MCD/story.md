@@ -1,7 +1,7 @@
 ---
 company: MCD
 as_of: 2026-09-29
-status: holding
+status: candidate
 category: stalwart
 ---
 
