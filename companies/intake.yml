@@ -3,11 +3,6 @@
 # -> 01A round 2 (revision) -> 01B (thesis.yml, story.md, ledger.yml). A company leaves this list when its thesis.yml
 # is placed. The filer block (fiscal year end, forms) is read from EDGAR's submissions.
 companies:
-  - ticker: MCD
-    name: McDonald's Corporation
-    cik: "0000063908"
-    status: holding
-    decided: "2026-09-28"
   - ticker: GOOG
     name: Alphabet Inc.
     cik: "0001652044"

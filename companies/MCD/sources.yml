@@ -72,3 +72,31 @@ sources:
     filed: '2026-08-07'
     url: https://www.sec.gov/Archives/edgar/data/63908/000006390826000073/mcd-20260630.htm
     primary: true
+
+  - tag: MCD-10K-FY2022
+    kind: filing
+    title: MCD 10-K filed 2023-02-24
+    form: 10-K
+    accession: 0000063908-23-000012
+    filed: '2023-02-24'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390823000012/mcd-20221231.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: MCD-10K-FY2023
+    kind: filing
+    title: MCD 10-K filed 2024-02-22
+    form: 10-K
+    accession: 0000063908-24-000072
+    filed: '2024-02-22'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390824000072/mcd-20231231.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: MCD-10K-FY2024
+    kind: filing
+    title: MCD 10-K filed 2025-02-25
+    form: 10-K
+    accession: 0000063908-25-000012
+    filed: '2025-02-25'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390825000012/mcd-20241231.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'

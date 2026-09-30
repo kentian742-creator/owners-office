@@ -1,0 +1,485 @@
+# Header fields name, exchange, filer and trust_level are maintained by the pipeline (§G8) and are left to it.
+name: McDonald's Corporation
+filer:
+  cik: "0000063908"
+  type: domestic
+  fiscal_year_end: "12-31"
+  earnings_form: 8-K
+  annual_form: 10-K
+trust_level: 1
+schema_version: "0.2"
+company: MCD
+status: holding
+as_of: "2026-10-05"
+category: stalwart
+category_secondary: slow_grower
+category_rationale: "A large, mature franchisor growing mid-to-high single digits: constant-currency systemwide sales grew 5% in FY2025 [src:MCD-10K-FY2025#p14] and diluted EPS compounded 9.6% a year from $4.80 in FY2015 to $11.95 in FY2025 (calc from [src:MCD-10K-FY2015#p17][src:MCD-10K-FY2025#p39]), which places it at the slow end of the stalwart range rather than among slow growers."
+domain: consumer
+depends_on: []
+reviewed:
+  business: "2026-10-05"
+  economics: "2026-10-05"
+  moat: "2026-10-05"
+  capital_allocation: "2026-10-05"
+  management: "2026-10-05"
+  culture: "2026-10-05"
+  runway: "2026-10-05"
+  valuation: "2026-10-05"
+  bear_case: "2026-10-05"
+  monitoring: "2026-10-05"
+  thesis: "2026-10-05"
+  breakers: "2026-10-05"
+  munger: "2026-10-05"
+  unknowns: "2026-10-05"
+ratings:
+  business: "A-"
+  management: "B"
+  capital_allocation: "B"
+thesis:
+  summary: "McDonald's collects rent, royalties and fees on the sales of franchised restaurants, which were about 95% of its restaurants and about 93% of FY2025 systemwide sales of $139.4B [src:MCD-10K-FY2025#p3][src:MCD-10K-FY2025#p8][src:MCD-10K-FY2025#p15][src:MCD-10K-FY2025#p39], and about 90% of its restaurant margin comes from franchised sites [src:MCD-10K-FY2025#p15]. Value compounds through net unit growth of about 4% (4.3% in the twelve months to 2026-06-30 [src:MCD-10Q-FY2026Q2#p9]), mostly funded by licensees [src:MCD-10Q-FY2026Q2#p31], plus check-led comparable sales [src:MCD-10Q-FY2026Q2#p19], and most free cash flow goes to a dividend paid for 50 consecutive years and increased every year [src:MCD-10K-FY2025#p21] and to repurchases. The holding case requires three things: the U.S. value proposition must restore traffic before franchisee restaurant margins erode further; the enlarged development program must earn returns near the historical level on incremental capital (20.9% pre-tax FY2019–FY2025, calc from operating income [src:MCD-10K-FY2020#p38][src:MCD-10K-FY2025#p39] and capex and equity-method purchases [src:MCD-10K-FY2020#p41][src:MCD-10K-FY2022#p39][src:MCD-10K-FY2025#p42]); and shareholder returns must stay funded by free cash flow rather than by rising leverage."
+  pillars:
+    - id: P1
+      claim: "The franchisor model concentrates profit in rent and royalties: franchised margin was $13,930M of $15,351M total restaurant margin in FY2025 [src:MCD-10K-FY2025#p15], and U.S. franchised revenue held at 14.2% of U.S. franchised sales in FY2025 against 13.8% in FY2015 while U.S. unit volumes grew (calc from [src:MCD-10K-FY2025#p14][src:MCD-10K-FY2025#p15][src:MCD-10K-FY2015#p18][src:MCD-10K-FY2015#p19])."
+      source: MCD-10K-FY2025#p15
+    - id: P2
+      claim: "Growth is internally generated: constant-currency systemwide sales grew 5% in FY2025 [src:MCD-10K-FY2025#p14] and 5% in FY2026Q1–Q2 [src:MCD-10Q-FY2026Q2#p25], net restaurant growth was 4.3% in FY2025 (calc from [src:MCD-10K-FY2025#p20]), and more than 1,800 of about 2,600 FY2026 openings are funded by developmental licensees and affiliates [src:MCD-10K-FY2025#p11]."
+      source: MCD-10K-FY2025#p14
+    - id: P3
+      claim: "The U.S. value proposition must restore traffic before franchisee economics erode further: U.S. comparable guest counts were negative in FY2026Q2 [src:MCD-10Q-FY2026Q2#p19], and the U.S. company-operated margin, the nearest disclosed proxy for franchisee restaurant economics, fell from 15.2% in FY2023 to 10.0% in FY2026Q1–Q2 (calc from [src:MCD-10K-FY2025#p14][src:MCD-10K-FY2025#p15][src:MCD-10Q-FY2026Q2#p24][src:MCD-10Q-FY2026Q2#p27])."
+      source: MCD-10Q-FY2026Q2#p27
+    - id: P4
+      claim: "The enlarged development program must earn returns near the historical level: the pre-tax incremental return on capital was 20.9% over FY2019–FY2025 but 9.4% over FY2023–FY2025 (calc from operating income [src:MCD-10K-FY2020#p38][src:MCD-10K-FY2025#p39] and capex and equity-method purchases [src:MCD-10K-FY2020#p41][src:MCD-10K-FY2022#p39][src:MCD-10K-FY2025#p42]), and company-reported ROIC fell from 25.2% in FY2023 to 20.3% in FY2025 [src:MCD-10K-FY2025#p22]."
+      source: MCD-10K-FY2025#p22
+    - id: P5
+      claim: "Shareholder returns stay funded by free cash flow, not rising leverage: FY2021–FY2025 dividends and repurchases were 104.7% of free cash flow (calc from [src:MCD-10K-FY2023#p41][src:MCD-10K-FY2024#p43][src:MCD-10K-FY2025#p42]), debt obligations were $40.0B at 2025-12-31 and the long-term debt ratings were BBB+ (S&P) and Baa1 (Moody's) [src:MCD-10K-FY2025#p22]."
+      source: MCD-10K-FY2025#p22
+  permanent_loss_paths:
+    - "U.S. growth stays check-only while traffic falls (U.S. comparable guest counts negative in FY2026Q2 [src:MCD-10Q-FY2026Q2#p19]), franchisee restaurant margins keep compressing and franchisees stop funding remodels and new-unit equipment, so the rent and royalty base in the most profitable market stops growing or shrinks."
+    - "New capital earns structurally less than the existing base: the FY2023–FY2025 pre-tax incremental return was 9.4% (calc from [src:MCD-10K-FY2025#p39][src:MCD-10K-FY2025#p42]), and growth shifts to licensed markets where McDonald's records about 5 cents of revenue per franchised sales dollar against 14–17 cents in the U.S. and IOM (FY2025, calc from [src:MCD-10K-FY2025#p14][src:MCD-10K-FY2025#p15])."
+    - "Leverage absorbs a downturn instead of equity: equity was −$1,791M at 2025-12-31 [src:MCD-10K-FY2025#p41] against $40.0B of debt obligations [src:MCD-10K-FY2025#p22] and $14.8B of lease liabilities [src:MCD-10K-FY2025#p55], so a sustained fall in franchisee sales combined with returns above free cash flow would force a dividend cut or a lower credit rating."
+    - "Law or regulation treats the franchisor as joint employer of franchisee staff, which the company lists as a risk to the franchise model [src:MCD-10K-FY2025#p31], making McDonald's answerable for the over two million people who work in franchised restaurants [src:MCD-10K-FY2025#p4]."
+    - "Demand shifts away from the format: weight-loss medication, named by the company among changes in consumer behavior [src:MCD-10K-FY2025#p28], and delivery platforms, whose orders carry lower profitability by the company's own account [src:MCD-10Q-FY2026Q2#p33], erode traffic and the direct customer relationship."
+tests:
+  - id: MCD-Q1
+    type: quantitative
+    claim: "Growth of the sales base on which rent and royalties are charged has not slipped out of the stalwart range"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [growth]
+    pillar: P2
+    effective_from: FY2026Q3
+    metric_def:
+      id: systemwide_sales_growth_cc
+      description: "Year-on-year growth of systemwide sales (sales at all company-operated and franchised restaurants) excluding currency translation, as reported by the company"
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: "10-Q / 10-K MD&A 'Systemwide sales' table (constant-currency column); quarterly figure from the earnings release 8-K Exhibit 99.1"
+    fail_if: "below 3% for 4 consecutive quarters"
+    rule: {op: "<", threshold: 3, unit: "%", consecutive: 4, period: quarter}
+    warn_if: "below 4% for 2 consecutive quarters"
+    warn_rule: {op: "<", threshold: 4, unit: "%", consecutive: 2, period: quarter}
+    data: filing_text
+    baseline: {value: 5, unit: "%", period: "FY2026Q1-Q2", source: "MCD-10Q-FY2026Q2#p25"}
+    note: "Replaces the template's revenue_yoy. Reported revenue mixes company-operated sales with rent and royalties, moved with refranchising (company-operated restaurants 6,444 at FY2015 year-end [src:MCD-10K-FY2015#p13] against 2,039 at FY2025 year-end [src:MCD-10K-FY2025#p44]) and with currency (FY2026Q1–Q2 revenue +6%, +3% in constant currency [src:MCD-10Q-FY2026Q2#p24]); constant-currency systemwide sales is the base the company's fees are charged on. Thresholds are set below the template's 5% and 8% because this franchisor grows sales about 5% (FY2025 +5% [src:MCD-10K-FY2025#p14]), with about 2.5 points from net units [src:MCD-10K-FY2025#p11], at the slow end of the stalwart range. The annual reading from the dossier's dashboard is MCD-Q12."
+  - id: MCD-Q2
+    type: quantitative
+    claim: "Return on invested capital holds at the level of an excellent business"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [returns_on_capital, moat]
+    pillar: P4
+    effective_from: FY2026Q3
+    metric: roic
+    fail_if: "below 12% for 2 consecutive years"
+    rule: {op: "<", threshold: 12, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    note: "Registry basis: equity + interest-bearing debt − cash, without lease liabilities. Equity is negative (−$1,791M at 2025-12-31 [src:MCD-10K-FY2025#p41]) but invested capital on this basis stays positive, so the ratio is defined; the dossier's own FY2025 reading is about 25.9% on this basis and 18.6% with lease liabilities included (calc from [src:MCD-10K-FY2025#p19][src:MCD-10K-FY2025#p39][src:MCD-10K-FY2025#p41][src:MCD-10K-FY2025#p55][src:MCD-10K-FY2025#p61]). The company-reported ROIC is tested in MCD-Q7 and MCD-Q15."
+  - id: MCD-Q3
+    type: quantitative
+    claim: "Buybacks really shrink the share count instead of offsetting stock-based compensation"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P5
+    effective_from: FY2026Q3
+    metric: diluted_shares_yoy
+    fail_if: "above 0 for 2 consecutive years"
+    rule: {op: ">", threshold: 0, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    note: "Diluted weighted shares fell from 944.6M in FY2015 to 716.4M in FY2025 [src:MCD-10K-FY2015#p17][src:MCD-10K-FY2025#p39]. The pipeline's XBRL summary records diluted share counts in units through FY2020 and in millions from FY2021; readings that span that boundary must be put on one unit before comparison."
+  - id: MCD-Q4
+    type: quantitative
+    claim: "Profit turns into cash"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [free_cash_flow]
+    pillar: P5
+    effective_from: FY2026Q3
+    metric: fcf_conversion
+    fail_if: "below 70% for 2 consecutive years"
+    rule: {op: "<", threshold: 70, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    note: "Same definition as the company's (free cash flow ÷ net income); company-reported 81% in FY2024 and 84% in FY2025 [src:MCD-10K-FY2025#p19]. The dossier's single-year threshold is tested in MCD-Q14."
+  - id: MCD-L1
+    type: qualitative
+    claim: "Management has not lowered the medium-term targets it published"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [management]
+    pillar: P2
+    effective_from: FY2026Q3
+    question: "As of the 10-Q for FY2026Q2, filed 2026-08-07, McDonald's had published these targets: 50,000 global restaurants in 2028 [src:MCD-10Q-FY2026Q2#p31]; 250 million 90-day active loyalty users by the end of 2027 [src:MCD-10K-FY2025#p9]; 30% of systemwide delivery sales originating in the company's own app by the end of 2027 [src:MCD-10K-FY2025#p9]; about 2,100 net restaurant additions in FY2026 [src:MCD-10K-FY2025#p11]; free cash flow conversion in the low-to-mid 80% range for FY2026 [src:MCD-10Q-FY2026Q2#p31]. In the documents provided that were filed after 2026-08-07, did the company lower, postpone or withdraw any of these targets? If so, name the target, quote the new wording, and state whether the same document gave a replacement target with a specific number and date."
+    fail_if: "Yes, and the same document gave no replacement target with a specific number and date"
+    judge: independent_model
+    evidence: required
+    where: ["earnings release 8-K Exhibits 99.1 and 99.2 of this period and the three before", "10-Q / 10-K MD&A outlook and strategy sections of this period and the three before"]
+    lookback: 4
+    judge_notes:
+      - "Moving a target to a later date counts as postponing."
+      - "Only documents filed after 2026-08-07 count; earlier documents are context."
+      - "A target restated with the same number and the same or an earlier date is not lowered."
+      - "A target that stops being mentioned in all provided documents is reported as 'not mentioned', not as withdrawn."
+    note: "The move of the 50,000-restaurant target from the end of 2027 [src:MCD-10K-FY2025#p11] into 2028 [src:MCD-10Q-FY2026Q2#p31] happened before this test takes effect and is recorded in the ledger. Earnings call transcripts and investor-day materials are not available to the pipeline, so they are not listed in where."
+  - id: MCD-S1
+    type: staleness
+    claim: "The moat judgment goes no longer than four quarters without a review"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [moat]
+    pillar: P1
+    effective_from: FY2026Q3
+    section: moat
+    max_age_quarters: 4
+  - id: MCD-S2
+    type: staleness
+    claim: "The management judgment goes no longer than four quarters without a review"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [management]
+    effective_from: FY2026Q3
+    section: management
+    max_age_quarters: 4
+  - id: MCD-S3
+    type: staleness
+    claim: "The bear case (where this is most likely wrong) is re-examined every two quarters"
+    origin: "template:stalwart"
+    severity: watch
+    covers: [other]
+    pillar: P3
+    effective_from: FY2026Q3
+    section: bear_case
+    max_age_quarters: 2
+  - id: MCD-Q5
+    type: quantitative
+    claim: "Total-company comparable sales do not decline for two fiscal years in a row"
+    origin: "archive:breaker"
+    severity: breaker
+    covers: [moat, growth]
+    pillar: P2
+    effective_from: FY2026Q3
+    metric_def:
+      id: global_comparable_sales
+      description: "Total-company (global) comparable sales change for the fiscal year, as reported by the company"
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: "10-K MD&A 'Comparable sales' table, total-company line"
+    fail_if: "below 0.0% in two consecutive fiscal years"
+    rule: {op: "<", threshold: 0.0, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    baseline: {value: 3.1, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p14", note: "FY2024 was −0.1% [src:MCD-10K-FY2025#p14]"}
+    note: "Thesis breaker B1 of the dossier."
+  - id: MCD-Q6
+    type: quantitative
+    claim: "The share of U.S. franchised sales that McDonald's keeps as rent, royalties and fees holds"
+    origin: "archive:breaker"
+    severity: breaker
+    covers: [pricing_power, moat, unit_economics]
+    pillar: P1
+    effective_from: FY2026Q3
+    metric_def:
+      id: us_franchised_take_rate
+      description: "U.S. revenues from franchised restaurants ÷ U.S. franchised sales, fiscal year"
+      unit: "%"
+      frequency: year
+      data: filing_text
+      formula: "us_franchised_revenue / us_franchised_sales"
+      where: "10-K MD&A 'Revenues' table (U.S. franchised revenues) and 'Franchised sales' table (U.S.)"
+      components:
+        us_franchised_revenue:
+          description: "U.S. revenues from franchised restaurants"
+          unit: USD
+          where: "10-K MD&A 'Revenues' table"
+        us_franchised_sales:
+          description: "U.S. franchised sales"
+          unit: USD
+          where: "10-K MD&A 'Franchised sales' table"
+    fail_if: "below 13.0% in any fiscal year"
+    rule: {op: "<", threshold: 13.0, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 14.2, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p14", note: "$7,371M [src:MCD-10K-FY2025#p14] ÷ $51,946M [src:MCD-10K-FY2025#p15]"}
+    note: "Thesis breaker B2 of the dossier. FY2015 reading 13.8% ($4,361M ÷ $31,639M [src:MCD-10K-FY2015#p18][src:MCD-10K-FY2015#p19])."
+  - id: MCD-Q7
+    type: quantitative
+    claim: "Company-reported after-tax return on invested capital stays well above its cost"
+    origin: "archive:breaker"
+    severity: breaker
+    covers: [returns_on_capital, moat]
+    pillar: P4
+    effective_from: FY2026Q3
+    metric_def:
+      id: roic_company_reported
+      description: "After-tax return on invested capital as reported by the company"
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: "10-K MD&A 'Total assets and return' section; computation in 10-K Exhibit 99.1 (Computation of Ratios)"
+    fail_if: "below 15.0% in two consecutive fiscal years"
+    rule: {op: "<", threshold: 15.0, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    baseline: {value: 20.3, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p22", note: "25.2% in FY2023 and 21.8% in FY2024 [src:MCD-10K-FY2025#p22]"}
+    note: "Thesis breaker B3 of the dossier. The calculation basis sits in Exhibit 99.1, which has not been seen (see todo); a change of basis by the company is a candidate for a false trigger and must be shown with primary evidence."
+  - id: MCD-Q8
+    type: quantitative
+    claim: "The dividend per share is not cut"
+    origin: "archive:breaker"
+    severity: breaker
+    covers: [capital_allocation, free_cash_flow]
+    pillar: P5
+    effective_from: FY2026Q3
+    metric_def:
+      id: dividends_declared_per_share
+      description: "Dividends declared per share for the fiscal year"
+      unit: USD
+      frequency: year
+      data: filing_text
+      where: "10-K 'Share repurchases and dividends' table"
+    fail_if: "lower than for the prior fiscal year"
+    rule: {op: decrease, threshold: 0, unit: USD, consecutive: 1, period: year, note: "Fails on any year-on-year decline; an unchanged amount does not fail."}
+    data: filing_text
+    baseline: {value: 7.17, unit: USD, period: FY2025, source: "MCD-10K-FY2025#p21"}
+    note: "Thesis breaker B4 of the dossier."
+  - id: MCD-L2
+    type: qualitative
+    claim: "The balance sheet keeps its investment-grade standing"
+    origin: "archive:breaker"
+    severity: breaker
+    covers: [balance_sheet]
+    pillar: P5
+    effective_from: FY2026Q3
+    question: "What long-term debt ratings from Standard & Poor's and from Moody's does this filing disclose for McDonald's?"
+    fail_if: "The S&P rating is below BBB, or the Moody's rating is below Baa2"
+    judge: independent_model
+    evidence: required
+    where: ["10-K MD&A 'Financing and market risk' section"]
+    lookback: 1
+    judge_notes:
+      - "S&P scale from higher to lower: AAA, AA+, AA, AA-, A+, A, A-, BBB+, BBB, BBB-, BB+ and lower; BBB- and anything lower is below BBB."
+      - "Moody's scale from higher to lower: Aaa, Aa1, Aa2, Aa3, A1, A2, A3, Baa1, Baa2, Baa3, Ba1 and lower; Baa3 and anything lower is below Baa2."
+      - "A change of outlook or a review for downgrade does not by itself change the rating."
+      - "If the filing does not disclose a rating from one agency, answer 'not disclosed' for that agency; that alone does not fail the test."
+    baseline: {value: "BBB+ (S&P), Baa1 (Moody's)", period: FY2025, source: "MCD-10K-FY2025#p22"}
+    note: "Thesis breaker B5 of the dossier."
+  - id: MCD-Q9
+    type: quantitative
+    claim: "U.S. comparable sales stay positive"
+    origin: "archive:watch"
+    severity: watch
+    covers: [pricing_power, moat, competition]
+    pillar: P3
+    effective_from: FY2026Q3
+    metric_def:
+      id: us_comparable_sales
+      description: "U.S. comparable sales change, as reported by the company"
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: "Earnings release 8-K Exhibit 99.1 'Comparable sales' table (U.S.); 10-K MD&A 'Revenues' section"
+    fail_if: "fiscal year below 0.0%, or two consecutive quarters below 0.0%"
+    rule:
+      any_of:
+        - {op: "<", threshold: 0.0, unit: "%", consecutive: 1, period: year}
+        - {op: "<", threshold: 0.0, unit: "%", consecutive: 2, period: quarter}
+    warn_if: "fiscal year below +2.0%"
+    warn_rule: {op: "<", threshold: 2.0, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 2.1, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p14", note: "FY2026Q2 +0.8% [src:MCD-8K-2026-08-04#EX-99.1-p2]"}
+    note: "Dashboard indicator 1 of the dossier."
+  - id: MCD-Q10
+    type: quantitative
+    claim: "U.S. restaurant-level economics do not deteriorate further"
+    origin: "archive:watch"
+    severity: watch
+    covers: [unit_economics, moat]
+    pillar: P3
+    effective_from: FY2026Q3
+    metric_def:
+      id: us_company_operated_margin
+      description: "U.S. company-owned and operated margins ÷ U.S. company-owned and operated sales"
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      formula: "us_co_margin / us_co_sales"
+      where: "10-K / 10-Q MD&A 'Restaurant margins' and 'Revenues' tables"
+      components:
+        us_co_margin:
+          description: "U.S. company-owned and operated margins"
+          unit: USD
+          where: "10-K / 10-Q MD&A 'Restaurant margins' table"
+        us_co_sales:
+          description: "U.S. sales by company-owned and operated restaurants"
+          unit: USD
+          where: "10-K / 10-Q MD&A 'Revenues' table"
+    fail_if: "fiscal year below 10.0%"
+    rule: {op: "<", threshold: 10.0, unit: "%", consecutive: 1, period: year}
+    warn_if: "fiscal year below 12.0%"
+    warn_rule: {op: "<", threshold: 12.0, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 11.6, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p15", note: "$360M [src:MCD-10K-FY2025#p15] ÷ $3,115M [src:MCD-10K-FY2025#p14]; FY2026Q1–Q2 10.0% ($151M ÷ $1,513M [src:MCD-10Q-FY2026Q2#p27][src:MCD-10Q-FY2026Q2#p24])"}
+    note: "Dashboard indicator 2 of the dossier: the nearest disclosed proxy for franchisee restaurant economics, since franchisee profitability is not disclosed. Read quarterly; the thresholds are judged on the fiscal year."
+  - id: MCD-Q11
+    type: quantitative
+    claim: "The franchised margin holds"
+    origin: "archive:watch"
+    severity: watch
+    covers: [unit_economics, pricing_power]
+    pillar: P1
+    effective_from: FY2026Q3
+    metric_def:
+      id: franchised_margin_pct
+      description: "Franchised margins ÷ revenues from franchised restaurants (total company)"
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      formula: "franchised_margins / franchised_revenues"
+      where: "10-K / 10-Q MD&A 'Restaurant margins' and 'Revenues' tables"
+      components:
+        franchised_margins:
+          description: "Franchised margins, total company"
+          unit: USD
+          where: "10-K / 10-Q MD&A 'Restaurant margins' table"
+        franchised_revenues:
+          description: "Revenues from franchised restaurants, total company"
+          unit: USD
+          where: "Income statement or MD&A 'Revenues' table"
+    fail_if: "fiscal year below 80.0%"
+    rule: {op: "<", threshold: 80.0, unit: "%", consecutive: 1, period: year}
+    warn_if: "fiscal year outside 82.0%–86.0%"
+    warn_rule: {op: outside, threshold: [82.0, 86.0], unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 84.2, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p15", note: "$13,930M [src:MCD-10K-FY2025#p15] ÷ $16,548M [src:MCD-10K-FY2025#p39]; FY2026Q1–Q2 83.9% [src:MCD-10Q-FY2026Q2#p24][src:MCD-10Q-FY2026Q2#p27]"}
+    note: "Dashboard indicator 3 of the dossier. Read quarterly; the thresholds are judged on the fiscal year."
+  - id: MCD-Q12
+    type: quantitative
+    claim: "Systemwide sales keep growing in constant currency"
+    origin: "archive:watch"
+    severity: watch
+    covers: [growth]
+    pillar: P2
+    effective_from: FY2026Q3
+    metric_def:
+      id: systemwide_sales_growth_cc
+      description: "Year-on-year growth of systemwide sales (sales at all company-operated and franchised restaurants) excluding currency translation, as reported by the company"
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: "10-Q / 10-K MD&A 'Systemwide sales' table (constant-currency column)"
+    fail_if: "fiscal year below +2%"
+    rule: {op: "<", threshold: 2, unit: "%", consecutive: 1, period: year}
+    warn_if: "fiscal year below +4%"
+    warn_rule: {op: "<", threshold: 4, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 5, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p14", note: "FY2026Q1–Q2 +5% [src:MCD-10Q-FY2026Q2#p25]"}
+    note: "Dashboard indicator 4 of the dossier."
+  - id: MCD-Q13
+    type: quantitative
+    claim: "The restaurant base keeps expanding"
+    origin: "archive:watch"
+    severity: watch
+    covers: [growth]
+    pillar: P2
+    effective_from: FY2026Q3
+    metric_def:
+      id: net_restaurant_growth
+      description: "Systemwide restaurants at fiscal year-end ÷ systemwide restaurants at prior fiscal year-end − 1"
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: "10-K MD&A 'Systemwide restaurants at year end' table"
+    fail_if: "fiscal year below 2.5%"
+    rule: {op: "<", threshold: 2.5, unit: "%", consecutive: 1, period: year}
+    warn_if: "fiscal year below 3.5%"
+    warn_rule: {op: "<", threshold: 3.5, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 4.3, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p20", note: "45,356 ÷ 43,477 − 1 [src:MCD-10K-FY2025#p20]"}
+    note: "Dashboard indicator 5 of the dossier."
+  - id: MCD-Q14
+    type: quantitative
+    claim: "Earnings convert to free cash flow despite the higher capital program"
+    origin: "archive:watch"
+    severity: watch
+    covers: [free_cash_flow, capital_allocation]
+    pillar: P5
+    effective_from: FY2026Q3
+    metric: fcf_conversion
+    fail_if: "fiscal year below 75%"
+    rule: {op: "<", threshold: 75, unit: "%", consecutive: 1, period: year}
+    warn_if: "fiscal year below 80%"
+    warn_rule: {op: "<", threshold: 80, unit: "%", consecutive: 1, period: year}
+    data: xbrl
+    baseline: {value: 84, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p19"}
+    note: "Dashboard indicator 6 of the dossier. The company defines FCF conversion as free cash flow ÷ net income, the same as the registry metric; the dossier reads the company-reported figure in the 10-K MD&A Cash Flows section. FY2026 guidance is low-to-mid 80% [src:MCD-10Q-FY2026Q2#p31]."
+  - id: MCD-Q15
+    type: quantitative
+    claim: "Company-reported return on invested capital holds near its recent level"
+    origin: "archive:watch"
+    severity: watch
+    covers: [returns_on_capital, capital_allocation]
+    pillar: P4
+    effective_from: FY2026Q3
+    metric_def:
+      id: roic_company_reported
+      description: "After-tax return on invested capital as reported by the company"
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: "10-K MD&A 'Total assets and return' section; computation in 10-K Exhibit 99.1 (Computation of Ratios)"
+    fail_if: "fiscal year below 16.0%"
+    rule: {op: "<", threshold: 16.0, unit: "%", consecutive: 1, period: year}
+    warn_if: "fiscal year below 18.0%"
+    warn_rule: {op: "<", threshold: 18.0, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 20.3, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p22"}
+    note: "Dashboard indicator 7 of the dossier."
+  - id: MCD-Q16
+    type: quantitative
+    claim: "Operating cash flow keeps covering the debt load"
+    origin: "archive:watch"
+    severity: watch
+    covers: [balance_sheet]
+    pillar: P5
+    effective_from: FY2026Q3
+    metric_def:
+      id: cfo_to_total_debt_company
+      description: "Cash provided by operations as a percentage of total debt, as reported by the company"
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: "10-K MD&A 'Debt highlights' table"
+    fail_if: "fiscal year below 18%"
+    rule: {op: "<", threshold: 18, unit: "%", consecutive: 1, period: year}
+    warn_if: "fiscal year below 22%"
+    warn_rule: {op: "<", threshold: 22, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 26, unit: "%", period: FY2025, source: "MCD-10K-FY2025#p22", note: "17% in FY2020 [src:MCD-10K-FY2020#p22]; 27% in FY2015 [src:MCD-10K-FY2015#p24]"}
+    note: "Dashboard indicator 8 of the dossier."
+todo:
+  - "Obtain 10-K Exhibit 99.1 (Computation of Ratios) to confirm the calculation basis of the company-reported ROIC used by MCD-Q7 and MCD-Q15 (treatment of leases, cash and equity-method stakes)."
+  - "Comparable guest counts are given by direction only in the FY2026Q2 filings [src:MCD-10Q-FY2026Q2#p19]; if a numeric U.S. guest-count figure is disclosed, propose a watch test on it, since traffic is the dossier's main moat-erosion signal."
+  - "The share of systemwide delivery sales ordered through the company's own app is not disclosed; when it is, propose a reading for the delivery-platform erosion path."
+  - "The dossier's structural-moat judgment (0.70) and U.S. traffic-recovery judgment (0.45) are not entered as ledger predictions: neither has a decidable criterion in current disclosures."
+  - "Historical commitments in the dossier's said-vs-happened table (FY2015 10-K refranchising and cash-return targets, the 2016 net-addition target, the FY2021 outlook) are not in ledger.yml because the filing dates of the FY2015 and FY2020 10-Ks are not in the supplied materials; add them once those dates are registered in sources.yml."
+  - "Pre-registration candidate: statement=Constant-currency systemwide sales growth averages at least 4% a year over FY2026–FY2028; probability=0.65; criterion=arithmetic mean of the company-reported constant-currency systemwide sales growth for FY2026, FY2027 and FY2028 is 4.0% or higher; data_source=10-K MD&A 'Systemwide sales' table for each year; horizon=FY2028 10-K; domain=consumer; reference=MCD-10K-FY2025#p14"
+  - "Pre-registration candidate: statement=Systemwide restaurants number at least 50,000 at the end of FY2028; probability=0.85; criterion=total systemwide restaurants at FY2028 year-end is 50,000 or more; data_source=FY2028 10-K MD&A 'Systemwide restaurants at year end' table; horizon=FY2028 10-K; domain=consumer; reference=MCD-10Q-FY2026Q2#p31"
+  - "Pre-registration candidate: statement=Company-defined FCF conversion is below 90% in both FY2026 and FY2027; probability=0.75; criterion=company-reported free cash flow ÷ net income is below 90% for FY2026 and for FY2027; data_source=FY2026 and FY2027 10-K MD&A Cash Flows section; horizon=FY2027 10-K; domain=consumer; reference=MCD-10Q-FY2026Q2#p31"
