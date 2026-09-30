@@ -135,6 +135,38 @@ def build_selection(filings: Sequence[edgar.Filing], events: Sequence[edgar.Earn
     return picks
 
 
+VALUATION_SOURCES_TOKENS = 380_000  # 01C's documents: the valuation also carries the dossier and xbrl_facts
+VALUATION_HISTORY_YEARS = 9  # MD&A of the annual reports this many years back: each explains its year's changes
+
+
+def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date) -> list[Pick]:
+    """The filings 01C checks its readings against (04C: a cause given for a past decline must be established from a
+    primary filing): the latest annual report and the latest quarterly report in full, then the MD&A of each earlier
+    annual report, newest first, so that every year of the ten-year record has the filing that explains it."""
+    known = [f for f in filings if f.filing_date <= as_of]
+    annual = sorted((f for f in known if f.form in ANNUAL_FORMS and not f.form.endswith("/A")),
+                    key=lambda f: (f.report_date or f.filing_date, f.filing_date))
+    if not annual:
+        return []
+    latest = annual[-1]
+    picks = [Pick(documents.Selection(latest, True, False, frozenset(), documents.ANNUAL_REPORT, None),
+                  "the latest annual report, in full")]
+    quarterly = sorted((f for f in known if f.form == "10-Q" and f.filing_date > latest.filing_date),
+                       key=lambda f: f.filing_date)
+    if quarterly:
+        picks.append(Pick(documents.Selection(quarterly[-1], True, False, frozenset(), documents.QUARTERLY_REPORT, None),
+                          "the latest quarterly report, in full"))
+    by_year = {f.report_date.year: f for f in annual if f.report_date is not None}
+    year = (latest.report_date or latest.filing_date).year
+    for back in range(1, VALUATION_HISTORY_YEARS + 1):
+        older = by_year.get(year - back)
+        if older is not None:
+            picks.append(Pick(documents.Selection(older, True, False, frozenset(), documents.ANNUAL_REPORT,
+                                                  frozenset({"mdna"})),
+                              f"the annual report for fiscal {year - back}: MD&A (the causes of that year's changes)"))
+    return picks
+
+
 def within_budget(picks: Sequence[Any], cost: Callable[[Any], int], budget: int = SOURCES_TOKENS
                   ) -> tuple[list[Any], list[Any]]:
     """The picks that fit in `budget`, taken in order (a later, smaller one may still fit), and those left out."""

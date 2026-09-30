@@ -260,3 +260,11 @@ def test_each_year_end_close_comes_with_that_days_ten_year_treasury_yield(env, m
     assert "missing" in rows[-1]["treasury_10y"]
     assert {s["tag"] for s in built.sources if s["kind"] == "treasury"} == {
         "UST-PARYIELD-2025-12-31", "UST-PARYIELD-2024-12-31", "UST-PARYIELD-2023-12-31", "UST-PARYIELD-2022-12-31"}
+
+
+def test_the_valuation_checks_its_readings_against_the_latest_reports_and_each_earlier_years_mdna():
+    picks = archive.valuation_selection(FILINGS, as_of=dt.date(2026, 9, 28))
+    assert [(p.selection.filing.accession, p.selection.sections) for p in picks] == [
+        ("a-10k-2025", None), ("a-10q-q2", None),  # in full
+        ("a-10k-2020", frozenset({"mdna"}))]  # nine years back at most: the 2015 report is ten
+    assert archive.valuation_selection([], as_of=dt.date(2026, 9, 28)) == []

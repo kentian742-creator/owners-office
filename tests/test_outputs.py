@@ -396,3 +396,18 @@ def test_prose_needs_a_source_tag_for_every_fact_number_and_01b_cites_only_the_d
     errors = outputs.cited_tag_errors("01B", {"dossier": dossier.text}, {"ledger": ledger})
     assert errors == ["ledger: source MCD-DOSSIER-2026-09-30 is not a source the dossier cites; cite the filing the "
                       "dossier cites for that fact instead (the dossier is private and cannot be cited)"]
+
+
+def test_a_model_review_returns_exactly_when_a_finding_is_must_fix():
+    def reply(decision, *groups):
+        findings = [{"id": f"04C-{i}", "group": g} for i, g in enumerate(groups, 1)]
+        return {"valuation_decision": outputs.ParsedOutput("valuation_decision", outputs.YAML, "", decision),
+                "findings": outputs.ParsedOutput("findings", outputs.YAML, "", findings)}
+
+    assert outputs.decision_errors(reply({"decision": "returned"}, "must fix", "should fix")) == []
+    assert outputs.decision_errors(reply("approved", "should fix", "no change")) == []
+    returned = outputs.decision_errors(reply({"decision": "returned"}, "should fix"))
+    assert returned and returned[0].startswith("valuation_decision:") and "'findings'" in returned[0]
+    assert "04C-2" in outputs.decision_errors(reply("approved", "should fix", "Must-fix"))[0]
+    assert "approved or returned" in outputs.decision_errors(reply("maybe", "should fix"))[0]
+    assert outputs.coverage_errors("04C", {}, reply("returned", "should_fix")) == returned

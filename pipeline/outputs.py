@@ -720,6 +720,8 @@ def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str
     errors = prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed)
     if errors:
         return errors
+    if part_id == "04C":
+        return decision_errors(parsed)
     if part_id != "04A" or "fact_table" not in inputs or "fact_verdicts" not in parsed:
         return []
     from . import slicing
@@ -734,6 +736,39 @@ def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str
     verdicts = parsed["fact_verdicts"]
     rows = verdicts.data if not verdicts.empty and isinstance(verdicts.data, list) else []
     return slicing.verdict_coverage(ids, rows)
+
+
+VALUATION_DECISIONS = ("approved", "returned")
+MUST_FIX = "must fix"
+
+
+def _group(value: Any) -> str:
+    return re.sub(r"[\s_-]+", " ", str(value or "")).strip().lower()
+
+
+def decision_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """04C: a proposed valuation is returned exactly when a finding is in the group "must fix" (04C's conclusion rule:
+    only should-fix items means approved). A reply whose decision and findings disagree says two things at once."""
+    decision = parsed.get("valuation_decision")
+    if decision is None or decision.empty:
+        return []
+    data = decision.data
+    if isinstance(data, dict):
+        data = data.get("valuation_decision", data.get("decision"))
+    word = str(data or "").strip().lower()
+    if word not in VALUATION_DECISIONS:
+        return [f"valuation_decision: must be approved or returned (as the value, or under the key valuation_decision), "
+                f"not {data!r}"]
+    found = parsed.get("findings")
+    rows = found.data if found is not None and not found.empty and isinstance(found.data, list) else []
+    must = [str(r.get("id")) for r in rows if isinstance(r, dict) and _group(r.get("group")) == MUST_FIX]
+    if word == "returned" and not must:
+        return ["valuation_decision: returned, but no item of 'findings' is in the group \"must fix\". Only a must-fix "
+                "item returns a proposed version: put the item that requires it in \"must fix\", or approve"]
+    if word == "approved" and must:
+        return [f"valuation_decision: approved, but 'findings' has must-fix items ({', '.join(must)}). A must-fix item "
+                "returns the proposed version: return it, or move the items to \"should fix\" if they do not require it"]
+    return []
 
 
 def _cap(errors: list[str]) -> list[str]:

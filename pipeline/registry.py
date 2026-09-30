@@ -1758,6 +1758,8 @@ def _filings(ctx: RunContext, name: str) -> BuiltInput:
     """The documents of this earnings event: the results release (8-K EX-99 exhibits, or the results 6-K) and the
     10-Q or 10-K once filed. Call transcripts are not on EDGAR (STATUS T17)."""
     company = _need_company(ctx, name)
+    if ctx.step.step == "01C":
+        return _valuation_filings(ctx, name)
     results = ctx.results()
     if not results.documents:
         raise MissingInput(f"EDGAR returned no readable document for {company} {results.period}")
@@ -2552,6 +2554,37 @@ def _build_sources(ctx: RunContext, name: str) -> BuiltInput:
     return BuiltInput(text, "txt", table_sources + doc_sources,
                       note=f"{len(kept)} filing(s), {len(docs)} document(s)"
                            + (f"; {len(left)} left out over the budget" if left else ""))
+
+
+def _valuation_filings(ctx: RunContext, name: str) -> BuiltInput:
+    """01C: the filings its readings are checked against (archive.valuation_selection), within
+    archive.VALUATION_SOURCES_TOKENS: a cause the valuation gives for a past decline must be established from one."""
+    company = _need_company(ctx, name)
+    filer = ctx.filer()
+    gateway = ctx.gateway()
+    subs = edgar.submissions(filer.cik, client=gateway.client)
+    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    known = known_filing_tags((ctx.public_root, ctx.private_root), company)
+    fetched = []
+    for pick in archive.valuation_selection(subs.filings, as_of=ctx.run_date):
+        docs = gateway.selection_documents(pick.selection, ticker=company, cal=cal, subs=subs, known_tags=known)
+        if docs:
+            fetched.append((pick, docs, slicing.estimate_tokens(render_documents([], docs)[0])))
+    if not fetched:
+        raise MissingInput(f"{name}: EDGAR returned no annual report for {company} up to {ctx.run_date}")
+    kept, left = archive.within_budget(fetched, lambda item: item[2], archive.VALUATION_SOURCES_TOKENS)
+    lines = [f"Filings of {company} for checking the valuation's readings, from EDGAR as of {ctx.run_date}:"]
+    lines += [f"- {pick.reason}: {pick.selection.filing.form} filed {pick.selection.filing.filing_date} "
+              f"(accession {pick.selection.filing.accession}), about {tokens:,} tokens" for pick, _, tokens in kept]
+    if left:
+        lines.append(f"Not supplied, over the input budget of {archive.VALUATION_SOURCES_TOKENS:,} tokens: " + "; ".join(
+            f"{pick.reason} ({pick.selection.filing.form} filed {pick.selection.filing.filing_date})"
+            for pick, _, _ in left) + ".")
+    lines += [CITE_NOTE, ""]
+    docs = sorted((d for _, found, _ in kept for d in found), key=_filing_order)
+    text, sources = render_documents(lines, docs)
+    return BuiltInput(text, "txt", sources, note=f"{len(kept)} filing(s), {len(docs)} document(s)"
+                                                 + (f"; {len(left)} left out over the budget" if left else ""))
 
 
 @assembler("xbrl_facts")
