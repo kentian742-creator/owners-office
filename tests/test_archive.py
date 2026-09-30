@@ -268,3 +268,23 @@ def test_the_valuation_checks_its_readings_against_the_latest_reports_and_each_e
         ("a-10k-2025", None), ("a-10q-q2", None),  # in full
         ("a-10k-2020", frozenset({"mdna"}))]  # nine years back at most: the 2015 report is ten
     assert archive.valuation_selection([], as_of=dt.date(2026, 9, 28)) == []
+
+
+
+
+def test_mdna_of_a_10k_laid_out_with_a_cross_reference_index_is_found_by_its_title():
+    body = "\n".join(f"Operating income fell 9% in 2022 because of the Russia exit charge, line {i}." for i in range(60))
+    text = "\n".join([
+        "Management's Discussion and Analysis of Financial Condition and Results of Operations",  # contents
+        "Financial Statements and Supplementary Data",
+        "MANAGEMENT'S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS",  # the body
+        body,
+        "Financial Statements and Supplementary Data",
+        "Consolidated Statement of Income",
+        "Revenues 23,183",
+        "Item 7 Management’s Discussion and Analysis of Financial Condition and Results of Operations Pages 8-37",
+        "Item 7A Quantitative and Qualitative Disclosures About Market Risk Pages 22-23",
+    ])
+    out, found, missing = documents.extract_sections(text, "10-K", frozenset({"mdna"}))
+    assert found == ["mdna"] and missing == [] and "Russia exit charge, line 59." in out
+    assert "Revenues 23,183" not in out and "Pages 8-37" not in out

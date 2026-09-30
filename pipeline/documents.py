@@ -400,6 +400,10 @@ ITEM_OF: dict[str, dict[str, tuple[str | None, str]]] = {
 SECTION_TITLES = {"mdna": re.compile(r"management['\u2019]s discussion and analysis|operating and financial review", re.I),
                   "risk_factors": re.compile(r"^(?:item\s+\w+\W+)?risk factors", re.I),
                   "legal_proceedings": re.compile(r"^(?:item\s+\w+\W+)?legal proceedings", re.I)}
+# Where a section found by its title ends, besides the next item heading: a filing laid out with a cross-reference
+# index (McDonald's 10-K) has no "Item 7" / "Item 8" headings in its body, only these titles.
+SECTION_ENDS = {"mdna": re.compile(r"(?:item\s*8\b.*|financial statements and supplementary data)[.:]?", re.I)}
+MIN_SECTION_CHARS = 2_000  # an item "section" shorter than this is a table-of-contents or index entry, not the body
 SECTION_LABELS = {"mdna": "MD&A", "risk_factors": "risk factors", "legal_proceedings": "legal proceedings",
                   "business": "business", "financial_statements": "financial statements and notes"}
 _ITEM_LINE_RE = re.compile(r"^\s*ITEM\s+(\d{1,2}[A-Z]?)\s*[.:\u2013\u2014-]?\s*(.*)$", re.I)
@@ -460,13 +464,21 @@ def _item_span(lines: Sequence[str], heads: Sequence[_Heading], part: str | None
     return _longest(candidates)
 
 
-def _title_span(lines: Sequence[str], heads: Sequence[_Heading], title: re.Pattern[str]) -> tuple[int, int, str] | None:
+def _title_span(lines: Sequence[str], heads: Sequence[_Heading], title: re.Pattern[str],
+                ends: re.Pattern[str] | None = None) -> tuple[int, int, str] | None:
     starts = [i for i, line in enumerate(lines) if len(line) <= 150 and title.search(line.strip())]
     candidates = []
     for start in starts:
         end = next((h.line for h in heads if h.line > start), len(lines))
+        if ends is not None:
+            end = next((i for i in range(start + 1, end) if len(lines[i]) <= 150 and ends.fullmatch(lines[i].strip())),
+                       end)
         candidates.append((start, end, lines[start].strip()))
     return _longest(candidates)
+
+
+def _chars(lines: Sequence[str], span: tuple[int, int, str] | None) -> int:
+    return sum(len(line) for line in lines[span[0] + 1:span[1]]) if span else 0
 
 
 def _note_span(lines: Sequence[str], heads: Sequence[_Heading], title: re.Pattern[str]) -> tuple[int, int, str] | None:
@@ -506,8 +518,9 @@ def extract_sections(text: str, form: str, wanted: frozenset[str]) -> tuple[str,
             return found or span_of("financial_statements")
         where = ITEM_OF.get(family or "", {}).get(key)
         span = _item_span(lines, heads, *where) if where else None
-        if span is None and key in SECTION_TITLES:
-            span = _title_span(lines, heads, SECTION_TITLES[key])
+        if _chars(lines, span) < MIN_SECTION_CHARS and key in SECTION_TITLES:
+            titled = _title_span(lines, heads, SECTION_TITLES[key], SECTION_ENDS.get(key))
+            span = max((c for c in (span, titled) if c), key=lambda c: _chars(lines, c), default=None)
         return span
 
     for key in sorted(wanted):
