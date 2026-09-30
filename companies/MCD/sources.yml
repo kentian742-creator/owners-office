@@ -1,0 +1,74 @@
+sources:
+  - tag: MCD-10K-FY2015
+    kind: filing
+    title: McDonald's Corporation annual report on Form 10-K for fiscal year 2015
+    issuer_cik: 0000063908
+    form: 10-K
+    period: FY2015
+    accession: 0000063908-16-000103
+    filed: '2016-02-25'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390816000103/mcd-12312015x10k.htm
+    primary: true
+    note: Business and MD&A sections supplied; the p33 cash-flow figures are taken from the 04A audit evidence.
+  - tag: MCD-10K-FY2020
+    kind: filing
+    title: McDonald's Corporation annual report on Form 10-K for fiscal year 2020
+    issuer_cik: 0000063908
+    form: 10-K
+    period: FY2020
+    accession: 0000063908-21-000013
+    filed: '2021-02-23'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390821000013/mcd-20201231.htm
+    primary: true
+  - tag: MCD-10K-FY2025
+    kind: filing
+    title: McDonald's Corporation annual report on Form 10-K for fiscal year 2025
+    issuer_cik: 0000063908
+    form: 10-K
+    period: FY2025
+    accession: 0000063908-26-000035
+    filed: '2026-02-24'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390826000035/mcd-20251231.htm
+    primary: true
+  - tag: MCD-DEF14A-2026-04-07
+    kind: filing
+    title: McDonald's Corporation definitive proxy statement for the 2026 annual shareholders' meeting
+    issuer_cik: 0000063908
+    form: DEF 14A
+    period: FY2025
+    accession: 0001193125-26-145548
+    filed: '2026-04-07'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000119312526145548/mcd-20260407.htm
+    primary: true
+  - tag: MCD-8K-2026-08-04
+    kind: filing
+    title: McDonald's Corporation current report on Form 8-K (Items 2.02, 9.01), second-quarter 2026 results with
+      Exhibits 99.1 and 99.2
+    issuer_cik: 0000063908
+    form: 8-K
+    period: FY2026Q2
+    accession: 0000063908-26-000067
+    filed: '2026-08-04'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390826000067/exhibit991-6302026.htm
+    primary: true
+    note: Locators EX-99.1-pN and EX-99.2-pN refer to the exhibit and its page.
+  - tag: MCD-8K-2026-08-04-2
+    kind: filing
+    title: McDonald's Corporation current report on Form 8-K (Items 5.02, 7.01, 9.01), McDonald's USA leadership change
+    issuer_cik: 0000063908
+    form: 8-K
+    period: null
+    accession: 0000063908-26-000069
+    filed: '2026-08-04'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390826000069/mcd-20260803.htm
+    primary: true
+  - tag: MCD-10Q-FY2026Q2
+    kind: filing
+    title: McDonald's Corporation quarterly report on Form 10-Q for the quarter ended June 30, 2026
+    issuer_cik: 0000063908
+    form: 10-Q
+    period: FY2026Q2
+    accession: 0000063908-26-000073
+    filed: '2026-08-07'
+    url: https://www.sec.gov/Archives/edgar/data/63908/000006390826000073/mcd-20260630.htm
+    primary: true
