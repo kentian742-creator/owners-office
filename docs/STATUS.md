@@ -36,7 +36,7 @@ From `pipeline.edgar next-release`: three calendar days before the earliest past
 | --- | --- | --- | --- | --- | --- |
 | AXP | candidate | FY2026Q3 | **2026-10-23, about 7:00 ET, announced** (release of 2026-09-23) | — | — |
 | MSFT | candidate | FY2027Q1 | 2026-10-21 | — | — |
-| SPGI | holding | FY2026Q3 | 2026-10-21 | 2026-10-20T23:59:59-04:00 | **2026-10-17T23:59:59-04:00** |
+| SPGI | holding | FY2026Q3 | **2026-10-27, about 7:15 ET, announced** (release of 2026-09-29) | 2026-10-26T23:59:59-04:00 | **2026-10-23T23:59:59-04:00** |
 | BRK | holding | FY2026Q3 | 2026-10-29 (estimate; the last three Q3 releases were Saturdays, 11-01 to 11-04) | 2026-10-28T23:59:59-04:00 | **2026-10-25T23:59:59-04:00** |
 | APP | holding | FY2026Q3 | 2026-11-02 | 2026-11-01T23:59:59-05:00 | 2026-10-30T00:59:59-04:00 |
 | MCD | candidate | FY2026Q3 | about 10-26 (last three Q3 releases 10-29 to 11-05) | — (no longer held, `decisions/0030`) | — |
