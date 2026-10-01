@@ -1,0 +1,163 @@
+company: BRK
+event:
+  period: FY2026Q3
+  expected_release: "2026-10-29"
+  form: 8-K
+  placeholder: true
+deadline: "2026-10-28T23:59:59-04:00"
+author: system
+horizon: mixed
+items:
+  - id: BRK-FY2026Q3-1
+    statement: GEICO's combined ratio for the third quarter of 2026 is higher than its combined ratio for the third quarter of 2025.
+    probability: 0.80
+    criterion: >-
+      Decided on the GEICO underwriting table in Item 2 (MD&A, Insurance—Underwriting) of Berkshire's 10-Q for the
+      quarter ended 2026-09-30. Use the row "Total losses and expenses", column "%", for the Third Quarter 2026 and Third
+      Quarter 2025. This figure is losses and LAE plus underwriting expenses as a percentage of premiums earned. Compare
+      the two figures as printed, to one decimal place. The item happened if the 2026 figure is strictly greater than
+      the 2025 figure. An equal figure counts as not happened. If the percentage column is not printed, compute
+      (losses and LAE + underwriting expenses) ÷ premiums earned from the dollar amounts in the same table, round to one
+      decimal place and compare. The 2025 comparative is the one printed in this 10-Q. If it differs from the figure in
+      the FY2025Q3 10-Q, the FY2026Q3 10-Q prevails and both are written down. No XBRL concept carries this segment
+      ratio, so the filing text decides. The item is recorded as undetermined if GEICO is no longer shown as a separate
+      underwriting table, or if the 10-Q has not been filed by 2026-11-30. For reference, the Q2 2026 figure was 91.2%
+      against 83.5% a year earlier, and the 1H26 figure was 89.3% against 81.7% [src:BRK-10Q-FY2026Q2#p34].
+    data_source: Berkshire 10-Q for the quarter ended 2026-09-30, Item 2 MD&A, Insurance—Underwriting, GEICO table (Third Quarter columns)
+    horizon: quarter
+    resolves_by: "2026-11-30"
+    domain: insurance_conglomerate
+    added_by: system
+    pillar: P2
+    falsifies_thesis: false
+    reference: >-
+      Reference class: GEICO's own recent quarters. In 2026, both quarters so far were worse than a year earlier by 7.5
+      to 7.7 points: Q1 was 87.3% against 79.8% and Q2 was 91.2% against 83.5% (computed from the 1H and Q2 columns)
+      [src:BRK-10Q-FY2026Q2#p34]. The comparison base is higher in the second half of 2025, which ran at 87.5% (FY2025
+      $37,657M over $44,481M less 1H25 $17,822M over $21,816M, own computation) [src:BRK-10K-FY2025#pK-36]
+      [src:BRK-10Q-FY2026Q2#p34]. That narrows the gap. Claims frequency and severity rose and commissions and
+      advertising rose 28% [src:BRK-10Q-FY2026Q2#p35]. Judgment starts at 0.85, set down to 0.80 for the higher
+      second-half 2025 base and for unknown Q3 catastrophe timing in both years.
+  - id: BRK-FY2026Q3-2
+    statement: Combined after-tax earnings of BNSF, BHE and manufacturing, service and retailing in the third quarter of 2026 are at least 5% higher than in the third quarter of 2025.
+    probability: 0.72
+    criterion: >-
+      Decided on the table of after-tax earnings by business in "Results of Operations" of Item 2 (MD&A) of Berkshire's
+      10-Q for the quarter ended 2026-09-30. Use the lines "BNSF", "Berkshire Hathaway Energy (“BHE”)" and
+      "Manufacturing, service and retailing", Third Quarter 2026 and Third Quarter 2025 columns, in USD millions as
+      printed. Growth = (sum of the three 2026 lines ÷ sum of the three 2025 lines) − 1, expressed in percent and
+      rounded to one decimal place. The item happened if growth ≥ 5.0%; 5.0% counts as happened. Make no adjustment for
+      acquisitions (Taylor Morrison and OxyChem are included as printed) or for the exclusion of acquisition accounting
+      expenses that Berkshire applies to the manufacturing, service and retailing line. These after-tax lines have no
+      XBRL concept, so the filing text decides. The same table in the 8-K Exhibit 99.1 is a cross-check: if it differs,
+      the 10-Q prevails and both are written down. The 2025 comparatives are those printed in this 10-Q, and restated
+      comparatives are used as restated. The item is recorded as undetermined if any of the three lines is no longer
+      reported separately, or if the 10-Q has not been filed by 2026-11-30. For reference, 1H26 was $12,609M against
+      $11,140M (+13.2%) and Q2 2026 was $6,919M against $5,769M (+19.9%) [src:BRK-10Q-FY2026Q2#p33].
+    data_source: Berkshire 10-Q for the quarter ended 2026-09-30, Item 2 MD&A, Results of Operations table of after-tax earnings (Third Quarter columns); 8-K Exhibit 99.1 as cross-check
+    horizon: quarter
+    resolves_by: "2026-11-30"
+    domain: insurance_conglomerate
+    added_by: system
+    pillar: P6
+    falsifies_thesis: false
+    reference: >-
+      Reference class: the year-on-year growth of these three lines in this company's recent quarters. Growth was +5.8%
+      for FY2025 [src:BRK-10K-FY2025#pK-34], +13.2% for 1H26 and +19.9% for Q2 2026 [src:BRK-10Q-FY2026Q2#p33]. The
+      materials give no longer quarterly series, so the frequency cannot be verified from them. Judgment starts at 0.80
+      and is set down to 0.72 for three reasons. Q2 2026 benefited from tariff refunds that do not recur, and IMC
+      expects second-half pressure from raw material costs [src:BRK-10Q-FY2026Q2#p44]. The Q3 2025 base by line is not
+      in the materials.
+  - id: BRK-FY2026Q3-3
+    statement: In FY2027 the combined ratio of Berkshire's property and casualty businesses, retroactive reinsurance excluded, is at or below 100%.
+    probability: 0.88
+    criterion: >-
+      Decided on the underwriting tables in Item 7 (MD&A, Insurance—Underwriting) of Berkshire's 10-K for FY2027. Use
+      the GEICO table, the BH Primary table and the BHRG property/casualty table, which excludes retroactive
+      reinsurance, life/health, periodic payment annuity and variable annuity. Combined ratio = (sum of losses and LAE
+      plus underwriting expenses of the three tables) ÷ (sum of premiums earned of the three tables), for calendar year
+      2027, in percent, rounded to one decimal place. The item happened if the result is ≤ 100.0%; 100.0% counts as
+      happened. Figures are used as printed in the FY2027 10-K, including any restated amounts. A figure the company
+      states in its letter to shareholders is written down for comparison but does not decide the item. These segment
+      amounts have no XBRL concept, so the filing text decides. If the presentation changes so that property/casualty
+      reinsurance can no longer be separated from retroactive reinsurance, the item is recorded as undetermined and
+      sent to HQ. It is also recorded as undetermined if the FY2027 10-K has not been filed by 2028-03-31. For
+      reference, FY2025 on this method was 87.1% ($72,854M over $83,633M) [src:BRK-10K-FY2025#pK-36]
+      [src:BRK-10K-FY2025#pK-37] [src:BRK-10K-FY2025#pK-38]. 1H26 was 88.2% ($36,748M over $41,682M)
+      [src:BRK-10Q-FY2026Q2#p34] [src:BRK-10Q-FY2026Q2#p35] [src:BRK-10Q-FY2026Q2#p36].
+    data_source: Berkshire 10-K for FY2027, Item 7 MD&A, Insurance—Underwriting tables for GEICO, BH Primary and BHRG property/casualty
+    horizon: 18m
+    resolves_by: "2028-02-29"
+    domain: insurance_conglomerate
+    added_by: system
+    pillar: P1
+    falsifies_thesis: true
+    reference: >-
+      Reference class: this company's own property and casualty record. The company gives a 20-year average of 92.2%,
+      a ten-year average of 93.0% and a five-year average of 90.7% [src:BRK-LTR-2025#p9]. On the broader basis that
+      includes retroactive and annuity business, after-tax underwriting was negative in one of the eleven years
+      2015–2025 (2017) [src:BRK-RPT1-2026-09-18#p4]. That gives a starting point near 0.91 for a single year at or
+      below 100%. It is set down to 0.88 because GEICO's ratio is rising [src:BRK-10Q-FY2026Q2#p34] and several
+      primary and reinsurance units are shrinking property volumes in a softer market [src:BRK-10Q-FY2026Q2#p35]
+      [src:BRK-10Q-FY2026Q2#p36].
+  - id: BRK-FY2026Q3-4
+    statement: Over FY2026 and FY2027 together, cash paid for acquisitions of businesses plus net purchases of equity securities is at least half of operating cash flow.
+    probability: 0.70
+    criterion: >-
+      Decided on the consolidated statements of cash flows in Berkshire's 10-K for FY2027, using its 2027 and 2026
+      columns. If those differ from the FY2026 10-K, the FY2027 10-K prevails and both are written down. Numerator: the
+      sum over 2026 and 2027 of "Acquisitions of businesses, net of cash acquired" plus "Purchases of equity securities"
+      minus "Sales of equity securities". Net purchases can be negative and are counted as they fall. Denominator: the
+      sum over 2026 and 2027 of "Net cash flows from operating activities". Buybacks, capital expenditure, Treasury bill
+      and fixed-maturity transactions, loans and "Other" lines are excluded. Ratio = numerator ÷ denominator, in percent,
+      rounded to one decimal place. The item happened if the ratio is ≥ 50.0%. The XBRL values tagged to these line
+      items are used first; if they disagree with the printed statement, both are written down and the printed
+      statement of the FY2027 10-K decides. The item is recorded as undetermined if the denominator is zero or
+      negative, if a line is renamed so that the mapping is not one-to-one (sent to HQ), or if the FY2027 10-K has not
+      been filed by 2028-03-31. For reference, 1H26 was $9,704M of acquisitions plus $39,405M of purchases minus
+      $27,780M of sales, over $21,653M of operating cash flow, which is 98.5% [src:BRK-10Q-FY2026Q2#p7]. The Taylor
+      Morrison acquisition for about $6.8B in cash closed on 2026-07-24 [src:BRK-10Q-FY2026Q2#p8].
+    data_source: Berkshire 10-K for FY2027, consolidated statements of cash flows (2027 and 2026 columns); FY2026 10-K as cross-check
+    horizon: 18m
+    resolves_by: "2028-02-29"
+    domain: insurance_conglomerate
+    added_by: system
+    pillar: P3
+    falsifies_thesis: true
+    reference: >-
+      Reference class: this company's own record of net equity buying and selling. Berkshire was a net seller of
+      equities for fourteen consecutive quarters, from Q4 2022 to Q1 2026 [src:BRK-RPT1-2026-09-18#p8], so the two-year
+      windows covering 2023–2025 sat well below the line. The materials do not give the full series, so the frequency
+      cannot be verified from them. Judgment starts at 0.55. It is raised to 0.70 because 1H26 already ran at 98.5%
+      [src:BRK-10Q-FY2026Q2#p7] and the $6.8B Taylor Morrison payment falls in 2026 [src:BRK-10Q-FY2026Q2#p8]. It is
+      held below 0.75 because a return to large net selling in 2027 would pull the ratio under half. The test is a
+      necessary condition for pillar P3, not a sufficient one: it measures the amount deployed, not the return on it.
+  - id: BRK-FY2026Q3-5
+    statement: BNSF's FY2027 operating margin (railroad operating earnings ÷ railroad operating revenues) is higher than its FY2025 operating margin.
+    probability: 0.65
+    criterion: >-
+      Decided on the BNSF earnings table in Item 7 (MD&A, BNSF) of Berkshire's 10-K for FY2027. Margin = "Railroad
+      operating earnings" ÷ "Railroad operating revenues", in percent, rounded to one decimal place. The 2027 value is
+      compared with the 2025 value. The 2025 value comes from the 2025 column of the same table if the FY2027 10-K
+      presents three years; otherwise it comes from the same table in the FY2025 10-K. The item happened if the 2027
+      value is strictly greater than the 2025 value; equal counts as not happened. Figures are used as printed, and
+      restated comparatives are used as restated, with both written down. These segment lines have no XBRL concept, so
+      the filing text decides. The 34.5% that the 2025 letter gives for 2025 [src:BRK-LTR-2025#p12] is written down for
+      comparison; if the 10-K computation differs, the 10-K computation decides. The item is recorded as undetermined if
+      BNSF is no longer reported as a separate business or if the table no longer shows railroad operating earnings and
+      revenues. It is also recorded as undetermined if the FY2027 10-K has not been filed by 2028-03-31. For reference,
+      1H26 was $4,318M over $12,521M (34.5%) against $3,834M over $11,402M (33.6%) in 1H25 [src:BRK-10Q-FY2026Q2#p39].
+    data_source: Berkshire 10-K for FY2027, Item 7 MD&A, BNSF table (railroad operating revenues and railroad operating earnings); FY2025 10-K if the 2025 column is not shown
+    horizon: 18m
+    resolves_by: "2028-02-29"
+    domain: insurance_conglomerate
+    added_by: system
+    pillar: P6
+    falsifies_thesis: false
+    reference: >-
+      Reference class: BNSF's own margin path. It rose from 32.0% in 2024 to 34.5% in 2025 [src:BRK-LTR-2025#p12], and
+      1H26 was 0.9 points above 1H25 [src:BRK-10Q-FY2026Q2#p39]. Management has said publicly it would be disappointed
+      without substantial improvement over the next few years [src:BRK-LTR-2025#p12]. The materials give only these
+      years, so the frequency cannot be verified from them. Judgment starts at 0.60 and is raised to 0.65 for the trend
+      and the public commitment. It is held there because rising fuel prices raise fuel-surcharge revenue and fuel
+      expense together, which dilutes the margin ratio (Q2 2026 fuel expense +68.1%) [src:BRK-10Q-FY2026Q2#p40].
