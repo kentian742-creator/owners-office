@@ -725,10 +725,13 @@ def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
     """The sentence (or table row) of the document that contains the value, at most MAX_EXCERPT_CHARS long; None when
     the value is not found. Numbers are matched as whole numbers (16,698 does not match 116,698). With `words` (what
     the fact is about), a sentence that also shares one of those words is preferred, and a bare short number found
-    only in sentences that share none is left out rather than attached to an unrelated sentence."""
+    only in sentences that share none is left out rather than attached to an unrelated sentence. Of the sentences that
+    contain the value, the one sharing the most of those words wins (a number often recurs in other rows: the 04A audit
+    of SPGI found excerpts cut from the wrong row by a shared word such as "revenue")."""
     lines = document.splitlines()
     wanted = _keywords(words)
     fallback = None
+    best: tuple[int, str] | None = None  # (words shared with the fact, excerpt): the most shared wins, then the first
     for form, pattern in zip(value_forms(value), value_patterns(value)):
         for index, line in enumerate(lines):
             match = pattern.search(line)
@@ -737,12 +740,15 @@ def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
             sentence = next((s for s in _sentences(line) if pattern.search(s)), line)
             label = _row_label(lines, index) if _is_cell(sentence) else None
             text = f"{label} … {sentence.strip()}" if label else sentence
-            if not wanted or _keywords(text) & wanted:
+            if not wanted:
                 return _clip(text, pattern)
+            shared = len(_keywords(text) & wanted)
+            if shared and (best is None or shared > best[0]):
+                best = (shared, _clip(text, pattern))
             weak = len(form.strip("()-−")) <= 4 and "," not in form
             if fallback is None and not weak:
                 fallback = _clip(text, pattern)
-    return fallback
+    return best[1] if best is not None else fallback
 
 
 _LETTERS_RE = re.compile(r"[A-Za-z]{3,}")

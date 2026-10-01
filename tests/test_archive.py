@@ -313,3 +313,10 @@ def test_the_revision_reads_hqs_rulings_on_the_audit_of_this_build(env, monkeypa
     monkeypatch.setattr(registry.RunContext, "latest_run", lambda self, step, **kw: draft if step == "01A" else None)
     built = registry.INPUTS["hq_rulings"](context(env, "01A", 2), "hq_rulings")
     assert "R1 continuing basis" in built.text and "old build" not in built.text
+
+
+def test_an_excerpt_comes_from_the_row_that_shares_the_most_words_with_the_fact():
+    doc = "\n".join(["Revenue from external customers 1,392 1,301", "Indices segment revenue 1,392 1,201",
+                     "Indices segment operating profit 965 880"])
+    out = documents.cut_excerpt(doc, 1392, words="Indices segment revenue FY2023")
+    assert out is not None and out.startswith("Indices segment revenue")
