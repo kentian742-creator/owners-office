@@ -1,10 +1,10 @@
 company: SPGI
 event:
   period: FY2026Q3
-  expected_release: "2026-10-21"
+  expected_release: "2026-10-27"
   form: 8-K
-  placeholder: true
-deadline: "2026-10-20T23:59:59-04:00"
+  placeholder: false
+deadline: "2026-10-26T23:59:59-04:00"
 author: system
 horizon: mixed
 items:
