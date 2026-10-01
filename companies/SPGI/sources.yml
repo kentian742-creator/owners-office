@@ -468,3 +468,129 @@ sources:
     url: https://www.sec.gov/Archives/edgar/data/52848/000093247113000605/0000932471-13-000605-index.htm
     primary: true
     note: "Registrant as EDGAR shows it: VANGUARD WORLD FUND. “Effective immediately, Vanguard Mega Cap 300 Index Fund has begun tracking its new target index, the CRSP US Mega Cap Index”: one example of the switches carried out during 2013."
+
+  - tag: SPGI-10K-FY2015
+    kind: filing
+    title: McGraw Hill Financial, Inc. (now S&P Global Inc.) annual report for fiscal year 2015 (Form 10-K)
+    issuer_cik: '0000064040'
+    form: 10-K
+    period: FY2015
+    accession: 0000064040-16-000042
+    filed: 2016-02-12
+    date: 2016-02-12
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404016000042/mhfi-20151231x10k.htm
+    primary: true
+    note: 'Supplied as business and MD&A. Used for key results and the 2014 settlement charges (#p28), segment tables
+      with margins: Ratings (#p36), S&P Capital IQ and SNL (#p40), S&P DJ Indices and ETF AUM (#p42), Commodities
+      & Commercial and J.D. Power held for sale (#p44), cash at 2015 year-end (#p46), operating cash flow, investing
+      outflow and 2015 buybacks (#p47), 2013 buybacks (#p48), and the free cash flow reconciliation (#p50). #p69 (SNL
+      purchase price) and #p90 (2013 ASR) are in the financial statements, which were not supplied in this run. Same
+      CIK as S&P Global Inc.'
+  - tag: SPGI-10K-FY2020
+    kind: filing
+    title: S&P Global Inc. annual report for fiscal year 2020 (Form 10-K)
+    issuer_cik: '0000064040'
+    form: 10-K
+    period: FY2020
+    accession: 0000064040-21-000063
+    filed: 2021-02-09
+    date: 2021-02-09
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404021000063/spgi-20201231.htm
+    primary: true
+    note: 'Supplied as business and MD&A. Used for the IHS Markit merger terms and expected timing and the Kensho
+      revenue transfer (#p6), the engagement scorecards (#p10), Kensho purchase (#p33), key results (#p34), income
+      statement (#p36), the technology-cost reclassification (#p38), Ratings segment table and drivers (#p44, #p45),
+      MI (#p48), Platts (#p50, #p52), Indices and the FY2019 one-off fees (#p53), ASR prices (#p55, #p56), redeemable
+      noncontrolling interest (#p58), free cash flow reconciliation (#p60) and ASC 606 adoption (#p61).'
+  - tag: SPGI-10K-FY2018
+    kind: filing
+    title: S&P Global Inc. annual report for fiscal year 2018 (Form 10-K)
+    issuer_cik: '0000064040'
+    form: 10-K
+    period: FY2018
+    accession: 0000064040-19-000059
+    filed: 2019-02-13
+    date: 2019-02-13
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404019000059/0000064040-19-000059-index.htm
+    primary: true
+    note: Source of the pipeline XBRL values for FY2016. Used for the FY2016 income statement and the $1,101m gain
+      on dispositions (#p57), FY2016 operating cash flow items (#p49), the ASC 606 effect (#p62) and FY2016 disposals
+      (#Item7). Filing date per the EDGAR document header; the report is signed 2019-02-12, so whether acceptance
+      was after 17:30 on 2019-02-12 is to be confirmed on the index page. Not supplied as text in this run.
+  - tag: SPGI-10K-FY2019
+    kind: filing
+    title: S&P Global Inc. annual report for fiscal year 2019 (Form 10-K)
+    issuer_cik: '0000064040'
+    form: 10-K
+    period: FY2019
+    accession: 0000064040-20-000055
+    filed: 2020-02-10
+    date: 2020-02-10
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404020000055/spgi-20191231x10k.htm
+    primary: true
+    note: Source of the pipeline XBRL values for FY2017. Used for the FY2017 income statement (#p60) and cash flow
+      statement (#p63). Not supplied as text in this run.
+  - tag: SPGI-10K-FY2021
+    kind: filing
+    title: S&P Global Inc. annual report for fiscal year 2021 (Form 10-K)
+    issuer_cik: '0000064040'
+    form: 10-K
+    period: FY2021
+    accession: 0000064040-22-000055
+    filed: 2022-02-08
+    date: 2022-02-08
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404022000055/0000064040-22-000055-index.htm
+    primary: true
+    note: Source of the pipeline XBRL values for FY2019 diluted shares and FY2020 cash and long-term debt. Not supplied
+      as text in this run.
+  - tag: SPGI-8K-2025-11-10
+    kind: filing
+    title: 'S&P Global Inc. 8-K: appointment of Robert Moritz as a director'
+    issuer_cik: '0000064040'
+    form: 8-K
+    period: null
+    accession: 0000064040-25-000171
+    filed: 2025-11-10
+    date: 2025-11-10
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404025000171/spgi-20251104.htm
+    primary: true
+    note: Items 5.02 and 9.01; date of report 2025-11-04. Robert Moritz appointed a director effective 2026-03-01;
+      board enlarged from nine to ten (#Item5.02).
+  - tag: SPGI-8K-2025-12-04
+    kind: filing
+    title: 'S&P Global Inc. 8-K: private offering of $600m 4.250% Senior Notes due 2031 and $400m 4.800% Senior Notes
+      due 2035'
+    issuer_cik: '0000064040'
+    form: 8-K
+    period: null
+    accession: 0001193125-25-308099
+    filed: 2025-12-04
+    date: 2025-12-04
+    url: https://www.sec.gov/Archives/edgar/data/64040/000119312525308099/d43650d8k.htm
+    primary: true
+    note: Items 1.01, 2.03 and 9.01. Net proceeds for general corporate purposes, which may include acquisitions,
+      repayment, redemption or refinancing of indebtedness, capital expenditures, working capital, other obligations
+      or repurchases of common stock (#Item1.01).
+  - tag: SPGI-8K-2025-12-16
+    kind: filing
+    title: 'S&P Global Inc. 8-K: appointment of Hubert Joly as a director'
+    issuer_cik: '0000064040'
+    form: 8-K
+    period: null
+    accession: 0000064040-25-000179
+    filed: 2025-12-16
+    date: 2025-12-16
+    url: https://www.sec.gov/Archives/edgar/data/64040/000006404025000179/spgi-20251210.htm
+    primary: true
+    note: Items 5.02 and 9.01; date of report 2025-12-10. Hubert Joly appointed a director effective 2026-01-02; board
+      enlarged from ten to eleven (#Item5.02).
+  - tag: SEC-REL-34-97657
+    kind: other
+    title: 'U.S. Securities and Exchange Commission, Release No. 34-97657: Removal of References to Credit Ratings
+      from Regulation M (final rule)'
+    date: 2023-06-07
+    url: https://www.sec.gov/files/rules/final/2023/34-97657.pdf
+    primary: true
+    note: Adopting release for the last removal of credit-rating reliance from SEC rules; published at 88 FR 39962
+      (2023-06-20), effective 2023-08-21, as recorded in the archive's entry for SEC-STMT-2023-06-07. Not fetched
+      in this run.
