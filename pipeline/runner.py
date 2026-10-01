@@ -2120,6 +2120,25 @@ def approving_review(private_root: Path, manifest: Mapping[str, Any]) -> tuple[s
     return latest
 
 
+TAG_REPAIRS = "tag_repairs.yml"  # HQ: source tags added to a run's outputs at placement, nothing else (00 §E1)
+_SRC_TOKEN_RE = re.compile(r"\s*\[src:[^\]\s]+\]")
+
+
+def apply_tag_repairs(text: str, repairs: Sequence[Mapping[str, Any]]) -> tuple[str, list[str]]:
+    """Each repair replaces `find` (which must occur exactly once) by `replace`, which may differ from it only by
+    added [src:] tags; anything else is refused, so an output another role approved cannot change in substance."""
+    problems = []
+    for n, repair in enumerate(repairs, 1):
+        find, replace = str(repair.get("find") or ""), str(repair.get("replace") or "")
+        if text.count(find) != 1:
+            problems.append(f"tag repair {n}: its text occurs {text.count(find)} times, not once")
+        elif _SRC_TOKEN_RE.sub("", replace) != _SRC_TOKEN_RE.sub("", find) or replace == find:
+            problems.append(f"tag repair {n}: it changes more than [src:] tags")
+        else:
+            text = text.replace(find, replace)
+    return text, problems
+
+
 def mark_effective(text: str) -> str:
     """doc_status: proposed -> effective (the YAML key, or the Markdown front matter's), once 04C has approved it."""
     return _PROPOSED_RE.sub(r"\1effective", text, count=1)
@@ -2285,6 +2304,12 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             problems.append(f"{entry['file']}: sha256 differs from {RUN_RECORD}")
             continue
         text = data.decode("utf-8")
+        repairs = [r for r in (registry.load_yaml_file(bundle_dir / TAG_REPAIRS) or [])
+                   if isinstance(r, dict) and r.get("output") == name] if (bundle_dir / TAG_REPAIRS).is_file() else []
+        if repairs:
+            text, repair_problems = apply_tag_repairs(text, repairs)
+            problems += [f"{name}: {p}" for p in repair_problems]
+            warnings.append(f"{name}: {len(repairs)} HQ tag repair(s) applied ({TAG_REPAIRS}; source tags only)")
         if name in VALUATION_OUTPUTS and decision == "approved":
             text = mark_effective(text)
             warnings.append(f"{name}: approved by 04C ({review}); written as doc_status: effective")

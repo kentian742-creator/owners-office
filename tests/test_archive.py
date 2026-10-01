@@ -336,3 +336,15 @@ def test_a_private_file_citing_a_tag_only_the_public_sources_register_gets_it_mi
     mirrored = [w for w in writes if w.repo == registry.PRIVATE_REPO and w.path.endswith("sources.yml")]
     assert mirrored and "NEWCO-CALL-FY2026Q2" in mirrored[0].text
     assert not [w for w in writes if w.repo == registry.PUBLIC_REPO]
+
+
+def test_hq_tag_repairs_may_add_source_tags_and_nothing_else():
+    from pipeline import runner
+    text = "Central value $413.5. The buy range is $413.5 × 65%–75%.\n"
+    fixed, problems = runner.apply_tag_repairs(text, [
+        {"find": "× 65%–75%.", "replace": "× 65%–75% [src:X-VAL-2026-09-30]."}])
+    assert problems == [] and fixed.endswith("× 65%–75% [src:X-VAL-2026-09-30].\n")
+    _, problems = runner.apply_tag_repairs(text, [{"find": "× 65%–75%.", "replace": "× 60%–75% [src:X]."}])
+    assert "more than [src:] tags" in problems[0]
+    _, problems = runner.apply_tag_repairs(text, [{"find": "$413.5", "replace": "$413.5 [src:X]"}])
+    assert "2 times" in problems[0]
