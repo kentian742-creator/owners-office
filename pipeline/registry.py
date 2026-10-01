@@ -3068,6 +3068,27 @@ def _findings_04a(ctx: RunContext, name: str) -> BuiltInput:
     return BuiltInput(text, "yml", run.outputs_used(["findings"]))
 
 
+@assembler("hq_rulings")
+def _hq_rulings(ctx: RunContext, name: str) -> BuiltInput:
+    """01A round 2: HQ's rulings on the archive's fact audit (runs/hq/<date>-17A-<TICKER>/rulings.md, dated on or after
+    the first draft), which settle the audit's questions and the owner's decisions the revision must follow."""
+    company = _need_company(ctx, name)
+    if ctx.step.step == "01A" and ctx.round == 1:
+        raise Omit("the first draft of the dossier: HQ rules after the fact audit")
+    draft = ctx.latest_run("01A", period=ctx.period, round_=1)
+    since = draft.run_date if draft is not None else dt.date.min
+    found = []
+    for path in sorted((ctx.private_root / "runs" / "hq").glob(f"*-17A-{company}*/rulings.md")):
+        match = _DATE_PREFIX_RE.match(path.parent.name)
+        if match and dt.date.fromisoformat(match.group(1)) >= since:
+            found.append(path)
+    if not found:
+        raise Omit(f"HQ has not ruled on the audit of {company}'s dossier")
+    chunks = [f"===== {p.relative_to(ctx.private_root).as_posix()} =====\n{p.read_text(encoding='utf-8').rstrip()}\n"
+              for p in found]
+    return BuiltInput("\n".join(chunks), "md", [repo_file_source(ctx.private_root, p, PRIVATE_REPO) for p in found])
+
+
 @assembler("test_proposals_04B_lite")
 def _test_proposals_04b_lite(ctx: RunContext, name: str) -> BuiltInput:
     if not ctx.is_holding():

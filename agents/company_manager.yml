@@ -62,6 +62,7 @@ can_see:
   - draft_outputs
   # Audit findings and HQ's returns
   - findings_04A
+  - hq_rulings                   # 01A round 2: HQ's rulings on the archive's fact audit, incl. the owner's decisions
   - findings_04B
   - findings_04C
   - bear_case_04B

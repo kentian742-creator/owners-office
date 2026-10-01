@@ -300,3 +300,16 @@ def test_the_decline_years_come_first_in_the_valuations_filings():
     assert [p.selection.filing.accession for p in picks][:5] == [
         "a-10k-2025", "a-10k-2022", "a-10k-2018", "a-10k-2024", "a-10k-2023"]
     assert "decline year" in picks[1].reason
+
+
+def test_the_revision_reads_hqs_rulings_on_the_audit_of_this_build(env, monkeypatch):
+    with pytest.raises(registry.Omit, match="first draft"):
+        registry.INPUTS["hq_rulings"](context(env, "01A"), "hq_rulings")
+    with pytest.raises(registry.Omit, match="has not ruled"):
+        registry.INPUTS["hq_rulings"](context(env, "01A", 2), "hq_rulings")
+    fx.write(env.private / "runs" / "hq" / "2026-09-01-17A-NEWCO" / "rulings.md", "old build\n")
+    fx.write(env.private / "runs" / "hq" / "2026-09-29-17A-NEWCO" / "rulings.md", "R1 continuing basis\n")
+    draft = type("Draft", (), {"run_date": dt.date(2026, 9, 28)})()
+    monkeypatch.setattr(registry.RunContext, "latest_run", lambda self, step, **kw: draft if step == "01A" else None)
+    built = registry.INPUTS["hq_rulings"](context(env, "01A", 2), "hq_rulings")
+    assert "R1 continuing basis" in built.text and "old build" not in built.text
