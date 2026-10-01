@@ -2326,6 +2326,12 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             if problem:
                 problems.append(problem)
             write.status = "replace"
+        elif write.action == "write" and write.output in VALUATION_OUTPUTS and decision == "approved":
+            # 00 §V20: one valuation version; the version 04C approved replaces the effective one (git keeps the old)
+            write.status = "same" if (root / write.path).read_bytes() == write.content else "replace"
+            if write.status == "replace":
+                warnings.append(f"{write.path}: the effective valuation is replaced by the version 04C approved "
+                                f"({review}); the previous version stays in git history")
         elif write.action != "write" or write.staged_from is not None:
             write.status = "same" if (root / write.path).read_bytes() == write.content else "update"
         else:
