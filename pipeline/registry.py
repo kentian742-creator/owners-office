@@ -2864,9 +2864,9 @@ def _valuation(ctx: RunContext, name: str) -> BuiltInput:
 
 
 def _valuation_origin(ctx: RunContext, effective: str) -> PriorRun | None:
-    """The 01C run whose proposed valuation_yml became the effective valuation.yml (placement only changes
-    doc_status), newest first."""
-    norm = lambda t: re.sub(r"(?m)^doc_status:.*$", "", t).strip()
+    """The 01C run whose proposed valuation_yml became the effective valuation.yml, newest first."""
+    def norm(t: str) -> str:  # placement changes doc_status and may add [src:] tags (HQ tag repairs), nothing else
+        return re.sub(r"\s*\[src:[^\]\s]+\]", "", re.sub(r"(?m)^doc_status:.*$", "", t)).strip()
     want = norm(effective)
     runs = sorted((r for r in ctx.runs() if r.succeeded and r.step == "01C" and r.company == ctx.company),
                   key=lambda r: (r.run_date, r.rerun, r.rel), reverse=True)
