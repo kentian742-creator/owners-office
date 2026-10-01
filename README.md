@@ -11,12 +11,12 @@ investment constitution; the owner decides only where the money goes and whether
 **Status on 2026-09-30:** seven companies are archived, and every archive has been checked fact by fact against the
 companies' filings; each error found is in [mistakes.md](mistakes.md). McDonald's was the first archive the pipeline
 built straight from SEC filings; Alphabet, Apple and NVIDIA come next. The first forecasts, on S&P Global's results
-for the third quarter of 2026, will be registered by 2026-10-17, so nothing has been scored yet. Progress is tracked in
+for the third quarter of 2026, will be registered by 2026-10-23, so nothing has been scored yet. Progress is tracked in
 [docs/STATUS.md](docs/STATUS.md).
 
 | The record so far | |
 | --- | --- |
-| Forecasts registered | None merged yet. S&P Global's five are due by 2026-10-17 and Berkshire Hathaway's five by 2026-10-25. |
+| Forecasts registered | None merged yet. S&P Global's five are due by 2026-10-23 and Berkshire Hathaway's five by 2026-10-25. |
 | Forecasts scored | None yet. The first scores come after S&P Global reports, around 2026-10-21. |
 | Facts checked against filings | 116 of 2,350 were wrong in the six archives built from the owner's own notes (4.9%). In McDonald's, the first dossier the pipeline wrote from the filings, 7 of 769 were wrong (0.9%). The same model audited both. |
 
