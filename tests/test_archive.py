@@ -320,3 +320,19 @@ def test_an_excerpt_comes_from_the_row_that_shares_the_most_words_with_the_fact(
                      "Indices segment operating profit 965 880"])
     out = documents.cut_excerpt(doc, 1392, words="Indices segment revenue FY2023")
     assert out is not None and out.startswith("Indices segment revenue")
+
+
+def test_a_private_file_citing_a_tag_only_the_public_sources_register_gets_it_mirrored(tmp_path):
+    from pipeline import runner
+    roots = runner.Roots(public=tmp_path / "pub", private=tmp_path / "priv", workspace=tmp_path)
+    fx.write_yaml(roots.public / "companies" / "NEWCO" / "sources.yml", {"sources": [
+        {"tag": "NEWCO-CALL-FY2026Q2", "kind": "transcript", "title": "Q2 call", "primary": False}]})
+    fx.write_yaml(roots.private / "companies" / "NEWCO" / "sources.yml", {"sources": [
+        {"tag": "NEWCO-RPT1-2026-09-01", "kind": "report", "title": "the owner's report", "primary": False}]})
+    dossier = runner.PlannedWrite("dossier", registry.PRIVATE_REPO, "private", "companies/NEWCO/dossier.md",
+                                  b"Guidance was raised [src:NEWCO-CALL-FY2026Q2].\n")
+    writes, warnings = [dossier], []
+    runner.complete_sources(writes, {"company": "NEWCO"}, roots, warnings)
+    mirrored = [w for w in writes if w.repo == registry.PRIVATE_REPO and w.path.endswith("sources.yml")]
+    assert mirrored and "NEWCO-CALL-FY2026Q2" in mirrored[0].text
+    assert not [w for w in writes if w.repo == registry.PUBLIC_REPO]

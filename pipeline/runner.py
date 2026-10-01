@@ -2155,6 +2155,10 @@ def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], ro
                 warnings.append(f"{write.path}: management entries tagged with their own source")
     supplied = supplied_documents(roots.private, str(company))
     added: set[str] = set()
+    path = f"companies/{company}/sources.yml"
+    public_text = _current_text(writes, roots, registry.PUBLIC_REPO, path)
+    public_entries = {str(e.get("tag")): e for e in (yaml.safe_load(public_text) or {}).get("sources") or []
+                      if isinstance(e, dict) and e.get("tag")} if public_text else {}
     for repo, visibility in ((registry.PUBLIC_REPO, _outputs.PUBLIC), (registry.PRIVATE_REPO, _outputs.PRIVATE)):
         # a public file resolves tags in the public sources.yml, a private file in the private one (thesis-ci)
         cited = {m.group(1) or m.group(2) for w in writes if w.repo == repo and w.path.endswith((".md", ".yml"))
@@ -2162,15 +2166,17 @@ def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], ro
         if repo == registry.PRIVATE_REPO:
             cited |= {m.group(1) or m.group(2) for w in writes if w.path.endswith((".md", ".yml"))
                       for m in _CITED_RE.finditer(w.text)}  # public entries are mirrored privately (0028)
-        path = f"companies/{company}/sources.yml"
         text = _current_text(writes, roots, repo, path)
         data = yaml.safe_load(text) if text else None
         known = {str(e.get("tag")) for e in (data or {}).get("sources") or [] if isinstance(e, dict)}
-        missing = sorted(t for t in cited if t and t not in known and t in supplied
-                         and not (repo == registry.PUBLIC_REPO and supplied[t].get("visibility") == _outputs.PRIVATE))
+        # a private file resolves tags in the private sources.yml: a tag only the public one registers is mirrored
+        mirror = public_entries if repo == registry.PRIVATE_REPO else {}
+        found = {**mirror, **supplied}
+        missing = sorted(t for t in cited if t and t not in known and t in found
+                         and not (repo == registry.PUBLIC_REPO and found[t].get("visibility") == _outputs.PRIVATE))
         if not missing:
             continue
-        merged, _, trouble = merge_sources(text, [{k: v for k, v in supplied[t].items() if k != "visibility"}
+        merged, _, trouble = merge_sources(text, [{k: v for k, v in found[t].items() if k != "visibility"}
                                                   for t in missing])
         if trouble:
             raise ValueError("; ".join(trouble))
