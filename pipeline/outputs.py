@@ -953,7 +953,11 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
         _d(PRIVATE, "companies/{company}/valuation.yml",
            note="a proposed version (doc_status: proposed) takes effect only after 04C approves it (§V20)"),
     ),
-    "valuation_md": (_d(PRIVATE, "companies/{company}/valuation.md"),),
+    # The valuation's working (formula tables, backtest, judgments) stays with its run: it is mostly the model's own
+    # assumptions and outputs, which the source-tag check cannot tell from facts. valuation.yml is the effective
+    # version; 02 reads the working from the run that produced it (registry._valuation).
+    "valuation_md": (_d(PRIVATE, "runs/{scope}/{run_dir}/valuation_md.md",
+                        note="the valuation's working, kept with its run; companies/<T>/valuation.yml is effective"),),
     "escalation": (_d(PRIVATE, "escalations/{run_date}-{company}-{slug}.yml"),),
     "memo": (_d(PRIVATE, "memos/{run_date}-{company}-{slug}.yml"),),
     "ranking": (_d(PRIVATE, "hq/ranking.yml"),),

@@ -2847,14 +2847,30 @@ def _valuation(ctx: RunContext, name: str) -> BuiltInput:
             return BuiltInput(text, "txt", sources, note=f"proposed version: {run.rel}")
     if placed[0].is_file():
         chunks = [f"===== {p.name} =====\n{p.read_text(encoding='utf-8').rstrip()}\n" for p in placed if p.is_file()]
-        return BuiltInput("\n".join(chunks), "txt", [repo_file_source(ctx.private_root, p, PRIVATE_REPO)
-                                                     for p in placed if p.is_file()])
+        sources = [repo_file_source(ctx.private_root, p, PRIVATE_REPO) for p in placed if p.is_file()]
+        origin = None if placed[1].is_file() else _valuation_origin(ctx, placed[0].read_text(encoding="utf-8"))
+        if origin is not None:  # the working stays with the 01C run that produced the effective version
+            text = origin.read_output("valuation_md")
+            if text:
+                chunks.append(f"===== valuation.md (working, {origin.rel}) =====\n{text.rstrip()}\n")
+                sources += origin.outputs_used(["valuation_md"])
+        return BuiltInput("\n".join(chunks), "txt", sources)
     run = ctx.latest_run("01C", period=ctx.period)
     if run is None:
         raise MissingInput(f"{name}: {company} has no valuation.yml and no succeeded 01C run for {ctx.period}")
     text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
                                      f"The proposed valuation of {company} ({run.rel}), not yet reviewed by 04C.")
     return BuiltInput(text, "txt", sources, note=f"proposed, not yet reviewed: {run.rel}")
+
+
+def _valuation_origin(ctx: RunContext, effective: str) -> PriorRun | None:
+    """The 01C run whose proposed valuation_yml became the effective valuation.yml (placement only changes
+    doc_status), newest first."""
+    norm = lambda t: re.sub(r"(?m)^doc_status:.*$", "", t).strip()
+    want = norm(effective)
+    runs = sorted((r for r in ctx.runs() if r.succeeded and r.step == "01C" and r.company == ctx.company),
+                  key=lambda r: (r.run_date, r.rerun, r.rel), reverse=True)
+    return next((r for r in runs if norm(r.read_output("valuation_yml") or "") == want), None)
 
 
 LOGOS_DIR = "inputs/logos"  # <TICKER>.svg|png and <TICKER>.source.txt, fetched from official sources (workspace)
