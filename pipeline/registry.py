@@ -2405,10 +2405,15 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
             document = texts.get(cite) or texts.get(tag)
             if document is None:
                 continue
+            words = f"{fact.get('what') or ''} {fact.get('subject') or ''}"
             if "-RPT" in tag:
                 document = _report_page(document, locator)
-            excerpt = documents.cut_excerpt(document, fact.get("value"),
-                                            words=f"{fact.get('what') or ''} {fact.get('subject') or ''}")
+            elif locator:  # the cited page, item or note first, then the whole filing
+                part = documents.locator_section(document, locator, "10-Q" if "-10Q-" in tag else "10-K")
+                excerpt = documents.cut_excerpt(part, fact.get("value"), words=words) if part else None
+                if excerpt:
+                    break
+            excerpt = documents.cut_excerpt(document, fact.get("value"), words=words)
             if excerpt:
                 break
         if excerpt:

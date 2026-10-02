@@ -348,3 +348,12 @@ def test_hq_tag_repairs_may_add_source_tags_and_nothing_else():
     assert "more than [src:] tags" in problems[0]
     _, problems = runner.apply_tag_repairs(text, [{"find": "$413.5", "replace": "$413.5 [src:X]"}])
     assert "2 times" in problems[0]
+
+
+def test_an_excerpt_is_looked_for_first_on_the_cited_page_or_note():
+    doc = "\n".join(["Revenue 1,392 in another table.", "K-69", "Indices revenue was 1,392 this year.", "K-70",
+                     "Note 9. Leases", "Rent 1,392 under leases.", "Note 10. Debt", "Debt of 1,392 matures in 2030.",
+                     "Note 11. Equity", "Equity text."])
+    assert documents.locator_section(doc, "pK-70").strip() == "Indices revenue was 1,392 this year."
+    assert "Debt of 1,392" in documents.locator_section(doc, "Note10") and "Rent" not in documents.locator_section(doc, "Note10")
+    assert documents.locator_section(doc, "p999") is None

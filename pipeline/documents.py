@@ -721,6 +721,46 @@ def _keywords(text: str) -> set[str]:
     return {w for w in re.findall(r"[a-z]{4,}", text.lower()) if w not in _STOP_WORDS}
 
 
+_PAGE_LOC_RE = re.compile(r"(?i)^p(?:age)?\s*([A-Z]{0,2}-?\d{1,4})$")
+_ITEM_LOC_RE = re.compile(r"(?i)^item\s*(\d{1,2}[A-Z]?)$")
+_NOTE_LOC_RE = re.compile(r"(?i)^note\s*(\d{1,2})$")
+
+
+def locator_section(document: str, locator: str, form: str = "10-K") -> str | None:
+    """The part of an EDGAR document a source tag's locator points to: a page (#p49, #pK-70: the text between the
+    previous page's footer and this page's), an item (#Item7) or a note (#Note10); None when it cannot be found, so
+    the caller searches the whole document."""
+    loc = (locator or "").strip()
+    lines = document.split("\n")
+    if m := _PAGE_LOC_RE.match(loc):
+        label = m.group(1).upper()
+        footers = [i for i, line in enumerate(lines) if line.strip().upper() == label]
+        if len(footers) == 1:
+            end = footers[0]
+            prev = re.compile(r"^[A-Z]{0,2}-?\d{1,4}$")
+            start = next((i for i in range(end - 1, -1, -1) if prev.match(lines[i].strip() or "x")), -1)
+            if end - start >= 2:
+                return "\n".join(lines[start + 1:end])
+        return None
+    if m := _ITEM_LOC_RE.match(loc):
+        text, found, _missing = extract_sections(document, form, frozenset({f"item:{m.group(1).upper()}"}))
+        return text if found else None
+    if m := _NOTE_LOC_RE.match(loc):
+        number = m.group(1)
+        head = re.compile(rf"^\s*(?:Note\s+)?{number}[.:\s]+[A-Z][A-Za-z]")
+        nxt = re.compile(rf"^\s*(?:Note\s+)?{int(number) + 1}[.:\s]+[A-Z][A-Za-z]")
+        starts = [i for i, line in enumerate(lines) if len(line) <= 150 and head.match(line)]
+        spans = []
+        for start in starts:
+            end = next((i for i in range(start + 1, len(lines)) if len(lines[i]) <= 150 and nxt.match(lines[i])),
+                       len(lines))
+            spans.append((end - start, start, end))
+        if spans:
+            _, start, end = max(spans)  # the body, not the index entry
+            return "\n".join(lines[start:end])
+    return None
+
+
 def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
     """The sentence (or table row) of the document that contains the value, at most MAX_EXCERPT_CHARS long; None when
     the value is not found. Numbers are matched as whole numbers (16,698 does not match 116,698). With `words` (what
