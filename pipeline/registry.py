@@ -2815,8 +2815,8 @@ FIGI_CACHE = "inputs/figi-cusip-tickers.json"  # workspace: CUSIP/CINS -> ticker
 @assembler("holdings_marks")
 def _holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
     """01C (and a valuation refresh): the company's listed equity portfolio at the price-reference date: the
-    positions of its latest 13F-HR, each marked at its close on or before the run date (pipeline/holdings.py).
-    Omitted for a company that files no 13F."""
+    positions of its latest 13F-HR, each carried from its 13F value by its price change to the run date
+    (pipeline/holdings.py). Omitted for a company that files no 13F."""
     company = _need_company(ctx, name)
     filer = ctx.filer()
     gateway = ctx.gateway()
@@ -2837,29 +2837,32 @@ def _holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
             break
     if not positions:
         raise MissingInput(f"{name}: the 13F-HR {filing.accession} has no readable information table")
-    tickers = holdings.figi_tickers([p.cusip for p in positions], cache=ctx.workspace_root / FIGI_CACHE)
+    tickers, failed = holdings.figi_tickers([p.cusip for p in positions], cache=ctx.workspace_root / FIGI_CACHE)
     def history(symbol: str) -> list[prices.Close]:
         try:
             return price_history(ctx, symbol)
         except MissingInput as exc:  # one unpriced position is reported in the input, not fatal to it
             raise prices.PriceError(str(exc)) from None
 
-    marks = holdings.mark_positions(positions, tickers, ctx.run_date, history)
+    marks = holdings.mark_positions(positions, tickers, filing.report_date, ctx.run_date, history, failed)
     data = holdings.summary(filing.report_date, ctx.run_date, marks)
     known = known_filing_tags((ctx.public_root, ctx.private_root), company)
-    tag = known.get(filing.accession) or f"{company}-13FHR-{filing.report_date.isoformat()}"
+    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    tag = known.get(filing.accession) or documents.tag_with_ordinal(company, filing, cal, subs.filings)
     data = {"source_13f": {"tag": tag, "form": filing.form, "accession": filing.accession,
                            "filed": filing.filing_date.isoformat(), "report_date": filing.report_date.isoformat(),
                            "url": table_url},
-            "what_it_is": ("US-listed positions from the 13F at its report date, each marked at the close on or before "
-                           "the price-reference date (Nasdaq.com, split-adjusted). The 13F's own values are the "
-                           "report-date market values."),
+            "what_it_is": ("US-listed positions from the 13F at its report date. Each is marked at the price-reference "
+                           "date as its 13F value (the report-date market value) times its close on or before the "
+                           "price-reference date, divided by its close on or before the report date. Both closes come "
+                           "from one Nasdaq.com history adjusted for stock splits, so a split after the report date "
+                           "does not change the mark; the 13F's share counts are from before any such split."),
             "what_it_is_not": ("Trades after the report date are not disclosed until the next 13F; holdings outside the "
                                "13F (non-US listings) are not here; an equity-method investee appears here at market "
                                "but is carried at equity on the balance sheet."),
             **data}
     sources = [{"kind": "edgar", "tag": tag, "form": filing.form, "accession": filing.accession,
-                "filed": filing.filing_date.isoformat(), "url": table_url}]
+                "filed": filing.filing_date.isoformat(), "document": table_url.rsplit("/", 1)[-1], "url": table_url}]
     sources += [_price_source(m.close) for m in marks if m.close is not None]
     note = (f"{len(positions)} positions from {filing.form} {filing.accession} (report date {filing.report_date}); "
             f"{sum(1 for m in marks if m.close)} marked; coverage {data['coverage']:.1%} of the 13F value")

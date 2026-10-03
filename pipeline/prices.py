@@ -37,10 +37,15 @@ class PriceError(RuntimeError):
     """No price could be read (network, format, or no trading day in range)."""
 
 
+COMPANY_CLASSES = {"BRK.B": "BRK"}  # the class an archive values -> the company's ticker (registry.PRICE_SYMBOLS)
+
+
 def price_tag(symbol: str, as_of: dt.date) -> str:
     """The source tag of one symbol's price history read on `as_of` (a day's close is cited as <tag>#YYYY-MM-DD).
-    A share class drops its suffix: BRK.B -> BRK-PRICES-<date>."""
-    return f"{symbol.upper().split('.')[0].split('/')[0]}-PRICES-{as_of.isoformat()}"
+    The class an archive values is tagged by its company (BRK.B -> BRK-PRICES-<date>); any other class keeps its
+    suffix (LEN.B -> LEN.B-PRICES-<date>), so two classes of one issuer in a 13F do not share a tag."""
+    symbol = symbol.upper().replace("/", ".")
+    return f"{COMPANY_CLASSES.get(symbol, symbol)}-PRICES-{as_of.isoformat()}"
 
 
 @dataclasses.dataclass(frozen=True)

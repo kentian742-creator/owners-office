@@ -6,7 +6,7 @@ import datetime as dt
 
 import pytest
 
-from pipeline import prices
+from pipeline import prices, registry
 
 DATA = {"data": {"tradesTable": {"rows": [
     {"date": "01/02/2026", "close": "$310.10"}, {"date": "12/31/2025", "close": "$305.63"},
@@ -50,3 +50,13 @@ def test_every_price_and_yield_carries_the_pipelines_own_tag_and_a_private_sourc
         ("BRK-PRICES-2026-01-05", "web", "2026-01-05", closes[-1].source) and "split" in entry["note"]
     reading = prices.ten_year_yield(dt.date(2026, 9, 29), fetch=lambda url: 'Date,"10 Yr"\n09/29/2026,5.26\n')
     assert reading.to_dict()["tag"] == "UST-PARYIELD-2026-09-29" == reading.source_entry()["tag"]
+
+
+def test_two_classes_of_one_issuer_get_two_tags_and_the_class_an_archive_values_is_tagged_by_its_company():
+    day = dt.date(2026, 9, 30)
+    assert prices.price_tag("LEN", day) == "LEN-PRICES-2026-09-30"
+    assert prices.price_tag("LEN.B", day) == prices.price_tag("len/b", day) == "LEN.B-PRICES-2026-09-30"
+    assert prices.price_tag("BRK.B", day) == "BRK-PRICES-2026-09-30" and prices.price_tag("BRK.A", day) != \
+        prices.price_tag("BRK.B", day)
+    for company, symbol in registry.PRICE_SYMBOLS.items():
+        assert prices.price_tag(symbol, day) == f"{company}-PRICES-2026-09-30"
