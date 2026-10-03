@@ -38,6 +38,7 @@ can_see:
   - valuation
   - series_roster
   - price_reference
+  - holdings_marks              # a valuation: the listed equity portfolio of the latest 13F, marked at the price-reference date
   - year_end_closes
   - anchors
   - valuation_input_notes

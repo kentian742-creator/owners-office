@@ -46,7 +46,7 @@ from typing import Any
 
 import yaml
 
-from . import archive, documents, edgar, evaluation, isolation, llm, prices, slicing
+from . import archive, documents, edgar, evaluation, holdings, isolation, llm, prices, slicing
 from . import outputs as _outputs
 
 PUBLIC_REPO = "owners-office"
@@ -2807,6 +2807,57 @@ def _anchors(ctx: RunContext, name: str) -> BuiltInput:
         sources.append(repo_file_source(ctx.private_root, ctx.private_root / "companies/BRK/valuation.yml",
                                         PRIVATE_REPO))
     return BuiltInput(dump_yaml(data), "yml", sources)
+
+
+FIGI_CACHE = "inputs/figi-cusip-tickers.json"  # workspace: CUSIP/CINS -> ticker (pipeline/holdings.py)
+
+
+@assembler("holdings_marks")
+def _holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
+    """01C (and a valuation refresh): the company's listed equity portfolio at the price-reference date: the
+    positions of its latest 13F-HR, each marked at its close on or before the run date (pipeline/holdings.py).
+    Omitted for a company that files no 13F."""
+    company = _need_company(ctx, name)
+    filer = ctx.filer()
+    gateway = ctx.gateway()
+    subs = edgar.submissions(filer.cik, client=gateway.client)
+    filings = [f for f in subs.filings if f.form == holdings.FORM_13F and f.filing_date <= ctx.run_date
+               and f.report_date is not None]
+    if not filings:
+        raise Omit(f"{company} files no 13F-HR: it holds no listed equity portfolio to mark")
+    filing = max(filings, key=lambda f: (f.report_date, f.filing_date))
+    index = gateway.client.get_json(f"{filing.folder_url}/index.json")
+    names = [str(i.get("name") or "") for i in ((index.get("directory") or {}).get("item") or [])]
+    positions, table_url = [], None
+    for xml_name in (n for n in names if n.lower().endswith(".xml") and n != "primary_doc.xml"):
+        url = f"{filing.folder_url}/{xml_name}"
+        found = holdings.parse_information_table(gateway.client.get_bytes(url, max_age=None))
+        if found:
+            positions, table_url = found, url
+            break
+    if not positions:
+        raise MissingInput(f"{name}: the 13F-HR {filing.accession} has no readable information table")
+    tickers = holdings.figi_tickers([p.cusip for p in positions], cache=ctx.workspace_root / FIGI_CACHE)
+    marks = holdings.mark_positions(positions, tickers, ctx.run_date, lambda symbol: price_history(ctx, symbol))
+    data = holdings.summary(filing.report_date, ctx.run_date, marks)
+    known = known_filing_tags((ctx.public_root, ctx.private_root), company)
+    tag = known.get(filing.accession) or f"{company}-13FHR-{filing.report_date.isoformat()}"
+    data = {"source_13f": {"tag": tag, "form": filing.form, "accession": filing.accession,
+                           "filed": filing.filing_date.isoformat(), "report_date": filing.report_date.isoformat(),
+                           "url": table_url},
+            "what_it_is": ("US-listed positions from the 13F at its report date, each marked at the close on or before "
+                           "the price-reference date (Nasdaq.com, split-adjusted). The 13F's own values are the "
+                           "report-date market values."),
+            "what_it_is_not": ("Trades after the report date are not disclosed until the next 13F; holdings outside the "
+                               "13F (non-US listings) are not here; an equity-method investee appears here at market "
+                               "but is carried at equity on the balance sheet."),
+            **data}
+    sources = [{"kind": "edgar", "tag": tag, "form": filing.form, "accession": filing.accession,
+                "filed": filing.filing_date.isoformat(), "url": table_url}]
+    sources += [_price_source(m.close) for m in marks if m.close is not None]
+    note = (f"{len(positions)} positions from {filing.form} {filing.accession} (report date {filing.report_date}); "
+            f"{sum(1 for m in marks if m.close)} marked; coverage {data['coverage']:.1%} of the 13F value")
+    return BuiltInput(dump_yaml(data), "yml", sources, note=note)
 
 
 @assembler("series_roster")
