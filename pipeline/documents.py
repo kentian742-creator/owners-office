@@ -721,7 +721,7 @@ def _keywords(text: str) -> set[str]:
     return {w for w in re.findall(r"[a-z]{4,}", text.lower()) if w not in _STOP_WORDS}
 
 
-_PAGE_LOC_RE = re.compile(r"(?i)^p(?:age)?\s*([A-Z]{0,2}-?\d{1,4})$")
+_PAGE_LOC_RE = re.compile(r"(?i)^p(?:age)?\s*([A-Z]{0,2}-?)(\d{1,4})$")
 _ITEM_LOC_RE = re.compile(r"(?i)^item\s*(\d{1,2}[A-Z]?)$")
 _NOTE_LOC_RE = re.compile(r"(?i)^note\s*(\d{1,2})$")
 
@@ -733,12 +733,14 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
     loc = (locator or "").strip()
     lines = document.split("\n")
     if m := _PAGE_LOC_RE.match(loc):
-        label = m.group(1).upper()
-        footers = [i for i, line in enumerate(lines) if line.strip().upper() == label]
+        prefix, number = m.group(1).upper(), m.group(2)
+        footers = [i for i, line in enumerate(lines) if line.strip().upper() == prefix + number]
         if len(footers) == 1:
             end = footers[0]
-            prev = re.compile(r"^[A-Z]{0,2}-?\d{1,4}$")
-            start = next((i for i in range(end - 1, -1, -1) if prev.match(lines[i].strip() or "x")), -1)
+            # the page starts after the previous page's footer, the nearest line above that is K-69 for K-70: not after
+            # any short number, as a year subheading ("2024") or a table cell ("423") is a line of its own too
+            previous = f"{prefix}{int(number) - 1}"
+            start = next((i for i in range(end - 1, -1, -1) if lines[i].strip().upper() == previous), -1)
             if end - start >= 2:
                 return "\n".join(lines[start + 1:end])
         return None
@@ -746,19 +748,25 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
         text, found, _missing = extract_sections(document, form, frozenset({f"item:{m.group(1).upper()}"}))
         return text if found else None
     if m := _NOTE_LOC_RE.match(loc):
-        number = m.group(1)
-        head = re.compile(rf"^\s*(?:Note\s+)?{number}[.:\s]+[A-Z][A-Za-z]")
-        nxt = re.compile(rf"^\s*(?:Note\s+)?{int(number) + 1}[.:\s]+[A-Z][A-Za-z]")
+        number = int(m.group(1))
+        head, nxt = _note_heading(number), _note_heading(number + 1)
         starts = [i for i, line in enumerate(lines) if len(line) <= 150 and head.match(line)]
         spans = []
         for start in starts:
-            end = next((i for i in range(start + 1, len(lines)) if len(lines[i]) <= 150 and nxt.match(lines[i])),
-                       len(lines))
-            spans.append((end - start, start, end))
+            end = next((i for i in range(start + 1, len(lines)) if len(lines[i]) <= 150 and nxt.match(lines[i])), None)
+            spans.append((end is not None, (end or len(lines)) - start, start, end or len(lines)))
         if spans:
-            _, start, end = max(spans)  # the body, not the index entry
+            # the note's body: first a span the next note's heading closes (the numbered list of exhibits after the
+            # notes runs on to the end of the document), then the longest (an index entry is short)
+            *_, start, end = max(spans)
             return "\n".join(lines[start:end])
     return None
+
+
+def _note_heading(number: int) -> re.Pattern[str]:
+    """A note's heading: "Note 10. Debt", "NOTE 10 — DEBT" or "10. Debt", but not "10 Debt", which is how footnotes
+    ("1 Includes ...") and the index of notes are written."""
+    return re.compile(rf"^\s*(?:(?i:note)\s+{number}\b[\s.:—–-]*|{number}(?:[.:]|\s+[—–-])\s*)[A-Z][A-Za-z]")
 
 
 def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
