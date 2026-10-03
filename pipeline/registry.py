@@ -2838,7 +2838,13 @@ def _holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
     if not positions:
         raise MissingInput(f"{name}: the 13F-HR {filing.accession} has no readable information table")
     tickers = holdings.figi_tickers([p.cusip for p in positions], cache=ctx.workspace_root / FIGI_CACHE)
-    marks = holdings.mark_positions(positions, tickers, ctx.run_date, lambda symbol: price_history(ctx, symbol))
+    def history(symbol: str) -> list[prices.Close]:
+        try:
+            return price_history(ctx, symbol)
+        except MissingInput as exc:  # one unpriced position is reported in the input, not fatal to it
+            raise prices.PriceError(str(exc)) from None
+
+    marks = holdings.mark_positions(positions, tickers, ctx.run_date, history)
     data = holdings.summary(filing.report_date, ctx.run_date, marks)
     known = known_filing_tags((ctx.public_root, ctx.private_root), company)
     tag = known.get(filing.accession) or f"{company}-13FHR-{filing.report_date.isoformat()}"
