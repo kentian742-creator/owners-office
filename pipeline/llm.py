@@ -898,6 +898,15 @@ def _content_bytes(content: str | list[dict[str, Any]]) -> int:
 
 
 RETRY_MARK = "===== retry: only {} produced again; the other outputs are those of the first attempt ====="
+REPAIR_MARK = "===== retry: sentence repairs for {}; the other outputs are those of the first attempt ====="
+
+
+def _retry_mark(redo: Sequence[str] | None, repairs: Mapping[str, Any] | None) -> str:
+    if repairs and not redo:
+        return REPAIR_MARK.format(", ".join(repairs))
+    mark = RETRY_MARK.format(", ".join(redo or ()))
+    return mark if not repairs else mark.replace("produced again;", f"produced again, sentence repairs for "
+                                                                     f"{', '.join(repairs)};")
 
 
 def failed_outputs(errors: Sequence[str], names: Sequence[str]) -> set[str] | None:
@@ -1694,6 +1703,7 @@ def complete(
             return result  # truncated replies are not validated and yield no outputs; the caller handles text itself
 
         repair_blocks: dict[str, str] = {}
+        replied = text  # as the model wrote it, repair blocks included (the run's record)
         if repairs:  # take the <name>_repairs blocks out before the reply is parsed against the part's outputs
             for name in repairs:
                 match = re.search(rf'<output name="{re.escape(name)}_repairs">\n?(.*?)</output>', text, re.S)
@@ -1724,8 +1734,8 @@ def complete(
                 errors += trouble
                 if repaired is not None:
                     parsed[name] = repaired
-            result = dataclasses.replace(result, text=first_text + "\n\n" + RETRY_MARK.format(", ".join(redo or ()))
-                                         + "\n\n" + text)
+            result = dataclasses.replace(result, text=first_text + "\n\n" + _retry_mark(redo, repairs)
+                                         + "\n\n" + replied)
         errors = errors + _outputs.coverage_errors(call.label, inputs, parsed)  # all faults at once, parsed or not
         if errors:
             record["validation_errors"] = errors[:50]

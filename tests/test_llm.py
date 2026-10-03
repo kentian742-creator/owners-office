@@ -1311,6 +1311,7 @@ def test_untagged_numbers_are_repaired_sentence_by_sentence_not_rewritten(env):
     assert "1. Revenue grew 12% in the quarter." in retried and "update_repairs" in retried
     assert "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]." in result.outputs["update"].text
     assert "Margins held [src:TEST-10Q-FY2026Q2#p3]." in result.outputs["update"].text and result.attempts == 2
+    assert llm.REPAIR_MARK.format("update") in result.text and "update_repairs" in result.text
 
 
 def test_a_reply_with_a_format_error_is_checked_for_untagged_numbers_too(env):
@@ -1322,6 +1323,7 @@ def test_a_reply_with_a_format_error_is_checked_for_untagged_numbers_too(env):
              'in the quarter."\n  replace: "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]."\n</output>\n')
     result = call(env, FakeClient(bad, make_response(retry)))
     assert "[src:TEST-10Q-FY2026Q2#p2]" in result.outputs["update"].text and result.outputs["questions"].empty
+    assert "only questions produced again, sentence repairs for update;" in result.text
 
 
 def test_untagged_valuation_notes_are_repaired_with_tags_only_not_rewritten(env):
@@ -1343,3 +1345,5 @@ def test_untagged_valuation_notes_are_repaired_with_tags_only_not_rewritten(env)
     assert "Growth is 7% [src:TEST-VAL-2026-09-24] a year\n  for five years." in text and result.attempts == 2
     assert result.outputs["valuation_yml"].data["method_note"].startswith("Growth is 7% [src:TEST-VAL-2026-09-24]")
     assert result.outputs["valuation_md"].text.endswith("Formula.\n")
+    assert llm.REPAIR_MARK.format("valuation_yml") in result.text  # the record keeps what the model returned
+    assert '<output name="valuation_yml_repairs">' in result.text.split(llm.REPAIR_MARK.format("valuation_yml"))[1]
