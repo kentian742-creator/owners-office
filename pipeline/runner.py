@@ -2144,6 +2144,21 @@ def mark_effective(text: str) -> str:
     return _PROPOSED_RE.sub(r"\1effective", text, count=1)
 
 
+def working_entries(manifest: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """The private sources.yml entry of a valuation's own working (its valuation_md, kept with the run), which its
+    valuation.yml cites as <TICKER>-VAL-<run date> for the figures it computes."""
+    company, run_date = manifest.get("company"), str(manifest.get("run_date") or "")
+    if not company or manifest.get("step") not in ("01C", "02", "05"):
+        return {}
+    tag = _outputs.VALUATION_WORKING_TAG.format(ticker=company, date=run_date)
+    run_dir = (manifest.get("context") or {}).get("run_dir") or f"{run_date}-{manifest['step']}"
+    return {tag: {"tag": tag, "kind": "other", "title": f"{company} valuation working, {run_date}: formula tables, "
+                  "backtest and judgments", "date": run_date, "primary": False,
+                  "location": f"private:runs/{manifest.get('scope') or company}/{run_dir}/valuation_md.md",
+                  "note": "The valuation's own calculations, kept with its run; registered by the pipeline.",
+                  "visibility": _outputs.PRIVATE}}
+
+
 def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], roots: Roots,
                      warnings: list[str]) -> None:
     """Before lint: (1) a ledger management entry whose statement states a number without a tag gets its own source
@@ -2190,7 +2205,7 @@ def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], ro
         known = {str(e.get("tag")) for e in (data or {}).get("sources") or [] if isinstance(e, dict)}
         # a private file resolves tags in the private sources.yml: a tag only the public one registers is mirrored
         mirror = public_entries if repo == registry.PRIVATE_REPO else {}
-        found = {**mirror, **supplied}
+        found = {**mirror, **supplied, **(working_entries(manifest) if repo == registry.PRIVATE_REPO else {})}
         missing = sorted(t for t in cited if t and t not in known and t in found
                          and not (repo == registry.PUBLIC_REPO and found[t].get("visibility") == _outputs.PRIVATE))
         if not missing:

@@ -691,6 +691,39 @@ def apply_repairs(name: str, output: ParsedOutput, raw: str) -> tuple[ParsedOutp
     return dataclasses.replace(output, text=text), []
 
 
+VALUATION_WORKING_TAG = "{ticker}-VAL-{date}"  # a valuation cites its own working (valuation_md) by this tag
+
+
+def valuation_text_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """A fact number without a [src:] tag in a sentence of valuation_yml's free text (its notes): thesis-ci checks
+    them once placed (C-SRC-FACT). A number the valuation computes itself cites its working (VALUATION_WORKING_TAG)."""
+    out = parsed.get("valuation_yml")
+    if out is None or out.empty or not isinstance(out.data, (dict, list)):
+        return []
+    try:
+        from thesis_ci.textscan import untagged_facts
+    except ImportError:
+        return []
+    errors: list[str] = []
+
+    def walk(node: Any, path: str) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key not in ("source", "generated_by"):
+                    walk(value, f"{path}.{key}" if path else str(key))
+        elif isinstance(node, list):
+            for i, value in enumerate(node):
+                walk(value, f"{path}[{i}]")
+        elif isinstance(node, str):
+            for _line, sentence, number in untagged_facts(node, False):
+                errors.append(f"valuation_yml: {path}: fact number '{number}' has no [src:] tag in its sentence "
+                              f"(00 §E1); cite the filing, or for a figure the valuation computes, its working "
+                              f"[src:<TICKER>-VAL-<run date>]: {' '.join(sentence.split())[:140]}")
+
+    walk(out.data, "")
+    return errors[:MAX_PROSE_ERRORS]
+
+
 def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """01B turns the dossier into system files: they may cite only the sources the dossier cites (a tag for the
     dossier itself, which is private, cannot be resolved in the public files)."""
@@ -717,7 +750,7 @@ def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str
     """Checks of a reply against the inputs it answers: 04A gives every fact under facts in its fact_table exactly one
     verdict and no other (a slice's context_facts get none; pipeline/slicing.py); prose carries its source tags; 01B
     cites only what the dossier cites."""
-    errors = prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed)
+    errors = prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed) + valuation_text_errors(parsed)
     if errors:
         return errors
     if part_id == "04C":

@@ -411,3 +411,13 @@ def test_a_model_review_returns_exactly_when_a_finding_is_must_fix():
     assert "04C-2" in outputs.decision_errors(reply("approved", "should fix", "Must-fix"))[0]
     assert "approved or returned" in outputs.decision_errors(reply("maybe", "should fix"))[0]
     assert outputs.coverage_errors("04C", {}, reply("returned", "should_fix")) == returned
+
+
+def test_a_valuation_tags_the_numbers_in_its_notes():
+    data = {"value_ranges": {"center": 413.5, "note": "The buy range is $413.5 × 65%–75%. Revenue was $15,336m "
+                                                       "[src:X-10K-FY2025#p78]."},
+            "method_note": "Growth is 7% [src:X-VAL-2026-09-30] for five years.", "source": "X-10K-FY2025"}
+    parsed = {"valuation_yml": outputs.ParsedOutput("valuation_yml", outputs.YAML, "", data)}
+    errors = outputs.valuation_text_errors(parsed)
+    assert len(errors) == 1 and errors[0].startswith("valuation_yml: value_ranges.note: fact number '$4")
+    assert "X-VAL" not in errors[0] and "<TICKER>-VAL-<run date>" in errors[0]

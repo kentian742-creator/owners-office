@@ -357,3 +357,12 @@ def test_an_excerpt_is_looked_for_first_on_the_cited_page_or_note():
     assert documents.locator_section(doc, "pK-70").strip() == "Indices revenue was 1,392 this year."
     assert "Debt of 1,392" in documents.locator_section(doc, "Note10") and "Rent" not in documents.locator_section(doc, "Note10")
     assert documents.locator_section(doc, "p999") is None
+
+
+def test_a_valuations_working_is_registered_privately_by_its_tag():
+    from pipeline import runner
+    entries = runner.working_entries({"company": "NEWCO", "run_date": "2026-09-30", "step": "01C", "scope": "NEWCO",
+                                      "context": {"run_dir": "2026-09-30-01C-rerun2"}})
+    entry = entries["NEWCO-VAL-2026-09-30"]
+    assert entry["location"] == "private:runs/NEWCO/2026-09-30-01C-rerun2/valuation_md.md"
+    assert entry["visibility"] == "private" and runner.working_entries({"company": "X", "step": "15A"}) == {}
