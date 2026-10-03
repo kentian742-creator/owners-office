@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import json
 
 import pytest
 import yaml
@@ -260,6 +261,43 @@ def test_each_year_end_close_comes_with_that_days_ten_year_treasury_yield(env, m
     assert "missing" in rows[-1]["treasury_10y"]
     assert {s["tag"] for s in built.sources if s["kind"] == "treasury"} == {
         "UST-PARYIELD-2025-12-31", "UST-PARYIELD-2024-12-31", "UST-PARYIELD-2023-12-31", "UST-PARYIELD-2022-12-31"}
+
+
+LENNAR_13F = b"""<informationTable xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable">
+  <infoTable><nameOfIssuer>LENNAR CORP</nameOfIssuer><titleOfClass>CL A</titleOfClass><cusip>526057104</cusip>
+    <value>10000</value><shrsOrPrnAmt><sshPrnamt>100</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+  </infoTable>
+  <infoTable><nameOfIssuer>LENNAR CORP</nameOfIssuer><titleOfClass>CL B</titleOfClass><cusip>526057302</cusip>
+    <value>900</value><shrsOrPrnAmt><sshPrnamt>10</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
+  </infoTable>
+</informationTable>"""
+
+
+def test_the_holdings_marks_tag_an_unregistered_13f_by_its_filing_date_and_each_share_class_by_its_own_history(
+        env, monkeypatch):
+    report = filing("a-13f-q2", "13F-HR", "2026-08-14", "2026-06-30")
+    subs = edgar.Submissions(cik="0000000042", name="NEWCO CORP", tickers=("NEWCO",), fiscal_year_end="1231",
+                             entity_type="operating", category=None, filings=[*FILINGS, report], pages=[],
+                             pages_loaded=[])
+    monkeypatch.setattr(edgar, "submissions", lambda *args, **kwargs: subs)
+    index = {"directory": {"item": [{"name": "primary_doc.xml"}, {"name": "infotable.xml"}]}}
+    bodies = {f"{report.folder_url}/index.json": json.dumps(index).encode(),
+              f"{report.folder_url}/infotable.xml": LENNAR_13F}
+    monkeypatch.setattr(env.gateway.client, "get_bytes", lambda url, **kwargs: bodies[url])
+    fx.write(env.workspace / registry.FIGI_CACHE, json.dumps({"526057104": "LEN", "526057302": "LEN.B"}))
+    for symbol, (june, september) in {"LEN": ("100.00", "110.00"), "LEN.B": ("90.00", "99.00")}.items():
+        rows = [{"date": "09/28/2026", "close": september}, {"date": "06/30/2026", "close": june}]
+        fx.write(env.workspace / "inputs" / "prices" / f"{symbol}-2026-09-28.json",
+                 json.dumps({"data": {"tradesTable": {"rows": rows}}}))
+    built = registry.INPUTS["holdings_marks"](context(env, "01C"), "holdings_marks")
+    data = yaml.safe_load(built.text)
+    filed, *closes = built.sources
+    assert data["source_13f"]["tag"] == filed["tag"] == "NEWCO-13FHR-2026-08-14"  # SPEC 3.3: EDGAR's filing date
+    assert filed["document"] == "infotable.xml"
+    assert [c["tag"] for c in closes] == ["LEN-PRICES-2026-09-28", "LEN.B-PRICES-2026-09-28"]
+    assert [p["price_tag"] for p in data["positions"]] == ["LEN-PRICES-2026-09-28#2026-09-28",
+                                                         "LEN.B-PRICES-2026-09-28#2026-09-28"]
+    assert (data["marked_positions_value"], data["coverage"]) == (11990, 1.0)
 
 
 def test_the_valuation_checks_its_readings_against_the_latest_reports_and_each_earlier_years_mdna():
