@@ -122,7 +122,7 @@ UNBUDGETED_BACKENDS = (CLAUDE_CODE, FAKE)
 CLAUDE_BIN_ENV = "OWNERS_OFFICE_CLAUDE_BIN"
 CLAUDE_TIMEOUT_ENV = "OWNERS_OFFICE_CLAUDE_TIMEOUT"  # seconds; the default allows a 128000-token output
 DEFAULT_CLAUDE_TIMEOUT = 3600.0
-# Where the Claude desktop app installs its copy: <dir>/<version>/claude.app/Contents/MacOS/claude.
+# Where the Claude desktop app installs its copy: <dir>/<version>[/<build hash>]/claude.app/Contents/MacOS/claude.
 DESKTOP_CLAUDE_DIR = Path.home() / "Library" / "Application Support" / "Claude" / "claude-code"
 DESKTOP_CLAUDE_EXE = Path("claude.app") / "Contents" / "MacOS" / "claude"
 # The CLI's environment is built from scratch: only these variables are copied from the caller's environment. Not
@@ -1200,9 +1200,13 @@ def find_claude_binary(env: Mapping[str, str] | None = None) -> Path:
         versions = sorted((p for p in DESKTOP_CLAUDE_DIR.iterdir() if _CLAUDE_VERSION_RE.match(p.name)),
                           key=lambda p: _version_key(p.name), reverse=True)
         for version in versions:
-            exe = version / DESKTOP_CLAUDE_EXE
-            if exe.is_file() and os.access(exe, os.X_OK):
-                return exe
+            # <version>/claude.app/... (older apps) or <version>/<build hash>/claude.app/... (from 2.1.28x)
+            candidates = [version / DESKTOP_CLAUDE_EXE] + sorted(
+                (d / DESKTOP_CLAUDE_EXE for d in version.iterdir() if d.is_dir() and d.name != "claude.app"),
+                key=lambda e: e.stat().st_mtime if e.exists() else 0, reverse=True)
+            for exe in candidates:
+                if exe.is_file() and os.access(exe, os.X_OK):
+                    return exe
     raise ClaudeCodeUnavailable(
         f"the Claude Code CLI was not found: set {CLAUDE_BIN_ENV}, put claude on PATH, or install the Claude desktop "
         f"app (it keeps a copy under {DESKTOP_CLAUDE_DIR}); or run with the API backend"

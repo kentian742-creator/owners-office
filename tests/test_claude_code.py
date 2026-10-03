@@ -361,6 +361,14 @@ def test_the_binary_is_found_by_setting_then_path_then_the_desktop_app(tmp_path,
         llm.find_claude_binary({"PATH": empty_path})
 
 
+def test_the_desktop_apps_newer_layout_with_a_build_hash_folder_is_found(tmp_path, monkeypatch):
+    desktop = tmp_path / "desktop"
+    _exe(desktop / "2.1.284" / "4819fdb9b264" / llm.DESKTOP_CLAUDE_EXE)
+    newest = _exe(desktop / "2.1.286" / "f2326db61802" / llm.DESKTOP_CLAUDE_EXE)
+    monkeypatch.setattr(llm, "DESKTOP_CLAUDE_DIR", desktop)
+    assert llm.find_claude_binary({"PATH": str(tmp_path / "empty-bin")}) == newest
+
+
 # ---------------------------------------------------------------- through the runner
 
 
