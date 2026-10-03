@@ -101,7 +101,7 @@ version: "9.5"
 parts:
   A: {name: synthetic fact audit, role: auditor, inputs: [fact_table, sources], outputs: [fact_verdicts, findings, questions]}
   B_lite: {name: synthetic inversion list, role: red_team, inputs: [update, filings, thesis_without_loss_paths, "prior_inversion_list?"], outputs: [inversion_list, test_proposals]}
-  C: {name: synthetic model review, role: model_reviewer, inputs: [valuation, "report_valuation_section?", series_roster, price_reference, anchors, sources], outputs: [model_checks, valuation_decision, findings, questions]}
+  C: {name: synthetic model review, role: model_reviewer, inputs: [valuation, "report_valuation_section?", series_roster, price_reference, anchors, sources, "hq_rulings?", "holdings_marks?"], outputs: [model_checks, valuation_decision, findings, questions]}
 ---
 
 Synthetic prompt 04: the {{subject}} of {{company}} ({{ticker}}).

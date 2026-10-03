@@ -20,6 +20,8 @@ can_see:
   - price_reference
   - anchors
   - sources
+  - hq_rulings                   # HQ's rulings on how the series rules apply to this company
+  - holdings_marks               # the listed equity portfolio of the latest 13F, marked at the price-reference date
 cannot_see: []                   # the isolation table sets no extra limits for the model review; the parts of 04 cannot see each other's results, which the can_see allow-list ensures
 outputs:
   - model_checks                 # the fifteen items, one by one
