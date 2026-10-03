@@ -2915,10 +2915,12 @@ def _valuation(ctx: RunContext, name: str) -> BuiltInput:
         sources = [repo_file_source(ctx.private_root, p, PRIVATE_REPO) for p in placed if p.is_file()]
         origin = None if placed[1].is_file() else _valuation_origin(ctx, placed[0].read_text(encoding="utf-8"))
         if origin is not None:  # the working stays with the 01C run that produced the effective version
-            text = origin.read_output("valuation_md")
+            working = origin.placed_file("valuation_md")  # marked effective, with HQ's tag repairs; outputs/ is not
+            text = working.read_text(encoding="utf-8") if working else origin.read_output("valuation_md")
             if text:
                 chunks.append(f"===== valuation.md (working, {origin.rel}) =====\n{text.rstrip()}\n")
-                sources += origin.outputs_used(["valuation_md"])
+                sources += ([repo_file_source(ctx.private_root, working, PRIVATE_REPO)] if working
+                            else origin.outputs_used(["valuation_md"]))
         return BuiltInput("\n".join(chunks), "txt", sources)
     run = ctx.latest_run("01C", period=ctx.period)
     if run is None:
@@ -3152,15 +3154,18 @@ def _findings_04a(ctx: RunContext, name: str) -> BuiltInput:
 @assembler("hq_rulings")
 def _hq_rulings(ctx: RunContext, name: str) -> BuiltInput:
     """01A round 2: HQ's rulings on the archive's fact audit (runs/hq/<date>-17A-<TICKER>/rulings.md, dated on or after
-    the first draft), which settle the audit's questions and the owner's decisions the revision must follow."""
+    the first draft), which settle the audit's questions and the owner's decisions the revision must follow. 01C and
+    04C read the rulings on the latest build in any period: they may value the placed dossier in a later one."""
     company = _need_company(ctx, name)
     if ctx.step.step == "01A" and ctx.round == 1:
         raise Omit("the first draft of the dossier: HQ rules after the fact audit")
-    draft = ctx.latest_run("01A", period=ctx.period, round_=1)
+    draft = ctx.latest_run("01A", period=ctx.period if ctx.step.step == "01A" else None, round_=1)
     since = draft.run_date if draft is not None else dt.date.min
+    # the folder StepSpec.bundle_name gives a 17A run about this company, so another ticker starting with it is not
+    folder = re.compile(rf"(\d{{4}}-\d{{2}}-\d{{2}})-17A-{re.escape(company)}(?:-r\d+)?(?:-rerun\d+)?")
     found = []
     for path in sorted((ctx.private_root / "runs" / "hq").glob(f"*-17A-{company}*/rulings.md")):
-        match = _DATE_PREFIX_RE.match(path.parent.name)
+        match = folder.fullmatch(path.parent.name)
         if match and dt.date.fromisoformat(match.group(1)) >= since:
             found.append(path)
     if not found:
