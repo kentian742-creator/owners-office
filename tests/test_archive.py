@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import io
+from pathlib import Path
 
 import pytest
 import yaml
@@ -230,6 +232,93 @@ def test_a_valuation_is_placed_as_effective_only_after_04c_approved_that_very_ru
     assert runner.mark_effective('doc_status: "proposed"\nnote: proposed\n') == "doc_status: effective\nnote: proposed\n"
 
 
+def test_the_latest_review_decides_even_after_nine_same_day_reruns(tmp_path):
+    """As text, -rerun10 sorts before -rerun9; reviews are ranked by their rerun number."""
+    from pipeline import runner
+    proposed = {"bundle": "runs/NEWCO/2026-09-30-01C", "company": "NEWCO"}
+    for rerun, decision in ((9, "approved"), (10, "returned")):
+        folder = tmp_path / "runs" / "NEWCO" / f"2026-09-30-04C-rerun{rerun}"
+        fx.write_yaml(folder / "manifest.yml", {"bundle": f"runs/NEWCO/{folder.name}", "step": "04C", "rerun": rerun,
+                                                "inputs": [{"name": "valuation", "sources": [
+                                                    {"kind": "run_output", "run": proposed["bundle"]}]}]})
+        fx.write_yaml(folder / runner.RUN_RECORD, {"status": "succeeded"})
+        fx.write(folder / "outputs" / "valuation_decision.yml", f"valuation_decision: {decision}\n")
+    assert runner.approving_review(tmp_path, proposed) == ("runs/NEWCO/2026-09-30-04C-rerun10", "returned")
+
+
+def test_marking_a_valuation_effective_changes_its_doc_status_line_and_nothing_else():
+    """A blank line after it stays, or 02 no longer finds the run that produced the effective version."""
+    from pipeline import runner
+    assert runner.mark_effective("company: X\ndoc_status: proposed\n\ncurrency: USD\n") == \
+        "company: X\ndoc_status: effective\n\ncurrency: USD\n"
+    assert runner.mark_effective("doc_status: proposed\r\n\r\ncurrency: USD\r\n") == \
+        "doc_status: effective\r\n\r\ncurrency: USD\r\n"
+
+
+def valuation_run(env, run_dir: str, center: int, *, status: str = "doc_status: proposed") -> Path:
+    """A succeeded 01C bundle of NEWCO proposing `center` and citing its working, and a 04C run that approved it."""
+    from pipeline import runner
+    date, rerun = run_dir[:10], int(run_dir.partition("-rerun")[2] or 1)
+    numbered = {"rerun": rerun} if rerun > 1 else {}
+    bundle = env.private / "runs" / "NEWCO" / run_dir
+    text = (f"company: NEWCO\nas_of: '{date}'\n{status}\n\ncenter: {center}\n"
+            f"note: The center is {center} [src:NEWCO-VAL-{date}].\n")
+    fx.write(bundle / "outputs" / "valuation_yml.yml", text)
+    fx.write_yaml(bundle / runner.MANIFEST, {
+        "manifest_version": runner.MANIFEST_VERSION, "bundle": f"runs/NEWCO/{run_dir}", "step": "01C",
+        "company": "NEWCO", "scope": "NEWCO", "period": "FY2026Q2", "run_date": date, "prompt": {"id": "01"},
+        **numbered, "context": {"company": "NEWCO", "run_date": date, "run_dir": run_dir}})
+    fx.write_yaml(bundle / runner.RUN_RECORD, {"status": "succeeded", "outputs": {"valuation_yml": {
+        "status": "written", "file": "outputs/valuation_yml.yml", "format": "yaml",
+        "sha256": registry.sha256_text(text)}}})
+    review = env.private / "runs" / "NEWCO" / run_dir.replace("-01C", "-04C")
+    fx.write_yaml(review / runner.MANIFEST, {"bundle": f"runs/NEWCO/{review.name}", "step": "04C", "company": "NEWCO",
+                                             **numbered, "inputs": [
+        {"name": "valuation", "sources": [{"kind": "run_output", "run": f"runs/NEWCO/{run_dir}"}]}]})
+    fx.write_yaml(review / runner.RUN_RECORD, {"status": "succeeded"})
+    fx.write(review / "outputs" / "valuation_decision.yml", "valuation_decision: approved\n")
+    return bundle
+
+
+def place_valuation(env, bundle: Path) -> dict:
+    from pipeline import runner
+    return runner.place(bundle, roots=env.roots, allow_fake=True, lint=False, out=io.StringIO(),
+                        now=dt.datetime(2026, 10, 2, tzinfo=dt.timezone.utc))
+
+
+def effective_valuation(env) -> dict:
+    return yaml.safe_load((env.private / "companies" / "NEWCO" / "valuation.yml").read_text(encoding="utf-8"))
+
+
+def test_an_earlier_approved_valuation_never_replaces_a_later_one(env):
+    from pipeline import runner
+    earlier, later = valuation_run(env, "2026-09-29-01C", 100), valuation_run(env, "2026-09-30-01C", 200)
+    place_valuation(env, later)
+    with pytest.raises(runner.RunnerError, match=r"a later valuation \(runs/NEWCO/2026-09-30-01C\)"):
+        place_valuation(env, earlier)  # a retry, say, after the earlier placement failed
+    assert effective_valuation(env)["center"] == 200 and effective_valuation(env)["doc_status"] == "effective"
+
+
+def test_a_same_day_rerun_that_replaces_the_valuation_takes_its_working_tag_with_it(env):
+    place_valuation(env, valuation_run(env, "2026-09-30-01C", 100))
+    report = place_valuation(env, valuation_run(env, "2026-09-30-01C-rerun2", 200))
+    sources = yaml.safe_load((env.private / "companies" / "NEWCO" / "sources.yml").read_text(encoding="utf-8"))
+    (working,) = [e for e in sources["sources"] if e["tag"] == "NEWCO-VAL-2026-09-30"]
+    assert working["location"] == "private:runs/NEWCO/2026-09-30-01C-rerun2/valuation_md.md"
+    assert effective_valuation(env)["center"] == 200 and any("NEWCO-VAL-2026-09-30 now names" in w
+                                                             for w in report["warnings"])
+
+
+def test_an_approved_valuation_is_placed_only_once_it_says_effective(env):
+    from pipeline import runner
+    place_valuation(env, valuation_run(env, "2026-09-29-01C", 100,
+                                       status="doc_status: proposed  # takes effect when 04C approves"))
+    assert effective_valuation(env)["doc_status"] == "effective"
+    with pytest.raises(runner.RunnerError, match="no 'doc_status: proposed' line"):
+        place_valuation(env, valuation_run(env, "2026-09-30-01C", 200, status="doc_status : proposed"))
+    assert effective_valuation(env)["center"] == 100
+
+
 def test_a_cited_price_history_is_registered_privately_only(tmp_path):
     from pipeline import prices, runner
     close = prices.Close("MCD", dt.date(2026, 9, 29), 233.98, "https://api.nasdaq.com/x", tag="MCD-PRICES-2026-09-29")
@@ -348,6 +437,39 @@ def test_hq_tag_repairs_may_add_source_tags_and_nothing_else():
     assert "more than [src:] tags" in problems[0]
     _, problems = runner.apply_tag_repairs(text, [{"find": "$413.5", "replace": "$413.5 [src:X]"}])
     assert "2 times" in problems[0]
+
+
+FILING_FACT = "Revenue was $15,336m [src:X-10K-FY2025#p78] (Note 3).\n"
+
+
+def test_a_tag_repair_never_lands_inside_another_source_tag():
+    from pipeline import runner
+    fixed, problems = runner.apply_tag_repairs(FILING_FACT, [{"find": "FY2025", "replace": "FY2025 [src:X-VAL-1]"}])
+    assert fixed == FILING_FACT and "more than [src:] tags" in problems[0]
+
+
+def test_a_tag_repair_never_removes_or_swaps_a_source_tag():
+    from pipeline import runner
+    for find, replace in ((" [src:X-10K-FY2025#p78] (", " ("), ("[src:X-10K-FY2025#p78]", "[src:X-VAL-1]"),
+                          ("$15,336m [src:X-10K-FY2025#p78]", "$15,336m")):
+        fixed, problems = runner.apply_tag_repairs(FILING_FACT, [{"find": find, "replace": replace}])
+        assert fixed == FILING_FACT and "more than [src:] tags" in problems[0], replace
+    fixed, problems = runner.apply_tag_repairs(FILING_FACT, [
+        {"find": "#p78] (Note 3)", "replace": "#p78] [src:X-VAL-1] (Note 3 [src:X-10K-FY2025#Note3])"}])
+    assert problems == [] and "[src:X-10K-FY2025#p78] [src:X-VAL-1] (Note 3 [src:X-10K-FY2025#Note3])." in fixed
+
+
+def test_a_tag_repair_adds_a_tag_after_a_figure_never_inside_it_nor_with_other_whitespace():
+    from pipeline import runner
+    text = "Margins were 41%. Totals ($1,795m, $3,964m) give ±10% with 8.5 points.\n"
+    for find, replace in (("$1,795m", "$1 [src:X],795m"), ("8.5 points", "8 [src:X].5 points"),
+                          ("41%.", "41%\n\n\n[src:X]."), ("41%", "41%  [src:X]")):
+        fixed, problems = runner.apply_tag_repairs(text, [{"find": find, "replace": replace}])
+        assert fixed == text and "more than [src:] tags" in problems[0], replace
+    fixed, problems = runner.apply_tag_repairs(text, [
+        {"find": "$3,964m)", "replace": "$3,964m [src:X-8K-1#EX99.1])"},
+        {"find": "±10% with", "replace": "±10% [src:X-VAL-1] with"}])
+    assert problems == [] and "$3,964m [src:X-8K-1#EX99.1]) give ±10% [src:X-VAL-1] with" in fixed
 
 
 def test_an_excerpt_is_looked_for_first_on_the_cited_page_or_note():

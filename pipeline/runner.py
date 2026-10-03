@@ -2095,53 +2095,83 @@ def supplied_documents(private_root: Path, company: str) -> dict[str, dict[str, 
 
 
 VALUATION_OUTPUTS = ("valuation_yml", "valuation_md")
-_PROPOSED_RE = re.compile(r"(?m)^(doc_status:\s*)['\"]?proposed['\"]?\s*$")
+# the doc_status line alone (a trailing comment goes with it), never the line break or a blank line after it
+_PROPOSED_RE = re.compile(r"(?m)^(doc_status:[ \t]*)['\"]?proposed['\"]?(?:[ \t]+#[^\r\n]*)?[ \t]*(?=\r?$)")
+
+
+def _ranked(runs: Sequence[registry.PriorRun], company: str, step: str) -> list[registry.PriorRun]:
+    """The company's succeeded runs of a step, oldest first, ranked as RunContext.latest_run ranks them (-rerun10
+    after -rerun9)."""
+    return sorted((r for r in runs if r.succeeded and r.step == step and r.company == company),
+                  key=lambda r: (r.round, r.run_date, r.rerun, r.rel))
+
+
+def valuation_decisions(runs: Sequence[registry.PriorRun], company: str) -> dict[str, tuple[str, str]]:
+    """bundle -> (the latest succeeded 04C run that reviewed its proposed valuation, that is whose `valuation` input
+    names the bundle, and its decision: "approved" | "returned" | ...) for each bundle 04C reviewed (00 §V20)."""
+    out: dict[str, tuple[str, str]] = {}
+    for review in _ranked(runs, company, "04C"):
+        for src in (s for e in review.manifest.get("inputs") or [] if e.get("name") == "valuation"
+                    for s in e.get("sources") or [] if s.get("kind") == "run_output"):
+            out[str(src.get("run"))] = (review.rel, registry._valuation_decision(review) or "")
+    return out
 
 
 def approving_review(private_root: Path, manifest: Mapping[str, Any]) -> tuple[str | None, str]:
-    """The latest succeeded 04C run that reviewed this bundle's proposed valuation (its `valuation` input names the
-    bundle), and its decision: (rel, "approved" | "returned" | ...), or (None, "") when none has (00 §V20)."""
-    rel, company = str(manifest["bundle"]), str(manifest.get("company") or "")
-    latest: tuple[str | None, str] = (None, "")
-    for path in sorted((private_root / "runs" / company).glob("*-04C*/manifest.yml")):
-        review = registry.load_yaml_file(path) or {}
-        record = registry.load_yaml_file(path.parent / RUN_RECORD) or {}
-        if record.get("status") != "succeeded":
-            continue
-        reviewed = {str(src.get("run")) for entry in review.get("inputs") or [] if entry.get("name") == "valuation"
-                    for src in entry.get("sources") or [] if src.get("kind") == "run_output"}
-        if rel not in reviewed:
-            continue
-        decision_file = next(path.parent.glob("outputs/valuation_decision.*"), None)
-        data = yaml.safe_load(decision_file.read_text(encoding="utf-8")) if decision_file else None
-        if isinstance(data, dict):
-            data = data.get("valuation_decision", data.get("decision"))
-        latest = (str(review.get("bundle") or path.parent.name), str(data or "").strip().lower())
-    return latest
+    """The latest succeeded 04C run that reviewed this bundle's proposed valuation, and its decision: (rel,
+    "approved" | "returned" | ...), or (None, "") when none has (00 §V20)."""
+    decisions = valuation_decisions(registry.index_runs(private_root), str(manifest.get("company") or ""))
+    return decisions.get(str(manifest["bundle"]), (None, ""))
+
+
+def later_approved(private_root: Path, manifest: Mapping[str, Any]) -> str | None:
+    """The latest run of this bundle's step, later than it, whose valuation 04C approved, or None. An earlier version
+    never replaces it, whatever order the bundles are placed in (00 §V20: one version)."""
+    runs, company = registry.index_runs(private_root), str(manifest.get("company") or "")
+    decisions = valuation_decisions(runs, company)
+    ranked = [r.rel for r in _ranked(runs, company, str(manifest["step"]))]
+    later = ranked[ranked.index(manifest["bundle"]) + 1:] if manifest["bundle"] in ranked else []
+    return next((rel for rel in reversed(later) if decisions.get(rel, ("", ""))[1] == "approved"), None)
 
 
 TAG_REPAIRS = "tag_repairs.yml"  # HQ: source tags added to a run's outputs at placement, nothing else (00 §E1)
-_SRC_TOKEN_RE = re.compile(r"\s*\[src:[^\]\s]+\]")
+_SRC_TAG_RE = re.compile(r"\[src:[^\]\s]+\]")
+_ADDED_TAGS = r"(?: \[src:[^\]\s]+\])*"
+# where a repair may add a tag: after a word, figure or mark, and before a space, the end or a mark that closes a clause
+# or a figure (a point or comma before a digit is a separator inside a number)
+_TAG_SLOT_RE = re.compile(r"(?<=\S)(?=\s|$|[;:!?)'\"]|[.,](?!\d))")
 
 
 def apply_tag_repairs(text: str, repairs: Sequence[Mapping[str, Any]]) -> tuple[str, list[str]]:
     """Each repair replaces `find` (which must occur exactly once) by `replace`, which may differ from it only by
-    added [src:] tags; anything else is refused, so an output another role approved cannot change in substance."""
+    added tags, each " [src:...]" after a word or figure, never inside a word, a number or another tag; anything else
+    is refused, so an output another role approved cannot change in substance."""
     problems = []
     for n, repair in enumerate(repairs, 1):
         find, replace = str(repair.get("find") or ""), str(repair.get("replace") or "")
         if text.count(find) != 1:
             problems.append(f"tag repair {n}: its text occurs {text.count(find)} times, not once")
-        elif _SRC_TOKEN_RE.sub("", replace) != _SRC_TOKEN_RE.sub("", find) or replace == find:
-            problems.append(f"tag repair {n}: it changes more than [src:] tags")
+            continue
+        start, tags = text.index(find), [m.span() for m in _SRC_TAG_RE.finditer(text)]
+        slots = {at for at in range(start, start + len(find) + 1)
+                 if _TAG_SLOT_RE.match(text, at) and not any(a < at < b for a, b in tags)}
+        pattern = "".join((_ADDED_TAGS if start + i in slots else "") + re.escape(find[i:i + 1])
+                          for i in range(len(find) + 1))
+        if replace == find or not re.fullmatch(pattern, replace):
+            problems.append(f"tag repair {n}: it changes more than [src:] tags, or adds one inside a word, a number "
+                            "or another tag")
         else:
             text = text.replace(find, replace)
     return text, problems
 
 
 def mark_effective(text: str) -> str:
-    """doc_status: proposed -> effective (the YAML key, or the Markdown front matter's), once 04C has approved it."""
-    return _PROPOSED_RE.sub(r"\1effective", text, count=1)
+    """doc_status: proposed -> effective (the YAML key, or the Markdown front matter's), once 04C has approved it.
+    Raises ValueError when there is no such line, so the placed version would not say it is in force."""
+    marked, found = _PROPOSED_RE.subn(r"\1effective", text, count=1)
+    if not found:
+        raise ValueError("it has no 'doc_status: proposed' line to set to effective")
+    return marked
 
 
 def working_entries(manifest: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
@@ -2157,6 +2187,29 @@ def working_entries(manifest: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
                   "location": f"private:runs/{manifest.get('scope') or company}/{run_dir}/valuation_md.md",
                   "note": "The valuation's own calculations, kept with its run; registered by the pipeline.",
                   "visibility": _outputs.PRIVATE}}
+
+
+def relocate_working(writes: list[PlannedWrite], manifest: Mapping[str, Any], roots: Roots,
+                     warnings: list[str]) -> None:
+    """A valuation placed as the effective one takes its working tag with it: when an earlier run of the same date
+    registered <TICKER>-VAL-<run date> at its own working, the private sources.yml entry is pointed at this run's. The
+    tag names the working of the version in force, so this is the one source placement rewrites."""
+    working = working_entries(manifest)
+    if not working or not any(w.output == "valuation_yml" for w in writes):
+        return
+    path = f"companies/{manifest['company']}/sources.yml"
+    text = _current_text(writes, roots, registry.PRIVATE_REPO, path)
+    data = yaml.safe_load(text) if text else None
+    for tag, entry in working.items():
+        old = next((e for e in (data or {}).get("sources") or [] if isinstance(e, dict) and e.get("tag") == tag), None)
+        if old is None or old.get("location") == entry["location"]:
+            continue
+        moved = str(text).replace(f"location: {old.get('location')}", f"location: {entry['location']}", 1)
+        old["location"] = entry["location"]
+        text = moved if yaml.safe_load(moved) == data else registry.dump_yaml(data)  # else formatting lost, not content
+        _upsert(writes, PlannedWrite("sources_additions", registry.PRIVATE_REPO, _outputs.PRIVATE, path,
+                                     text.encode("utf-8"), action="merge"))
+        warnings.append(f"{path}: {tag} now names this run's working ({entry['location']}), not the replaced one's")
 
 
 def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], roots: Roots,
@@ -2313,6 +2366,9 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
     elif review is not None and decision != "approved":
         problems.append(f"04C ({review}) did not approve this valuation (decision: {decision or 'none'}); it goes back "
                         "to 01C with the findings (00 §V20)")
+    elif review is not None and (later := later_approved(roots.private, manifest)):
+        problems.append(f"04C has approved a later valuation ({later}); this earlier version never replaces it "
+                        "(00 §V20: one version)")
     for name, entry in entries.items():
         data = (bundle_dir / str(entry["file"])).read_bytes()
         if _sha(data) != entry.get("sha256"):
@@ -2326,8 +2382,11 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             problems += [f"{name}: {p}" for p in repair_problems]
             warnings.append(f"{name}: {len(repairs)} HQ tag repair(s) applied ({TAG_REPAIRS}; source tags only)")
         if name in VALUATION_OUTPUTS and decision == "approved":
-            text = mark_effective(text)
-            warnings.append(f"{name}: approved by 04C ({review}); written as doc_status: effective")
+            try:
+                text = mark_effective(text)
+                warnings.append(f"{name}: approved by 04C ({review}); written as doc_status: effective")
+            except ValueError as exc:
+                problems.append(f"{name}: approved by 04C ({review}), but {exc}")
         if name == "prereg" and header is not None:
             text, merged_prereg, notes, prereg_problems = prereg_document(text, header, manifest, schemas)
             warnings += notes
@@ -2348,6 +2407,7 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             problems.append(f"{name}: {exc}")
     try:
         complete_sources(writes, manifest, roots, warnings)
+        relocate_working(writes, manifest, roots, warnings)
     except (ValueError, yaml.YAMLError) as exc:
         problems.append(f"sources: {exc}")
     routing = route_by_trust(writes, manifest, roots, publish=publish, warnings=warnings, problems=problems)
