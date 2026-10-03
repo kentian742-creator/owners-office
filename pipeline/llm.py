@@ -925,6 +925,11 @@ def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str],
                  "as a YAML list of {find: the sentence exactly as listed, replace: the same sentence with the source "
                  "tag of each number (a calculation cites its inputs' tags; a judgment names the facts it rests on, "
                  "with their tags)}. Put every other output you are asked for in its own <output name=\"...\"> block."]
+        strict = [n for n in repairs if n in _outputs.TAG_REPAIRABLE_YAML]
+        if strict:
+            lines.append(f"In {', '.join(strict)}, replace is find with source tags added and nothing else changed "
+                         "(not a word or number); a figure the valuation computes itself cites its working, "
+                         "[src:<TICKER>-VAL-<run date>].")
         for name, sentences in repairs.items():
             lines.append(f"Sentences of {name}:")
             lines += [f"{i}. {sentence}" for i, sentence in enumerate(sentences, 1)]
@@ -1732,9 +1737,9 @@ def complete(
         names = [n for n, _ in call.outputs]
         failed = failed_outputs(errors, names)
         if failed is not None:
-            fixable = {n: _outputs.untagged_sentences(parsed[n].text) for n in failed if n in parsed
-                       and n in _outputs.SOURCED_PROSE and all(_outputs.is_prose_error(e, n) for e in errors
-                                                               if failed_outputs([e], [n]))}
+            fixable = {n: _outputs.repairable_sentences(parsed[n]) for n in failed if n in parsed
+                       and n in _outputs.TAG_REPAIRABLE and all(_outputs.is_prose_error(e, n) for e in errors
+                                                                if failed_outputs([e], [n]))}
             repairs = {n: sentences for n, sentences in fixable.items() if sentences} or None
         if failed is not None and (failed != set(names) or repairs):
             kept = {n: o for n, o in parsed.items() if n not in failed or n in (repairs or {})}

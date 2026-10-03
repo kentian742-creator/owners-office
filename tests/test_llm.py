@@ -1322,3 +1322,24 @@ def test_a_reply_with_a_format_error_is_checked_for_untagged_numbers_too(env):
              'in the quarter."\n  replace: "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]."\n</output>\n')
     result = call(env, FakeClient(bad, make_response(retry)))
     assert "[src:TEST-10Q-FY2026Q2#p2]" in result.outputs["update"].text and result.outputs["questions"].empty
+
+
+def test_untagged_valuation_notes_are_repaired_with_tags_only_not_rewritten(env):
+    """Berkshire's 01C (2026-10-02): the retry produced valuation_yml again to tag one note, and the new version
+    had two other untagged figures. The retry now asks only for tags on the listed sentences."""
+    valuation_md = "---\ncompany: TEST\ndoc: valuation_md\nas_of: 2026-09-24\ndoc_status: proposed\n---\nFormula.\n"
+    valuation_yml = "company: TEST\ndoc_status: proposed\nmethod_note: >-\n  Growth is 7% a year\n  for five years.\n"
+    bad = make_response(envelope(valuation_md=valuation_md, valuation_yml=valuation_yml, questions="none"))
+    repairs = ('<output name="valuation_yml_repairs">\n- find: "Growth is 7% a year for five years."\n'
+               '  replace: "Growth is 7% [src:TEST-VAL-2026-09-24] a year for five years."\n</output>\n')
+    client = FakeClient(bad, make_response(repairs))
+    result = call(env, client, prompt_id="02", mode="valuation_refresh",
+                  inputs={"run_date": "2026-09-24", "dossier": "Dossier.", "valuation_input_notes": "No notes."},
+                  variables=DRAFT_VARIABLES)
+    retried = client.messages.stream_calls[1]["messages"][0]["content"]
+    assert "1. Growth is 7% a year for five years." in retried and "nothing else changed" in retried
+    assert "Do not write valuation_yml again" in retried
+    text = result.outputs["valuation_yml"].text
+    assert "Growth is 7% [src:TEST-VAL-2026-09-24] a year\n  for five years." in text and result.attempts == 2
+    assert result.outputs["valuation_yml"].data["method_note"].startswith("Growth is 7% [src:TEST-VAL-2026-09-24]")
+    assert result.outputs["valuation_md"].text.endswith("Formula.\n")

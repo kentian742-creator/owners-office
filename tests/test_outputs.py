@@ -421,3 +421,58 @@ def test_a_valuation_tags_the_numbers_in_its_notes():
     errors = outputs.valuation_text_errors(parsed)
     assert len(errors) == 1 and errors[0].startswith("valuation_yml: value_ranges.note: fact number '$4")
     assert "X-VAL" not in errors[0] and "<TICKER>-VAL-<run date>" in errors[0]
+
+
+VALUATION_RAW = """company: X
+method_note: >-
+  The ex-release margin is about 4.1%, which would lower the center by about $7.4 a share; Berkshire's
+  float grew [src:X-10K-FY2025#p3].
+value_ranges:
+  note: 'The buy range is Berkshire''s center × 65%–75%.'
+  center: 446.9
+"""
+
+
+def _valuation_output(raw=VALUATION_RAW):
+    return outputs.ParsedOutput("valuation_yml", outputs.YAML, raw, outputs.load_yaml_text(raw))
+
+
+def test_untagged_valuation_sentences_are_listed_for_a_tag_repair():
+    """Berkshire's 01C (2026-10-02): the retry wrote the whole valuation_yml again to tag one note, and the new
+    version had two other untagged figures. A tag error in the notes is now repaired sentence by sentence."""
+    out = _valuation_output()
+    sentences = outputs.repairable_sentences(out)
+    assert sentences == ["The ex-release margin is about 4.1%, which would lower the center by about $7.4 a share;",
+                         "The buy range is Berkshire's center × 65%–75%."]
+    errors = outputs.valuation_text_errors({"valuation_yml": out})
+    assert errors and all(outputs.is_prose_error(e, "valuation_yml") for e in errors)
+    assert not outputs.is_prose_error("valuation_yml: center: 'x' is not of type 'number'", "valuation_yml")
+
+
+def test_a_valuation_tag_repair_adds_tags_across_folded_lines_and_quotes_and_nothing_else():
+    out = _valuation_output()
+    first, second = outputs.repairable_sentences(out)
+    raw = ("- find: " + repr_yaml(first) + "\n  replace: "
+           + repr_yaml(first.replace("4.1%", "4.1% [src:X-VAL-2026-09-30]")) + "\n"
+           "- find: " + repr_yaml(second) + "\n  replace: "
+           + repr_yaml(second.replace("75%.", "75% [src:X-VAL-2026-09-30].")) + "\n")
+    fixed, problems = outputs.apply_repairs("valuation_yml", out, raw)
+    assert problems == [] and outputs.valuation_text_errors({"valuation_yml": fixed}) == []
+    assert "4.1% [src:X-VAL-2026-09-30], which" in fixed.text and "Berkshire''s center × 65%–75% [src:X-VAL" in fixed.text
+    assert fixed.data["value_ranges"]["center"] == 446.9 and fixed.data["company"] == "X"
+
+    changed = ("- find: " + repr_yaml(first) + "\n  replace: "
+               + repr_yaml(first.replace("4.1%", "4.0% [src:X-VAL-2026-09-30]")) + "\n")
+    _, problems = outputs.apply_repairs("valuation_yml", out, changed)
+    assert problems and "only by added [src:] tags" in problems[0]
+    untagged = "- find: " + repr_yaml(first) + "\n  replace: " + repr_yaml(first) + "\n"
+    assert "only by added [src:] tags" in outputs.apply_repairs("valuation_yml", out, untagged)[1][0]
+    twice = _valuation_output(VALUATION_RAW + "other: 'The buy range is Berkshire''s center × 65%–75%.'\n")
+    _, problems = outputs.apply_repairs("valuation_yml", twice, "- find: " + repr_yaml(second) + "\n  replace: "
+                                        + repr_yaml(second.replace("75%.", "75% [src:X-VAL-2026-09-30].")) + "\n")
+    assert problems and "occurs 2 times" in problems[0]
+
+
+def repr_yaml(text):
+    import json
+    return json.dumps(text, ensure_ascii=False)

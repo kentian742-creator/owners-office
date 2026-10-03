@@ -182,7 +182,8 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "valuation": {
         "type": "object",
         "required": ["company", "doc_status"],
-        "properties": {"company": {"type": "string"}, "doc_status": {"enum": ["proposed", "effective"]}},
+        "properties": {"company": {"type": "string"}, "doc_status": {"enum": ["proposed", "effective"]},
+                       "method_note": {"type": "string"}},
         "additionalProperties": False,
     },
     "sources": {

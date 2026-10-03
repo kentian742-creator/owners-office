@@ -616,6 +616,8 @@ def structure_errors(name: str, data: Any) -> list[str]:
 
 
 SOURCED_PROSE = ("dossier", "story", "update")  # Markdown outputs whose every fact number needs a [src:] tag (00 §E1)
+TAG_REPAIRABLE_YAML = ("valuation_yml",)  # YAML outputs whose notes need tags: a retry adds them, tags only
+TAG_REPAIRABLE = SOURCED_PROSE + TAG_REPAIRABLE_YAML
 MAX_PROSE_ERRORS = 40
 
 
@@ -663,8 +665,124 @@ def untagged_sentences(text: str) -> list[str]:
     return out
 
 
+def _untagged_in_string(text: str) -> list[str]:
+    from thesis_ci import textscan
+    masked = textscan.mask(text, False)
+    out = []
+    for start, end in textscan.sentence_spans(masked):
+        sentence = masked[start:end]
+        if textscan.FACT_RE.search(sentence) and not textscan.TAG_RE.search(sentence) and not \
+                getattr(textscan, "PROBABILITY_JUDGMENT_RE", re.compile("(?!)")).search(sentence):
+            out.append(" ".join(text[start:end].split()))
+    return out
+
+
+def repairable_sentences(output: ParsedOutput) -> list[str]:
+    """The sentences a retry asks to be given source tags: of a Markdown output's body, or of a YAML output's free
+    text (each string in it, as valuation_text_errors reads them)."""
+    if output.format != YAML:
+        return untagged_sentences(output.text)
+    try:
+        from thesis_ci import textscan  # noqa: F401
+    except ImportError:
+        return []
+    out: list[str] = []
+
+    def walk(node: Any) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key not in ("source", "generated_by"):
+                    walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+        elif isinstance(node, str):
+            out.extend(s for s in _untagged_in_string(node) if s and s not in out)
+
+    walk(output.data)
+    return out
+
+
 def is_prose_error(error: str, name: str) -> bool:
-    return error.startswith((f"{name}: fact number ", f"{name}: ... and "))
+    """An untagged-number error of this output (valuation_yml's name the field: "valuation_yml: <path>: fact ...")."""
+    if error.startswith((f"{name}: fact number ", f"{name}: ... and ")):
+        return True
+    return (name in TAG_REPAIRABLE_YAML and error.startswith(f"{name}: ") and ": fact number '" in error
+            and "has no [src:] tag" in error)
+
+
+_SRC_TOKEN_RE = re.compile(r"\s*\[src:[^\]\s]+\]")
+
+
+def _flexible(piece: str) -> str:
+    """A regex for a sentence piece as it may be written in YAML: whitespace may be a line break and indentation
+    (a folded or multi-line scalar), a quote may be escaped ('' in single quotes, \\" in double quotes)."""
+    out = []
+    for ch in piece:
+        if ch.isspace():
+            if not out or out[-1] != r"\s+":
+                out.append(r"\s+")
+        elif ch == "'":
+            out.append("(?:''|')")
+        elif ch == '"':
+            out.append(r'(?:\\"|")')
+        else:
+            out.append(re.escape(ch))
+    return "".join(out)
+
+
+def _without_tags(node: Any) -> Any:
+    if isinstance(node, dict):
+        return {k: _without_tags(v) for k, v in node.items()}
+    if isinstance(node, list):
+        return [_without_tags(v) for v in node]
+    if isinstance(node, str):
+        return " ".join(_SRC_TOKEN_RE.sub("", node).split())
+    return node
+
+
+def _repair_yaml(name: str, output: ParsedOutput, items: Sequence[Any]) -> tuple[ParsedOutput | None, list[str]]:
+    """Tag repairs in a YAML output: each replace is its find with [src:] tags added and nothing else, so a retry
+    cannot change the substance of a valuation; the repaired text must load to the same data, tags apart."""
+    text, errors = output.text, []
+    try:
+        before = load_yaml_text(text)
+    except Exception as exc:  # pragma: no cover (the output parsed once already)
+        return None, [f"{name}: the YAML does not parse: {_yaml_problem(exc)}"]
+    if before != output.data:
+        return None, [f"{name}: this output cannot be repaired in place; produce it again"]
+    for i, item in enumerate(items):
+        find = item.get("find") if isinstance(item, Mapping) else None
+        replace = item.get("replace") if isinstance(item, Mapping) else None
+        if not isinstance(find, str) or not isinstance(replace, str) or not find.strip():
+            errors.append(f"{name}_repairs[{i}]: needs find and replace, both text")
+            continue
+        if _SRC_TOKEN_RE.search(find):
+            errors.append(f"{name}_repairs[{i}]: find is the sentence as listed, without tags: {find[:100]}")
+            continue
+        pieces, tokens = _SRC_TOKEN_RE.split(replace), _SRC_TOKEN_RE.findall(replace)
+        if "".join(pieces) != find or not tokens:
+            errors.append(f"{name}_repairs[{i}]: replace may differ from find only by added [src:] tags: "
+                          f"{replace[:100]}")
+            continue
+        pattern = re.compile("".join(f"({_flexible(p)})" for p in pieces))
+        matches = list(pattern.finditer(text))
+        if len(matches) != 1:
+            errors.append(f"{name}_repairs[{i}]: find occurs {len(matches)} times in the {name} as written, not once: "
+                          f"{find[:100]}")
+            continue
+        m = matches[0]
+        patched = "".join(m.group(k + 1) + (tokens[k] if k < len(tokens) else "") for k in range(len(pieces)))
+        text = text[:m.start()] + patched + text[m.end():]
+    if errors:
+        return None, errors
+    try:
+        after = load_yaml_text(text)
+    except Exception as exc:
+        return None, [f"{name}_repairs: the repaired YAML does not parse: {_yaml_problem(exc)}"]
+    if _without_tags(after) != _without_tags(before):
+        return None, [f"{name}_repairs: the repaired YAML differs from the output in more than [src:] tags"]
+    return dataclasses.replace(output, text=text, data=after), []
 
 
 def apply_repairs(name: str, output: ParsedOutput, raw: str) -> tuple[ParsedOutput | None, list[str]]:
@@ -676,6 +794,8 @@ def apply_repairs(name: str, output: ParsedOutput, raw: str) -> tuple[ParsedOutp
         return None, [f"{name}_repairs: the YAML does not parse: {_yaml_problem(exc)}"]
     if not isinstance(items, list):
         return None, [f"{name}_repairs: should be a list of {{find, replace}}"]
+    if output.format == YAML:
+        return _repair_yaml(name, output, items)
     text, errors = output.text, []
     for i, item in enumerate(items):
         find = item.get("find") if isinstance(item, Mapping) else None
