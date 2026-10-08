@@ -8,16 +8,16 @@ the results are written down with probabilities and timestamped; afterwards they
 advance. Mistakes are published. The research is drafted and audited by AI agents working under the owner's written
 investment constitution; the owner decides only where the money goes and whether the constitution changes.
 
-**Status on 2026-09-30:** seven companies are archived, and every archive has been checked fact by fact against the
+**Status on 2026-10-08:** seven companies are archived, and every archive has been checked fact by fact against the
 companies' filings; each error found is in [mistakes.md](mistakes.md). McDonald's was the first archive the pipeline
-built straight from SEC filings; Alphabet, Apple and NVIDIA come next. The first forecasts, on S&P Global's results
-for the third quarter of 2026, will be registered by 2026-10-23, so nothing has been scored yet. Progress is tracked in
-[docs/STATUS.md](docs/STATUS.md).
+built straight from SEC filings; Alphabet, Apple and NVIDIA come next. The first fifteen forecasts were registered on 2026-10-08, before
+the third-quarter results of S&P Global, Berkshire Hathaway and AppLovin; none has been scored yet. Progress is
+tracked in [docs/STATUS.md](docs/STATUS.md).
 
 | The record so far | |
 | --- | --- |
-| Forecasts registered | None merged yet. S&P Global's five are due by 2026-10-23 and Berkshire Hathaway's five by 2026-10-25. |
-| Forecasts scored | None yet. The first scores come after S&P Global reports on 2026-10-27. |
+| Forecasts registered | 15, merged on 2026-10-08 and timestamped with OpenTimestamps before each company's third-quarter results: S&P Global 5, Berkshire Hathaway 5, AppLovin 5 ([companies/*/prereg/](companies/)). |
+| Forecasts scored | None yet. The first scores come after S&P Global reports on 2026-10-27: two of its five forecasts resolve with that quarter's 10-Q. |
 | Facts checked against filings | 116 of 2,350 were wrong in the six archives built from the owner's own notes (4.9%). In McDonald's, the first dossier the pipeline wrote from the filings, 7 of 769 were wrong (0.9%). The same model audited both. |
 
 > **Not investment advice.** This repository records one private investor's method and forecast record. It recommends
