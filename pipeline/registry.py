@@ -3157,25 +3157,27 @@ def _findings_04a(ctx: RunContext, name: str) -> BuiltInput:
 
 @assembler("hq_rulings")
 def _hq_rulings(ctx: RunContext, name: str) -> BuiltInput:
-    """01A round 2: HQ's rulings on the archive's fact audit (runs/hq/<date>-17A-<TICKER>/rulings.md, dated on or after
-    the first draft), which settle the audit's questions and the owner's decisions the revision must follow. 01C and
-    04C read the rulings on the latest build whose first draft is dated on or before the run date, in any period:
-    they may value the placed dossier in a later period, and a rebuild begun after a backdated rerun's date does not
-    govern the dossier that rerun values."""
+    """01A round 2: HQ's rulings on the archive's fact audit (runs/hq/<date>-17A-<TICKER>/rulings.md), which settle the
+    audit's questions and the owner's decisions the revision must follow. The rulings on one build are those dated
+    from its first draft until the next build's first draft. 01C and 04C read the rulings on the build of their own
+    period, or, in a period without one, on the latest build begun by the run date (they may value the placed dossier
+    in a later period); a rebuild begun later, finished or not, does not govern the dossier they value."""
     company = _need_company(ctx, name)
     if ctx.step.step == "01A" and ctx.round == 1:
         raise Omit("the first draft of the dossier: HQ rules after the fact audit")
-    if ctx.step.step == "01A":
-        draft = ctx.latest_run("01A", period=ctx.period, round_=1)
-    else:
+    draft = ctx.latest_run("01A", period=ctx.period, round_=1)
+    if draft is None and ctx.step.step != "01A":
         draft = ctx.latest_run("01A", round_=1, as_of=ctx.run_date)
     since = draft.run_date if draft is not None else dt.date.min
+    later = [r.run_date for r in ctx.runs() if r.succeeded and r.step == "01A" and r.company == company
+             and r.round == 1 and r.run_date > since]
+    until = min(later, default=dt.date.max)
     # the folder StepSpec.bundle_name gives a 17A run about this company, so another ticker starting with it is not
     folder = re.compile(rf"(\d{{4}}-\d{{2}}-\d{{2}})-17A-{re.escape(company)}(?:-r\d+)?(?:-rerun\d+)?")
     found = []
     for path in sorted((ctx.private_root / "runs" / "hq").glob(f"*-17A-{company}*/rulings.md")):
         match = folder.fullmatch(path.parent.name)
-        if match and dt.date.fromisoformat(match.group(1)) >= since:
+        if match and since <= dt.date.fromisoformat(match.group(1)) < until:
             found.append(path)
     if not found:
         raise Omit(f"HQ has not ruled on the audit of {company}'s dossier")

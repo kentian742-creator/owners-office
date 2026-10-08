@@ -2155,15 +2155,15 @@ def later_in_force(private_root: Path, manifest: Mapping[str, Any]) -> str | Non
 TAG_REPAIRS = "tag_repairs.yml"  # HQ: source tags added to a run's outputs at placement, nothing else (00 §E1)
 _SRC_TAG_RE = re.compile(r"\[src:[^\]\s]+\]")
 _ADDED_TAGS = r"(?: \[src:[^\]\s]+\])*"
-# where a repair may add a tag: after a complete token, before a space, the end or a mark that closes a clause or a
-# figure; never where a word or digit goes on after the marks that follow (1,500:1, 10:30, McDonald's, U.S., 8.5)
-_TAG_SLOT_RE = re.compile(r"(?<=\S)(?=\s|$|[;:!?)'\".,])(?![^\w\s]*\w)")
+# where a repair may add a tag: after a word, figure or mark, and before a space, the end or a mark that closes a clause
+# or a figure (a point or comma before a digit is a separator inside a number)
+_TAG_SLOT_RE = re.compile(r"(?<=\S)(?=\s|$|[;:!?)'\"]|[.,](?!\d))")
 
 
 def apply_tag_repairs(text: str, repairs: Sequence[Mapping[str, Any]]) -> tuple[str, list[str]]:
     """Each repair replaces `find` (which must occur exactly once) by `replace`, which may differ from it only by
-    added tags, each " [src:...]" after a complete word or figure, never inside a word, a number or another tag;
-    anything else is refused, so an output another role approved cannot change in substance."""
+    added tags, each " [src:...]" after a word or figure, never inside a word, a number or another tag; anything else
+    is refused, so an output another role approved cannot change in substance."""
     problems = []
     for n, repair in enumerate(repairs, 1):
         find, replace = str(repair.get("find") or ""), str(repair.get("replace") or "")

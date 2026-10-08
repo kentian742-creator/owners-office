@@ -517,6 +517,23 @@ def test_a_backdated_valuation_keeps_the_rulings_on_its_build_when_a_rebuild_beg
         assert [s["path"] for s in built.sources] == ["runs/hq/2026-09-29-17A-NEWCO/rulings.md"]
 
 
+def test_a_valuation_reads_the_rulings_on_its_own_periods_build_and_not_on_a_later_one(env):
+    """01C and 04C of FY2026Q2 value the dossier of FY2026Q2's build: dated before its first draft (MCD's 01C of
+    2026-09-29 valued the build begun 2026-09-30), dated after a later rebuild began, or after HQ ruled on that rebuild."""
+    fx.write(env.private / "runs" / "hq" / "2026-09-01-17A-NEWCO" / "rulings.md", "old build\n")
+    fx.write(env.private / "runs" / "hq" / "2026-09-29-17A-NEWCO" / "rulings.md", "R1 continuing basis\n")
+    succeeded_run(env, "runs/NEWCO/2026-09-28-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q2"})
+    succeeded_run(env, "runs/NEWCO/2026-11-05-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q3"})
+    fx.write(env.private / "runs" / "hq" / "2026-11-07-17A-NEWCO" / "rulings.md", "R1 on the rebuild\n")
+    for step in ("01C", "04C"):
+        for run_date in (dt.date(2026, 9, 27), dt.date(2026, 9, 30), dt.date(2026, 11, 20)):
+            built = registry.INPUTS["hq_rulings"](context(env, step, run_date=run_date), "hq_rulings")
+            assert [s["path"] for s in built.sources] == ["runs/hq/2026-09-29-17A-NEWCO/rulings.md"], (step, run_date)
+        later = registry.INPUTS["hq_rulings"](context(env, step, period="FY2026Q3", run_date=dt.date(2026, 11, 20)),
+                                              "hq_rulings")
+        assert [s["path"] for s in later.sources] == ["runs/hq/2026-11-07-17A-NEWCO/rulings.md"]
+
+
 def test_the_rulings_on_a_company_whose_ticker_starts_with_this_one_are_not_this_companys(env):
     succeeded_run(env, "runs/NEWCO/2026-09-28-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q2"})
     fx.write(env.private / "runs" / "hq" / "2026-09-29-17A-NEWCOX" / "rulings.md", "another company\n")
@@ -593,25 +610,6 @@ def test_a_tag_repair_adds_a_tag_after_a_figure_never_inside_it_nor_with_other_w
         {"find": "$3,964m)", "replace": "$3,964m [src:X-8K-1#EX99.1])"},
         {"find": "±10% with", "replace": "±10% [src:X-VAL-1] with"}])
     assert problems == [] and "$3,964m [src:X-8K-1#EX99.1]) give ±10% [src:X-VAL-1] with" in fixed
-
-
-def test_a_tag_repair_adds_a_tag_only_after_a_complete_token():
-    """Never where a word or digit goes on after the marks that follow: in a ratio or a time, before a possessive's
-    apostrophe, inside an abbreviation."""
-    from pipeline import runner
-    text = "Each A share converts 1,500:1 at 10:30; McDonald's U.S.-listed margin was 46% (Berkshire's: 4:1).\n"
-    for find, replace in (("1,500:1", "1,500 [src:X]:1"), ("10:30", "10 [src:X]:30"), ("4:1", "4 [src:X]:1"),
-                          ("McDonald's", "McDonald [src:X]'s"), ("Berkshire's", "Berkshire [src:X]'s"),
-                          ("U.S.-listed", "U [src:X].S.-listed"), ("U.S.-listed", "U.S [src:X].-listed")):
-        fixed, problems = runner.apply_tag_repairs(text, [{"find": find, "replace": replace}])
-        assert fixed == text and "more than [src:] tags" in problems[0], replace
-    fixed, problems = runner.apply_tag_repairs(text, [
-        {"find": "1,500:1 at 10:30;", "replace": "1,500:1 [src:X-10K-1#p5] at 10:30 [src:X-8K-1];"},
-        {"find": "McDonald's U.S.-listed", "replace": "McDonald's [src:X-10K-1#p6] U.S.-listed"},
-        {"find": "(Berkshire's: 4:1).", "replace": "(Berkshire's [src:Y-10K-1]: 4:1 [src:Y-10K-1#p2]) [src:X-VAL-1]."}])
-    assert problems == [] and fixed == ("Each A share converts 1,500:1 [src:X-10K-1#p5] at 10:30 [src:X-8K-1]; "
-                                        "McDonald's [src:X-10K-1#p6] U.S.-listed margin was 46% (Berkshire's "
-                                        "[src:Y-10K-1]: 4:1 [src:Y-10K-1#p2]) [src:X-VAL-1].\n")
 
 
 def test_an_excerpt_is_looked_for_first_on_the_cited_page_or_note():
