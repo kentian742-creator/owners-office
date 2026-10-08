@@ -1179,3 +1179,32 @@ def test_the_pr_body_carries_every_audit_round(env, shim):
     place(env, bundle)
     body = (bundle / "pr_body.md").read_text(encoding="utf-8")
     assert "## Audit findings (04A)" in body and "## Audit findings (04A, round 2)\n\n```yaml\n- id: 04A-2-01" in body
+
+
+def test_04a_cuts_an_excerpt_from_another_issuers_registered_filing_and_shows_only_the_cited_part(env, shim):
+    """decisions/0031: Berkshire's dossier compares GEICO with Progressive (PGR-10Q-FY2026Q2), and the fact audit
+    could resolve only the company's own filings, so such facts had no excerpt (ruling R3). Another issuer's filing
+    registered in sources.yml is fetched now; the auditor's sources show only the cited page."""
+    from tests.test_requested_documents import PGR_CIK, pgr_answers
+    env.gateway.client._transport.responses.update(pgr_answers())
+    path = env.private / "companies" / "APP" / "sources.yml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data["sources"].append({"tag": "PGR-10Q-FY2026Q2", "kind": "filing", "title": "Progressive Q2 10-Q",
+                            "issuer_cik": PGR_CIK, "accession": "0000080661-26-000308"})
+    fx.write_yaml(path, data)
+    draft = draft_chain(env)
+    fx.rewrite_output(draft, "update", "---\ncompany: APP\ndoc: update\nas_of: 2026-10-20\ndoc_status: draft\n---\n"
+                                       "Progressive had 27,932 thousand auto policies [src:PGR-10Q-FY2026Q2#p37].\n")
+    product = env.assemble("16A", period=EVENT)
+    env.execute(product)
+    fx.rewrite_output(product, "fact_table", yaml.safe_dump({"as_of": "2026-10-20", "facts": [
+        {"id": "F001", "location": "update 1", "subject": "PGR", "what": "auto policies in force", "value": 27932,
+         "unit": "thousand", "period": EVENT, "source": "PGR-10Q-FY2026Q2#p37",
+         "excerpt": "Progressive had 27,932 thousand auto policies"}]}))
+    audit = env.assemble("04A", period=EVENT)
+    facts = yaml.safe_load(read_input(audit, "fact_table"))["facts"]
+    assert facts[0]["source_excerpt"].startswith("Personal auto 27,932 thousand")
+    sources = read_input(audit, "sources")
+    assert "[src:PGR-10Q-FY2026Q2#p37]" in sources and "another issuer's filing: the part #p37 names" in sources
+    assert "Revenues grew in the quarter." not in sources  # page 36, not the cited page
+    assert "Not supplied" not in sources or "PGR-10Q-FY2026Q2" not in sources.split("Not supplied", 1)[1][:300]

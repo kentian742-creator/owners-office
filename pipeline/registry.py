@@ -2406,10 +2406,18 @@ def registered_sources(ctx: RunContext, company: str) -> dict[str, dict[str, Any
     return registered
 
 
+OTHER_ISSUER_PART_TOKENS = 15_000  # another issuer's cited page, item or note, as the auditor's source text shows it
+OTHER_ISSUER_TOTAL_TOKENS = 60_000  # all of them together; the whole document still serves to cut each fact's excerpt
+
+
 def cited_texts(ctx: RunContext, tags: Iterable[str]) -> tuple[dict[str, str], list[FilingText], list[str]]:
     """Texts of the documents the given tags cite: {tag or tag#locator: text}, the EDGAR documents fetched, and the
     tags that could not be resolved. Resolved are this event's filings, the company's filings registered in
-    sources.yml with an accession, and the owner's report (inputs/text/reports__<T>.txt, a pointer only, 00 E2)."""
+    sources.yml with an accession, another issuer's filing registered in it (decisions/0031: the dossier's
+    comparisons), and the owner's report (inputs/text/reports__<T>.txt, a pointer only, 00 E2). Another issuer's
+    whole document only serves to cut excerpts: the documents returned hold just the part each locator names, within
+    OTHER_ISSUER_PART_TOKENS each and OTHER_ISSUER_TOTAL_TOKENS together, so a 10-K of another company does not fill
+    the audit's input."""
     company = _need_company(ctx, "sources")
     results = ctx.results()
     by_cite: dict[str, str] = {}
@@ -2420,14 +2428,40 @@ def cited_texts(ctx: RunContext, tags: Iterable[str]) -> tuple[dict[str, str], l
     unresolved: list[str] = []
     gateway = ctx.gateway()
     filer = ctx.filer()
+    others: dict[str, FilingText | None] = {}  # another issuer's document by tag, fetched once
+    issuers: dict[str, Any] = {}
+    others_used = 0
     for cite in dict.fromkeys(tags):
         tag, _, locator = cite.partition("#")
         known = [d for d in docs.values() if d.tag == tag and (not locator or d.locator in (None, locator))]
         if known:
             continue
         entry = registered.get(tag)
-        if entry and entry.get("accession") and str(entry.get("issuer_cik") or filer.cik).lstrip("0") == \
-                filer.cik.lstrip("0"):
+        own = entry is not None and str(entry.get("issuer_cik") or filer.cik).lstrip("0") == filer.cik.lstrip("0")
+        if entry is not None and not own and _fetchable(entry):
+            if tag not in others:
+                exhibit = _EXHIBIT_LOCATOR_RE.match(locator)
+                try:
+                    others[tag] = gateway.requested_document(
+                        entry, (f"EX-99.{int(exhibit.group(1))}" if exhibit.group(1) else "EX-99") if exhibit else None,
+                        as_of=ctx.run_date, registered=True, company=filer, issuers=issuers)
+                except (NotSupplied, edgar.EdgarError, ValueError, MissingInput):
+                    others[tag] = None
+            other = others[tag]
+            if other is not None:
+                by_cite.setdefault(tag, other.text)
+                by_cite.setdefault(cite, other.text)
+                part = documents.locator_section(other.text, locator, other.form) if locator else None
+                if part is not None and others_used < OTHER_ISSUER_TOTAL_TOKENS:
+                    shown, where = cut_to_tokens(part, min(OTHER_ISSUER_PART_TOKENS,
+                                                           OTHER_ISSUER_TOTAL_TOKENS - others_used))
+                    others_used += slicing.estimate_tokens(shown)
+                    docs[(other.accession, f"{other.document}#{locator}")] = dataclasses.replace(
+                        other, locator=locator, text=shown,
+                        note=f"another issuer's filing: the part #{locator} names"
+                             + (f", cut by the pipeline {where}" if where else ""))
+                continue
+        if entry and entry.get("accession") and own:
             try:
                 fetched = gateway.registered_documents(filer, str(entry["accession"]), tag,
                                                        locator if locator.startswith("EX-") else None)

@@ -57,9 +57,10 @@ The model cannot fetch a document itself: the claude-code backend runs without t
   "(4)" on a line of its own with the title on the next, so that form is now read as a heading, but only among the
   notes (after their title, before the next item) and in a row of three numbered one after another; a table
   footnote or an entry of the exhibit index such as "(10) Material Contracts" is not.
-- The fact audit (04A) still resolves only the company's own filings (`cited_texts`): a claim in a dossier that rests
-  on another issuer's filing stays unchecked there, as ruling R3 found, even once that filing is supplied here and
-  registered. Giving 04A the same resolution is a follow-up.
+- The fact audit (04A) resolves another issuer's filing too once `sources.yml` registers it (from 2026-10-08,
+  `cited_texts`), with the same fetcher and the same run-date rule. The whole document serves only to cut each
+  fact's excerpt; the auditor's sources show just the cited page, item or note, within 15,000 estimated tokens each
+  and 60,000 together, so another company's 10-K does not fill the audit's input.
 - The four prompts gain the input in the private repository. Until they declare it, the pipeline never assembles it.
 - Every request goes to the SEC's hosts only, through `pipeline/edgar.py` and its User-Agent rule (0013).
 
