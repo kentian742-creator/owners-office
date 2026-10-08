@@ -377,12 +377,14 @@ class RunContext:
         return self.remember("runs", lambda: index_run_roots([*self.runs_roots, self.private_root]))
 
     def latest_run(self, step: str, *, period: str | None = None, company: str | None = None,
-                   round_: int | None = None) -> PriorRun | None:
-        """The latest succeeded run of a step for this company (and period and round, when given): the highest round
-        first, then the latest run date. Runs of a dry-run directory come first, so a rehearsal reads its own chain."""
+                   round_: int | None = None, as_of: dt.date | None = None) -> PriorRun | None:
+        """The latest succeeded run of a step for this company (and period and round, when given; dated on or before
+        as_of, when given): the highest round first, then the latest run date. Runs of a dry-run directory come first,
+        so a rehearsal reads its own chain."""
         company = company if company is not None else self.company
         found = [r for r in self.runs() if r.succeeded and r.step == step and r.company == company
-                 and (period is None or r.period == period) and (round_ is None or r.round == round_)]
+                 and (period is None or r.period == period) and (round_ is None or r.round == round_)
+                 and (as_of is None or r.run_date <= as_of)]
         if not found:
             return None
         preferred = [r for r in found if any(_inside(r.path, root) for root in self.runs_roots)] or found
@@ -3155,11 +3157,16 @@ def _findings_04a(ctx: RunContext, name: str) -> BuiltInput:
 def _hq_rulings(ctx: RunContext, name: str) -> BuiltInput:
     """01A round 2: HQ's rulings on the archive's fact audit (runs/hq/<date>-17A-<TICKER>/rulings.md, dated on or after
     the first draft), which settle the audit's questions and the owner's decisions the revision must follow. 01C and
-    04C read the rulings on the latest build in any period: they may value the placed dossier in a later one."""
+    04C read the rulings on the latest build whose first draft is dated on or before the run date, in any period:
+    they may value the placed dossier in a later period, and a rebuild begun after a backdated rerun's date does not
+    govern the dossier that rerun values."""
     company = _need_company(ctx, name)
     if ctx.step.step == "01A" and ctx.round == 1:
         raise Omit("the first draft of the dossier: HQ rules after the fact audit")
-    draft = ctx.latest_run("01A", period=ctx.period if ctx.step.step == "01A" else None, round_=1)
+    if ctx.step.step == "01A":
+        draft = ctx.latest_run("01A", period=ctx.period, round_=1)
+    else:
+        draft = ctx.latest_run("01A", round_=1, as_of=ctx.run_date)
     since = draft.run_date if draft is not None else dt.date.min
     # the folder StepSpec.bundle_name gives a 17A run about this company, so another ticker starting with it is not
     folder = re.compile(rf"(\d{{4}}-\d{{2}}-\d{{2}})-17A-{re.escape(company)}(?:-r\d+)?(?:-rerun\d+)?")
