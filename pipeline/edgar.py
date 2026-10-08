@@ -1,8 +1,9 @@
 """SEC EDGAR access (STATUS T18; docs/decisions/0013, 0017).
 
 Reads only public EDGAR data: submissions (including the continuation pages in filings.files), the file index
-index.json, and primary documents and EX-99.x exhibits. From these it derives earnings events, release_history, the
-estimated next release date and the pre-registration deadline, and it checks the accession numbers in sources tables.
+index.json, primary documents and EX-99.x exhibits, and SEC's ticker table company_tickers.json. From these it derives
+earnings events, release_history, the estimated next release date and the pre-registration deadline, it checks the
+accession numbers in sources tables, and it finds the filing a source tag names, of any issuer.
 
 - **User-Agent:** the SEC_USER_AGENT environment variable; if it is not set, .env is read (by default in the
   workspace root, i.e. the parent directory of this repo; override with OWNERS_OFFICE_ENV_FILE or --env-file). If
@@ -1706,6 +1707,7 @@ _FIELD_ORDER = ("tag", "kind", "title", "issuer_cik", "form", "period", "accessi
                 "location", "primary", "note")
 _TAG_RE = re.compile(r"^(?P<ticker>[A-Z0-9][A-Z0-9.]*)-(?P<form>[A-Z0-9]+)-(?P<rest>.+)$")
 _TAG_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})(?:-(\d+))?$")
+ARCHIVES_URL_RE = re.compile(r"/Archives/edgar/data/(\d{1,10})/(\d{18})(?:/|$)")  # a filing's folder: CIK, accession
 
 
 def form_key(form: str) -> str:
@@ -1990,9 +1992,9 @@ def _check_entry(entry: Mapping[str, Any], company: Filer | None, client: EdgarC
 
     finding.problems.extend(_tag_problems(tag, filing, period, issuer, registered or set()))
     url = entry.get("url")
-    m = re.search(r"/Archives/edgar/data/\d+/(\d{18})(?:/|$)", str(url or ""))
-    if m and m.group(1) != filing.accession.replace("-", ""):
-        finding.problems.append(f"url points to another filing ({m.group(1)}), not {filing.accession}")
+    m = ARCHIVES_URL_RE.search(str(url or ""))
+    if m and m.group(2) != filing.accession.replace("-", ""):
+        finding.problems.append(f"url points to another filing ({m.group(2)}), not {filing.accession}")
     return finding
 
 
@@ -2159,6 +2161,68 @@ def check_sources(path: str | os.PathLike, *, client: EdgarClient | None = None,
                 _atomic_write(path, new_text.encode("utf-8"))
                 report.written = True
     return report
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# A source tag's filing, of any issuer (documents HQ asks the pipeline to supply, docs/decisions/0031)
+# ---------------------------------------------------------------------------------------------------------------
+
+COMPANY_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"  # SEC's ticker -> CIK table of all issuers
+
+
+def cik_for_ticker(ticker: str, *, client: EdgarClient | None = None) -> str:
+    """The CIK of the issuer a source tag's ticker names, from SEC's company_tickers.json (cached, and re-fetched after
+    the submissions TTL like submissions). SEC writes a class of shares with a hyphen (BRK-B), a tag with a point or
+    without the class (BRK.B, BRK): those resolve when every class SEC lists belongs to one issuer. Raises
+    EdgarDataError when SEC lists no such ticker, or several issuers under it."""
+    client = client or default_client()
+    data = client.get_json(COMPANY_TICKERS_URL, max_age=client.ttl)
+    rows = data.values() if isinstance(data, Mapping) else data if isinstance(data, list) else []
+    ciks: dict[str, set[str]] = {}
+    for row in rows:
+        if isinstance(row, Mapping) and row.get("ticker") and str(row.get("cik_str") or "").isdigit():
+            ciks.setdefault(str(row["ticker"]).upper(), set()).add(normalize_cik(row["cik_str"]))
+    want = str(ticker).strip().upper().replace(".", "-")
+    found = ciks.get(want) or {cik for name, listed in ciks.items() if name.startswith(f"{want}-") for cik in listed}
+    if len(found) == 1:
+        return next(iter(found))
+    if not found:
+        raise EdgarDataError(f"SEC's company_tickers.json lists no ticker {ticker}")
+    raise EdgarDataError(f"SEC's company_tickers.json lists {ticker} under {len(found)} issuers: "
+                         f"{', '.join(sorted(found))}")
+
+
+def filing_for_entry(entry: Mapping[str, Any], *, company: Filer | None = None, client: EdgarClient | None = None,
+                     issuers: dict[str, _Issuer] | None = None) -> tuple[Filing, _Issuer]:
+    """The filing a sources.yml entry, or a bare {"tag": ...}, names on EDGAR, and its issuer (submissions and fiscal
+    calendar). The issuer: issuer_cik, else the CIK in url, else this company when the tag names it, else the tag's
+    ticker through SEC's company_tickers.json. The filing: accession (or the one in url), else matched as
+    check-sources matches it: a periodic report by form and fiscal period in the issuer's own calendar, a current
+    report by filing date and ordinal. Raises EdgarDataError with the reason when none is found."""
+    client = client or default_client()
+    issuers = {} if issuers is None else issuers
+    text = str(entry.get("tag") or "")
+    tag = parse_source_tag(text)
+    folder = ARCHIVES_URL_RE.search(str(entry.get("url") or ""))
+    raw_cik = entry.get("issuer_cik") or (folder.group(1) if folder else None)
+    if not raw_cik and company is not None and tag is not None and tag.ticker == company.ticker:
+        raw_cik = company.cik
+    if not raw_cik:
+        if tag is None:
+            raise EdgarDataError(f"{text} is not a source tag <TICKER>-<FORM>-<PERIOD or DATE> (thesis-ci SPEC 3.3)")
+        raw_cik = cik_for_ticker(tag.ticker, client=client)
+    issuer = _issuer(normalize_cik(raw_cik), company, client, issuers)
+    accession = entry.get("accession") or (folder.group(2) if folder else None)
+    if accession:
+        filing = issuer.subs.get(str(accession))
+        if filing is None:
+            raise EdgarDataError(f"EDGAR has no accession number {accession} among the filings of CIK "
+                                 f"{issuer.subs.cik}")
+        return filing, issuer
+    filing, why = _resolve_from_tag(entry, tag, issuer, client)
+    if filing is None:
+        raise EdgarDataError(f"{why} (CIK {issuer.subs.cik}, {issuer.subs.name})")
+    return filing, issuer
 
 
 # ---------------------------------------------------------------------------------------------------------------

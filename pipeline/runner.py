@@ -2082,8 +2082,9 @@ _CITED_RE = re.compile(r"(?m)\[src:([A-Za-z0-9][A-Za-z0-9._-]*)|^\s*(?:source|se
 
 def supplied_documents(private_root: Path, company: str) -> dict[str, dict[str, Any]]:
     """tag -> a sources.yml entry for every EDGAR document the pipeline gave one of the company's runs (01A, the
-    audit and its slices: their manifests record tag, form, accession, filing date and URL), for tags an archive
-    cites but did not register; and for every price history and Treasury reading (01C, 02), marked private."""
+    audit and its slices, and the documents HQ asked for, another issuer's too: their manifests record tag, form,
+    accession, filing date and URL, and for a requested document its issuer's CIK, title and period), for tags an
+    archive cites but did not register; and for every price history and Treasury reading (01C, 02), marked private."""
     out: dict[str, dict[str, Any]] = {}
     for manifest_path in sorted((private_root / "runs" / company).glob("*/manifest.yml")):
         data = registry.load_yaml_file(manifest_path) or {}
@@ -2096,10 +2097,14 @@ def supplied_documents(private_root: Path, company: str) -> dict[str, dict[str, 
                     out[tag] = {**src["entry"], "visibility": _outputs.PRIVATE}  # prices stay private (§H4)
                 if src.get("kind") != "edgar" or not tag or tag in out:
                     continue
-                out[tag] = {"tag": tag, "kind": "filing", "title": f"{company} {src.get('form')} filed {src.get('filed')}",
-                            "form": src.get("form"), "accession": src.get("accession"), "filed": src.get("filed"),
-                            "url": src.get("url"), "primary": True,
-                            "note": "registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive"}
+                found = {"tag": tag, "kind": "filing",
+                         "title": src.get("title") or f"{company} {src.get('form')} filed {src.get('filed')}",
+                         "issuer_cik": src.get("issuer_cik"), "form": src.get("form"), "period": src.get("period"),
+                         "accession": src.get("accession"), "filed": src.get("filed"), "url": src.get("url"),
+                         "primary": True,
+                         "note": "registered by the pipeline: an EDGAR document supplied to one of its runs and "
+                                 "cited in the archive"}
+                out[tag] = {k: v for k, v in found.items() if v is not None or k not in ("issuer_cik", "period")}
     return out
 
 
@@ -2243,7 +2248,8 @@ def complete_sources(writes: list[PlannedWrite], manifest: Mapping[str, Any], ro
                      warnings: list[str]) -> None:
     """Before lint: (1) a ledger management entry whose statement states a number without a tag gets its own source
     as the tag; (2) a tag the planned files cite that neither sources.yml registers, and that names a document the
-    pipeline supplied to 01A, is registered in both (decisions/0028)."""
+    pipeline supplied to one of the company's runs (01A, or a document HQ asked for, another issuer's included), is
+    registered in both (decisions/0028, 0031)."""
     company = manifest.get("company")
     if not company:
         return

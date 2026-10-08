@@ -456,11 +456,17 @@ def _longest(candidates: Sequence[tuple[int, int, str]]) -> tuple[int, int, str]
 
 def _item_span(lines: Sequence[str], heads: Sequence[_Heading], part: str | None,
                item: str) -> tuple[int, int, str] | None:
+    """The item's body: from its heading to the next heading of another item. A heading that repeats the one before
+    it is the same item continued (Berkshire Hathaway's 10-Q heads every page of its MD&A "Item 2. Management's
+    Discussion ..."), not a new start."""
     candidates = []
     for n, head in enumerate(heads):
-        if head.item == item and (part is None or head.part == part):
-            end = heads[n + 1].line if n + 1 < len(heads) else len(lines)
-            candidates.append((head.line, end, head.text))
+        if head.item != item or (part is not None and head.part != part):
+            continue
+        if n and (heads[n - 1].part, heads[n - 1].item) == (head.part, head.item):
+            continue
+        end = next((h.line for h in heads[n + 1:] if (h.part, h.item) != (head.part, head.item)), len(lines))
+        candidates.append((head.line, end, head.text))
     return _longest(candidates)
 
 
@@ -724,6 +730,13 @@ def _keywords(text: str) -> set[str]:
 _PAGE_LOC_RE = re.compile(r"(?i)^p(?:age)?\s*([A-Z]{0,2}-?)(\d{1,4})$")
 _ITEM_LOC_RE = re.compile(r"(?i)^item\s*(\d{1,2}[A-Z]?)$")
 _NOTE_LOC_RE = re.compile(r"(?i)^note\s*(\d{1,2})$")
+# A page's footer is its number alone on a line ("37", "K-66"), followed by the next page's first line, which has
+# words. The same number also stands alone in the table of contents, in the list of financial statements and as a
+# table cell, so the footers are told apart as a run of pages numbered one after another (_page_span).
+MIN_PAGE_CHARS = 100  # less text than this between two numbers is entries of a list, not a page
+MIN_PAGE_RUN = 4  # a footer belongs to a run of at least this many pages; table cells rarely run so long
+_WORDS_RE = re.compile(r"[A-Za-z]{2,}")
+_ANY_PAGE_RE = re.compile(r"(?:[A-Z]{1,2}-)?\d{1,4}")
 
 
 def locator_section(document: str, locator: str, form: str = "10-K") -> str | None:
@@ -733,17 +746,8 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
     loc = (locator or "").strip()
     lines = document.split("\n")
     if m := _PAGE_LOC_RE.match(loc):
-        prefix, number = m.group(1).upper(), m.group(2)
-        footers = [i for i, line in enumerate(lines) if line.strip().upper() == prefix + number]
-        if len(footers) == 1:
-            end = footers[0]
-            # the page starts after the previous page's footer, the nearest line above that is K-69 for K-70: not after
-            # any short number, as a year subheading ("2024") or a table cell ("423") is a line of its own too
-            previous = f"{prefix}{int(number) - 1}"
-            start = next((i for i in range(end - 1, -1, -1) if lines[i].strip().upper() == previous), -1)
-            if end - start >= 2:
-                return "\n".join(lines[start + 1:end])
-        return None
+        span = _page_span(lines, m.group(1).upper(), int(m.group(2)))
+        return "\n".join(lines[span[0]:span[1]]) if span else None
     if m := _ITEM_LOC_RE.match(loc):
         text, found, _missing = extract_sections(document, form, frozenset({f"item:{m.group(1).upper()}"}))
         return text if found else None
@@ -769,10 +773,82 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
     return None
 
 
+def _ends_page(lines: Sequence[str], i: int) -> bool:
+    """Whether line i can be a page's footer by what follows it: the next page's first line has words (a table cell
+    is mostly followed by another cell), or the document ends."""
+    j = i + 1
+    while j < len(lines) and not lines[j].strip():
+        j += 1
+    return j == len(lines) or bool(_WORDS_RE.search(lines[j]))
+
+
+def _page_span(lines: Sequence[str], prefix: str, number: int) -> tuple[int, int] | None:
+    """(first line, footer line) of page `prefix + number`: the text after the previous page's footer, up to this
+    page's. When one line reads the number, it is the footer, and the page starts after the nearest line above that
+    reads the number before (or at the document's start). When several do, of the lines that may be footers
+    (_ends_page), those that are follow one another as pages numbered one
+    after another, each at least MIN_PAGE_CHARS after the one before; the page's footer is the one line reading its
+    number in the longest such run through that number (Berkshire Hathaway's 10-K also lists "K-66" in its table of
+    contents and in Item 15). The page is found only when that is unambiguous: the run is at least MIN_PAGE_RUN pages
+    long, and the previous page's footer is the nearest of those lines above that reads its number, and the only one
+    that continues the run (a table cell reading the same number can). The first numbered page runs from the
+    document's start when no page number of any kind stands above it."""
+    label = re.compile(rf"{re.escape(prefix)}(\d{{1,4}})")
+
+    def reads(i: int, n: int) -> bool:
+        m = label.fullmatch(lines[i].strip().upper())
+        return bool(m) and int(m.group(1)) == n
+
+    exact = [i for i in range(len(lines)) if reads(i, number)]
+    if len(exact) == 1:  # one line reads the number: the page runs from the nearest previous page's footer above it
+        end = exact[0]
+        start = next((j for j in range(end - 1, -1, -1) if reads(j, number - 1)), -1)
+        return (start + 1, end) if end - start >= 2 else None
+    offsets = [0]
+    for line in lines:
+        offsets.append(offsets[-1] + len(line) + 1)
+    footers = [(i, int(m.group(1))) for i, line in enumerate(lines)
+               if (m := label.fullmatch(line.strip().upper())) and _ends_page(lines, i)]
+
+    def page_between(j: int, i: int) -> bool:
+        return i - j >= 2 and offsets[i] - offsets[j + 1] >= MIN_PAGE_CHARS
+
+    back: dict[int, int] = {}  # footer line -> pages in the longest run that ends there
+    seen: dict[int, list[int]] = {}
+    for i, n in footers:
+        back[i] = 1 + max((back[j] for j in seen.get(n - 1, ()) if page_between(j, i)), default=0)
+        seen.setdefault(n, []).append(i)
+    ahead: dict[int, int] = {}  # footer line -> pages in the longest run that starts there
+    seen = {}
+    for i, n in reversed(footers):
+        ahead[i] = 1 + max((ahead[j] for j in seen.get(n + 1, ()) if page_between(i, j)), default=0)
+        seen.setdefault(n, []).append(i)
+    run = {i: back[i] + ahead[i] - 1 for i, _ in footers}
+    ends = [i for i, n in footers if n == number]
+    longest = max((run[i] for i in ends), default=0)
+    best = [i for i in ends if run[i] == longest]
+    if len(best) != 1 or longest < MIN_PAGE_RUN:
+        return None
+    end = best[0]
+    if back[end] == 1:
+        above = any(_ANY_PAGE_RE.fullmatch(lines[i].strip().upper()) and _ends_page(lines, i) for i in range(end))
+        return (0, end) if end and not above else None
+    previous = [j for j, n in footers if n == number - 1 and j < end]
+    starts = [j for j in previous if page_between(j, end) and back[j] == back[end] - 1 and run[j] >= longest]
+    return (starts[0] + 1, end) if len(starts) == 1 and starts == previous[-1:] else None
+
+
 # A note's heading: "Note 10. Debt", "NOTE 10 — DEBT" or "10. Debt", but not "10 Debt", which is how footnotes
-# ("1 Includes ...") and S&P Global's index of notes are written; or "NOTE 10" alone on its line, the title on the next.
+# ("1 Includes ...") and S&P Global's index of notes are written; or "NOTE 10" or "(10)" alone on its line, the title
+# on the next (American Express; Berkshire Hathaway's 10-K, whose table footnotes "(1)" are followed by a sentence).
+# "(10)" alone also begins table footnotes and entries of the exhibit index ("(10)", "Material Contracts" in
+# McDonald's 10-K), so it heads a note only in the notes, from their title to the next item heading, and only among
+# three such headings numbered in a row there (McDonald's 10-K has no item headings in its body, and its list of
+# exhibits after the notes holds "(1)", "(2)", "(4)" and "(10)").
 _NOTE_HEADING_RE = re.compile(r"^\s*(?:(?i:note)\s+(\d{1,2})\b[\s.:—–-]*|(\d{1,2})(?:[.:]|\s+[—–-])\s*)[A-Z][A-Za-z]")
-_NOTE_ALONE_RE = re.compile(r"(?i)^\s*note\s+(\d{1,2})\s*$")
+_NOTE_ALONE_RE = re.compile(r"(?i)^\s*(?:note\s+(\d{1,2})|\((\d{1,2})\))\s*$")
+_NOTES_TITLE_RE = re.compile(r"(?i)^\s*notes\s+to\s+(?:the\s+)?(?:(?:condensed|consolidated|combined)\s+)*"
+                             r"financial\s+statements\b")
 _NOTE_TITLE_RE = re.compile(r"^\s*[A-Z][A-Za-z]")
 _PAGE_NUMBER_RE = re.compile(r"^\s*(?:[A-Z]{1,2}-)?\d{1,3}\s*$")
 _ENDS_IN_PAGE_NUMBER_RE = re.compile(r"[\s.](?:[A-Z]{1,2}-)?\d{1,3}\s*$")
@@ -784,7 +860,13 @@ def _note_headings(lines: Sequence[str]) -> dict[int, int]:
     nothing but page numbers between ("Note 3 – Reserves for Credit Losses", "112", "Note 4 – Investment Securities"
     in American Express's 10-K, whose notes are headed "NOTE 3" on a line of their own)."""
     heads: dict[int, tuple[int, int]] = {}  # line index -> (note number, the heading's last line)
+    bracketed: dict[int, tuple[int, int]] = {}  # the same for "(10)" in the notes
+    in_notes = False
     for i, line in enumerate(lines):
+        if len(line) <= 200 and _ITEM_LINE_RE.match(line):
+            in_notes = False
+        elif len(line) <= 150 and _NOTES_TITLE_RE.match(line):
+            in_notes = True
         if len(line) > 150:
             continue
         if m := _NOTE_HEADING_RE.match(line):
@@ -792,14 +874,20 @@ def _note_headings(lines: Sequence[str]) -> dict[int, int]:
                 heads[i] = (int(m.group(1) or m.group(2)), i)
         elif (m := _NOTE_ALONE_RE.match(line)) and i + 1 < len(lines) and len(lines[i + 1]) <= 150 \
                 and _NOTE_TITLE_RE.match(lines[i + 1]):
-            heads[i] = (int(m.group(1)), i + 1)
+            if m.group(1):
+                heads[i] = (int(m.group(1)), i + 1)
+            elif in_notes and not lines[i + 1].rstrip().endswith("."):
+                bracketed[i] = (int(m.group(2)), i + 1)
+    numbers = {number for number, _ in bracketed.values()}
+    in_row = {n for n in numbers if any({n + k, n + k + 1, n + k + 2} <= numbers for k in (-2, -1, 0))}
+    heads.update({i: head for i, head in bracketed.items() if head[0] in in_row})
     rows = set()
     for i, (number, last) in heads.items():
         after = next((j for j in range(last + 1, len(lines))
                       if lines[j].strip() and not _PAGE_NUMBER_RE.match(lines[j])), None)
         if after in heads and heads[after][0] == number + 1:
             rows |= {i, after}
-    return {i: number for i, (number, _) in heads.items() if i not in rows}
+    return {i: number for i, (number, _) in sorted(heads.items()) if i not in rows}
 
 
 def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
