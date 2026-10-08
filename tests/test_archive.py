@@ -117,9 +117,10 @@ def env(tmp_path, monkeypatch):
     return env
 
 
-def context(env, step: str, round_: int = 1) -> registry.RunContext:
-    return registry.RunContext(step=registry.STEPS[step], company="NEWCO", period="FY2026Q2",
-                               run_date=dt.date(2026, 9, 28), public_root=env.public, private_root=env.private,
+def context(env, step: str, round_: int = 1, period: str = "FY2026Q2",
+            run_date: dt.date = dt.date(2026, 9, 28)) -> registry.RunContext:
+    return registry.RunContext(step=registry.STEPS[step], company="NEWCO", period=period,
+                               run_date=run_date, public_root=env.public, private_root=env.private,
                                workspace_root=env.workspace, call=None, formats={}, edgar=env.gateway, round=round_)
 
 
@@ -208,6 +209,32 @@ def test_the_model_review_sees_the_proposed_version_and_its_findings_go_back_onl
     assert "double discounting" in registry.INPUTS["findings_04C"](context(env, "01C"), "findings_04C").text
     returned = registry.INPUTS["valuation"](context(env, "01C"), "valuation")
     assert "doc_status: proposed" in returned.text and "04C returned" in returned.text
+
+
+def succeeded_run(env, rel: str, manifest: dict) -> Path:
+    """A succeeded runner bundle under the private runs/, as ctx.runs() indexes it."""
+    folder = env.private / rel
+    fx.write_yaml(folder / registry.MANIFEST_NAME, {"bundle": rel, **manifest})
+    fx.write_yaml(folder / registry.RUN_RECORD_NAME, {"status": "succeeded"})
+    return folder
+
+
+def test_02_reads_the_effective_valuations_working_as_placed_not_as_the_model_wrote_it(env):
+    """Placement marks the working effective and applies HQ's tag repairs to its copy; outputs/ keeps the raw text."""
+    fx.write(env.private / "companies" / "NEWCO" / "valuation.yml", "company: NEWCO\ndoc_status: effective\n")
+    run = succeeded_run(env, "runs/NEWCO/2026-09-30-01C-rerun2",
+                        {"step": "01C", "company": "NEWCO", "period": "FY2026Q2", "rerun": 2})
+    fx.write(run / "outputs" / "valuation_yml.yml", "company: NEWCO\ndoc_status: proposed\n")
+    fx.write(run / "outputs" / "valuation_md.md", "---\ndoc_status: proposed\n---\nCentral value $10.\n")
+    placed = fx.write(run / "valuation_md.md",
+                      "---\ndoc_status: effective\n---\nCentral value $10 [src:NEWCO-VAL-2026-09-30].\n")
+    built = registry.INPUTS["valuation"](context(env, "02"), "valuation")
+    assert "doc_status: proposed" not in built.text and "$10 [src:NEWCO-VAL-2026-09-30]." in built.text
+    assert built.sources[-1]["kind"] == "repo_file"
+    assert built.sources[-1]["path"] == "runs/NEWCO/2026-09-30-01C-rerun2/valuation_md.md"
+    placed.unlink()  # no placed copy: the run's own output
+    built = registry.INPUTS["valuation"](context(env, "02"), "valuation")
+    assert "Central value $10.\n" in built.text and built.sources[-1]["kind"] == "run_output"
 
 
 def test_a_valuation_is_placed_as_effective_only_after_04c_approved_that_very_run(tmp_path):
@@ -440,6 +467,37 @@ def test_the_revision_reads_hqs_rulings_on_the_audit_of_this_build(env, monkeypa
     monkeypatch.setattr(registry.RunContext, "latest_run", lambda self, step, **kw: draft if step == "01A" else None)
     built = registry.INPUTS["hq_rulings"](context(env, "01A", 2), "hq_rulings")
     assert "R1 continuing basis" in built.text and "old build" not in built.text
+
+
+def test_a_valuation_in_a_later_period_reads_the_rulings_on_the_latest_build_only(env):
+    """01C may value the placed dossier, and 04C review it, in a period with no 01A run of its own."""
+    fx.write(env.private / "runs" / "hq" / "2026-09-01-17A-NEWCO" / "rulings.md", "old build\n")
+    fx.write(env.private / "runs" / "hq" / "2026-09-29-17A-NEWCO" / "rulings.md", "R1 continuing basis\n")
+    succeeded_run(env, "runs/NEWCO/2026-09-28-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q2"})
+    for step in ("01C", "04C"):
+        built = registry.INPUTS["hq_rulings"](context(env, step, period="FY2026Q3"), "hq_rulings")
+        assert "R1 continuing basis" in built.text and "old build" not in built.text
+
+
+def test_a_backdated_valuation_keeps_the_rulings_on_its_build_when_a_rebuild_began_after_its_run_date(env):
+    """A rerun of 01C and 04C dated in the build period values the dossier HQ ruled on, not a later, unruled draft."""
+    fx.write(env.private / "runs" / "hq" / "2026-09-29-17A-NEWCO" / "rulings.md", "R1 continuing basis\n")
+    succeeded_run(env, "runs/NEWCO/2026-09-28-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q2"})
+    succeeded_run(env, "runs/NEWCO/2026-11-05-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q3"})
+    for step in ("01C", "04C"):
+        built = registry.INPUTS["hq_rulings"](context(env, step, run_date=dt.date(2026, 9, 30)), "hq_rulings")
+        assert "R1 continuing basis" in built.text
+        assert [s["path"] for s in built.sources] == ["runs/hq/2026-09-29-17A-NEWCO/rulings.md"]
+
+
+def test_the_rulings_on_a_company_whose_ticker_starts_with_this_one_are_not_this_companys(env):
+    succeeded_run(env, "runs/NEWCO/2026-09-28-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q2"})
+    fx.write(env.private / "runs" / "hq" / "2026-09-29-17A-NEWCOX" / "rulings.md", "another company\n")
+    with pytest.raises(registry.Omit, match="has not ruled"):
+        registry.INPUTS["hq_rulings"](context(env, "01A", 2), "hq_rulings")
+    fx.write(env.private / "runs" / "hq" / "2026-09-30-17A-NEWCO-r2-rerun2" / "rulings.md", "R2 second round\n")
+    built = registry.INPUTS["hq_rulings"](context(env, "01A", 2), "hq_rulings")
+    assert "R2 second round" in built.text and "another company" not in built.text
 
 
 def test_an_excerpt_comes_from_the_row_that_shares_the_most_words_with_the_fact():
