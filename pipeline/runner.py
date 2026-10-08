@@ -2099,11 +2099,14 @@ VALUATION_OUTPUTS = ("valuation_yml", "valuation_md")
 _PROPOSED_RE = re.compile(r"(?m)^(doc_status:[ \t]*)['\"]?proposed['\"]?(?:[ \t]+#[^\r\n]*)?[ \t]*(?=\r?$)")
 
 
+def _rank(run: registry.PriorRun) -> tuple[Any, ...]:
+    """RunContext.latest_run's order: round, run date, rerun number (-rerun10 after -rerun9), path."""
+    return run.round, run.run_date, run.rerun, run.rel
+
+
 def _ranked(runs: Sequence[registry.PriorRun], company: str, step: str) -> list[registry.PriorRun]:
-    """The company's succeeded runs of a step, oldest first, ranked as RunContext.latest_run ranks them (-rerun10
-    after -rerun9)."""
-    return sorted((r for r in runs if r.succeeded and r.step == step and r.company == company),
-                  key=lambda r: (r.round, r.run_date, r.rerun, r.rel))
+    """The company's succeeded runs of a step, oldest first, ranked as RunContext.latest_run ranks them."""
+    return sorted((r for r in runs if r.succeeded and r.step == step and r.company == company), key=_rank)
 
 
 def valuation_decisions(runs: Sequence[registry.PriorRun], company: str) -> dict[str, tuple[str, str]]:
@@ -2125,8 +2128,9 @@ def approving_review(private_root: Path, manifest: Mapping[str, Any]) -> tuple[s
 
 
 def later_approved(private_root: Path, manifest: Mapping[str, Any]) -> str | None:
-    """The latest run of this bundle's step, later than it, whose valuation 04C approved, or None. An earlier version
-    never replaces it, whatever order the bundles are placed in (00 §V20: one version)."""
+    """The latest run of this bundle's step, later than it, whose valuation 04C approved (its latest decision), or None.
+    An earlier version never takes effect while a later one is approved, placed or not; once 04C returns the placed
+    one, later_in_force still keeps it (00 §V20: one version)."""
     runs, company = registry.index_runs(private_root), str(manifest.get("company") or "")
     decisions = valuation_decisions(runs, company)
     ranked = [r.rel for r in _ranked(runs, company, str(manifest["step"]))]
@@ -2134,18 +2138,32 @@ def later_approved(private_root: Path, manifest: Mapping[str, Any]) -> str | Non
     return next((rel for rel in reversed(later) if decisions.get(rel, ("", ""))[1] == "approved"), None)
 
 
+def later_in_force(private_root: Path, manifest: Mapping[str, Any]) -> str | None:
+    """The run, later than this bundle, that produced the effective valuation.yml (found as 02 finds its working), or
+    None. Whatever 04C has said of it since, an earlier version never replaces it: a 04C review of the placed version
+    is filed under that run, so returning it would otherwise reopen every older approved bundle (00 §V20)."""
+    company = str(manifest.get("company") or "")
+    effective = private_root / "companies" / company / "valuation.yml"
+    if not company or not effective.is_file():
+        return None
+    runs = registry.index_runs(private_root)
+    origin = registry.valuation_origin(runs, company, effective.read_text(encoding="utf-8"))
+    this = next((r for r in runs if r.rel == manifest["bundle"]), None)
+    return origin.rel if origin is not None and this is not None and _rank(origin) > _rank(this) else None
+
+
 TAG_REPAIRS = "tag_repairs.yml"  # HQ: source tags added to a run's outputs at placement, nothing else (00 §E1)
 _SRC_TAG_RE = re.compile(r"\[src:[^\]\s]+\]")
 _ADDED_TAGS = r"(?: \[src:[^\]\s]+\])*"
-# where a repair may add a tag: after a word, figure or mark, and before a space, the end or a mark that closes a clause
-# or a figure (a point or comma before a digit is a separator inside a number)
-_TAG_SLOT_RE = re.compile(r"(?<=\S)(?=\s|$|[;:!?)'\"]|[.,](?!\d))")
+# where a repair may add a tag: after a complete token, before a space, the end or a mark that closes a clause or a
+# figure; never where a word or digit goes on after the marks that follow (1,500:1, 10:30, McDonald's, U.S., 8.5)
+_TAG_SLOT_RE = re.compile(r"(?<=\S)(?=\s|$|[;:!?)'\".,])(?![^\w\s]*\w)")
 
 
 def apply_tag_repairs(text: str, repairs: Sequence[Mapping[str, Any]]) -> tuple[str, list[str]]:
     """Each repair replaces `find` (which must occur exactly once) by `replace`, which may differ from it only by
-    added tags, each " [src:...]" after a word or figure, never inside a word, a number or another tag; anything else
-    is refused, so an output another role approved cannot change in substance."""
+    added tags, each " [src:...]" after a complete word or figure, never inside a word, a number or another tag;
+    anything else is refused, so an output another role approved cannot change in substance."""
     problems = []
     for n, repair in enumerate(repairs, 1):
         find, replace = str(repair.get("find") or ""), str(repair.get("replace") or "")
@@ -2369,6 +2387,9 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
     elif review is not None and (later := later_approved(roots.private, manifest)):
         problems.append(f"04C has approved a later valuation ({later}); this earlier version never replaces it "
                         "(00 §V20: one version)")
+    elif review is not None and (in_force := later_in_force(roots.private, manifest)):
+        problems.append(f"the effective valuation came from a later run ({in_force}); this earlier version never "
+                        "replaces it, whatever 04C has said of it since (00 §V20: one version)")
     for name, entry in entries.items():
         data = (bundle_dir / str(entry["file"])).read_bytes()
         if _sha(data) != entry.get("sha256"):
