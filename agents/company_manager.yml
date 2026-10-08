@@ -64,6 +64,7 @@ can_see:
   # Audit findings and HQ's returns
   - findings_04A
   - hq_rulings                   # 01A round 2: HQ's rulings on the archive's fact audit, incl. the owner's decisions
+  - requested_documents          # 01A round 2, 01C, 02: the filings HQ asked the pipeline to supply (supply.yml)
   - findings_04B
   - findings_04C
   - bear_case_04B

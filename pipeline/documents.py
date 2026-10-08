@@ -770,9 +770,10 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
 
 
 # A note's heading: "Note 10. Debt", "NOTE 10 — DEBT" or "10. Debt", but not "10 Debt", which is how footnotes
-# ("1 Includes ...") and S&P Global's index of notes are written; or "NOTE 10" alone on its line, the title on the next.
+# ("1 Includes ...") and S&P Global's index of notes are written; or "NOTE 10" or "(10)" alone on its line, the title
+# on the next (American Express; Berkshire Hathaway's 10-K, whose table footnotes "(1)" are followed by a sentence).
 _NOTE_HEADING_RE = re.compile(r"^\s*(?:(?i:note)\s+(\d{1,2})\b[\s.:—–-]*|(\d{1,2})(?:[.:]|\s+[—–-])\s*)[A-Z][A-Za-z]")
-_NOTE_ALONE_RE = re.compile(r"(?i)^\s*note\s+(\d{1,2})\s*$")
+_NOTE_ALONE_RE = re.compile(r"(?i)^\s*(?:note\s+(\d{1,2})|\((\d{1,2})\))\s*$")
 _NOTE_TITLE_RE = re.compile(r"^\s*[A-Z][A-Za-z]")
 _PAGE_NUMBER_RE = re.compile(r"^\s*(?:[A-Z]{1,2}-)?\d{1,3}\s*$")
 _ENDS_IN_PAGE_NUMBER_RE = re.compile(r"[\s.](?:[A-Z]{1,2}-)?\d{1,3}\s*$")
@@ -791,8 +792,8 @@ def _note_headings(lines: Sequence[str]) -> dict[int, int]:
             if not _ENDS_IN_PAGE_NUMBER_RE.search(line):
                 heads[i] = (int(m.group(1) or m.group(2)), i)
         elif (m := _NOTE_ALONE_RE.match(line)) and i + 1 < len(lines) and len(lines[i + 1]) <= 150 \
-                and _NOTE_TITLE_RE.match(lines[i + 1]):
-            heads[i] = (int(m.group(1)), i + 1)
+                and _NOTE_TITLE_RE.match(lines[i + 1]) and not (m.group(2) and lines[i + 1].rstrip().endswith(".")):
+            heads[i] = (int(m.group(1) or m.group(2)), i + 1)
     rows = set()
     for i, (number, last) in heads.items():
         after = next((j for j in range(last + 1, len(lines))

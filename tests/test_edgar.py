@@ -919,6 +919,14 @@ def test_check_sources_write_fills_only_missing_fields(tmp_path, client):
     assert again["APP-8K-2026-05-06"] == "mismatch"  # an entry with a mismatch is neither filled nor changed
 
 
+def test_check_sources_flags_a_url_that_points_to_another_filing(tmp_path, client):
+    text = APP_SOURCES.replace("1751008/000175100826000059/0001751008-26-000059-index.htm",
+                               "1751008/000175100826000057/0001751008-26-000057-index.htm")
+    found = {f.tag: f for f in edgar.check_sources(write_sources(tmp_path, "APP", text), client=client).findings}
+    assert found["APP-10Q-FY2026Q2"].problems == [
+        "url points to another filing (000175100826000057), not 0001751008-26-000059"]
+
+
 def test_check_sources_reads_6k_periods_from_the_press_release(tmp_path, client):
     path = write_sources(tmp_path, "PDD", PDD_SOURCES)
     found = {f.tag: f for f in edgar.check_sources(path, client=client).findings}

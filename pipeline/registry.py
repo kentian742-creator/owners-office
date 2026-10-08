@@ -100,6 +100,11 @@ class Omit(Exception):
     """An optional input is left out on purpose; the message is the reason recorded in the manifest."""
 
 
+class NotSupplied(LookupError):
+    """One document HQ asked for cannot be supplied (requested_documents); the message is the reason, which the input
+    lists instead of failing."""
+
+
 # ---------------------------------------------------------------------------------------------------- data
 
 
@@ -164,6 +169,10 @@ class FilingText:
     text: str
     sections: tuple[str, ...] = ()  # the sections kept of a periodic report (14T); empty: the whole document
     note: str | None = None  # how the text was cut or rendered
+    # a document HQ asked for (requested_documents), which may be another issuer's: its issuer, EDGAR's title, period
+    issuer_cik: str | None = None
+    title: str | None = None
+    period: str | None = None
 
     @property
     def cite(self) -> str:
@@ -1003,6 +1012,32 @@ class EdgarGateway:
             return []
         return [self._document(ticker, cal, filing, filing.primary_document, known)]
 
+    def requested_document(self, entry: Mapping[str, Any], exhibit: str | None, *, as_of: dt.date, registered: bool,
+                           company: edgar.Filer | None, issuers: dict[str, Any]) -> FilingText:
+        """The document a tag HQ asked for names (requested_documents), of this company or another issuer: the
+        primary document of the filing edgar.filing_for_entry() finds, or the EX-99 exhibit the locator names; under
+        the tag as asked, with the issuer's CIK, a title from EDGAR and, for a periodic report, the fiscal period in
+        the issuer's own calendar. A filing made after `as_of` (the run date) is not supplied: a run reads what was
+        public on its date. Raises NotSupplied, edgar.EdgarError, or ValueError for a malformed CIK or accession."""
+        filing, issuer = edgar.filing_for_entry(entry, company=company, client=self.client, issuers=issuers)
+        if filing.filing_date > as_of:
+            raise NotSupplied(f"filed on {filing.filing_date} (accession {filing.accession}), after the run date "
+                              f"{as_of}")
+        name = filing.primary_document
+        if exhibit:
+            docs = edgar.filing_documents(filing.cik, filing.accession, client=self.client,
+                                          primary_document=filing.primary_document)
+            name = next((d.name for d in docs if d.exhibit == exhibit and not d.name.lower().endswith(".pdf")), "")
+        if not name:
+            raise NotSupplied(f"the filing {filing.accession} has no {exhibit or 'primary document'} on EDGAR")
+        tag = str(entry["tag"])
+        doc = self._document(tag, issuer.calendar, filing, name, {}, exhibit, tag=tag)
+        period = edgar.expected_period(filing, issuer, self.client) if filing.form in edgar.PERIODIC_FORMS else None
+        issuer_name = issuer.subs.name or f"CIK {issuer.subs.cik}"
+        title = (f"{issuer_name} {filing.form} for {period} (period ended {filing.report_date})" if period
+                 else f"{issuer_name} {filing.form} filed {filing.filing_date}")
+        return dataclasses.replace(doc, registered=registered, issuer_cik=issuer.subs.cik, title=title, period=period)
+
     def _ownership(self, ticker: str, cal: edgar.FiscalCalendar, filing: edgar.Filing, known_tags: Mapping[str, str],
                    tag: str) -> FilingText | None:
         """A Form 3, 4 or 5 from its XML in a few lines (documents.render_ownership), or None to fall back to the
@@ -1203,13 +1238,16 @@ def render_documents(lines: list[str], docs: Iterable[FilingText]) -> tuple[str,
     sources = []
     for doc in docs:
         items = f" (Items {', '.join(doc.items)})" if doc.items else ""
-        lines += [f"===== [src:{doc.cite}] {doc.form}{items} | accession {doc.accession} | filed {doc.filed} | "
-                  f"{doc.document} =====", f"url: {doc.url}"]
+        lines += [f"===== [src:{doc.cite}] {doc.title or doc.form}{items} | accession {doc.accession} | filed "
+                  f"{doc.filed} | {doc.document} =====", f"url: {doc.url}"]
         lines += [f"note: {doc.note}"] if doc.note else []
         lines += ["", doc.text.strip(), ""]
         source = {"kind": "edgar", "tag": doc.cite, "registered": doc.registered, "form": doc.form,
                   "accession": doc.accession, "filed": doc.filed.isoformat(), "document": doc.document,
                   "url": doc.url, "sha256": doc.raw_sha256, "text_sha256": sha256_text(doc.text)}
+        # placement registers a cited document from these fields (runner.supplied_documents), another issuer's too
+        source.update({k: v for k, v in (("issuer_cik", doc.issuer_cik), ("title", doc.title),
+                                         ("period", doc.period)) if v})
         if doc.sections:
             source["sections"] = list(doc.sections)
         if doc.note:
@@ -2323,6 +2361,20 @@ def _tags_of(value: Any) -> list[str]:
     return [str(x).strip() for x in items if isinstance(x, str) and x.strip()]
 
 
+def registered_sources(ctx: RunContext, company: str) -> dict[str, dict[str, Any]]:
+    """tag -> entry of the company's registered sources: the public, then the private companies/<T>/sources.yml, then
+    a new archive's sources, which are in 01A's sources_additions until placed (the first entry of a tag wins)."""
+    registered: dict[str, dict[str, Any]] = {}
+    for root in (ctx.public_root, ctx.private_root):
+        data = load_yaml_file(root / "companies" / company / "sources.yml")
+        for entry in (data.get("sources") if isinstance(data, dict) else None) or []:
+            if isinstance(entry, dict) and entry.get("tag"):
+                registered.setdefault(str(entry["tag"]), entry)
+    for entry in archive_source_entries(ctx):
+        registered.setdefault(str(entry["tag"]), entry)
+    return registered
+
+
 def cited_texts(ctx: RunContext, tags: Iterable[str]) -> tuple[dict[str, str], list[FilingText], list[str]]:
     """Texts of the documents the given tags cite: {tag or tag#locator: text}, the EDGAR documents fetched, and the
     tags that could not be resolved. Resolved are this event's filings, the company's filings registered in
@@ -2333,14 +2385,7 @@ def cited_texts(ctx: RunContext, tags: Iterable[str]) -> tuple[dict[str, str], l
     docs: dict[tuple[str, str], FilingText] = {}
     for doc in results.documents:
         docs[(doc.accession, doc.document)] = doc
-    registered: dict[str, dict[str, Any]] = {}
-    for root in (ctx.public_root, ctx.private_root):
-        data = load_yaml_file(root / "companies" / company / "sources.yml")
-        for entry in (data.get("sources") if isinstance(data, dict) else None) or []:
-            if isinstance(entry, dict) and entry.get("tag"):
-                registered.setdefault(str(entry["tag"]), entry)
-    for entry in archive_source_entries(ctx):  # a new archive's sources are in 01A's sources_additions until placed
-        registered.setdefault(str(entry["tag"]), entry)
+    registered = registered_sources(ctx, company)
     unresolved: list[str] = []
     gateway = ctx.gateway()
     filer = ctx.filer()
@@ -3155,16 +3200,13 @@ def _findings_04a(ctx: RunContext, name: str) -> BuiltInput:
     return BuiltInput(text, "yml", run.outputs_used(["findings"]))
 
 
-@assembler("hq_rulings")
-def _hq_rulings(ctx: RunContext, name: str) -> BuiltInput:
-    """01A round 2: HQ's rulings on the archive's fact audit (runs/hq/<date>-17A-<TICKER>/rulings.md), which settle the
-    audit's questions and the owner's decisions the revision must follow. The rulings on one build are those dated
-    from its first draft until the next build's first draft. 01C and 04C read the rulings on the build of their own
-    period, or, in a period without one, on the latest build begun by the run date (they may value the placed dossier
-    in a later period); a rebuild begun later, finished or not, does not govern the dossier they value."""
-    company = _need_company(ctx, name)
-    if ctx.step.step == "01A" and ctx.round == 1:
-        raise Omit("the first draft of the dossier: HQ rules after the fact audit")
+def hq_build_files(ctx: RunContext, company: str, filename: str) -> list[Path]:
+    """HQ's files of one name on the build of the archive this step works from, oldest first:
+    runs/hq/<date>-17A-<TICKER>[-r<n>][-rerun<n>]/<filename> dated from the build's first draft until the next build's
+    first draft. The build is the one of this step's period (its round-1 01A run); 01C, 04C and 02 in a period without
+    one take the latest build begun by the run date (they may value the placed dossier in a later period), and a
+    rebuild begun later, finished or not, does not govern the dossier they value. hq_rulings (rulings.md) and
+    requested_documents (supply.yml) read the files of the same window."""
     draft = ctx.latest_run("01A", period=ctx.period, round_=1)
     if draft is None and ctx.step.step != "01A":
         draft = ctx.latest_run("01A", round_=1, as_of=ctx.run_date)
@@ -3175,15 +3217,173 @@ def _hq_rulings(ctx: RunContext, name: str) -> BuiltInput:
     # the folder StepSpec.bundle_name gives a 17A run about this company, so another ticker starting with it is not
     folder = re.compile(rf"(\d{{4}}-\d{{2}}-\d{{2}})-17A-{re.escape(company)}(?:-r\d+)?(?:-rerun\d+)?")
     found = []
-    for path in sorted((ctx.private_root / "runs" / "hq").glob(f"*-17A-{company}*/rulings.md")):
+    for path in sorted((ctx.private_root / "runs" / "hq").glob(f"*-17A-{company}*/{filename}")):
         match = folder.fullmatch(path.parent.name)
         if match and since <= dt.date.fromisoformat(match.group(1)) < until:
             found.append(path)
+    return found
+
+
+@assembler("hq_rulings")
+def _hq_rulings(ctx: RunContext, name: str) -> BuiltInput:
+    """01A round 2: HQ's rulings on the archive's fact audit (runs/hq/<date>-17A-<TICKER>/rulings.md), which settle the
+    audit's questions and the owner's decisions the revision must follow. 01C and 04C read them too. The rulings on
+    one build are those dated from its first draft until the next build's first draft (hq_build_files)."""
+    company = _need_company(ctx, name)
+    if ctx.step.step == "01A" and ctx.round == 1:
+        raise Omit("the first draft of the dossier: HQ rules after the fact audit")
+    found = hq_build_files(ctx, company, "rulings.md")
     if not found:
         raise Omit(f"HQ has not ruled on the audit of {company}'s dossier")
     chunks = [f"===== {p.relative_to(ctx.private_root).as_posix()} =====\n{p.read_text(encoding='utf-8').rstrip()}\n"
               for p in found]
     return BuiltInput("\n".join(chunks), "md", [repo_file_source(ctx.private_root, p, PRIVATE_REPO) for p in found])
+
+
+# ---- documents HQ asks the pipeline to supply (docs/decisions/0031)
+
+SUPPLY_FILE = "supply.yml"  # HQ's list next to its rulings: [{tag: "<TAG>[#<locator>]", why: "<one line>"}, ...]
+# Caps in estimated tokens (slicing.estimate_tokens). One item holds a whole 10-Q's Item 1 (Berkshire's runs to about
+# 37,000); all together leave the largest bundles so far (01A round 2, about 590,000 tokens) within the 872,000 a
+# call can take (slicing.MAX_INPUT_TOKENS). The list's order is HQ's priority: the item that reaches the total is cut
+# to what is left, and the items after it are not supplied; nor is an item when less than the minimum is left.
+REQUESTED_ITEM_TOKENS = 50_000
+REQUESTED_TOTAL_TOKENS = 250_000
+REQUESTED_MIN_TOKENS = 2_000
+_EXHIBIT_LOCATOR_RE = re.compile(r"(?i)^EX-?99(?:\.(\d{1,2}))?$")
+
+
+@dataclasses.dataclass(frozen=True)
+class SupplyRequest:
+    """One document HQ asked for: its tag as written (TAG#LOCATOR), why, and the supply.yml that lists it."""
+
+    cite: str
+    why: str
+    origin: str
+
+
+def supply_requests(private_root: Path, paths: Iterable[Path]) -> tuple[list[SupplyRequest], list[str]]:
+    """The requests of HQ's supply lists in order, each tag once (the first listing wins), and the "not supplied"
+    lines for entries or files that are not a list of {tag, why}."""
+    requests: dict[str, SupplyRequest] = {}
+    problems: list[str] = []
+    for path in paths:
+        rel = path.relative_to(private_root).as_posix()
+        data = load_yaml_file(path)
+        if not isinstance(data, list):
+            problems.append(f"not supplied: {rel}: not a YAML list of {{tag, why}}")
+            continue
+        for number, entry in enumerate(data, 1):
+            cite = str(entry.get("tag") or "").strip() if isinstance(entry, dict) else ""
+            if not cite:
+                problems.append(f"not supplied: {rel} entry {number}: it has no tag")
+                continue
+            requests.setdefault(cite, SupplyRequest(cite, " ".join(str(entry.get("why") or "").split()), rel))
+    return list(requests.values()), problems
+
+
+def cut_to_tokens(text: str, budget: int) -> tuple[str, str | None]:
+    """The text within `budget` estimated tokens, cut at the end of a line, and where it was cut (None when whole)."""
+    if slicing.estimate_tokens(text) <= budget:
+        return text, None
+    low, high = 0, len(text)
+    while low < high:  # the longest prefix within the budget
+        middle = (low + high + 1) // 2
+        if slicing.estimate_tokens(text[:middle]) <= budget:
+            low = middle
+        else:
+            high = middle - 1
+    end = text.rfind("\n", 0, low + 1)
+    end = end if end > low // 2 else low  # a line longer than half the budget is cut inside
+    line, lines = text.count("\n", 0, end) + 1, text.count("\n") + 1
+    return text[:end], f"after line {line:,} of {lines:,} (character {end:,} of {len(text):,})"
+
+
+def _requested_text(doc: FilingText, locator: str, exhibit: str | None) -> tuple[str, str]:
+    """The excerpt a request asks for and what it is: the part the locator names (documents.locator_section), the
+    exhibit, or the whole document. A locator the document's page footers and headings do not find gives the whole
+    document, as a cited tag's excerpt is then looked for in the whole filing (_fact_table)."""
+    if exhibit or not locator:
+        return doc.text, f"the whole {'exhibit' if exhibit else 'document'}"
+    part = documents.locator_section(doc.text, locator, doc.form)
+    if part is None:
+        return doc.text, f"the whole document: #{locator} was not found by its page footers or headings"
+    return part, f"the part #{locator} names ({len(part):,} of {len(doc.text):,} characters)"
+
+
+@assembler("requested_documents")
+def _requested_documents(ctx: RunContext, name: str) -> BuiltInput:
+    """01A round 2, 01C, 04C and 02: the documents HQ asked the pipeline to supply (supply.yml next to its rulings, in
+    the window hq_rulings reads), each resolved to its EDGAR filing, this company's or another issuer's: through the
+    company's registered sources, else by its tag (edgar.filing_for_entry). Each is cut to the part its locator names,
+    within REQUESTED_ITEM_TOKENS, and all together within REQUESTED_TOTAL_TOKENS; what cannot be supplied is listed
+    with the reason. HQ decides what goes in; the pipeline only fetches it."""
+    company = _need_company(ctx, name)
+    if ctx.step.step == "01A" and ctx.round == 1:
+        raise Omit("the first draft of the dossier: HQ asks for documents after the fact audit")
+    files = hq_build_files(ctx, company, SUPPLY_FILE)
+    if not files:
+        raise Omit(f"HQ has asked for no documents for {company}'s archive (no {SUPPLY_FILE} beside its rulings)")
+    requests, missing = supply_requests(ctx.private_root, files)
+    if not requests:
+        raise Omit(f"HQ's {SUPPLY_FILE} names no document: " + "; ".join(m.removeprefix("not supplied: ")
+                                                                         for m in missing))
+    registered = registered_sources(ctx, company)
+    filer, gateway = ctx.filer(), ctx.gateway()
+    issuers: dict[str, Any] = {}  # each issuer's submissions, fetched once
+    fetched: dict[tuple[str, str | None], FilingText] = {}  # one fetch per document, whatever its locators
+    supplied: list[FilingText] = []
+    used = cut = 0
+    full = False  # an item was cut to the room the total left
+    for request in requests:
+        room = REQUESTED_TOTAL_TOKENS - used
+        if full or room < REQUESTED_MIN_TOKENS:
+            missing.append(f"not supplied: {request.cite}: the documents listed before it fill the input's cap of "
+                           f"{REQUESTED_TOTAL_TOKENS:,} tokens")
+            continue
+        tag, _, locator = request.cite.partition("#")
+        entry = registered.get(tag)
+        if entry is not None and entry.get("kind") not in (None, "filing"):
+            missing.append(f"not supplied: {request.cite}: registered as kind: {entry.get('kind')}, not an EDGAR "
+                           "filing; the pipeline fetches EDGAR filings only")
+            continue
+        match = _EXHIBIT_LOCATOR_RE.match(locator)
+        exhibit = (f"EX-99.{int(match.group(1))}" if match.group(1) else "EX-99") if match else None
+        if (tag, exhibit) not in fetched:
+            try:
+                fetched[(tag, exhibit)] = gateway.requested_document(
+                    entry or {"tag": tag}, exhibit, as_of=ctx.run_date, registered=entry is not None, company=filer,
+                    issuers=issuers)
+            except (NotSupplied, edgar.EdgarError, ValueError) as exc:
+                missing.append(f"not supplied: {request.cite}: {exc}")
+                continue
+        doc = fetched[(tag, exhibit)]
+        text, what = _requested_text(doc, locator, exhibit)
+        budget = min(REQUESTED_ITEM_TOKENS, room)
+        text, where = cut_to_tokens(text, budget)
+        used += slicing.estimate_tokens(text)
+        if where:
+            full = full or budget < REQUESTED_ITEM_TOKENS
+            cut += 1
+            what += f", cut by the pipeline {where} to stay within {budget:,} tokens; the rest is at the url above"
+            text += f"\n[cut by the pipeline here, {where}]"
+        asked = f"asked for by HQ ({request.origin})" + (f": {request.why}" if request.why else "")
+        supplied.append(dataclasses.replace(doc, locator=exhibit or locator or None, text=text,
+                                            note=f"{asked}; {what}"))
+    if not supplied:
+        raise Omit(f"none of the {len(requests)} document(s) HQ asked for could be supplied: "
+                   + "; ".join(m.removeprefix("not supplied: ") for m in missing))
+    header = [f"Documents HQ asked the pipeline to supply for {company}, fetched from EDGAR as of {ctx.run_date}, in "
+              f"the order HQ listed them ({', '.join(f.relative_to(ctx.private_root).as_posix() for f in files)}).",
+              "Each is the part of the filing its locator names (a page, an item, a note or an exhibit), or the whole "
+              f"document; none runs over {REQUESTED_ITEM_TOKENS:,} estimated tokens, all together stay within "
+              f"{REQUESTED_TOTAL_TOKENS:,}, and a cut says where it falls.",
+              CITE_NOTE, *missing, ""]
+    text, sources = render_documents(header, supplied)
+    sources = [repo_file_source(ctx.private_root, f, PRIVATE_REPO) for f in files] + sources
+    note = f"{len(supplied)} of {len(requests)} requested document(s) supplied" + (f", {cut} cut" if cut else "")
+    note += f"; {len(missing)} not supplied" if missing else ""
+    return BuiltInput(text, "txt", sources, note=note)
 
 
 @assembler("test_proposals_04B_lite")
