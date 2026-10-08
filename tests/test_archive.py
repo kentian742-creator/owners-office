@@ -327,6 +327,33 @@ def test_an_earlier_approved_valuation_never_replaces_a_later_one(env):
     assert effective_valuation(env)["center"] == 200 and effective_valuation(env)["doc_status"] == "effective"
 
 
+@pytest.mark.parametrize("review_dir, period, reviewed", [
+    # the routine §V20 review of a stale valuation: the placed version, filed under the run that produced it
+    ("2026-11-10-04C", "FY2026Q3", [
+        {"kind": "repo_file", "repo": registry.PRIVATE_REPO, "path": "companies/NEWCO/valuation.yml"},
+        {"kind": "run_output", "run": "runs/NEWCO/2026-09-30-01C", "output": "valuation_md"}]),
+    # a 04C rerun that returns the later bundle itself
+    ("2026-09-30-04C-rerun2", "FY2026Q2", [{"kind": "run_output", "run": "runs/NEWCO/2026-09-30-01C"}]),
+])
+def test_an_older_valuation_never_replaces_the_one_in_force_whatever_04c_said_of_it_since(env, review_dir, period,
+                                                                                          reviewed):
+    from pipeline import runner
+    earlier, later = valuation_run(env, "2026-09-29-01C", 100), valuation_run(env, "2026-09-30-01C", 200)
+    place_valuation(env, later)
+    review = env.private / "runs" / "NEWCO" / review_dir
+    fx.write_yaml(review / runner.MANIFEST, {"bundle": f"runs/NEWCO/{review_dir}", "step": "04C", "company": "NEWCO",
+                                             "period": period, "rerun": int(review_dir.partition("-rerun")[2] or 1),
+                                             "inputs": [{"name": "valuation", "sources": reviewed}]})
+    fx.write_yaml(review / runner.RUN_RECORD, {"status": "succeeded"})
+    fx.write(review / "outputs" / "valuation_decision.yml", "valuation_decision: returned\n")
+    assert runner.approving_review(env.private, {"bundle": "runs/NEWCO/2026-09-30-01C", "company": "NEWCO"}) == \
+        (f"runs/NEWCO/{review_dir}", "returned")
+    with pytest.raises(runner.RunnerError, match=r"the effective valuation came from a later run "
+                                                 r"\(runs/NEWCO/2026-09-30-01C\)"):
+        place_valuation(env, earlier)
+    assert effective_valuation(env)["center"] == 200 and effective_valuation(env)["as_of"] == "2026-09-30"
+
+
 def test_a_same_day_rerun_that_replaces_the_valuation_takes_its_working_tag_with_it(env):
     place_valuation(env, valuation_run(env, "2026-09-30-01C", 100))
     report = place_valuation(env, valuation_run(env, "2026-09-30-01C-rerun2", 200))
@@ -566,6 +593,25 @@ def test_a_tag_repair_adds_a_tag_after_a_figure_never_inside_it_nor_with_other_w
         {"find": "$3,964m)", "replace": "$3,964m [src:X-8K-1#EX99.1])"},
         {"find": "±10% with", "replace": "±10% [src:X-VAL-1] with"}])
     assert problems == [] and "$3,964m [src:X-8K-1#EX99.1]) give ±10% [src:X-VAL-1] with" in fixed
+
+
+def test_a_tag_repair_adds_a_tag_only_after_a_complete_token():
+    """Never where a word or digit goes on after the marks that follow: in a ratio or a time, before a possessive's
+    apostrophe, inside an abbreviation."""
+    from pipeline import runner
+    text = "Each A share converts 1,500:1 at 10:30; McDonald's U.S.-listed margin was 46% (Berkshire's: 4:1).\n"
+    for find, replace in (("1,500:1", "1,500 [src:X]:1"), ("10:30", "10 [src:X]:30"), ("4:1", "4 [src:X]:1"),
+                          ("McDonald's", "McDonald [src:X]'s"), ("Berkshire's", "Berkshire [src:X]'s"),
+                          ("U.S.-listed", "U [src:X].S.-listed"), ("U.S.-listed", "U.S [src:X].-listed")):
+        fixed, problems = runner.apply_tag_repairs(text, [{"find": find, "replace": replace}])
+        assert fixed == text and "more than [src:] tags" in problems[0], replace
+    fixed, problems = runner.apply_tag_repairs(text, [
+        {"find": "1,500:1 at 10:30;", "replace": "1,500:1 [src:X-10K-1#p5] at 10:30 [src:X-8K-1];"},
+        {"find": "McDonald's U.S.-listed", "replace": "McDonald's [src:X-10K-1#p6] U.S.-listed"},
+        {"find": "(Berkshire's: 4:1).", "replace": "(Berkshire's [src:Y-10K-1]: 4:1 [src:Y-10K-1#p2]) [src:X-VAL-1]."}])
+    assert problems == [] and fixed == ("Each A share converts 1,500:1 [src:X-10K-1#p5] at 10:30 [src:X-8K-1]; "
+                                        "McDonald's [src:X-10K-1#p6] U.S.-listed margin was 46% (Berkshire's "
+                                        "[src:Y-10K-1]: 4:1 [src:Y-10K-1#p2]) [src:X-VAL-1].\n")
 
 
 def test_an_excerpt_is_looked_for_first_on_the_cited_page_or_note():
