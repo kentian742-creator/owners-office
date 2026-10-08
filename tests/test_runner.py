@@ -298,12 +298,39 @@ def test_monthly_letter_inputs_say_explicitly_when_there_is_nothing(env):
 
     assert "Registered three expectations." in read("l2_report") and "Late." in read("mistakes")
     failures = yaml.safe_load(read("failures"))
-    assert failures["repeated_failures"] == [{"scope": "APP", "part": "14Q", "consecutive_failures": 2}]
+    assert failures["repeated_failures"] == [{"scope": "APP", "step": "14Q", "consecutive_failures": 2}]
     assert len(failures["failed_runs"]) == 2
     activity = yaml.safe_load(read("prereg_activity"))
     assert activity["next_month"] == "2026-11"
     assert [(row["company"], row["expected_release"]) for row in activity["upcoming_next_month"]] == [("APP", "2026-11-02")]
     assert "does not exist yet" in yaml.safe_load(read("budget"))["note"]
+
+
+def test_a_run_recorded_by_hand_or_rerun_counts_as_its_step_and_hq_rulings_about_a_company_reach_the_letter(env):
+    """HQ's rulings written by hand in runs/hq/<date>-17A-AXP/ (no manifest) and a 17A run about one company are 17A,
+    and the letter takes every HQ rulings file of the month: it read only runs/hq/<date>-17A/ (2026-10-08: one of
+    September's eleven). A same-day rerun is its step too, and its failures continue the streak."""
+    from pipeline import registry
+    hq = env.private / "runs" / "hq"
+    fx.write(hq / "2026-10-07-17A-AXP" / "rulings.md", "R15 · on AXP\n")
+    fx.write(hq / "2026-10-09-15A-APP" / "rulings.md", "on APP's questions\n")
+    fx.write_yaml(hq / "2026-10-28-17A-APP" / runner.MANIFEST, {"manifest_version": 1, "step": "17A", "company": "APP"})
+    fx.write_yaml(hq / "2026-10-28-17A-APP" / runner.RUN_RECORD, {"status": "succeeded"})
+    fx.write(hq / "2026-10-28-17A-APP" / "outputs" / "rulings.md", "Gate: release.\n")
+    app = env.private / "runs" / "APP"
+    for rel in ("2026-10-10-14Q", "2026-10-10-14Q-rerun2"):
+        fx.write_yaml(app / rel / runner.MANIFEST, {"manifest_version": 1, "step": "14Q", "period": "FY2026Q3",
+                                                    **({"rerun": 2} if "rerun" in rel else {})})
+        fx.write_yaml(app / rel / runner.RUN_RECORD, {"status": "failed", "error": {"type": "LLMRefusal"}})
+    runs = {r.rel: r for r in registry.index_runs(env.private)}
+    assert (runs["runs/hq/2026-10-07-17A-AXP"].step, runs["runs/hq/2026-10-07-17A-AXP"].company) == ("17A", "AXP")
+    assert runs["runs/hq/2026-10-09-15A-APP"].step == "15A" and runs["runs/APP/2026-10-10-14Q-rerun2"].step == "14Q"
+    bundle = env.assemble("18", "hq", "2026-10", run_date=dt.date(2026, 11, 2), today=dt.date(2026, 11, 2))
+    by_name = {e["name"]: e for e in manifest_of(bundle)["inputs"]}
+    rulings = (bundle / by_name["rulings"]["file"]).read_text(encoding="utf-8")
+    assert "R15 · on AXP" in rulings and "Gate: release." in rulings and "on APP's questions" in rulings
+    failures = yaml.safe_load((bundle / by_name["failures"]["file"]).read_text(encoding="utf-8"))
+    assert failures["repeated_failures"] == [{"scope": "APP", "step": "14Q", "consecutive_failures": 2}]
 
 
 # ---------------------------------------------------------------------------------------------------- execute

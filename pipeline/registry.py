@@ -81,6 +81,10 @@ TICKER_RE = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
 # <run_date>-<part>: a prompt part (15A, 03-draft, 04B-lite; an HQ step about one company adds its ticker, 17A-AXP),
 # or a deterministic pipeline step (ci).
 RUN_DIR_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-(\d{2}[A-Za-z0-9.-]*|[a-z][a-z0-9]*)$")
+# the part of a run directory's name: its step, then for an HQ step about one company the ticker, then the round and
+# the same-day rerun (StepSpec.bundle_name): "17A-AXP", "01C-rerun2", "16A-r2", "17A-NEWCO-r2-rerun2", "03-draft"
+_PART_RE = re.compile(r"^(?P<step>\d{2}[A-Za-z]?(?:-[a-z]+)?)(?:-(?P<company>[A-Z][A-Z0-9.]*))?(?:-r\d+)?"
+                      r"(?:-rerun\d+)?$")
 CI_STEP = "ci"  # the evaluation of the quantitative tests (ci_results), recorded like a run
 _DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
 _MISTAKE_HEADING_RE = re.compile(r"^### (\d{4}-\d{2}-\d{2})\b", re.M)
@@ -226,14 +230,21 @@ class PriorRun:
 
     @property
     def step(self) -> str:
-        """The step label from the manifest (17A for runs/hq/<date>-17A-AXP), else the directory's part."""
-        return str(self.manifest.get("step") or self.part) if self.manifest else self.part
+        """The step label from the manifest (17A for runs/hq/<date>-17A-AXP), else from the directory's part without
+        the company, the round and the rerun (HQ's rulings written by hand in runs/hq/<date>-17A-AXP/ are 17A)."""
+        if self.manifest and self.manifest.get("step"):
+            return str(self.manifest["step"])
+        match = _PART_RE.match(self.part)
+        return match.group("step") if match else self.part
 
     @property
     def company(self) -> str | None:
         if self.manifest and self.manifest.get("company"):
             return str(self.manifest["company"])
-        return None if self.scope == "hq" else self.scope
+        if self.scope != "hq":
+            return self.scope
+        match = _PART_RE.match(self.part)  # runs/hq/<date>-17A-AXP: an HQ step about one company
+        return match.group("company") if match else None
 
     @property
     def statuses(self) -> list[str]:
@@ -1350,7 +1361,7 @@ def _prereg_candidates(ctx: RunContext, name: str) -> BuiltInput:
     company = _need_company(ctx, name)
     from_runs, sources = [], []
     for run in ctx.runs():
-        if run.scope != company or run.part not in ("10", "13"):
+        if run.scope != company or run.step not in ("10", "13"):
             continue
         text = run.read_output("prereg_candidates")
         if text is None:
@@ -1380,7 +1391,7 @@ def _frozen_question_list(ctx: RunContext, name: str) -> tuple[PriorRun, str]:
     """The question list HQ froze for this company and period: the placed output of the latest 14Q run. A rehearsal
     also takes the unplaced output of a 14Q dry run in its own directory (dry runs are never placed)."""
     company = _need_company(ctx, name)
-    runs = [r for r in ctx.runs() if r.scope == company and r.part == "14Q" and r.period == ctx.period
+    runs = [r for r in ctx.runs() if r.scope == company and r.step == "14Q" and r.period == ctx.period
             and r.placed_file("question_list") is not None]
     if runs:
         path = runs[-1].placed_file("question_list")
@@ -1508,7 +1519,7 @@ def _divergence_map(ctx: RunContext, name: str) -> BuiltInput:
     if ctx.step.step == "17A":
         return _event_output(ctx, name, "14B", "divergence_map",
                              "the divergence map (14B) runs only for holdings' quarterly updates (prompt 14 scope)")
-    runs = [r for r in _runs_in_month(ctx) if r.part == "14B"]
+    runs = [r for r in _runs_in_month(ctx) if r.step == "14B"]
     maps = []
     for run in runs:
         text = run.read_output("divergence_map")
@@ -1528,13 +1539,14 @@ def _divergence_map(ctx: RunContext, name: str) -> BuiltInput:
                       _run_sources(runs, "divergence_map"))
 
 
-def _collect_outputs(ctx: RunContext, name: str, output: str, parts: Iterable[str] | None, ext: str) -> BuiltInput:
-    runs = [r for r in _runs_in_month(ctx) if parts is None or r.part in parts]
+def _collect_outputs(ctx: RunContext, name: str, output: str, parts: Iterable[str] | None, ext: str,
+                     scope: str | None = None) -> BuiltInput:
+    runs = [r for r in _runs_in_month(ctx) if (parts is None or r.step in parts) and (scope is None or r.scope == scope)]
     chunks = []
     for run in runs:
         text = run.read_output(output)
         if text is not None and text.strip():
-            chunks.append(f"<!-- {run.rel} ({run.part}, {run.run_date}) -->\n{text.rstrip()}\n")
+            chunks.append(f"<!-- {run.rel} ({run.step}, {run.run_date}) -->\n{text.rstrip()}\n")
     if not chunks:
         which = f" of {', '.join(parts)}" if parts else ""
         return empty_document(ctx, name, f"no run{which} in {ctx.period} produced {output}")
@@ -1553,7 +1565,9 @@ def _l2_report(ctx: RunContext, name: str) -> BuiltInput:
 
 @assembler("rulings")
 def _rulings(ctx: RunContext, name: str) -> BuiltInput:
-    return _collect_outputs(ctx, name, "rulings", ("17A",), "md")
+    """18: every ruling HQ wrote in the month: 17A's, and those HQ wrote by hand on a pre-registration's or a
+    report's questions (runs/hq/<date>-15A-APP/rulings.md)."""
+    return _collect_outputs(ctx, name, "rulings", None, "md", scope="hq")
 
 
 @assembler("questions_open")
@@ -1667,19 +1681,20 @@ def _failures(ctx: RunContext, name: str) -> BuiltInput:
         records = [*run.attempts, *([run.record] if run.record is not None else [])]
         for number, record in enumerate(records, start=1):
             if record.get("status") == "failed":
-                failed.append({"run": run.rel, "part": run.part, "attempt": number,
+                failed.append({"run": run.rel, "step": run.step, "attempt": number,
                                "error": (record.get("error") or {}).get("type")})
     streaks = []
-    by_step: dict[tuple[str, str], list[str]] = {}
-    for run in ctx.runs():
+    by_step: dict[tuple[str, str, str], list[str]] = {}  # (scope, company, step): reruns are the same step
+    for run in sorted(ctx.runs(), key=lambda r: (r.run_date, r.rerun, r.rel)):  # -rerun10 after -rerun9
         if run.run_date <= last:
-            by_step.setdefault((run.scope, run.part), []).extend(run.statuses)
-    for (scope, part), statuses in sorted(by_step.items()):
+            by_step.setdefault((run.scope, run.company or "", run.step), []).extend(run.statuses)
+    for (scope, company, step), statuses in sorted(by_step.items()):
         streak = 0
         for status in statuses:
             streak = streak + 1 if status == "failed" else 0
         if streak >= 2:
-            streaks.append({"scope": scope, "part": part, "consecutive_failures": streak})
+            streaks.append({"scope": scope, **({"company": company} if company and company != scope else {}),
+                            "step": step, "consecutive_failures": streak})
     if not failed and not streaks:
         return empty_document(ctx, name, f"no pipeline run failed in {ctx.period}")
     return BuiltInput(dump_yaml({"month": ctx.period, "failed_runs": failed, "repeated_failures": streaks}), "yml",
