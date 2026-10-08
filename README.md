@@ -17,7 +17,7 @@ for the third quarter of 2026, will be registered by 2026-10-23, so nothing has 
 | The record so far | |
 | --- | --- |
 | Forecasts registered | None merged yet. S&P Global's five are due by 2026-10-23 and Berkshire Hathaway's five by 2026-10-25. |
-| Forecasts scored | None yet. The first scores come after S&P Global reports, around 2026-10-21. |
+| Forecasts scored | None yet. The first scores come after S&P Global reports on 2026-10-27. |
 | Facts checked against filings | 116 of 2,350 were wrong in the six archives built from the owner's own notes (4.9%). In McDonald's, the first dossier the pipeline wrote from the filings, 7 of 769 were wrong (0.9%). The same model audited both. |
 
 > **Not investment advice.** This repository records one private investor's method and forecast record. It recommends
