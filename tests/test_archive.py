@@ -563,6 +563,40 @@ def test_a_note_is_found_by_its_heading_not_by_a_footnote_or_the_index_of_notes(
     assert documents.locator_section(doc, "Note2") == "2. Acquisitions and Divestitures\nWe acquired With Intelligence."
 
 
+def test_a_note_headed_on_a_line_of_its_own_is_found_and_the_rows_of_the_index_of_notes_are_not():
+    """American Express's 10-K: the index of notes has a row per note ("Note 3 – Reserves for Credit Losses") with its
+    page number on the next line, each note is headed "NOTE 3" on a line of its own with its title on the next, and
+    the table of accounting policies in Note 1 refers to "Note 10" on a line of its own too."""
+    titles = ["Summary of Significant Accounting Policies", "Loans and Card Member Receivables",
+              "Reserves for Credit Losses", "Investment Securities", "Asset Securitizations", "Other Assets",
+              "Customer Deposits", "Debt", "Other Liabilities", "Stock-Based Compensation", "Retirement Plans"]
+    index = ["NOTES TO CONSOLIDATED FINANCIAL STATEMENTS", "97"]
+    for n, title in enumerate(titles, 1):
+        index += [f"Note {n} – {title}", str(94 + 3 * n)]
+    bodies = {1: ["Significant Accounting Policy Note", "Number Note Title",
+                  "Reserves for Credit Losses Note 3 Reserves for Credit Losses",
+                  "Stock-Based Compensation", "Note 10", "Stock-Based Compensation"],
+              3: ["Card Member loans reserve for credit losses increased for the year ended December 31, 2025.",
+                  "(c)Primarily includes foreign currency translation adjustments of $ 3 million, $( 4 ) million and "
+                  "$ 1 million for the years ended December 31, 2025, 2024 and 2023, respectively."]}
+    notes = []
+    for n, title in enumerate(titles, 1):
+        notes += ["Table of Contents", f"NOTE {n}", title.upper(), *bodies.get(n, [f"{title} text."]), str(96 + 3 * n)]
+    doc = "\n".join([*index, "91", "Table of Contents", "CONSOLIDATED STATEMENTS OF INCOME", *notes])
+    note3 = documents.locator_section(doc, "Note3")
+    assert note3.startswith("NOTE 3\nRESERVES FOR CREDIT LOSSES\n") and "NOTE 4" not in note3
+    excerpt = documents.cut_excerpt(note3, 3,
+                                    words="foreign currency translation adjustments to reserves for credit losses")
+    assert excerpt.startswith("(c)Primarily includes foreign currency translation adjustments of $ 3 million")
+    assert documents.locator_section(doc, "Note10").startswith("NOTE 10\nSTOCK-BASED COMPENSATION\n")
+    # the index's last row has no next row to close it and would run on to the end of the document
+    assert documents.locator_section(doc, "Note11").startswith("NOTE 11\nRETIREMENT PLANS\n")
+    # rows of an index are no headings even where the notes' own headings are missing: the caller searches the filing
+    assert documents.locator_section("\n".join(index), "Note3") is None
+    row = "\n".join(["Index", "Note 3 – Reserves for Credit Losses ... 85", "Card Member loans reserve text."])
+    assert documents.locator_section(row, "Note3") is None
+
+
 def test_a_decline_year_of_a_52_53_week_fiscal_year_promotes_that_years_annual_report():
     """Years ending on the Sunday nearest December 31: fiscal 2022 ended on 2023-01-01, and xbrl_summary (so
     decline_years) names it FY2022."""

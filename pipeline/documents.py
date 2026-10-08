@@ -749,24 +749,57 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
         return text if found else None
     if m := _NOTE_LOC_RE.match(loc):
         number = int(m.group(1))
-        head, nxt = _note_heading(number), _note_heading(number + 1)
-        starts = [i for i, line in enumerate(lines) if len(line) <= 150 and head.match(line)]
+        heads = _note_headings(lines)
+        starts = [i for i, n in heads.items() if n == number]
+        previous = [i for i, n in heads.items() if n == number - 1]
         spans = []
         for start in starts:
-            end = next((i for i in range(start + 1, len(lines)) if len(lines[i]) <= 150 and nxt.match(lines[i])), None)
+            end = next((i for i, n in heads.items() if i > start and n == number + 1), None)
+            # notes come in order, so a span that holds the previous note's heading starts at a cross-reference
+            # ("Note 10" in the table of accounting policies of American Express's Note 1), not at the note
+            if any(start < i < (end or len(lines)) for i in previous):
+                continue
             spans.append((end is not None, (end or len(lines)) - start, start, end or len(lines)))
         if spans:
             # the note's body: first a span the next note's heading closes (the numbered list of exhibits after the
-            # notes runs on to the end of the document), then the longest (an index entry is short)
+            # notes runs on to the end of the document), then the longest (Berkshire's 10-Q repeats a note's heading
+            # atop each page the note continues on)
             *_, start, end = max(spans)
             return "\n".join(lines[start:end])
     return None
 
 
-def _note_heading(number: int) -> re.Pattern[str]:
-    """A note's heading: "Note 10. Debt", "NOTE 10 — DEBT" or "10. Debt", but not "10 Debt", which is how footnotes
-    ("1 Includes ...") and the index of notes are written."""
-    return re.compile(rf"^\s*(?:(?i:note)\s+{number}\b[\s.:—–-]*|{number}(?:[.:]|\s+[—–-])\s*)[A-Z][A-Za-z]")
+# A note's heading: "Note 10. Debt", "NOTE 10 — DEBT" or "10. Debt", but not "10 Debt", which is how footnotes
+# ("1 Includes ...") and S&P Global's index of notes are written; or "NOTE 10" alone on its line, the title on the next.
+_NOTE_HEADING_RE = re.compile(r"^\s*(?:(?i:note)\s+(\d{1,2})\b[\s.:—–-]*|(\d{1,2})(?:[.:]|\s+[—–-])\s*)[A-Z][A-Za-z]")
+_NOTE_ALONE_RE = re.compile(r"(?i)^\s*note\s+(\d{1,2})\s*$")
+_NOTE_TITLE_RE = re.compile(r"^\s*[A-Z][A-Za-z]")
+_PAGE_NUMBER_RE = re.compile(r"^\s*(?:[A-Z]{1,2}-)?\d{1,3}\s*$")
+_ENDS_IN_PAGE_NUMBER_RE = re.compile(r"[\s.](?:[A-Z]{1,2}-)?\d{1,3}\s*$")
+
+
+def _note_headings(lines: Sequence[str]) -> dict[int, int]:
+    """Line index -> note number of a document's note headings, without the rows of an index of notes: a row that
+    ends in its page number ("Note 3 – Reserves for Credit Losses ... 85"), and rows that follow one another with
+    nothing but page numbers between ("Note 3 – Reserves for Credit Losses", "112", "Note 4 – Investment Securities"
+    in American Express's 10-K, whose notes are headed "NOTE 3" on a line of their own)."""
+    heads: dict[int, tuple[int, int]] = {}  # line index -> (note number, the heading's last line)
+    for i, line in enumerate(lines):
+        if len(line) > 150:
+            continue
+        if m := _NOTE_HEADING_RE.match(line):
+            if not _ENDS_IN_PAGE_NUMBER_RE.search(line):
+                heads[i] = (int(m.group(1) or m.group(2)), i)
+        elif (m := _NOTE_ALONE_RE.match(line)) and i + 1 < len(lines) and len(lines[i + 1]) <= 150 \
+                and _NOTE_TITLE_RE.match(lines[i + 1]):
+            heads[i] = (int(m.group(1)), i + 1)
+    rows = set()
+    for i, (number, last) in heads.items():
+        after = next((j for j in range(last + 1, len(lines))
+                      if lines[j].strip() and not _PAGE_NUMBER_RE.match(lines[j])), None)
+        if after in heads and heads[after][0] == number + 1:
+            rows |= {i, after}
+    return {i: number for i, (number, _) in heads.items() if i not in rows}
 
 
 def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
