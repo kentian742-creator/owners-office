@@ -1707,7 +1707,7 @@ _FIELD_ORDER = ("tag", "kind", "title", "issuer_cik", "form", "period", "accessi
                 "location", "primary", "note")
 _TAG_RE = re.compile(r"^(?P<ticker>[A-Z0-9][A-Z0-9.]*)-(?P<form>[A-Z0-9]+)-(?P<rest>.+)$")
 _TAG_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})(?:-(\d+))?$")
-_ARCHIVES_URL_RE = re.compile(r"/Archives/edgar/data/(\d{1,10})/(\d{18})(?:/|$)")  # a filing's folder: CIK, accession
+ARCHIVES_URL_RE = re.compile(r"/Archives/edgar/data/(\d{1,10})/(\d{18})(?:/|$)")  # a filing's folder: CIK, accession
 
 
 def form_key(form: str) -> str:
@@ -1992,7 +1992,7 @@ def _check_entry(entry: Mapping[str, Any], company: Filer | None, client: EdgarC
 
     finding.problems.extend(_tag_problems(tag, filing, period, issuer, registered or set()))
     url = entry.get("url")
-    m = _ARCHIVES_URL_RE.search(str(url or ""))
+    m = ARCHIVES_URL_RE.search(str(url or ""))
     if m and m.group(2) != filing.accession.replace("-", ""):
         finding.problems.append(f"url points to another filing ({m.group(2)}), not {filing.accession}")
     return finding
@@ -2203,7 +2203,7 @@ def filing_for_entry(entry: Mapping[str, Any], *, company: Filer | None = None, 
     issuers = {} if issuers is None else issuers
     text = str(entry.get("tag") or "")
     tag = parse_source_tag(text)
-    folder = _ARCHIVES_URL_RE.search(str(entry.get("url") or ""))
+    folder = ARCHIVES_URL_RE.search(str(entry.get("url") or ""))
     raw_cik = entry.get("issuer_cik") or (folder.group(1) if folder else None)
     if not raw_cik and company is not None and tag is not None and tag.ticker == company.ticker:
         raw_cik = company.cik

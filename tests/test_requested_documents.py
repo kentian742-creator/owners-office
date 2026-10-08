@@ -268,7 +268,8 @@ def test_a_berkshire_note_headed_by_its_number_in_parentheses_is_found():
     doc = "\n".join([
         "Item 2. Properties", "(1)", "The estimated increase (decrease) is after income taxes.",
         "NOTES TO CONSOLIDATED FINANCIAL STATEMENTS", "(1)", "Significant accounting policies and practices",
-        "Policies text.", "K-70", "(3)", "Investments in fixed maturity securities", "Fixed text.",
+        "Policies text.", "K-70", "(2)", "Investments in fixed maturity securities", "Fixed text.",
+        "(3)", "Investments in equity securities, summary", "Summary text.",
         "(4)", "Investments in equity securities", "Apple 61,000.", "K-80",
         "Notes to Consolidated Financial Statements", "(4)", "Investments in equity securities",
         "American Express 151.6 million shares.",
@@ -281,9 +282,10 @@ def test_a_berkshire_note_headed_by_its_number_in_parentheses_is_found():
 
 def test_each_item_and_all_items_together_stay_within_the_caps_and_a_cut_says_where(env, monkeypatch):
     """The first document is cut at the item cap, the second at what the first left of the total, which fills it: the
-    third is not supplied (nor fetched). Nor is a document when less than the minimum is left."""
+    third is not supplied (nor fetched). The total counts the whole input: the header, each item's header, url and
+    note lines, and the not-supplied lines (review of 0031: they used to go uncounted)."""
     monkeypatch.setattr(registry, "REQUESTED_ITEM_TOKENS", 100)
-    monkeypatch.setattr(registry, "REQUESTED_TOTAL_TOKENS", 150)
+    monkeypatch.setattr(registry, "REQUESTED_TOTAL_TOKENS", 800)
     monkeypatch.setattr(registry, "REQUESTED_MIN_TOKENS", 20)
     built = build(env, [{"tag": "PGR-10Q-FY2026Q1", "why": "long"}, {"tag": "PGR-10Q-FY2026Q2", "why": "short"},
                         {"tag": "APP-10Q-FY2026Q2", "why": "after the total"}])
@@ -292,16 +294,13 @@ def test_each_item_and_all_items_together_stay_within_the_caps_and_a_cut_says_wh
     assert f"cut by the pipeline after line 4 of 301 (character {len(kept)} of " in first["note"]
     assert "to stay within 100 tokens; the rest is at the url above" in first["note"]
     assert f"{kept}\n[cut by the pipeline here, after line 4 of 301 (character {len(kept)} of " in built.text
-    assert "cut by the pipeline after line 8 of 12 (character 184 of " in second["note"]
-    assert f"to stay within {150 - registry.slicing.estimate_tokens(kept)} tokens" in second["note"]
-    assert "not supplied: APP-10Q-FY2026Q2: the documents listed before it fill the input's cap of 150 tokens" in \
+    assert "cut by the pipeline after line" in second["note"] and "of 12 (character" in second["note"]
+    assert int(second["note"].split("to stay within ")[1].split(" tokens")[0]) < 100  # what the total left
+    assert "not supplied: APP-10Q-FY2026Q2: the documents listed before it fill the input's cap of 800 tokens" in \
            built.text
     assert built.note == "2 of 3 requested document(s) supplied, 2 cut; 1 not supplied"
+    assert registry.slicing.estimate_tokens(built.text) <= 800
     assert fx.TENQ_URL not in calls(env)
-    monkeypatch.setattr(registry, "REQUESTED_MIN_TOKENS", 80)  # what the first leaves is too little for a second
-    built = build(env, [{"tag": "PGR-10Q-FY2026Q1"}, {"tag": "PGR-10Q-FY2026Q2"}])
-    assert list(edgar_sources(built)) == ["PGR-10Q-FY2026Q1"]
-    assert "not supplied: PGR-10Q-FY2026Q2: the documents listed before it fill the input's cap" in built.text
 
 
 def test_a_document_is_cut_at_a_line_end_within_its_budget():
@@ -333,8 +332,8 @@ def test_what_cannot_be_supplied_is_listed_with_the_reason_and_the_rest_is_suppl
         "not supplied: PGR-10Q-FY2026Q3: filed on 2026-11-03 (accession 0000080661-26-000400), after the run date "
         "2026-09-30",
         f"not supplied: PGR-10K-FY2025: no matching filing on EDGAR (CIK {PGR_CIK}, {PGR_NAME})",
-        "not supplied: APP-LTR-2025: registered as kind: letter, not an EDGAR filing; the pipeline fetches EDGAR "
-        "filings only",
+        "not supplied: APP-LTR-2025: registered as kind: letter without an EDGAR accession or url; the pipeline "
+        "fetches EDGAR filings only",
         f"not supplied: PGR-10K-FY2024: EDGAR has no accession number 0000080661-25-999999 among the filings of CIK "
         f"{PGR_CIK}",
         "not supplied: PGR-8K-2026-07-15#EX-99.2: the filing 0000080661-26-000250 has no EX-99.2 on EDGAR",
@@ -377,3 +376,128 @@ def test_placement_registers_a_cited_requested_document_of_another_issuer(env):
                      "filed": "2026-08-03", "url": f"{folder('0000080661-26-000308')}/pgr-20260630.htm",
                      "primary": True, "note": entry["note"]}
     assert warnings == ["registered 1 cited document(s) the pipeline had supplied: PGR-10Q-FY2026Q2"]
+
+
+# ---------------------------------------------------------------------------------------------------- review of 0031
+
+
+def add_pgr_filing(env, row: tuple[str, str, str, str, str, str], document: bytes | None = None) -> None:
+    """One more filing in PGR's submissions (accession, form, filed, report date, items, primary document)."""
+    keys = ("accessionNumber", "form", "filingDate", "reportDate", "items", "primaryDocument")
+    rows = [*PGR_FILINGS, row]
+    submissions = {"cik": "80661", "name": PGR_NAME, "tickers": ["PGR"], "fiscalYearEnd": "1231",
+                   "entityType": "operating",
+                   "filings": {"recent": {key: [r[i] for r in rows] for i, key in enumerate(keys)}, "files": []}}
+    responses = env.gateway.client._transport.responses
+    responses[PGR_SUBMISSIONS_URL] = json.dumps(submissions).encode()
+    if document is not None:
+        responses[f"{folder(row[0])}/{row[5]}"] = document
+
+
+def test_a_registered_source_of_another_kind_is_fetched_when_it_has_an_edgar_accession(env):
+    """A proxy statement or an annual report registered with its accession is on EDGAR whatever its kind; only a
+    source with neither an accession nor an EDGAR url (a letter, a web page) is refused."""
+    register_privately(env, {"tag": "PGR-10Q-FY2026Q2", "kind": "proxy", "title": "registered under another kind",
+                             "issuer_cik": PGR_CIK, "accession": "0000080661-26-000308"},
+                       {"tag": "PGR-LTR-2025", "kind": "letter", "title": "Letter", "issuer_cik": PGR_CIK})
+    built = build(env, [{"tag": "PGR-10Q-FY2026Q2#p37", "why": "policies"}, {"tag": "PGR-LTR-2025", "why": "x"}])
+    assert "Personal auto 27,932 thousand" in built.text
+    assert "not supplied: PGR-LTR-2025: registered as kind: letter without an EDGAR accession or url" in built.text
+
+
+def test_an_edgar_failure_is_given_in_the_pipelines_words_and_a_missing_user_agent_fails_the_run(env, monkeypatch):
+    """The input goes to the model and into the private record: an offline miss names the local cache directory, so
+    only the kind of failure goes in. Without the SEC contact the run fails, as with every other EDGAR input."""
+    def offline(self, *args, **kwargs):
+        raise edgar.EdgarOffline("offline mode, and the cache does not have https://data.sec.gov/x.json "
+                                 "(cache directory /Users/someone/.cache/owners-office/edgar)")
+
+    monkeypatch.setattr(registry.EdgarGateway, "requested_document", offline)
+    with pytest.raises(registry.Omit) as omitted:
+        build(env, [{"tag": "PGR-10Q-FY2026Q2", "why": "x"}])
+    assert "it is not in the local EDGAR cache (offline assembly)" in str(omitted.value)
+    assert "/Users/" not in str(omitted.value)
+
+    def no_contact(self, *args, **kwargs):
+        raise edgar.MissingUserAgent("no SEC User-Agent")
+
+    monkeypatch.setattr(registry.EdgarGateway, "requested_document", no_contact)
+    with pytest.raises(edgar.MissingUserAgent):
+        build(env, [{"tag": "PGR-10Q-FY2026Q2", "why": "x"}])
+
+
+def test_an_unregistered_tag_takes_the_issuer_its_ticker_has_in_the_registered_sources(env):
+    """Berkshire's archive uses BHE- for Berkshire Hathaway Energy, which SEC's ticker table gives to Benchmark
+    Electronics: a tag the sources do not register takes the issuer that registered tags of its ticker have, and a
+    ticker the sources give two issuers is not guessed."""
+    register_privately(env, {"tag": "DUO-10Q-FY2026Q1", "kind": "filing", "title": "an earlier report",
+                             "issuer_cik": PGR_CIK, "accession": "0000080661-26-000177"})
+    built = build(env, [{"tag": "DUO-10Q-FY2026Q2#p37", "why": "the issuer the archive means by DUO"}])
+    assert "Personal auto 27,932 thousand" in built.text and edgar_sources(built)["DUO-10Q-FY2026Q2#p37"][
+        "issuer_cik"] == PGR_CIK
+    register_privately(env, {"tag": "DUO-8K-2026-07-15", "kind": "filing", "title": "another issuer's report",
+                             "issuer_cik": "0000000222"})
+    with pytest.raises(registry.Omit, match="the registered sources give the ticker DUO more than one issuer"):
+        build(env, [{"tag": "DUO-10Q-FY2026Q2#p37", "why": "ambiguous"}])
+
+
+def test_a_pdf_document_is_not_supplied_as_text(env):
+    """Berkshire files its annual report to shareholders as a PDF only; read as HTML it would be binary noise."""
+    add_pgr_filing(env, ("0000080661-26-000100", "ARS", "2026-03-20", "2025-12-31", "", "pgr-ars.pdf"),
+                   b"%PDF-1.7 binary")
+    register_privately(env, {"tag": "PGR-ARS-FY2025", "kind": "filing", "title": "Annual report to shareholders",
+                             "issuer_cik": PGR_CIK, "accession": "0000080661-26-000100"})
+    built = build(env, [{"tag": "PGR-ARS-FY2025#p9", "why": "the letter"}, {"tag": "PGR-10Q-FY2026Q2", "why": "x"}])
+    assert "not supplied: PGR-ARS-FY2025#p9: the filing's primary document pgr-ars.pdf is a PDF" in built.text
+    assert "%PDF" not in built.text
+
+
+def test_a_locator_not_found_in_a_long_document_is_not_supplied_rather_than_its_first_pages(env, monkeypatch):
+    """Review of 0031: an unfound page gave the first 50,000 tokens of a 10-K (its cover and Item 1) as "the whole
+    document". A document that fits one item is still given whole."""
+    monkeypatch.setattr(registry, "REQUESTED_ITEM_TOKENS", 300)
+    built = build(env, [{"tag": "PGR-10Q-FY2026Q1#p999", "why": "long"}, {"tag": "PGR-10Q-FY2026Q2#p999", "why": "x"}])
+    assert "not supplied: PGR-10Q-FY2026Q1#p999: #p999 was not found by the document's page footers or headings, " \
+           "and the whole document" in built.text
+    assert "the whole document: #p999 was not found by its page footers or headings" in \
+           edgar_sources(built)["PGR-10Q-FY2026Q2#p999"]["note"]
+
+
+def test_a_page_whose_number_also_stands_in_the_contents_is_found_by_the_run_of_pages():
+    """Berkshire Hathaway's 10-K lists K-66 in its table of contents (and in Item 15) on a line of its own: the
+    footer is the one among the run of pages numbered one after another."""
+    from pipeline import documents
+    page = "Text of the page, long enough to be a page of a filing rather than an entry of a list or a table."
+    doc = "\n".join(["Table of contents", "Consolidated Balance Sheets", "K-66", "Consolidated Statements of Earnings",
+                     "K-67", f"Business. {page}", "K-63", f"Risks. {page}", "K-64", f"Auditor. {page}", "K-65",
+                     "Consolidated Balance Sheets", "Treasury bills 75,000.", page, "K-66",
+                     f"Earnings. {page}", "K-67", f"Cash flows. {page}", "K-68", "Exhibits", "K-66"])
+    assert documents.locator_section(doc, "pK-66") == f"Consolidated Balance Sheets\nTreasury bills 75,000.\n{page}"
+
+
+def test_an_item_whose_heading_repeats_atop_every_page_is_the_whole_item():
+    """Berkshire Hathaway's 10-Q heads every page of its MD&A "Item 2. Management's Discussion ...": the item runs to
+    the next item's heading, not to the next repeat of its own."""
+    from pipeline import documents
+    mdna = "Item 2. Management's Discussion and Analysis of Financial Condition and Results of Operations"
+    filler = "Discussion text that is long enough to be a real part of a quarterly report's discussion. " * 12
+    doc = "\n".join(["PART I - FINANCIAL INFORMATION", "Item 1. Financial Statements", "Statements. " * 50,
+                     mdna, f"Page one. {filler}", "44", mdna, f"Page two. {filler}", "45",
+                     "Item 3. Quantitative and Qualitative Disclosures About Market Risk", "Risk text."])
+    item2 = documents.locator_section(doc, "Item2", form="10-Q")
+    assert item2 is not None and "Page one." in item2 and "Page two." in item2 and "Risk text." not in item2
+
+
+def test_a_number_in_parentheses_heads_a_note_only_among_the_notes_and_in_a_row():
+    """"(N)" alone on a line also begins a table's footnote and an entry of the exhibit index (McDonald's 10-K, S&P
+    Global's 10-Q "(15) Letter on Unaudited Interim Financials"): those are not notes."""
+    from pipeline import documents
+    doc = "\n".join(["Item 7. Management's Discussion and Analysis", "Capital expenditures 2,400", "(1)",
+                     "Primarily corporate equipment and other office-related expenditures",
+                     "Item 8. Financial Statements", "Notes to Consolidated Financial Statements",
+                     "Summary of significant accounting policies", "Nature of business text.",
+                     "Item 15. Exhibits", "(2)", "Financial statement schedules", "(4)",
+                     "Instruments defining the rights of security holders", "(10)", "Material Contracts",
+                     "(15)", "Letter on Unaudited Interim Financials"])
+    for note in ("Note1", "Note2", "Note4", "Note10", "Note15"):
+        assert documents.locator_section(doc, note) is None, note

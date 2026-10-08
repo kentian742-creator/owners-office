@@ -797,6 +797,8 @@ def schema_digest(schema: Any) -> str:
 
 # ---------------------------------------------------------------------------------------------------- EDGAR
 
+_TEXT_DOCUMENT_RE = re.compile(r"(?i)\.(?:html?|txt|xml)$")  # the documents document_text reads
+
 
 def document_text(raw: bytes, name: str) -> str:
     """EDGAR document -> text. Inline XBRL's hidden header (contexts, units) is dropped before conversion."""
@@ -1018,18 +1020,24 @@ class EdgarGateway:
         primary document of the filing edgar.filing_for_entry() finds, or the EX-99 exhibit the locator names; under
         the tag as asked, with the issuer's CIK, a title from EDGAR and, for a periodic report, the fiscal period in
         the issuer's own calendar. A filing made after `as_of` (the run date) is not supplied: a run reads what was
-        public on its date. Raises NotSupplied, edgar.EdgarError, or ValueError for a malformed CIK or accession."""
+        public on its date; nor is a document that is not HTML or text (Berkshire files its annual report to
+        shareholders as a PDF only), which document_text cannot read. Raises NotSupplied, edgar.EdgarError, or
+        ValueError for a malformed CIK or accession."""
         filing, issuer = edgar.filing_for_entry(entry, company=company, client=self.client, issuers=issuers)
         if filing.filing_date > as_of:
             raise NotSupplied(f"filed on {filing.filing_date} (accession {filing.accession}), after the run date "
                               f"{as_of}")
-        name = filing.primary_document
+        name, what = filing.primary_document, "primary document"
         if exhibit:
             docs = edgar.filing_documents(filing.cik, filing.accession, client=self.client,
                                           primary_document=filing.primary_document)
-            name = next((d.name for d in docs if d.exhibit == exhibit and not d.name.lower().endswith(".pdf")), "")
+            named = [d.name for d in docs if d.exhibit == exhibit]
+            name, what = next((n for n in named if _TEXT_DOCUMENT_RE.search(n)), named[0] if named else ""), exhibit
         if not name:
-            raise NotSupplied(f"the filing {filing.accession} has no {exhibit or 'primary document'} on EDGAR")
+            raise NotSupplied(f"the filing {filing.accession} has no {what} on EDGAR")
+        if not _TEXT_DOCUMENT_RE.search(name):
+            kind = "a PDF" if name.lower().endswith(".pdf") else "not an HTML or text document"
+            raise NotSupplied(f"the filing's {what} {name} is {kind}; the pipeline reads HTML and text documents only")
         tag = str(entry["tag"])
         doc = self._document(tag, issuer.calendar, filing, name, {}, exhibit, tag=tag)
         period = edgar.expected_period(filing, issuer, self.client) if filing.form in edgar.PERIODIC_FORMS else None
@@ -3250,6 +3258,7 @@ SUPPLY_FILE = "supply.yml"  # HQ's list next to its rulings: [{tag: "<TAG>[#<loc
 REQUESTED_ITEM_TOKENS = 50_000
 REQUESTED_TOTAL_TOKENS = 250_000
 REQUESTED_MIN_TOKENS = 2_000
+ROUNDING_SLACK = 4  # tokens per separately estimated piece: estimates of parts round, and joins add line breaks
 _EXHIBIT_LOCATOR_RE = re.compile(r"(?i)^EX-?99(?:\.(\d{1,2}))?$")
 
 
@@ -3302,13 +3311,60 @@ def cut_to_tokens(text: str, budget: int) -> tuple[str, str | None]:
 def _requested_text(doc: FilingText, locator: str, exhibit: str | None) -> tuple[str, str]:
     """The excerpt a request asks for and what it is: the part the locator names (documents.locator_section), the
     exhibit, or the whole document. A locator the document's page footers and headings do not find gives the whole
-    document, as a cited tag's excerpt is then looked for in the whole filing (_fact_table)."""
+    document when it fits one item (a cited tag's excerpt is then looked for in the whole filing, as in _fact_table);
+    a longer document is not supplied (NotSupplied), as its first REQUESTED_ITEM_TOKENS would rarely hold the part
+    HQ named."""
     if exhibit or not locator:
         return doc.text, f"the whole {'exhibit' if exhibit else 'document'}"
     part = documents.locator_section(doc.text, locator, doc.form)
-    if part is None:
-        return doc.text, f"the whole document: #{locator} was not found by its page footers or headings"
-    return part, f"the part #{locator} names ({len(part):,} of {len(doc.text):,} characters)"
+    if part is not None:
+        return part, f"the part #{locator} names ({len(part):,} of {len(doc.text):,} characters)"
+    size = slicing.estimate_tokens(doc.text)
+    if size > REQUESTED_ITEM_TOKENS:
+        raise NotSupplied(f"#{locator} was not found by the document's page footers or headings, and the whole "
+                          f"document ({size:,} estimated tokens) is longer than one item may be")
+    return doc.text, f"the whole document: #{locator} was not found by its page footers or headings"
+
+
+def _edgar_reason(exc: Exception) -> str:
+    """Why a requested document could not be fetched, in words of the pipeline's own: the input goes to the model and
+    into the private record, so no local path (an offline miss names the cache directory) goes with it."""
+    if isinstance(exc, edgar.EdgarOffline):
+        return "it is not in the local EDGAR cache (offline assembly)"
+    if isinstance(exc, edgar.EdgarNotFound):
+        return "EDGAR has no such document"
+    if isinstance(exc, edgar.EdgarError) and not isinstance(exc, edgar.EdgarDataError):
+        return f"the EDGAR request failed ({type(exc).__name__})"
+    return str(exc)  # NotSupplied, EdgarDataError and ValueError carry the pipeline's own reasons
+
+
+def _registered_issuer(registered: Mapping[str, Mapping[str, Any]], tag: str) -> str | None:
+    """The issuer's CIK that the company's registered sources give an unregistered tag's ticker ("BHE-" is Berkshire
+    Hathaway Energy in Berkshire's archive; SEC's ticker table gives BHE to Benchmark Electronics), or None when they
+    give none. Raises NotSupplied when they give the ticker more than one issuer."""
+    parsed = edgar.parse_source_tag(tag)
+    if parsed is None:
+        return None
+    ciks = set()
+    for other, entry in registered.items():
+        known = edgar.parse_source_tag(other)
+        if known is not None and known.ticker == parsed.ticker and entry.get("issuer_cik"):
+            try:
+                ciks.add(edgar.normalize_cik(entry["issuer_cik"]))
+            except ValueError:
+                continue
+    if len(ciks) > 1:
+        raise NotSupplied(f"the registered sources give the ticker {parsed.ticker} more than one issuer "
+                          f"({', '.join(sorted(ciks))})")
+    return next(iter(ciks), None)
+
+
+def _fetchable(entry: Mapping[str, Any]) -> bool:
+    """A registered source the pipeline can fetch from EDGAR: a filing (by its tag, accession or url), or a source
+    of another kind (a proxy statement, an annual report) that carries an EDGAR accession or Archives url. A letter,
+    web page or report with neither is not on EDGAR."""
+    return entry.get("kind") in (None, "filing") or bool(
+        entry.get("accession") or edgar.ARCHIVES_URL_RE.search(str(entry.get("url") or "")))
 
 
 @assembler("requested_documents")
@@ -3333,53 +3389,81 @@ def _requested_documents(ctx: RunContext, name: str) -> BuiltInput:
     issuers: dict[str, Any] = {}  # each issuer's submissions, fetched once
     fetched: dict[tuple[str, str | None], FilingText] = {}  # one fetch per document, whatever its locators
     supplied: list[FilingText] = []
-    used = cut = 0
+    listing = ", ".join(f.relative_to(ctx.private_root).as_posix() for f in files)
+    header = [f"Documents HQ asked the pipeline to supply for {company}, fetched from EDGAR as of {ctx.run_date}, in "
+              f"the order HQ listed them ({listing}).",
+              "Each is the part of the filing its locator names (a page, an item, a note or an exhibit), or the whole "
+              f"document; none runs over {REQUESTED_ITEM_TOKENS:,} estimated tokens, the whole input stays within "
+              f"{REQUESTED_TOTAL_TOKENS:,}, and a cut says where it falls.",
+              CITE_NOTE]
+    # the cap counts the whole input: these lines, each item's header, url and note lines, and the not-supplied lines
+    used = slicing.estimate_tokens("\n".join(header + missing)) + ROUNDING_SLACK
+    cut = 0
     full = False  # an item was cut to the room the total left
+
+    def not_supplied(cite: str, reason: str) -> None:
+        nonlocal used
+        line = f"not supplied: {cite}: {reason}"
+        missing.append(line)
+        used += slicing.estimate_tokens(line + "\n")
+
     for request in requests:
-        room = REQUESTED_TOTAL_TOKENS - used
-        if full or room < REQUESTED_MIN_TOKENS:
-            missing.append(f"not supplied: {request.cite}: the documents listed before it fill the input's cap of "
-                           f"{REQUESTED_TOTAL_TOKENS:,} tokens")
+        if full or REQUESTED_TOTAL_TOKENS - used < REQUESTED_MIN_TOKENS:
+            not_supplied(request.cite, f"the documents listed before it fill the input's cap of "
+                                       f"{REQUESTED_TOTAL_TOKENS:,} tokens")
             continue
         tag, _, locator = request.cite.partition("#")
         entry = registered.get(tag)
-        if entry is not None and entry.get("kind") not in (None, "filing"):
-            missing.append(f"not supplied: {request.cite}: registered as kind: {entry.get('kind')}, not an EDGAR "
-                           "filing; the pipeline fetches EDGAR filings only")
+        if entry is not None and not _fetchable(entry):
+            not_supplied(request.cite, f"registered as kind: {entry.get('kind')} without an EDGAR accession or url; "
+                                       "the pipeline fetches EDGAR filings only")
             continue
         match = _EXHIBIT_LOCATOR_RE.match(locator)
         exhibit = (f"EX-99.{int(match.group(1))}" if match.group(1) else "EX-99") if match else None
-        if (tag, exhibit) not in fetched:
-            try:
+        try:
+            if (tag, exhibit) not in fetched:
+                lookup = entry
+                if lookup is None:
+                    cik = _registered_issuer(registered, tag)
+                    lookup = {"tag": tag, **({"issuer_cik": cik} if cik else {})}
                 fetched[(tag, exhibit)] = gateway.requested_document(
-                    entry or {"tag": tag}, exhibit, as_of=ctx.run_date, registered=entry is not None, company=filer,
+                    lookup, exhibit, as_of=ctx.run_date, registered=entry is not None, company=filer,
                     issuers=issuers)
-            except (NotSupplied, edgar.EdgarError, ValueError) as exc:
-                missing.append(f"not supplied: {request.cite}: {exc}")
-                continue
-        doc = fetched[(tag, exhibit)]
-        text, what = _requested_text(doc, locator, exhibit)
+            doc = fetched[(tag, exhibit)]
+            text, what = _requested_text(doc, locator, exhibit)
+        except edgar.MissingUserAgent:
+            raise  # no SEC contact: the run fails, as with every other EDGAR input
+        except (NotSupplied, edgar.EdgarError, ValueError) as exc:
+            not_supplied(request.cite, _edgar_reason(exc))
+            continue
+        asked = f"asked for by HQ ({request.origin})" + (f": {request.why}" if request.why else "")
+        # the item's header, url and note lines, with room for the longest cut note and the cut marker
+        longest_cut = (", cut by the pipeline after line 999,999 of 999,999 (character 99,999,999 of 99,999,999) "
+                       "to stay within 999,999 tokens; the rest is at the url above")
+        frame, _ = render_documents([], [dataclasses.replace(doc, text="", note=f"{asked}; {what}{longest_cut}")])
+        overhead = slicing.estimate_tokens(frame) + slicing.estimate_tokens(
+            "\n[cut by the pipeline here, after line 999,999 of 999,999 (character 99,999,999 of 99,999,999)]") \
+            + ROUNDING_SLACK
+        room = REQUESTED_TOTAL_TOKENS - used - overhead
+        if room < REQUESTED_MIN_TOKENS:
+            not_supplied(request.cite, f"the documents listed before it fill the input's cap of "
+                                       f"{REQUESTED_TOTAL_TOKENS:,} tokens")
+            full = True
+            continue
         budget = min(REQUESTED_ITEM_TOKENS, room)
         text, where = cut_to_tokens(text, budget)
-        used += slicing.estimate_tokens(text)
+        used += slicing.estimate_tokens(text) + overhead
         if where:
             full = full or budget < REQUESTED_ITEM_TOKENS
             cut += 1
             what += f", cut by the pipeline {where} to stay within {budget:,} tokens; the rest is at the url above"
             text += f"\n[cut by the pipeline here, {where}]"
-        asked = f"asked for by HQ ({request.origin})" + (f": {request.why}" if request.why else "")
         supplied.append(dataclasses.replace(doc, locator=exhibit or locator or None, text=text,
                                             note=f"{asked}; {what}"))
     if not supplied:
         raise Omit(f"none of the {len(requests)} document(s) HQ asked for could be supplied: "
                    + "; ".join(m.removeprefix("not supplied: ") for m in missing))
-    header = [f"Documents HQ asked the pipeline to supply for {company}, fetched from EDGAR as of {ctx.run_date}, in "
-              f"the order HQ listed them ({', '.join(f.relative_to(ctx.private_root).as_posix() for f in files)}).",
-              "Each is the part of the filing its locator names (a page, an item, a note or an exhibit), or the whole "
-              f"document; none runs over {REQUESTED_ITEM_TOKENS:,} estimated tokens, all together stay within "
-              f"{REQUESTED_TOTAL_TOKENS:,}, and a cut says where it falls.",
-              CITE_NOTE, *missing, ""]
-    text, sources = render_documents(header, supplied)
+    text, sources = render_documents([*header, *missing, ""], supplied)
     sources = [repo_file_source(ctx.private_root, f, PRIVATE_REPO) for f in files] + sources
     note = f"{len(supplied)} of {len(requests)} requested document(s) supplied" + (f", {cut} cut" if cut else "")
     note += f"; {len(missing)} not supplied" if missing else ""
