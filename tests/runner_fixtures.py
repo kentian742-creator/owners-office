@@ -58,7 +58,7 @@ role: company_manager
 parts:
   A: {name: Dossier, inputs: [run_date, sources, xbrl_facts, industries, "existing_dossier?", "findings_04A?", "hq_rulings?", "requested_documents?", "findings_04B?"], outputs: [dossier, sources_additions, questions, "mistakes_entry?"]}
   B: {name: System files, inputs: [run_date, dossier, schema, lynch_template, metrics_registry, "existing_system_files?"], outputs: [thesis, story, ledger, questions]}
-  C: {name: Valuation, inputs: [run_date, dossier, xbrl_facts, filings, price_reference, year_end_closes, anchors, series_roster, schema, "findings_04C?", "valuation?", "hq_rulings?", "requested_documents?", "holdings_marks?"], outputs: [valuation_md, valuation_yml, questions]}
+  C: {name: Valuation, inputs: [run_date, dossier, xbrl_facts, filings, price_reference, year_end_closes, anchors, series_roster, schema, "findings_04C?", "valuation?", "hq_rulings?", "requested_documents?", "holdings_marks?", "backtest_holdings_marks?"], outputs: [valuation_md, valuation_yml, questions]}
 ---
 
 Synthetic prompt 01 about {{company}} ({{ticker}}), status {{status}}.
@@ -101,7 +101,7 @@ version: "9.5"
 parts:
   A: {name: synthetic fact audit, role: auditor, inputs: [fact_table, sources], outputs: [fact_verdicts, findings, questions]}
   B_lite: {name: synthetic inversion list, role: red_team, inputs: [update, filings, thesis_without_loss_paths, "prior_inversion_list?"], outputs: [inversion_list, test_proposals]}
-  C: {name: synthetic model review, role: model_reviewer, inputs: [valuation, "report_valuation_section?", series_roster, price_reference, anchors, sources, "hq_rulings?", "requested_documents?", "holdings_marks?"], outputs: [model_checks, valuation_decision, findings, questions]}
+  C: {name: synthetic model review, role: model_reviewer, inputs: [valuation, "report_valuation_section?", series_roster, price_reference, anchors, sources, "hq_rulings?", "requested_documents?", "holdings_marks?", "backtest_holdings_marks?"], outputs: [model_checks, valuation_decision, findings, questions]}
 ---
 
 Synthetic prompt 04: the {{subject}} of {{company}} ({{ticker}}).

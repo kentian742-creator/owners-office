@@ -40,7 +40,7 @@ import json
 import os
 import re
 import subprocess
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -2875,61 +2875,121 @@ def _anchors(ctx: RunContext, name: str) -> BuiltInput:
 FIGI_CACHE = "inputs/figi-cusip-tickers.json"  # workspace: CUSIP/CINS -> ticker (pipeline/holdings.py)
 
 
-@assembler("holdings_marks")
-def _holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
-    """01C (and a valuation refresh): the company's listed equity portfolio at the price-reference date: the
-    positions of its latest 13F-HR, each carried from its 13F value by its price change to the run date
-    (pipeline/holdings.py). Omitted for a company that files no 13F."""
-    company = _need_company(ctx, name)
-    filer = ctx.filer()
-    gateway = ctx.gateway()
-    subs = edgar.submissions(filer.cik, client=gateway.client)
-    filings = [f for f in subs.filings if f.form == holdings.FORM_13F and f.filing_date <= ctx.run_date
+def _latest_13f(ctx: RunContext, name: str, subs: edgar.Submissions,
+                on_or_before: dt.date) -> tuple[edgar.Filing, list[holdings.Position], str] | None:
+    """The last 13F-HR filed on or before a date, its positions (the information table) and the table's url; None
+    when none was filed by then."""
+    filings = [f for f in subs.filings if f.form == holdings.FORM_13F and f.filing_date <= on_or_before
                and f.report_date is not None]
     if not filings:
-        raise Omit(f"{company} files no 13F-HR: it holds no listed equity portfolio to mark")
+        return None
     filing = max(filings, key=lambda f: (f.report_date, f.filing_date))
-    index = gateway.client.get_json(f"{filing.folder_url}/index.json")
+    client = ctx.gateway().client
+    index = client.get_json(f"{filing.folder_url}/index.json")
     names = [str(i.get("name") or "") for i in ((index.get("directory") or {}).get("item") or [])]
-    positions, table_url = [], None
     for xml_name in (n for n in names if n.lower().endswith(".xml") and n != "primary_doc.xml"):
         url = f"{filing.folder_url}/{xml_name}"
-        found = holdings.parse_information_table(gateway.client.get_bytes(url, max_age=None))
+        found = holdings.parse_information_table(client.get_bytes(url, max_age=None), filed=filing.filing_date)
         if found:
-            positions, table_url = found, url
-            break
-    if not positions:
-        raise MissingInput(f"{name}: the 13F-HR {filing.accession} has no readable information table")
+            return filing, found, url
+    raise MissingInput(f"{name}: the 13F-HR {filing.accession} has no readable information table")
+
+
+def _marked_13f(ctx: RunContext, company: str, subs: edgar.Submissions, filing: edgar.Filing,
+                positions: Sequence[holdings.Position], table_url: str,
+                mark_date: dt.date) -> tuple[dict[str, Any], list[dict[str, Any]], list[holdings.Mark]]:
+    """A 13F's positions marked at a date (pipeline/holdings.py): the summary with the 13F's source record, and the
+    sources (the 13F's information table, each price history used)."""
     tickers, failed = holdings.figi_tickers([p.cusip for p in positions], cache=ctx.workspace_root / FIGI_CACHE)
+
     def history(symbol: str) -> list[prices.Close]:
         try:
             return price_history(ctx, symbol)
         except MissingInput as exc:  # one unpriced position is reported in the input, not fatal to it
             raise prices.PriceError(str(exc)) from None
 
-    marks = holdings.mark_positions(positions, tickers, filing.report_date, ctx.run_date, history, failed)
-    data = holdings.summary(filing.report_date, ctx.run_date, marks)
+    marks = holdings.mark_positions(positions, tickers, filing.report_date, mark_date, history, failed)
     known = known_filing_tags((ctx.public_root, ctx.private_root), company)
-    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    cal = edgar.FiscalCalendar.parse(ctx.filer().fiscal_year_end or subs.fiscal_year_end)
     tag = known.get(filing.accession) or documents.tag_with_ordinal(company, filing, cal, subs.filings)
     data = {"source_13f": {"tag": tag, "form": filing.form, "accession": filing.accession,
                            "filed": filing.filing_date.isoformat(), "report_date": filing.report_date.isoformat(),
                            "url": table_url},
-            "what_it_is": ("US-listed positions from the 13F at its report date. Each is marked at the price-reference "
-                           "date as its 13F value (the report-date market value) times its close on or before the "
-                           "price-reference date, divided by its close on or before the report date. Both closes come "
-                           "from one Nasdaq.com history adjusted for stock splits, so a split after the report date "
-                           "does not change the mark; the 13F's share counts are from before any such split."),
+            **holdings.summary(filing.report_date, mark_date, marks)}
+    sources = [{"kind": "edgar", "tag": tag, "form": filing.form, "accession": filing.accession,
+                "filed": filing.filing_date.isoformat(), "document": table_url.rsplit("/", 1)[-1], "url": table_url}]
+    sources += [_price_source(m.close) for m in marks if m.close is not None]
+    return data, sources, marks
+
+
+_MARK_RULE = ("Each is marked as its 13F value (the report-date market value) times its close on or before the mark "
+              "date, divided by its close on or before the report date. Both closes come from one Nasdaq.com history "
+              "adjusted for stock splits, so a split after the report date does not change the mark; the 13F's share "
+              "counts are from before any such split.")
+
+
+@assembler("holdings_marks")
+def _holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
+    """01C (and a valuation refresh): the company's listed equity portfolio at the price-reference date: the
+    positions of its latest 13F-HR, each carried from its 13F value by its price change to the run date
+    (pipeline/holdings.py). Omitted for a company that files no 13F."""
+    company = _need_company(ctx, name)
+    subs = edgar.submissions(ctx.filer().cik, client=ctx.gateway().client)
+    latest = _latest_13f(ctx, name, subs, ctx.run_date)
+    if latest is None:
+        raise Omit(f"{company} files no 13F-HR: it holds no listed equity portfolio to mark")
+    filing, positions, table_url = latest
+    data, sources, marks = _marked_13f(ctx, company, subs, filing, positions, table_url, ctx.run_date)
+    data = {"what_it_is": ("US-listed positions from the 13F at its report date, marked at the price-reference date. "
+                           + _MARK_RULE),
             "what_it_is_not": ("Trades after the report date are not disclosed until the next 13F; holdings outside the "
                                "13F (non-US listings) are not here; an equity-method investee appears here at market "
                                "but is carried at equity on the balance sheet."),
             **data}
-    sources = [{"kind": "edgar", "tag": tag, "form": filing.form, "accession": filing.accession,
-                "filed": filing.filing_date.isoformat(), "document": table_url.rsplit("/", 1)[-1], "url": table_url}]
-    sources += [_price_source(m.close) for m in marks if m.close is not None]
     note = (f"{len(positions)} positions from {filing.form} {filing.accession} (report date {filing.report_date}); "
             f"{sum(1 for m in marks if m.close)} marked; coverage {data['coverage']:.1%} of the 13F value")
     return BuiltInput(dump_yaml(data), "yml", sources, note=note)
+
+
+@assembler("backtest_holdings_marks")
+def _backtest_holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
+    """01C, 04C (and a valuation refresh): for each backtest year-end (§V5, §V12; the dates of year_end_closes), the
+    listed equity portfolio as the last 13F-HR filed by that date disclosed it, marked at that year-end's closes. The
+    backtest's starting point uses only what was public by the year-end (HQ ruling R19 for Berkshire), as
+    holdings_marks does for the price-reference date. Omitted for a company that files no 13F."""
+    company = _need_company(ctx, name)
+    subs = edgar.submissions(ctx.filer().cik, client=ctx.gateway().client)
+    if not any(f.form == holdings.FORM_13F for f in subs.filings):
+        raise Omit(f"{company} files no 13F-HR: it holds no listed equity portfolio to mark")
+    symbol = PRICE_SYMBOLS.get(company, company)
+    year_ends = [c.date for c in prices.year_end_closes(price_history(ctx, symbol),
+                                                        ctx.filer().fiscal_year_end or "12-31", 5, ctx.run_date)]
+    blocks, sources, notes, seen = [], [], [], set()
+    for year_end in year_ends:
+        latest = _latest_13f(ctx, name, subs, year_end)
+        if latest is None:
+            blocks.append({"year_end": year_end.isoformat(), "not_marked": "no 13F-HR was filed by this date"})
+            notes.append(f"{year_end}: no 13F")
+            continue
+        filing, positions, table_url = latest
+        data, block_sources, marks = _marked_13f(ctx, company, subs, filing, positions, table_url, year_end)
+        blocks.append({"year_end": year_end.isoformat(), **data})
+        for source in block_sources:  # one record per 13F and per price history (its tag), whatever the dates read
+            key = (source.get("kind"), source.get("tag") or source.get("url"))
+            if key not in seen:
+                seen.add(key)
+                sources.append(source)
+        notes.append(f"{year_end}: {filing.accession}, coverage {data['coverage']:.1%}"
+                     if data.get("coverage") is not None else f"{year_end}: {filing.accession}")
+    data = {"what_it_is": ("For each backtest year-end, the US-listed positions of the last 13F filed by that date (its "
+                           "report date is the quarter before), marked at the year-end. " + _MARK_RULE),
+            "what_it_is_not": ("Trades between the 13F's report date and the year-end are not disclosed until the next "
+                               "13F; holdings outside the 13F (non-US listings) are not here; a position that is no "
+                               "longer listed may have no price history and is then not marked (its value at the "
+                               "report date stays); an equity-method investee appears here at market but is carried at "
+                               "equity on the balance sheet."),
+            "year_ends": blocks}
+    return BuiltInput(dump_yaml(data), "yml", sources, note="; ".join(notes))
 
 
 @assembler("series_roster")

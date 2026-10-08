@@ -40,3 +40,21 @@ source, and asked to see a research report for McDonald's built by the pipeline.
   close, so a backtest compares like with like.
 - 04C (the valuation model review) is not in the pipeline yet. A valuation from 01C stays `proposed`, and the report
   says it has not been reviewed.
+
+## Amendment (2026-10-08): a listed portfolio marked from its 13F
+
+A company that holds a large listed equity portfolio, such as Berkshire Hathaway, is valued partly through it, and
+its balance sheet carries the portfolio at the last quarter end. Two inputs give the valuation the portfolio at the
+dates it needs instead (`pipeline/holdings.py`; private, like every price):
+
+- `holdings_marks`: the positions of the latest Form 13F-HR, each marked at the price-reference date. A position's
+  13F value (its market value at the report date) is carried forward by the ratio of its Nasdaq.com closes at the
+  two dates, so a stock split in between does not change it. The ticker of each CUSIP comes from OpenFIGI's public
+  mapping, and the request carries only the codes.
+- `backtest_holdings_marks`: for each backtest year-end (§V5, §V12), the positions of the last 13F filed by that
+  date, marked at the year-end's closes, so the backtest starts only from what was public then.
+
+Values in 13Fs filed before 2023-01-03 are in thousands of dollars, and the parser converts them. What the marks
+cannot see is stated with them: trades after the 13F's report date, holdings outside the 13F (non-US listings), and
+positions with no US ticker or no price history, which keep their report-date value and lower the stated coverage.
+The 04C model review sees both inputs.

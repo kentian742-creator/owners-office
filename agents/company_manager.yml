@@ -39,6 +39,7 @@ can_see:
   - series_roster
   - price_reference
   - holdings_marks              # a valuation: the listed equity portfolio of the latest 13F, marked at the price-reference date
+  - backtest_holdings_marks     # a valuation's backtest: each year-end's portfolio as the last 13F by then, marked then
   - year_end_closes
   - anchors
   - valuation_input_notes

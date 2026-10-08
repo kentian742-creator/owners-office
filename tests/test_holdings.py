@@ -93,3 +93,13 @@ def test_a_failed_ticker_lookup_is_reported_as_such_not_as_a_security_without_a_
     marks = holdings.mark_positions(positions, tickers, dt.date(2026, 6, 30), dt.date(2026, 9, 30), lambda s: [],
                                     failed)
     assert marks[0].problem == failed["037833100"] and "no US ticker" not in marks[0].problem
+
+
+def test_a_13f_filed_before_2023_gives_its_values_in_thousands_of_dollars():
+    """SEC's amendments to Form 13F: whole dollars in filings made from 2023-01-03, thousands before. Berkshire's
+    backtest reads 13Fs filed in November 2021 and 2022."""
+    import datetime as dt
+    before = holdings.parse_information_table(TABLE, filed=dt.date(2022, 11, 14))
+    after = holdings.parse_information_table(TABLE, filed=dt.date(2023, 1, 3))
+    assert [p.value for p in before] == [p.value * 1000 for p in after]
+    assert [p.value for p in holdings.parse_information_table(TABLE)] == [p.value for p in after]

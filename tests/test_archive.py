@@ -443,6 +443,43 @@ def test_the_holdings_marks_tag_an_unregistered_13f_by_its_filing_date_and_each_
     assert (data["marked_positions_value"], data["coverage"]) == (11990, 1.0)
 
 
+def test_each_backtest_year_end_marks_the_last_13f_filed_by_then_at_that_year_ends_closes(env, monkeypatch):
+    """§V5/V12 start a backtest year-end from what was public by then (HQ ruling R19): the Q3 13F filed in November,
+    marked at the December close; a year-end before any 13F says so."""
+    reports = [filing("a-13f-2024q3", "13F-HR", "2024-11-14", "2024-09-30"),
+               filing("a-13f-2025q3", "13F-HR", "2025-11-14", "2025-09-30"),
+               filing("a-13f-2026q2", "13F-HR", "2026-08-14", "2026-06-30")]
+    subs = edgar.Submissions(cik="0000000042", name="NEWCO CORP", tickers=("NEWCO",), fiscal_year_end="1231",
+                             entity_type="operating", category=None, filings=[*FILINGS, *reports], pages=[],
+                             pages_loaded=[])
+    monkeypatch.setattr(edgar, "submissions", lambda *args, **kwargs: subs)
+    index = {"directory": {"item": [{"name": "infotable.xml"}]}}
+    bodies = {}
+    for report in reports:
+        bodies[f"{report.folder_url}/index.json"] = json.dumps(index).encode()
+        bodies[f"{report.folder_url}/infotable.xml"] = LENNAR_13F
+    monkeypatch.setattr(env.gateway.client, "get_bytes", lambda url, **kwargs: bodies[url])
+    fx.write(env.workspace / registry.FIGI_CACHE, json.dumps({"526057104": "LEN", "526057302": "LEN.B"}))
+    for symbol in ("LEN", "LEN.B", "NEWCO"):
+        rows = [{"date": f"{m}/{d}/{y}", "close": str(100 + y - 2020 + (m == 12))}
+                for y in range(2020, 2027) for m, d in ((12, 31), (9, 30), (6, 30)) if (y, m) < (2026, 9)]
+        rows.append({"date": "09/28/2026", "close": "107"})
+        fx.write(env.workspace / "inputs" / "prices" / f"{symbol}-2026-09-28.json",
+                 json.dumps({"data": {"tradesTable": {"rows": rows}}}))
+    built = registry.INPUTS["backtest_holdings_marks"](context(env, "01C"), "backtest_holdings_marks")
+    blocks = {b["year_end"]: b for b in yaml.safe_load(built.text)["year_ends"]}
+    assert list(blocks) == ["2025-12-31", "2024-12-31", "2023-12-31", "2022-12-31", "2021-12-31"]
+    assert blocks["2025-12-31"]["source_13f"]["report_date"] == "2025-09-30"  # filed 2025-11-14, before the year-end
+    assert blocks["2024-12-31"]["source_13f"]["report_date"] == "2024-09-30"
+    assert blocks["2023-12-31"] == {"year_end": "2023-12-31", "not_marked": "no 13F-HR was filed by this date"}
+    lennar = blocks["2025-12-31"]["positions"][0]
+    assert lennar["close_2025-09-30"] == 105 and lennar["close_2025-12-31"] == 106  # the year-end's own close
+    assert lennar["value_2025-12-31"] == round(10000 * 106 / 105) and lennar["price_tag"] == "LEN-PRICES-2026-09-28#2025-12-31"
+    tags = [s.get("tag") for s in built.sources]
+    assert len(tags) == len(set(tags))  # one record per 13F and per price history
+    assert built.note.startswith("2025-12-31: a-13f-2025q3, coverage 100.0%")
+
+
 def test_the_valuation_checks_its_readings_against_the_latest_reports_and_each_earlier_years_mdna():
     picks = archive.valuation_selection(FILINGS, as_of=dt.date(2026, 9, 28), cal=CAL)
     assert [(p.selection.filing.accession, p.selection.sections) for p in picks] == [

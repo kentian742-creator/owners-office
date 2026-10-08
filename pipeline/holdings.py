@@ -5,7 +5,8 @@ carries them at the quarter-end market value, so a valuation dated later would c
 today's share price. This module gives the valuation the portfolio at the price-reference date instead:
 
 - the positions: the latest Form 13F-HR on or before the date (US-listed holdings and their share counts at the
-  quarter end; the 13F's values are the quarter-end market values, in dollars since 2023);
+  quarter end; the 13F's values are the quarter-end market values, in dollars in filings made from 2023-01-03 and
+  in thousands of dollars before, which parse_information_table converts);
 - each position's ticker: OpenFIGI's public mapping of the CUSIP (or, for a non-US issuer, the CINS) to its US
   listing; the request carries only the codes;
 - each position's closes on or before the 13F's report date and on or before the date, from the same Nasdaq.com
@@ -36,6 +37,8 @@ FIGI_URL = "https://api.openfigi.com/v3/mapping"
 FIGI_BATCH = 10  # OpenFIGI without an API key: 10 jobs per request, 25 requests a minute
 FIGI_PAUSE = 2.6
 FORM_13F = "13F-HR"
+# SEC's amendments to Form 13F: values in whole dollars in filings made from this date, in thousands before
+VALUE_IN_DOLLARS_FROM = dt.date(2023, 1, 3)
 
 
 class HoldingsError(RuntimeError):
@@ -58,9 +61,11 @@ def _strip(tag: str) -> str:
     return tag.split("}", 1)[-1]
 
 
-def parse_information_table(xml: bytes) -> list[Position]:
-    """The 13F information table's positions, summed per security across the filer's managers; options (rows with
-    putCall) and principal amounts (debt) are left out."""
+def parse_information_table(xml: bytes, *, filed: dt.date | None = None) -> list[Position]:
+    """The 13F information table's positions, summed per security across the filer's managers, values in dollars (a
+    table filed before VALUE_IN_DOLLARS_FROM gives them in thousands); options (rows with putCall) and principal
+    amounts (debt) are left out."""
+    scale = 1000 if filed is not None and filed < VALUE_IN_DOLLARS_FROM else 1
     try:
         root = ET.fromstring(xml)
     except ET.ParseError as exc:
@@ -73,7 +78,7 @@ def parse_information_table(xml: bytes) -> list[Position]:
         if row.get("putCall") or row.get("sshPrnamtType", "SH") != "SH":
             continue
         try:
-            shares, value = int(row["sshPrnamt"]), int(row["value"])
+            shares, value = int(row["sshPrnamt"]), int(row["value"]) * scale
         except (KeyError, ValueError):
             continue
         key = (row.get("cusip", "").upper(), row.get("titleOfClass", ""))
