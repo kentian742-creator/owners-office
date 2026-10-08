@@ -797,6 +797,15 @@ def _prompt_id(manifest: Mapping[str, Any]) -> str:
     return str((manifest.get("prompt") or {}).get("id") or manifest["step"])
 
 
+def placement_fields(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """The bundle's template fields for outputs.place(); a bundle assembled before reports had a folder gets its
+    report_doc here."""
+    context = dict(manifest.get("context") or {})
+    if context.get("doc") is None:
+        context["doc"] = registry.report_doc(_prompt_id(manifest), context.get("run_dir"))
+    return context
+
+
 def planned_placements(manifest: Mapping[str, Any], entries: Mapping[str, Mapping[str, Any]]) -> list[dict[str, Any]]:
     """Where each written output goes under 00 section F2 (outputs.place), as recorded in run.yml and the PR."""
     rows = []
@@ -805,7 +814,7 @@ def planned_placements(manifest: Mapping[str, Any], entries: Mapping[str, Mappin
             continue
         try:
             placements = _outputs.place(name, prompt_id=_prompt_id(manifest), part_id=str(manifest["step"]),
-                                        fmt=str(entry["format"]), **(manifest.get("context") or {}))
+                                        fmt=str(entry["format"]), **placement_fields(manifest))
         except _outputs.PlacementError as exc:
             rows.append({"output": name, "error": str(exc)})
             continue
@@ -2414,7 +2423,7 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
             problems += [f"prereg: {p}" for p in prereg_problems]
         try:
             placements = _outputs.place(name, prompt_id=_prompt_id(manifest), part_id=str(manifest["step"]),
-                                        fmt=str(entry["format"]), **(manifest.get("context") or {}))
+                                        fmt=str(entry["format"]), **placement_fields(manifest))
         except _outputs.PlacementError as exc:
             problems.append(f"{name}: {exc}")
             continue

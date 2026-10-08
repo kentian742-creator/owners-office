@@ -653,3 +653,22 @@ def test_the_workspace_root_names_the_env_file(tmp_path):
     environ = {"OWNERS_OFFICE_ENV_FILE": "/elsewhere/.env"}
     runner.use_workspace_env_file(roots, environ)
     assert environ["OWNERS_OFFICE_ENV_FILE"] == "/elsewhere/.env"
+
+
+def test_a_research_report_is_placed_in_a_folder_named_after_its_run():
+    """02 bundles were assembled with doc: None, so `place` refused their report, cover and charts. A report's folder
+    is its run's directory: a same-day rerun never overwrites an earlier placement, and older manifests get it too."""
+    from pipeline import registry
+    assert registry.report_doc("02", "2026-09-30-02") == "2026-09-30-02"
+    assert registry.report_doc("14", "2026-09-30-14Q") is None and registry.report_doc("02", None) is None
+    context = {"company": "BRK", "period": "FY2026Q2", "run_date": "2026-09-30", "month": None, "doc": None,
+               "subject": None, "scope": "BRK", "run_dir": "2026-09-30-02-rerun2"}
+    manifest = {"step": "02", "prompt": {"id": "02"}, "run_date": "2026-09-30", "scope": "BRK", "context": context}
+    assert runner.placement_fields(manifest)["doc"] == "2026-09-30-02-rerun2"
+    rows = runner.planned_placements(manifest, {"report": {"status": "written", "format": "markdown"},
+                                                "cover": {"status": "written", "format": "yaml"},
+                                                "archive_patch": {"status": "written", "format": "yaml"}})
+    paths = {r["output"]: r.get("path") for r in rows}
+    assert paths == {"report": "reports/BRK/2026-09-30-02-rerun2/report.md",
+                     "cover": "reports/BRK/2026-09-30-02-rerun2/cover.yml",
+                     "archive_patch": "runs/BRK/2026-09-30-02-rerun2/archive_patch.yml"}, rows

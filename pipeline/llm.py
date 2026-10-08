@@ -232,7 +232,7 @@ _NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 _INPUT_KEY = re.compile(r"^[A-Za-z0-9_.-]+$")
 _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Directory of report outputs ({doc} in outputs.PLACEMENT); 09, 10 and 19 take it from the document variable.
-_DOC_OF_PROMPT = {"02": "02", "05": "02", "06": "06", "07": "07", "08": "08", "11": "11", "12": "11", "13": "11"}
+DOC_OF_PROMPT = {"02": "02", "05": "02", "06": "06", "07": "07", "08": "08", "11": "11", "12": "11", "13": "11"}
 
 
 class LLMError(RuntimeError):
@@ -1437,7 +1437,7 @@ def _run_context(call: PromptPart, inputs: Mapping[str, str], variables: Mapping
         "company": variables.get(VAR_TICKER),
         "period": variables.get(VAR_PERIOD),
         "run_date": run_date if _DATE.match(run_date) else _utcnow().date().isoformat(),
-        "doc": _DOC_OF_PROMPT.get(call.prompt_id) or variables.get(VAR_DOCUMENT),
+        "doc": DOC_OF_PROMPT.get(call.prompt_id) or variables.get(VAR_DOCUMENT),
         "subject": variables.get(VAR_SUBJECT),
     }
 

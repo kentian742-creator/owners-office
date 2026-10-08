@@ -560,18 +560,26 @@ def variables_for(ctx: RunContext) -> dict[str, str]:
     return out
 
 
+def report_doc(prompt_id: str | None, run_dir: str | None) -> str | None:
+    """The folder of a report-like document under reports/<TICKER>/ (02's research report): its run's directory, so a
+    same-day rerun never overwrites an earlier placement. A revision step (05, 13) would write into the folder of the
+    document it revises; none is implemented yet."""
+    return run_dir if prompt_id in llm.DOC_OF_PROMPT and run_dir else None
+
+
 def placement_context(ctx: RunContext) -> dict[str, Any]:
-    """Template fields for outputs.place(): company, period, run_date, month (monthly letter), subject (04), and the
-    run directory's name (runs/hq/<run_date>-17A-<TICKER> for an HQ step about one company)."""
+    """Template fields for outputs.place(): company, period, run_date, month (monthly letter), doc (report_doc),
+    subject (04), and the run directory's name (runs/hq/<run_date>-17A-<TICKER> for an HQ step about one company)."""
+    run_dir = ctx.step.bundle_name(ctx.run_date, ctx.company, ctx.round, ctx.rerun)
     return {
         "company": ctx.company,
         "period": ctx.period if ctx.step.period_kind == "quarter" else None,
         "run_date": ctx.run_date.isoformat(),
         "month": ctx.period if ctx.step.period_kind == "month" else None,
-        "doc": None,
+        "doc": report_doc(ctx.step.prompt_id, run_dir),
         "subject": ctx.subject or ctx.step.variables.get(llm.VAR_SUBJECT),
         "scope": ctx.scope,
-        "run_dir": ctx.step.bundle_name(ctx.run_date, ctx.company, ctx.round, ctx.rerun),
+        "run_dir": run_dir,
     }
 
 
