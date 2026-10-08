@@ -1,0 +1,184 @@
+company: APP
+event:
+  period: FY2026Q3
+  expected_release: "2026-11-02"
+  form: 8-K
+  placeholder: true
+deadline: "2026-11-01T23:59:59-05:00"
+author: system
+horizon: mixed
+items:
+  - id: APP-FY2026Q3-1
+    statement: >-
+      FY2026Q3 revenue is no lower than the midpoint of the company's own revenue guidance for the quarter
+      ($2,070 million).
+    probability: 0.6
+    criterion: >-
+      Settle on revenue for the three months ended 2026-09-30, from the "Revenue" line of the condensed
+      consolidated statements of operations, in thousands of USD. The threshold is 2,070,000 thousand USD, the
+      midpoint of the $2,055–2,085 million FY2026Q3 revenue guidance in the FY2026Q2 earnings press release
+      [src:APP-8K-2026-08-05#EX-99.1]. Any later change to that guidance does not change the threshold.
+      Happened if revenue ≥ 2,070,000 thousand USD. Equality counts as happened. Do not round before comparing.
+      Source order: the FY2026Q3 10-Q XBRL fact for the duration 2026-07-01 to 2026-09-30 prevails
+      (us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax, or us-gaap:Revenues if that is the concept
+      tagged). If it differs from the FY2026Q3 earnings press release (8-K Item 2.02, Exhibit 99.1), write both
+      and settle on the XBRL figure. Use the figure as first reported in the FY2026Q3 10-Q. A later restatement
+      does not change the outcome. If the 10-Q is not filed by 2026-12-31, settle on the press-release figure.
+      If neither is available by 2026-12-31, record undetermined.
+    data_source: "FY2026Q3 10-Q, Item 1 condensed consolidated statements of operations (XBRL); fallback: FY2026Q3 earnings press release, 8-K Item 2.02 Exhibit 99.1"
+    horizon: quarter
+    resolves_by: '2026-11-30'
+    domain: digital_advertising
+    added_by: system
+    pillar: P2
+    falsifies_thesis: false
+    reference: >-
+      Reference class: this company's quarterly revenue measured against the midpoint of the guidance it gave a
+      quarter earlier. The materials give one reading. FY2026Q2 revenue was $1,923.7 million against a $1,915–1,945
+      million range, 0.3% below the $1,930 million midpoint [src:APP-8K-2026-08-05#EX-99.1][src:APP-8K-2026-05-06#EX-99.1].
+      The frequency across earlier quarters cannot be verified from the materials. Starting point (judgment): 0.6,
+      for a guidance range only ±0.7% wide. Kept at 0.6 because the evidence pulls both ways. For: the CEO said a
+      larger model improvement shipped after Q2 ended [src:APP-CALL-FY2026Q2#CEO]. Against: Unity guided Vector to
+      +19%–21% quarter on quarter for Q3 [src:U-CALL-FY2026Q2], and the Fed raised rates on 2026-09-16
+      [src:FED-FOMC-2026-09-16].
+  - id: APP-FY2026Q3-2
+    statement: >-
+      Pure share repurchases in FY2026Q3, measured on the cash flow statement and excluding withholding taxes, are
+      no smaller than FY2026Q2's $551.2 million.
+    probability: 0.7
+    criterion: >-
+      Q3 pure buybacks = the "Repurchases of common stock" line in financing activities of the condensed
+      consolidated statement of cash flows in the FY2026Q3 10-Q, for the nine months ended 2026-09-30, in
+      thousands of USD and taken as a positive outflow, minus 1,532,952 thousand USD. The 1,532,952 figure is the
+      same line for the six months ended 2026-06-30 [src:APP-10Q-FY2026Q2#Item1-cash-flows], and it is used as
+      registered even if a later filing revises it (note any revision). Q2 pure buybacks = 1,532,952 − 981,723 =
+      551,229 thousand USD [src:APP-10Q-FY2026Q2#Item1-cash-flows][src:APP-10Q-FY2026Q1#Item1-cash-flows].
+      Happened if Q3 pure buybacks ≥ 551,229 thousand USD. Equality counts as happened. None of the following is
+      used: the "Payment of withholding taxes related to net share settlement" line, the statement of
+      stockholders' equity, the Part II Item 2 repurchase table, or the press release's combined
+      repurchase-and-withholding figure. The XBRL fact us-gaap:PaymentsForRepurchaseOfCommonStock for the
+      nine-month duration prevails over the rendered text; where they differ, write both. If the nine-month line
+      is relabeled or combined with withholding taxes so that pure repurchases cannot be read, record undetermined
+      and state why. If the FY2026Q3 10-Q is not filed by 2026-12-31, record undetermined.
+    data_source: "FY2026Q3 10-Q, Item 1 condensed consolidated statement of cash flows, financing activities (XBRL us-gaap:PaymentsForRepurchaseOfCommonStock); six-month base from the FY2026Q2 10-Q cash flow statement"
+    horizon: quarter
+    resolves_by: '2026-11-30'
+    domain: digital_advertising
+    added_by: system
+    pillar: P5
+    falsifies_thesis: false
+    reference: >-
+      Reference class: this company's quarter-to-quarter changes in pure repurchases. On the equity-statement basis
+      the readings are FY2025Q1 $1,001.7 million, FY2025Q2 $270.1 million, FY2026Q1 $1,013.8 million and FY2026Q2
+      $531.7 million [src:APP-10Q-FY2026Q2#Item1-equity]. Repurchases fell from Q1 to Q2 in both years read.
+      FY2025Q3 is not in the materials, so the frequency of Q3 ≥ Q2 cannot be verified. Starting point (judgment):
+      0.6, raised to 0.7 for four reasons. The CFO attributed the Q2 slowdown to low cash flow
+      [src:APP-CALL-FY2026Q2#CFO]. Q2 free cash flow of $863.3 million exceeded Q2's $551.2 million of pure
+      buybacks, and cash at 2026-06-30 was $3,053.3 million [src:APP-8K-2026-08-05#EX-99.1]. $1,756 million of
+      authorization remained [src:APP-10Q-FY2026Q2#PartII-Item2]. $18.5 million of repurchases accrued at
+      2026-06-30 will be paid in Q3 cash [src:APP-10Q-FY2026Q2#Item1-cash-flows]. Held below 0.8 because the CFO
+      said cash taxes concentrate in Q2 and Q3 [src:APP-CALL-FY2026Q2#CFO].
+  - id: APP-FY2026Q3-3
+    statement: >-
+      FY2027 revenue grows at least 20% over FY2026.
+    probability: 0.6
+    criterion: >-
+      FY2027 revenue growth = revenue for the year ended 2027-12-31 ÷ revenue for the year ended 2026-12-31 − 1.
+      Take both figures from the consolidated statements of operations in the FY2027 10-K, using that 10-K's
+      comparative column for FY2026, so that any restatement or discontinued-operations reclassification applies
+      to both years. Happened if growth ≥ 20.0% after rounding to one decimal place. 20.0% counts as happened.
+      The 10-K XBRL facts for the annual durations prevail (us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+      or us-gaap:Revenues); where they differ from the rendered statement or the FY2027Q4 earnings press release,
+      write both. Use reported revenue with no pro forma adjustment, with one exception: if the FY2027 10-K
+      discloses that businesses acquired after 2026-10-02 contributed more than 5% of FY2027 revenue, record
+      undetermined. If the FY2027 10-K is not filed by 2028-03-31, settle on the full-year figures in the FY2027Q4
+      earnings press release (8-K Item 2.02, Exhibit 99.1), compared in the same way. If neither exists by
+      2028-03-31, record undetermined.
+    data_source: "FY2027 10-K, Item 8 consolidated statements of operations (XBRL); fallback: FY2027Q4 earnings press release, 8-K Item 2.02 Exhibit 99.1"
+    horizon: 18m
+    resolves_by: '2028-02-29'
+    domain: digital_advertising
+    added_by: system
+    pillar: P2
+    falsifies_thesis: true
+    reference: >-
+      Reference class: this company's own growth path. Year-on-year growth fell each quarter, from +68% in FY2025Q3
+      to +53% in FY2026Q2 [src:APP-8K-2025-11-05#EX-99.1][src:APP-8K-2026-08-05#EX-99.1]. Q2 revenue rose 4.4%
+      quarter on quarter (1,923,686 ÷ 1,842,449 thousand USD − 1, with Q1 equal to first-half revenue of 3,766,135
+      less Q2), and the Q3 guidance midpoint implies +7.6% [src:APP-8K-2026-08-05#EX-99.1]. Own calculation: if
+      Q3 lands at the $2,070 million midpoint, FY2027 reaches +20% only if revenue grows about 4.3% a quarter on
+      average from FY2026Q4 through FY2027Q4. The one rate-hiking cycle since the IPO (2022) left the business that
+      remains today growing 55.7% for the year [src:APP-10K-FY2022#Item7]. Starting point (judgment): 0.65, lowered
+      to 0.6 for two reasons. The Fed raised rates on 2026-09-16 [src:FED-FOMC-2026-09-16]. E-commerce advertisers
+      are more procyclical and have not yet been tested by a hiking cycle.
+  - id: APP-FY2026Q3-4
+    statement: >-
+      FY2027 owner free cash flow (company-defined free cash flow less stock-based compensation) is at least 55% of
+      FY2027 revenue.
+    probability: 0.55
+    criterion: >-
+      Ratio = (FY2027 Free Cash Flow − FY2027 stock-based compensation) ÷ FY2027 revenue.
+      Free Cash Flow: the company's reported figure for the year ended 2027-12-31 in its Free Cash Flow
+      reconciliation, defined as net cash provided by operating activities less purchases of property and
+      equipment and principal payments of finance leases [src:APP-8K-2026-08-05#EX-99.1]. Take it from the FY2027
+      10-K MD&A; if it is absent there, take it from the FY2027Q4 earnings press release. If the company no longer
+      reports Free Cash Flow or changes its definition, compute it from the FY2027 10-K as net cash provided by
+      operating activities − purchases of property and equipment − principal payments of finance leases. Deduct
+      only purchases of property and equipment if finance-lease principal is not shown separately, and state the
+      computation either way.
+      Stock-based compensation: the "Stock-based compensation, excluding cash-settled awards" line of the FY2027
+      consolidated statement of cash flows (us-gaap:ShareBasedCompensation), not the figure in the adjusted EBITDA
+      reconciliation.
+      Revenue: the FY2027 "Revenue" line of the consolidated statements of operations.
+      Happened if the ratio ≥ 55.0% after rounding to one decimal place. Equality counts as happened. 10-K XBRL
+      facts prevail over rendered text; where they differ, write both. A restatement after the 10-K is filed does
+      not change the outcome. If the inputs are not available by 2028-03-31, record undetermined.
+    data_source: "FY2027 10-K, Item 7 Free Cash Flow reconciliation and Item 8 consolidated statement of cash flows and statement of operations (XBRL); fallback: FY2027Q4 earnings press release, 8-K Item 2.02 Exhibit 99.1"
+    horizon: 18m
+    resolves_by: '2028-02-29'
+    domain: digital_advertising
+    added_by: system
+    pillar: P1
+    falsifies_thesis: false
+    reference: >-
+      Reference class: this company's own cash conversion. TTM to 2026-06-30 the ratio was 61.9%. In H1 2026 it
+      was 52.6%: free cash flow of $2,150.1 million less stock-based compensation of $169.0 million, divided by
+      revenue of $3,766.1 million [src:APP-10Q-FY2026Q2#Item2][src:APP-10Q-FY2026Q2#Item1-cash-flows]. Cash income
+      taxes rose to $639.8 million in H1 2026 from $100.6 million in H1 2025
+      [src:APP-10Q-FY2026Q2#Item1-cash-flows]. Own calculation: the H1 2026 adjusted EBITDA margin was 84.2%
+      [src:APP-8K-2026-08-05#EX-99.1] and stock-based compensation was 4.5% of revenue. At free cash flow equal to
+      75% of adjusted EBITDA, as management guides for 2026 [src:APP-CALL-FY2026Q2#CFO], the ratio is about 58.7%.
+      At H1 2026's actual conversion of 67.8%, it is about 52.6%. Starting point (judgment): 0.6, lowered to 0.55
+      because stock-based compensation in research and development quadrupled year on year in Q2
+      [src:APP-10Q-FY2026Q2#Note8] and compute costs are rising.
+  - id: APP-FY2026Q3-5
+    statement: >-
+      By early 2028 the company quantifies, in an SEC filing, the revenue (or share of revenue or advertiser spend)
+      that comes from e-commerce or other non-gaming advertisers.
+    probability: 0.25
+    criterion: >-
+      Scope: documents the company files on EDGAR (CIK 0001751008) from 2026-10-02 through 2028-02-29, limited to
+      Forms 10-Q, 10-K and 8-K, including exhibits furnished under Items 2.02 or 7.01.
+      Happened if at least one of them states a qualifying figure: a dollar amount of revenue, a percentage of
+      total revenue, or a percentage of total advertiser spend, for a stated period, attributable to advertisers
+      outside mobile gaming. Any label the company uses for that group counts, including e-commerce, consumer, web
+      or non-gaming advertisers, and so does a revenue disaggregation by advertiser vertical in the revenue note.
+      Not qualifying: growth rates without a stated base amount or share; counts of advertisers; figures that
+      appear only in earnings calls, webinars, slides or letters not filed as exhibits; and third-party figures
+      quoted by the company. If the scope of a label is ambiguous, judge only by the company's own definition in
+      the filing. If no definition is given, record undetermined and quote the passage. Not happened if no
+      qualifying statement exists in that window.
+    data_source: "All Forms 10-Q, 10-K and 8-K (with exhibits) filed on EDGAR by CIK 0001751008 from 2026-10-02 through 2028-02-29"
+    horizon: 18m
+    resolves_by: '2028-02-29'
+    domain: digital_advertising
+    added_by: system
+    pillar: P4
+    falsifies_thesis: false
+    reference: >-
+      Reference class: this company's disclosure history. No filing in the materials quantifies non-gaming
+      revenue. The FY2026Q2 10-Q reports a single segment and breaks down revenue only by geography
+      [src:APP-10Q-FY2026Q2#Note3][src:APP-10Q-FY2026Q2#Note11]. The only quantified reading is oral: consumer
+      advertiser spend in FY2026Q2 was 28% above FY2025Q4 [src:APP-CALL-FY2026Q2#CEO]. The frequency with which
+      comparable companies start such disclosure cannot be verified from the materials. Starting point (judgment):
+      0.25. No adjustment.
