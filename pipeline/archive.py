@@ -154,12 +154,20 @@ def decline_years(summary: Mapping[str, Any]) -> set[int]:
     return out
 
 
-def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date,
+def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date, cal: edgar.FiscalCalendar,
                         declines: set[int] | frozenset[int] = frozenset()) -> list[Pick]:
     """The filings 01C checks its readings against (04C: a cause given for a past decline must be established from a
     primary filing): the latest annual report and the latest quarterly report in full, then the MD&A of each earlier
     annual report: first those of the years in `declines` (which the premium turns on), then the others, newest first
-    within each group, so that the budget keeps the filings that explain the declines."""
+    within each group, so that the budget keeps the filings that explain the declines. Years are fiscal years named
+    as xbrl_summary names them (a 52/53-week year ending on 2023-01-01 is FY2022)."""
+
+    def fiscal_year(day: dt.date) -> int:
+        try:
+            return cal.period_of(day)[0]
+        except ValueError:  # not a quarter end of the present fiscal year (the company changed it)
+            return day.year
+
     known = [f for f in filings if f.filing_date <= as_of]
     annual = sorted((f for f in known if f.form in ANNUAL_FORMS and not f.form.endswith("/A")),
                     key=lambda f: (f.report_date or f.filing_date, f.filing_date))
@@ -173,8 +181,8 @@ def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date,
     if quarterly:
         picks.append(Pick(documents.Selection(quarterly[-1], True, False, frozenset(), documents.QUARTERLY_REPORT, None),
                           "the latest quarterly report, in full"))
-    by_year = {f.report_date.year: f for f in annual if f.report_date is not None}
-    year = (latest.report_date or latest.filing_date).year
+    by_year = {fiscal_year(f.report_date): f for f in annual if f.report_date is not None}
+    year = fiscal_year(latest.report_date or latest.filing_date)
     years = [year - back for back in range(1, VALUATION_HISTORY_YEARS + 1) if year - back in by_year]
     for fiscal in sorted(years, key=lambda y: (y not in declines, -y)):
         why = "a decline year: the causes of its changes" if fiscal in declines else "the causes of that year's changes"

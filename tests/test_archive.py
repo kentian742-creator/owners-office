@@ -444,11 +444,11 @@ def test_the_holdings_marks_tag_an_unregistered_13f_by_its_filing_date_and_each_
 
 
 def test_the_valuation_checks_its_readings_against_the_latest_reports_and_each_earlier_years_mdna():
-    picks = archive.valuation_selection(FILINGS, as_of=dt.date(2026, 9, 28))
+    picks = archive.valuation_selection(FILINGS, as_of=dt.date(2026, 9, 28), cal=CAL)
     assert [(p.selection.filing.accession, p.selection.sections) for p in picks] == [
         ("a-10k-2025", None), ("a-10q-q2", None),  # in full
         ("a-10k-2020", frozenset({"mdna"}))]  # nine years back at most: the 2015 report is ten
-    assert archive.valuation_selection([], as_of=dt.date(2026, 9, 28)) == []
+    assert archive.valuation_selection([], as_of=dt.date(2026, 9, 28), cal=CAL) == []
 
 
 
@@ -477,7 +477,7 @@ def test_the_decline_years_come_first_in_the_valuations_filings():
         "operating_cash_flow": {"values": {"FY2021": {"value": 9}, "FY2022": {"value": 8}, "FY2024": {"value": 1}}}}}
     assert archive.decline_years(summary) == {2020, 2022}  # FY2024 follows a gap, so it is not compared
     annual = [filing(f"a-10k-{y}", "10-K", f"{y + 1}-02-20", f"{y}-12-31") for y in range(2016, 2026)]
-    picks = archive.valuation_selection(annual, as_of=dt.date(2026, 9, 28), declines={2018, 2022})
+    picks = archive.valuation_selection(annual, as_of=dt.date(2026, 9, 28), cal=CAL, declines={2018, 2022})
     assert [p.selection.filing.accession for p in picks][:5] == [
         "a-10k-2025", "a-10k-2022", "a-10k-2018", "a-10k-2024", "a-10k-2023"]
     assert "decline year" in picks[1].reason
@@ -619,6 +619,103 @@ def test_an_excerpt_is_looked_for_first_on_the_cited_page_or_note():
     assert documents.locator_section(doc, "pK-70").strip() == "Indices revenue was 1,392 this year."
     assert "Debt of 1,392" in documents.locator_section(doc, "Note10") and "Rent" not in documents.locator_section(doc, "Note10")
     assert documents.locator_section(doc, "p999") is None
+
+
+def test_a_page_runs_from_the_previous_pages_footer_past_year_subheadings_and_one_number_cells():
+    """S&P Global's 10-K, page 50: a "2025" subheading and paragraph, then a "2024" subheading and a paragraph that
+    begins the same way."""
+    doc = "\n".join([
+        "Market Intelligence", "49",
+        "Revenue by type", "Subscription", "4,423", "423",
+        "2025", "Revenue increased 6% on subscription growth during the year ended December 31, 2025.",
+        "2024", "Revenue increased 6% on subscription growth during the year ended December 31, 2024.",
+        "50", "Ratings"])
+    page = documents.locator_section(doc, "p50")
+    assert page.startswith("Revenue by type") and page.endswith("December 31, 2024.")
+    excerpt = documents.cut_excerpt(page, 6, words="Market Intelligence revenue increased 6% in 2025")
+    assert excerpt.endswith("December 31, 2025.")
+    assert documents.locator_section(doc, "p49") == "Market Intelligence"  # no page 48 footer: from the start
+
+
+def test_a_note_is_found_by_its_heading_not_by_a_footnote_or_the_index_of_notes():
+    """S&P Global's 10-K: footnotes ("1 Includes ...") and the index of notes ("2 Acquisitions and Divestitures") also
+    begin with a note's number, and so does the list of exhibits after the notes ("2.Financial Schedule")."""
+    doc = "\n".join([
+        "Total — Quarter 4,700,236 $ 514.16",
+        "1 Includes 0.6 million shares received from the conclusion of our ASR agreement.",
+        "Item 7. Management's Discussion and Analysis",
+        *[f"Results of operations, line {i}." for i in range(20)],
+        "Intersegment eliminations 6 … (200) — (186) — 8% N/M",
+        "Notes to the Consolidated Financial Statements", "83",
+        "1 Accounting Policies", "83", "2 Acquisitions and Divestitures", "91",
+        "3 Goodwill and Other Intangible Assets", "95",
+        "1. Accounting Policies",
+        "Non-transaction revenue also includes an intersegment revenue elimination of $ 200 million, $ 186 million "
+        "and $ 177 million.",
+        *[f"Accounting policies, line {i}." for i in range(5)],
+        "2. Acquisitions and Divestitures", "We acquired With Intelligence.",
+        "3. Goodwill and Other Intangible Assets", "Goodwill text.",
+        "2 As of December 31, 2025, $ 4,914 million relates to our redeemable noncontrolling interest.",
+        "Item 15. Exhibits, Financial Statement Schedules", "1.Financial Statements", "•Consolidated Balance Sheets",
+        "2.Financial Schedule", *[f"Schedule II, line {i}." for i in range(20)]])
+    note1 = documents.locator_section(doc, "Note1")
+    assert note1.startswith("1. Accounting Policies") and note1.endswith("Accounting policies, line 4.")
+    excerpt = documents.cut_excerpt(note1, 186, words="Ratings intersegment revenue elimination")
+    assert excerpt.startswith("Non-transaction revenue also includes an intersegment revenue elimination")
+    assert documents.locator_section(doc, "Note2") == "2. Acquisitions and Divestitures\nWe acquired With Intelligence."
+
+
+def test_a_note_headed_on_a_line_of_its_own_is_found_and_the_rows_of_the_index_of_notes_are_not():
+    """American Express's 10-K: the index of notes has a row per note ("Note 3 – Reserves for Credit Losses") with its
+    page number on the next line, each note is headed "NOTE 3" on a line of its own with its title on the next, and
+    the table of accounting policies in Note 1 refers to "Note 10" on a line of its own too."""
+    titles = ["Summary of Significant Accounting Policies", "Loans and Card Member Receivables",
+              "Reserves for Credit Losses", "Investment Securities", "Asset Securitizations", "Other Assets",
+              "Customer Deposits", "Debt", "Other Liabilities", "Stock-Based Compensation", "Retirement Plans"]
+    index = ["NOTES TO CONSOLIDATED FINANCIAL STATEMENTS", "97"]
+    for n, title in enumerate(titles, 1):
+        index += [f"Note {n} – {title}", str(94 + 3 * n)]
+    bodies = {1: ["Significant Accounting Policy Note", "Number Note Title",
+                  "Reserves for Credit Losses Note 3 Reserves for Credit Losses",
+                  "Stock-Based Compensation", "Note 10", "Stock-Based Compensation"],
+              3: ["Card Member loans reserve for credit losses increased for the year ended December 31, 2025.",
+                  "(c)Primarily includes foreign currency translation adjustments of $ 3 million, $( 4 ) million and "
+                  "$ 1 million for the years ended December 31, 2025, 2024 and 2023, respectively."]}
+    notes = []
+    for n, title in enumerate(titles, 1):
+        notes += ["Table of Contents", f"NOTE {n}", title.upper(), *bodies.get(n, [f"{title} text."]), str(96 + 3 * n)]
+    doc = "\n".join([*index, "91", "Table of Contents", "CONSOLIDATED STATEMENTS OF INCOME", *notes])
+    note3 = documents.locator_section(doc, "Note3")
+    assert note3.startswith("NOTE 3\nRESERVES FOR CREDIT LOSSES\n") and "NOTE 4" not in note3
+    excerpt = documents.cut_excerpt(note3, 3,
+                                    words="foreign currency translation adjustments to reserves for credit losses")
+    assert excerpt.startswith("(c)Primarily includes foreign currency translation adjustments of $ 3 million")
+    assert documents.locator_section(doc, "Note10").startswith("NOTE 10\nSTOCK-BASED COMPENSATION\n")
+    # the index's last row has no next row to close it and would run on to the end of the document
+    assert documents.locator_section(doc, "Note11").startswith("NOTE 11\nRETIREMENT PLANS\n")
+    # rows of an index are no headings even where the notes' own headings are missing: the caller searches the filing
+    assert documents.locator_section("\n".join(index), "Note3") is None
+    row = "\n".join(["Index", "Note 3 – Reserves for Credit Losses ... 85", "Card Member loans reserve text."])
+    assert documents.locator_section(row, "Note3") is None
+
+
+def test_a_decline_year_of_a_52_53_week_fiscal_year_promotes_that_years_annual_report():
+    """Years ending on the Sunday nearest December 31: fiscal 2022 ended on 2023-01-01, and xbrl_summary (so
+    decline_years) names it FY2022."""
+    ends = {2019: "2019-12-29", 2020: "2021-01-03", 2021: "2022-01-02", 2022: "2023-01-01", 2023: "2023-12-31",
+            2024: "2024-12-29", 2025: "2025-12-28"}
+    income = {2019: 130, 2020: 140, 2021: 150, 2022: 120, 2023: 160, 2024: 170, 2025: 180}
+    rows = [row(income[y], end, f"{y + 1}-02-25", f"k{y}", str(dt.date.fromisoformat(end) - dt.timedelta(days=363)))
+            for y, end in ends.items()]
+    summary = archive.xbrl_summary({"facts": {"us-gaap": {"OperatingIncomeLoss": {"units": {"USD": rows}}}}}, cal=CAL,
+                                   tags=lambda accession: None)
+    declines = archive.decline_years(summary)
+    assert declines == {2022}
+    annual = [filing(f"k{y}", "10-K", f"{y + 1}-02-25", end) for y, end in ends.items()]
+    picks = archive.valuation_selection(annual, as_of=dt.date(2026, 9, 28), cal=CAL, declines=declines)
+    assert [p.selection.filing.accession for p in picks] == ["k2025", "k2022", "k2024", "k2023", "k2021", "k2020",
+                                                             "k2019"]
+    assert picks[1].reason.startswith("the annual report for fiscal 2022: MD&A (a decline year")
 
 
 def test_a_valuations_working_is_registered_privately_by_its_tag():
