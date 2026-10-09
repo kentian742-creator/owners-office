@@ -8,9 +8,10 @@ the results are written down with probabilities and timestamped; afterwards they
 advance. Mistakes are published. The research is drafted and audited by AI agents working under the owner's written
 investment constitution; the owner decides only where the money goes and whether the constitution changes.
 
-**Status on 2026-10-08:** seven companies are archived, and every archive has been checked fact by fact against the
+**Status on 2026-10-09:** seven companies are archived, and every archive has been checked fact by fact against the
 companies' filings; each error found is in [mistakes.md](mistakes.md). McDonald's was the first archive the pipeline
-built straight from SEC filings; Alphabet, Apple and NVIDIA come next. The first fifteen forecasts were registered on 2026-10-08, before
+built straight from SEC filings. NVIDIA's is being built now; Costco, Walmart, Coca-Cola, Mastercard, Alphabet,
+Apple, Visa and SpaceX follow, and AppLovin's archive is being rebuilt from its filings. The first fifteen forecasts were registered on 2026-10-08, before
 the third-quarter results of S&P Global, Berkshire Hathaway and AppLovin; none has been scored yet. Progress is
 tracked in [docs/STATUS.md](docs/STATUS.md).
 

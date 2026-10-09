@@ -18,3 +18,36 @@ companies:
     cik: "0001045810"
     status: candidate
     decided: "2026-09-28"
+  # Added by the owner on 2026-10-09 (decisions/0032). The order is the pipeline's, set by when each company's next
+  # filing comes (decisions/0032): COST and WMT first; KO and MA after their third-quarter 10-Qs; V after its FY2026
+  # 10-K; SPCX after its third-quarter 10-Q, with its S-1 as the source of its earlier years.
+  - ticker: COST
+    name: Costco Wholesale Corporation
+    cik: "0000909832"
+    status: candidate
+    decided: "2026-10-09"
+  - ticker: WMT
+    name: Walmart Inc.
+    cik: "0000104169"
+    status: candidate
+    decided: "2026-10-09"
+  - ticker: KO
+    name: The Coca-Cola Company
+    cik: "0000021344"
+    status: candidate
+    decided: "2026-10-09"
+  - ticker: MA
+    name: Mastercard Incorporated
+    cik: "0001141391"
+    status: candidate
+    decided: "2026-10-09"
+  - ticker: V
+    name: Visa Inc.
+    cik: "0001403161"
+    status: candidate
+    decided: "2026-10-09"
+  - ticker: SPCX
+    name: Space Exploration Technologies Corp.
+    cik: "0001181412"
+    status: candidate
+    decided: "2026-10-09"

@@ -2,7 +2,7 @@
 
 - Updated: 2026-09-30
 - Current phase: **Phase 1 · Run one season semi-automatically (in preparation; the Q3 earnings season starts in mid-October)**
-- Portfolio (owner, 2026-09-30, `decisions/0030`): holdings APP, SPGI, BRK; research coverage (`candidate`) MSFT, AXP, MCD, GOOG, AAPL, NVDA; archived PDD. BRK is also still the first hurdle (§V6). GOOG, AAPL and NVDA have no archive yet: the pipeline builds them from the SEC filings, as it built MCD's.
+- Portfolio (owner, 2026-09-30 and 2026-10-09, `decisions/0030`, `0032`): holdings APP, SPGI, BRK; research coverage (`candidate`) MSFT, AXP, MCD, GOOG, AAPL, NVDA, COST, WMT, KO, MA, V, SPCX; archived PDD. BRK is also still the first hurdle (§V6). The nine without an archive are on `companies/intake.yml`: the pipeline builds them from the SEC filings, as it built MCD's, in the order of 0032 (NVDA, COST, WMT now; KO, MA, GOOG, AAPL after their third-quarter filings; V after its FY2026 10-K; SPCX last). APP's archive is rebuilt from its filings after its third-quarter 10-Q, and MCD gets its valuation and report.
 - Next hard deadline: SPGI's FY2026Q3 pre-registration, to be merged by **2026-10-23** (S&P Global announced its release for 2026-10-27; deadline the end of 10-26); then BRK's (merge by 10-25, now a holding) and APP's (10-30). MCD, now research coverage, no longer pre-registers.
 
 ## Current
@@ -76,7 +76,7 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 - [x] Documents HQ asks for (`decisions/0031`): the input `requested_documents` of 01A round 2, 01C, 04C and 02. HQ lists filings next to its rulings, of the company or of other issuers; the pipeline fetches each from EDGAR and cuts it to the page, item, note or exhibit named. First list written for Berkshire Hathaway's next valuation refresh (backtest documents: 23 sections of older 10-Ks and third-quarter 10-Qs, all found)
 - [x] MCD archive from the SEC filings on the real model (placed 2026-09-29; owners-office#2). Its FY2026Q3 pre-registration is no longer due: MCD is research coverage since 2026-09-30 (`decisions/0030`)
 - [x] BRK FY2026Q3 pre-registration (a holding again, `decisions/0030`): merged 2026-10-08 (owners-office#3) and timestamped
-- [ ] GOOG, AAPL, NVDA archives from the SEC filings (research coverage, `decisions/0027`): NVIDIA's first dossier drafted on 2026-10-08, fact audit next; Alphabet and Apple right after their third-quarter 10-Qs (late October), so their first dossiers start from that quarter
+- [ ] Archives from the SEC filings for the research coverage still without one (`decisions/0027`, `0032`): NVIDIA (first dossier drafted 2026-10-08, fact audit under way), then Costco and Walmart; Coca-Cola, Mastercard, Alphabet and Apple after their third-quarter filings; Visa after its FY2026 10-K; SpaceX last (its earlier years are only in its S-1). AppLovin's archive rebuilt from its filings; McDonald's valuation and report
 - [x] ~~T11 PDD FY2026Q3 pre-registration~~: not due; PDD is no longer held (`decisions/0027`)
 - [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)
 - [ ] T12 The first monthly letter (covering October), by November 2 at the latest

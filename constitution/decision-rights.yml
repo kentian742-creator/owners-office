@@ -86,7 +86,7 @@ portfolio:
 
 ranking:
   rule: "§V13"                   # the series ranking follows 00 §V13: carried in full; return and certainty judged together, not sorted mechanically by a single metric or a fixed order
-  candidates: 6                  # research coverage chosen by the owner (decisions/0027, 0030): MSFT, AXP, MCD, GOOG, AAPL, NVDA; 17C ranks but does not rotate them; the rest are archived and refreshed once a year with the annual report
+  candidates: 12                 # research coverage chosen by the owner (decisions/0027, 0030, 0032): MSFT, AXP, MCD, GOOG, AAPL, NVDA, COST, WMT, KO, MA, V, SPCX; 17C ranks but does not rotate them; the rest are archived and refreshed once a year with the annual report
   rotation: quarterly            # ranked once a quarter
 
 budget:
