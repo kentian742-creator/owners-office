@@ -408,7 +408,6 @@ SECTION_LABELS = {"mdna": "MD&A", "risk_factors": "risk factors", "legal_proceed
                   "business": "business", "financial_statements": "financial statements and notes"}
 _ITEM_LINE_RE = re.compile(r"^\s*ITEM\s+(\d{1,2}[A-Z]?)\s*[.:\u2013\u2014-]?\s*(.*)$", re.I)
 _PART_LINE_RE = re.compile(r"^\s*PART\s+(IV|I{1,3})\b", re.I)
-_NOTE_LINE_RE = re.compile(r"^\s*(?:NOTE\s+)?(\d{1,2})\s*[.:\u2013\u2014-]\s*(\S.{2,120})$", re.I)
 
 
 def section_requests(clause: str) -> frozenset[str] | None:
@@ -487,16 +486,35 @@ def _chars(lines: Sequence[str], span: tuple[int, int, str] | None) -> int:
     return sum(len(line) for line in lines[span[0] + 1:span[1]]) if span else 0
 
 
-def _note_span(lines: Sequence[str], heads: Sequence[_Heading], title: re.Pattern[str]) -> tuple[int, int, str] | None:
-    notes = [(i, m.group(1), m.group(2)) for i, line in enumerate(lines) if (m := _NOTE_LINE_RE.match(line))]
+def _note_title(lines: Sequence[str], start: int) -> str:
+    """The title of the note headed at line `start`: after the number on the same line ("Note 23. Revenues from
+    contracts with customers", "3. Revenue"), or on the next line for a heading alone on its line ("NOTE 12" in
+    American Express's 10-K, "(26)" in Berkshire Hathaway's)."""
+    if m := _NOTE_HEADING_RE.match(lines[start]):
+        return lines[start][m.end() - 2:].strip()
+    return next((line.strip() for line in lines[start + 1:start + 3] if line.strip()), "")
+
+
+def _note_span(lines: Sequence[str], heads: Sequence[_Heading], title: re.Pattern[str],
+               prefer: re.Pattern[str] | None = None) -> tuple[int, int, str] | None:
+    """The note whose title matches `title`, from its heading to the next note's (a heading repeated atop the note's
+    next page continues it) or the next item heading. The headings are the document's own (_note_headings): the rows
+    of an index of notes are not notes (American Express's 10-K lists "Note 12 – Contingencies ... 128" and heads
+    the note itself "NOTE 12"). When some matching titles also match `prefer`, only those count ("Equity method
+    investments" before "Investments in fixed maturity securities")."""
+    numbers = _note_headings(lines)
+    starts = list(numbers)
     candidates = []
-    for n, (start, number, text) in enumerate(notes):
-        if not title.search(text.strip()):
+    for n, start in enumerate(starts):
+        text = _note_title(lines, start)
+        if not title.search(text):
             continue
-        following = [i for i, num, _ in notes[n + 1:] if num != number]
+        following = [i for i in starts[n + 1:] if numbers[i] != numbers[start]]
         end = min([*following[:1], *(h.line for h in heads if h.line > start), len(lines)])
-        candidates.append((start, end, lines[start].strip()))
-    return _longest(candidates)
+        heading = lines[start].strip() if _NOTE_HEADING_RE.match(lines[start]) else f"{lines[start].strip()} {text}"
+        candidates.append((start, end, heading, text))
+    preferred = [c for c in candidates if prefer is not None and prefer.search(c[3])]
+    return _longest([c[:3] for c in preferred or candidates])
 
 
 def extract_sections(text: str, form: str, wanted: frozenset[str]) -> tuple[str, list[str], list[str]]:
@@ -516,8 +534,8 @@ def extract_sections(text: str, form: str, wanted: frozenset[str]) -> tuple[str,
         if key.startswith("item:"):
             return _item_span(lines, heads, None, key[5:])
         if key.startswith("note:"):
-            title = next((t for k, _, t in NOTE_WORDS if k == key), None)
-            found = _note_span(lines, heads, title) if title else None
+            words, title = next(((w, t) for k, w, t in NOTE_WORDS if k == key), (None, None))
+            found = _note_span(lines, heads, title, prefer=words) if title else None
             if found is None and title is not None and not any(title.search(line.strip()) for line in lines):
                 absent.append(key)  # the filing never names it: nothing to supply
                 return (0, 0, "")

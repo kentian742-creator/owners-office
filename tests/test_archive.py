@@ -762,3 +762,24 @@ def test_a_valuations_working_is_registered_privately_by_its_tag():
     entry = entries["NEWCO-VAL-2026-09-30"]
     assert entry["location"] == "private:runs/NEWCO/2026-09-30-01C-rerun2/valuation_md.md"
     assert entry["visibility"] == "private" and runner.working_entries({"company": "X", "step": "15A"}) == {}
+
+
+def test_a_named_note_is_the_note_itself_not_its_row_in_an_index_of_notes():
+    """American Express's 10-K lists "Note 12 – Contingencies and Commitments ... 128" in an index and heads the note
+    itself "NOTE 12" on its own line: the contingencies note came back as the two-line index row (test AXP-L8 reads
+    it from FY2026Q3). Berkshire Hathaway's "(5) Equity method investments" is preferred over "(3) Investments in
+    fixed maturity securities", which the broader title also matches."""
+    body = "Text of the note that runs long enough to be a real part of the notes to the financial statements. " * 3
+    axp = "\n".join(["Index to notes", "Note 3 – Reserves for Credit Losses", "85", "Note 12 – Contingencies and Commitments",
+                     "128", "Item 8. Financial Statements and Supplementary Data",
+                     "Notes to Consolidated Financial Statements", "NOTE 3", "RESERVES FOR CREDIT LOSSES", body,
+                     "NOTE 12", "CONTINGENCIES AND COMMITMENTS", f"Legal proceedings. {body}", "NOTE 13",
+                     "INCOME TAXES", body, "Item 9. Changes in and Disagreements with Accountants"])
+    text, found, missing = documents.extract_sections(axp, "10-K", frozenset({"note:contingencies"}))
+    assert found and "Legal proceedings." in text and "INCOME TAXES" not in text and "128" not in text
+    brk = "\n".join(["Item 8. Financial Statements and Supplementary Data", "Notes to Consolidated Financial Statements",
+                     "(1)", "Significant accounting policies", body, "(2)", "Significant business acquisitions", body,
+                     "(3)", "Investments in fixed maturity securities", body * 3, "(4)", "Investments in equity securities",
+                     body, "(5)", "Equity method investments", f"Kraft Heinz. {body}", "(6)", "Investment gains", body])
+    text, found, _ = documents.extract_sections(brk, "10-K", frozenset({"note:equity method"}))
+    assert found and "Kraft Heinz." in text and "fixed maturity" not in text
