@@ -76,7 +76,7 @@ Acceptance (`DESIGN.md` roadmap): all pre-registrations merged and timestamped b
 - [x] Documents HQ asks for (`decisions/0031`): the input `requested_documents` of 01A round 2, 01C, 04C and 02. HQ lists filings next to its rulings, of the company or of other issuers; the pipeline fetches each from EDGAR and cuts it to the page, item, note or exhibit named. First list written for Berkshire Hathaway's next valuation refresh (backtest documents: 23 sections of older 10-Ks and third-quarter 10-Qs, all found)
 - [x] MCD archive from the SEC filings on the real model (placed 2026-09-29; owners-office#2). Its FY2026Q3 pre-registration is no longer due: MCD is research coverage since 2026-09-30 (`decisions/0030`)
 - [x] BRK FY2026Q3 pre-registration (a holding again, `decisions/0030`): merged 2026-10-08 (owners-office#3) and timestamped
-- [ ] GOOG, AAPL, NVDA archives from the SEC filings (research coverage, `decisions/0027`)
+- [ ] GOOG, AAPL, NVDA archives from the SEC filings (research coverage, `decisions/0027`): NVIDIA's first dossier drafted on 2026-10-08, fact audit next; Alphabet and Apple right after their third-quarter 10-Qs (late October), so their first dossiers start from that quarter
 - [x] ~~T11 PDD FY2026Q3 pre-registration~~: not due; PDD is no longer held (`decisions/0027`)
 - [ ] Quarterly updates: merged within 7 days after each report is filed; company managers start at level 1, so updates stay in the private repository first and are published after HQ review (00 §G9)
 - [ ] T12 The first monthly letter (covering October), by November 2 at the latest
