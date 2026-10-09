@@ -14,7 +14,9 @@ data it is given, and pipeline/registry.py fetches what it selects.
 - extract_sections() keeps, of a 10-K, 10-Q or 20-F, only the sections a clause names (MD&A, risk factors, legal
   proceedings, the business section, the financial statements, a named note, a 20-F item), found by the filing's own
   item and note headings; when a named section cannot be found, the whole filing is kept, and the caller records
-  which sections were cut.
+  which sections were cut. Of an offering prospectus (424B1, 424B4, S-1, F-1), which has no items, it keeps the
+  sections found by their headings (MD&A, the business section, management and its pay, the financial statements,
+  ...) and lists those it could not find: a whole prospectus is larger than any input budget.
 - tag_with_ordinal() gives a filing its archive tag (thesis-ci SPEC 3.3), numbering current reports of one form
   filed on the same day (-2, -3, ...), as SPEC 3.3 does.
 - cut_excerpt() finds the sentence of a document that contains a value: 04A's source_excerpt, cut by the pipeline
@@ -41,6 +43,7 @@ PROXY = "proxy"  # DEF 14A
 OWNERSHIP = "ownership"  # Forms 3, 4, 5
 BENEFICIAL_OWNERSHIP = "beneficial_ownership"  # Schedules 13D and 13G
 MERGER = "merger"  # S-4, F-4, DEFM14A, 425
+PROSPECTUS = "prospectus"  # an offering's prospectus (edgar.PROSPECTUS_FORMS): a new archive's record before its first 10-K
 REQUEST_KINDS = (EARNINGS_RELEASE, CURRENT_REPORT, PRESS_RELEASE, QUARTERLY_REPORT, ANNUAL_REPORT, PROXY, OWNERSHIP,
                  BENEFICIAL_OWNERSHIP, MERGER)
 
@@ -405,9 +408,46 @@ SECTION_TITLES = {"mdna": re.compile(r"management['\u2019]s discussion and analy
 SECTION_ENDS = {"mdna": re.compile(r"(?:item\s*8\b.*|financial statements and supplementary data)[.:]?", re.I)}
 MIN_SECTION_CHARS = 2_000  # an item "section" shorter than this is a table-of-contents or index entry, not the body
 SECTION_LABELS = {"mdna": "MD&A", "risk_factors": "risk factors", "legal_proceedings": "legal proceedings",
-                  "business": "business", "financial_statements": "financial statements and notes"}
+                  "business": "business", "financial_statements": "financial statements and notes",
+                  "summary": "prospectus summary", "management": "management",
+                  "executive_compensation": "executive compensation", "related_party": "related-party transactions",
+                  "principal_stockholders": "principal stockholders", "capital_stock": "description of capital stock",
+                  "audited_statements": "audited financial statements and notes"}
 _ITEM_LINE_RE = re.compile(r"^\s*ITEM\s+(\d{1,2}[A-Z]?)\s*[.:\u2013\u2014-]?\s*(.*)$", re.I)
 _PART_LINE_RE = re.compile(r"^\s*PART\s+(IV|I{1,3})\b", re.I)
+# A prospectus has no items. Its sections are the top-level headings its table of contents lists, each running to the
+# next: first the sections a selection can name (by key), then the other headings, which only end a section.
+# "audited_statements" is the financial pages without the interim statements marked unaudited (_audited_end).
+PROSPECTUS_HEADINGS: dict[str, re.Pattern[str]] = {
+    "summary": re.compile(r"prospectus summary", re.I),
+    "risk_factors": re.compile(r"risk factors", re.I),
+    "mdna": re.compile(r"management's discussion and analysis(?: of financial condition and results(?: of"
+                       r"(?: operations)?)?)?", re.I),
+    "business": re.compile(r"(?:our )?business", re.I),
+    "management": re.compile(r"management|(?:our )?(?:executive officers and directors|directors and executive officers)"
+                             r"|(?:directors|management),? executive officers and corporate governance"
+                             r"|management and (?:board of directors|corporate governance)", re.I),
+    "executive_compensation": re.compile(r"(?:executive|executive and director|director and executive) compensation",
+                                         re.I),
+    "related_party": re.compile(r"(?:certain relationships and )?related[- ](?:party|person) transactions", re.I),
+    "principal_stockholders": re.compile(r"principal (?:and selling )?(?:stockholders|shareholders)"
+                                         r"|security ownership of certain beneficial owners and management", re.I),
+    "capital_stock": re.compile(r"description of (?:our )?(?:capital stock|share capital)", re.I),
+    "financial_statements": re.compile(r"index to (?:the )?(?:consolidated )?financial statements", re.I),
+}
+PROSPECTUS_OTHER_HEADINGS = re.compile(
+    r"glossary(?: of (?:selected )?terms)?|the offering|(?:a )?letter from .{1,60}|industry(?: overview)?"
+    r"|(?:cautionary|special) (?:note|statement)s? regarding forward[- ]looking statements"
+    r"|market,? industry and other data|industry and market data|use of proceeds|dividend policy|capitalization"
+    r"|dilution|selected (?:consolidated )?(?:historical )?financial (?:and other )?data"
+    r"|shares eligible for future sale|(?:certain )?material (?:u\.s\. )?(?:federal )?(?:income )?tax considerations.*"
+    r"|underwriting.*|plan of distribution|legal matters|experts|where you can find (?:more|additional) information"
+    r"|part ii|information not required in (?:the )?prospectus", re.I)
+MIN_CAPITAL_HEADINGS = 3  # a prospectus with this many headings in capitals sets all its top-level headings so
+_AUDITOR_REPORT_RE = re.compile(r"reports? of independent registered public accounting firms?", re.I)
+_BALANCE_SHEET_RE = re.compile(r"(?:condensed )?consolidated (?:balance sheets?|statements? of financial "
+                               r"(?:position|condition))", re.I)
+_UNAUDITED_RE = re.compile(r"\(unaudited\)", re.I)
 
 
 def section_requests(clause: str) -> frozenset[str] | None:
@@ -421,6 +461,8 @@ def section_requests(clause: str) -> frozenset[str] | None:
 
 def form_family(form: str) -> str | None:
     key = edgar.form_key(form)
+    if form in edgar.PROSPECTUS_FORMS:
+        return PROSPECTUS
     return {"10K": "10-K", "10KA": "10-K", "10Q": "10-Q", "10QA": "10-Q", "20F": "20-F", "20FA": "20-F",
             "40F": "20-F"}.get(key)
 
@@ -486,6 +528,89 @@ def _chars(lines: Sequence[str], span: tuple[int, int, str] | None) -> int:
     return sum(len(line) for line in lines[span[0] + 1:span[1]]) if span else 0
 
 
+def _heading_text(line: str) -> str:
+    return " ".join(line.replace("’", "'").split())
+
+
+def _prospectus_headings(lines: Sequence[str]) -> list[tuple[int, str | None]]:
+    """The top-level headings of a prospectus: (line, section key, or None for a heading that only ends a section). A
+    heading is a line that is one of the known titles in full; the table of contents' entries carry dot leaders and
+    page numbers, so they are not. When the document sets its headings in capitals, only capitalized lines count, so
+    that a subheading in title case ("Management", "Dilution") does not end the section it is in."""
+    found = []
+    for i, line in enumerate(lines):
+        if len(line) > 150:
+            continue
+        text = _heading_text(line)
+        key = next((k for k, pattern in PROSPECTUS_HEADINGS.items() if pattern.fullmatch(text)), None)
+        if key is None and not PROSPECTUS_OTHER_HEADINGS.fullmatch(text):
+            continue
+        found.append((i, key, text == text.upper()))
+    if sum(capital for _, _, capital in found) >= MIN_CAPITAL_HEADINGS:
+        found = [heading for heading in found if heading[2]]
+    return [(i, key) for i, key, _ in found]
+
+
+def _audited_end(lines: Sequence[str], start: int, end: int) -> int:
+    """Where the audited statements among a prospectus's financial pages end: at the first balance sheet marked
+    unaudited after an auditor's report, which begins the interim statements; `end` when there is none."""
+    report = next((i for i in range(start, end) if _AUDITOR_REPORT_RE.fullmatch(_heading_text(lines[i]))), None)
+    if report is None:
+        return end
+    return next((i for i in range(report, end) if _BALANCE_SHEET_RE.fullmatch(_heading_text(lines[i]))
+                 and any(_UNAUDITED_RE.search(line) for line in lines[i + 1:i + 6])), end)
+
+
+def _prospectus_span(lines: Sequence[str], heads: Sequence[tuple[int, str | None]],
+                     key: str) -> tuple[int, int, str] | None:
+    """The section of a prospectus under the heading for `key`, to the next top-level heading; of several (a
+    capitalized title in the summary, say), the longest. A heading wrapped onto a second line ("... RESULTS OF" /
+    "OPERATIONS") is read as one, and the section starts after it."""
+    wanted = "financial_statements" if key == "audited_statements" else key
+    pattern = PROSPECTUS_HEADINGS[wanted]
+    candidates = []
+    for n, (line, found) in enumerate(heads):
+        if found != wanted:
+            continue
+        start, heading = line, _heading_text(lines[line])
+        if line + 1 < len(lines) and pattern.fullmatch(f"{heading} {_heading_text(lines[line + 1])}"):
+            start, heading = line + 1, f"{heading} {_heading_text(lines[line + 1])}"
+        end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
+        if key == "audited_statements":
+            end = _audited_end(lines, start, end)
+        candidates.append((start, end, heading))
+    return _longest(candidates)
+
+
+def prospectus_sections(text: str, wanted: frozenset[str]) -> tuple[str, list[str], list[str]]:
+    """(text, sections found, sections not found) of a prospectus: each named section under a "--- section:
+    <heading> ---" line, in document order. Unlike a periodic report's, a prospectus is never kept whole for a
+    section that cannot be found (it is larger than any input budget), unless none of them can be."""
+    lines = text.split("\n")
+    heads = _prospectus_headings(lines)
+    spans: list[tuple[int, int, str, str]] = []
+    missing: list[str] = []
+    for key in sorted(wanted):
+        span = _prospectus_span(lines, heads, key) if key in PROSPECTUS_HEADINGS or key == "audited_statements" \
+            else None
+        if span is None or _chars(lines, span) < MIN_SECTION_CHARS:
+            missing.append(key)
+        else:
+            spans.append((*span, key))
+    if not spans:
+        return text, [], missing
+    spans.sort()
+    kept: list[tuple[int, int, str, str]] = []
+    for span in spans:  # the audited statements inside the whole financial pages are not repeated
+        if kept and span[0] < kept[-1][1]:
+            last = kept[-1]
+            kept[-1] = (last[0], max(last[1], span[1]), last[2], last[3])
+            continue
+        kept.append(span)
+    parts = [f"--- section: {heading} ---\n" + "\n".join(lines[start + 1:end]).strip() for start, end, heading, _ in kept]
+    return "\n\n".join(parts) + "\n", sorted(s[3] for s in spans), missing
+
+
 def _note_title(lines: Sequence[str], start: int) -> str:
     """The title of the note headed at line `start`: after the number on the same line ("Note 23. Revenues from
     contracts with customers", "3. Revenue"), or on the next line for a heading alone on its line ("NOTE 12" in
@@ -522,8 +647,11 @@ def extract_sections(text: str, form: str, wanted: frozenset[str]) -> tuple[str,
     "--- section: <heading> ---" line, in document order. A named note that has no heading of its own (a filing
     without a subsequent-events note, or a heading the reader does not recognize) is replaced by the whole financial
     statements with their notes. When any other named section is not found, the whole text comes back (with the
-    missing ones listed), so the reader never gets less than the clause asked for."""
+    missing ones listed), so the reader never gets less than the clause asked for. A prospectus goes to
+    prospectus_sections()."""
     family = form_family(form)
+    if family == PROSPECTUS:
+        return prospectus_sections(text, wanted)
     lines = text.split("\n")
     heads = _headings(lines)
     spans: list[tuple[int, int, str, str]] = []

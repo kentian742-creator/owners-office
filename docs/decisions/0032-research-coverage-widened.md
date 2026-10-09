@@ -28,7 +28,7 @@ McDonald's (MCD) and AppLovin (APP) back in that queue, and left the order to th
     is its FY2026 10-K);
   - in November: AppLovin, after its third-quarter 10-Q; Visa, after its FY2026 10-K;
   - SpaceX last. It listed in June 2026 and has filed one 10-Q and no 10-K, so the earlier years of its record are
-    only in its S-1, and the pipeline does not yet read an S-1 as a source.
+    only in its prospectus, and the pipeline does not yet read a prospectus as a source (0033 adds it).
 
 ## Consequences
 
