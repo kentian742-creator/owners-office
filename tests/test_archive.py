@@ -783,3 +783,133 @@ def test_a_named_note_is_the_note_itself_not_its_row_in_an_index_of_notes():
                      body, "(5)", "Equity method investments", f"Kraft Heinz. {body}", "(6)", "Investment gains", body])
     text, found, _ = documents.extract_sections(brk, "10-K", frozenset({"note:equity method"}))
     assert found and "Kraft Heinz." in text and "fixed maturity" not in text
+
+
+# ---- a company without an annual report yet: its offering prospectus (SpaceX listed in June 2026; decisions/0033)
+
+
+def body(word: str, lines: int = 30) -> str:
+    return "\n".join(f"{word} sentence {i} of the section, long enough to count as the text of its body." for i in
+                     range(lines))
+
+
+PROSPECTUS = "\n".join([
+    "TABLE OF CONTENTS", "Page",
+    "PROSPECTUS SUMMARY ......................................", "1",
+    "RISK FACTORS ............................................", "9",
+    "MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS", "OF OPERATIONS ......", "30",
+    "BUSINESS ................................................", "60",
+    "MANAGEMENT ..............................................", "90",
+    "INDEX TO FINANCIAL STATEMENTS ...........................", "F-1",
+    "PROSPECTUS SUMMARY", "Our Business", body("Summary"),
+    "RISK FACTORS", body("Risk"),
+    "USE OF PROCEEDS", body("Proceeds", 5),
+    "MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF", "OPERATIONS", body("Revenue"),
+    "BUSINESS", body("Launch"), "Management", body("Crew"),  # a subheading in title case does not end the section
+    "MANAGEMENT", body("Director"),
+    "EXECUTIVE COMPENSATION", body("Pay"),
+    "CERTAIN RELATIONSHIPS AND RELATED PERSON TRANSACTIONS", body("Lease"),
+    "SECURITY OWNERSHIP OF CERTAIN BENEFICIAL OWNERS AND MANAGEMENT", body("Holder"),
+    "DESCRIPTION OF CAPITAL STOCK", body("Class-B"),
+    "UNDERWRITING", body("Underwriter"),
+    "INDEX TO FINANCIAL STATEMENTS",
+    "Report of Independent Registered Public Accounting Firm ...................", "F-2",
+    "Report of Independent Registered Public Accounting Firm", body("Opinion", 5),
+    "Consolidated Balance Sheets", "(in millions)", "Total assets 100", body("Annual-note"),
+    "Space Exploration Technologies Corp.", "Consolidated Balance Sheets", "(in millions)", "(unaudited)",
+    "Total assets 120", body("Interim-note"),
+])
+
+
+def test_a_prospectus_is_cut_by_its_own_headings_and_its_interim_statements_can_be_left_out():
+    text, found, missing = documents.extract_sections(PROSPECTUS, "424B4", frozenset({"mdna", "audited_statements"}))
+    assert found == ["audited_statements", "mdna"] and missing == []
+    assert text.startswith("--- section: MANAGEMENT'S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF "
+                           "OPERATIONS ---\nRevenue sentence 0")  # the wrapped heading is read as one
+    assert "Annual-note sentence 29" in text and "Total assets 100" in text
+    assert "Interim-note" not in text and "Total assets 120" not in text and "Risk sentence" not in text
+    whole, found, _ = documents.extract_sections(PROSPECTUS, "424B4", frozenset({"financial_statements"}))
+    assert found == ["financial_statements"] and "Interim-note sentence 29" in whole
+    business, _, _ = documents.extract_sections(PROSPECTUS, "S-1/A", frozenset({"business"}))
+    assert "Crew sentence 29" in business and "Director" not in business and "Summary" not in business
+    governance, found, _ = documents.extract_sections(PROSPECTUS, "424B4", frozenset(
+        {"management", "executive_compensation", "related_party", "principal_stockholders", "capital_stock"}))
+    assert len(found) == 5 and all(f"{w} sentence 29" in governance for w in ("Director", "Pay", "Lease", "Holder"))
+    assert "Underwriter" not in governance and "Launch" not in governance
+
+
+def test_a_prospectus_supplies_the_sections_it_has_and_names_the_ones_it_lacks():
+    without_pay = PROSPECTUS.replace("EXECUTIVE COMPENSATION", "COMPENSATION TABLES")
+    text, found, missing = documents.extract_sections(without_pay, "424B4", frozenset({"business",
+                                                                                      "executive_compensation"}))
+    assert found == ["business"] and missing == ["executive_compensation"] and "Launch sentence 29" in text
+    plain = body("Plain", 100)  # no heading at all: the whole text, as for a periodic report
+    assert documents.extract_sections(plain, "424B4", frozenset({"mdna"})) == (plain, [], ["mdna"])
+    families = documents.form_family("424B4"), documents.form_family("S-1/A"), documents.form_family("424B3")
+    assert families == (documents.PROSPECTUS, documents.PROSPECTUS, None)  # 424B3: supplements, not offerings
+
+
+IPO_FILINGS = [
+    filing("n-s1", "S-1", "2026-05-20"),
+    filing("n-s1a", "S-1/A", "2026-06-03"),
+    filing("n-424b4", "424B4", "2026-06-12"),
+    filing("n-8k-ipo", "8-K", "2026-06-15", items=("1.01", "5.02")),
+    filing("n-8k-q2", "8-K", "2026-08-04", items=("2.02", "9.01")),
+    filing("n-10q-q2", "10-Q", "2026-08-04", "2026-06-30"),
+]
+IPO_EVENTS = [event(IPO_FILINGS[4], "FY2026Q2", "2026-06-30")]
+GOVERNANCE = ["capital_stock", "executive_compensation", "management", "principal_stockholders", "related_party"]
+
+
+def chosen(picks: list[archive.Pick]) -> list[tuple[str, list[str]]]:
+    return [(p.selection.filing.accession, sorted(p.selection.sections or [])) for p in picks]
+
+
+def test_a_company_without_an_annual_report_is_read_from_its_final_prospectus_in_parts():
+    picks = archive.build_selection(IPO_FILINGS, IPO_EVENTS, as_of=dt.date(2026, 10, 9), cal=CAL, foreign=False)
+    assert chosen(picks) == [
+        ("n-8k-q2", []), ("n-10q-q2", []),
+        ("n-424b4", ["audited_statements", "mdna"]),  # the 10-Q supersedes the prospectus's interim statements
+        ("n-424b4", ["business"]), ("n-424b4", GOVERNANCE),  # in place of the annual report and the proxy statement
+        ("n-8k-ipo", []), ("n-424b4", ["risk_factors"])]
+    assert {p.selection.kind for p in picks if p.selection.filing.form == "424B4"} == {documents.PROSPECTUS}
+    before = archive.build_selection(IPO_FILINGS[:4], [], as_of=dt.date(2026, 7, 1), cal=CAL, foreign=False)
+    assert chosen(before)[0] == ("n-424b4", ["financial_statements", "mdna"])  # no 10-Q yet: its interim ones stay
+    registered = archive.build_selection(IPO_FILINGS[:2], [], as_of=dt.date(2026, 6, 5), cal=CAL, foreign=False)
+    assert {a for a, _ in chosen(registered)} == {"n-s1a"}  # no final prospectus yet: the latest amendment
+    later = [*IPO_FILINGS, filing("n-10k-2026", "10-K", "2027-02-20", "2026-12-31")]
+    after = archive.build_selection(later, IPO_EVENTS, as_of=dt.date(2027, 3, 1), cal=CAL, foreign=False)
+    assert "n-424b4" not in {a for a, _ in chosen(after)}  # the annual report carries the record from then on
+
+
+def test_the_valuation_of_a_company_without_an_annual_report_reads_its_prospectus_record():
+    picks = archive.valuation_selection(IPO_FILINGS, as_of=dt.date(2026, 10, 9), cal=CAL)
+    assert chosen(picks) == [("n-10q-q2", []), ("n-424b4", ["audited_statements", "mdna"])]
+    assert archive.valuation_selection(IPO_FILINGS[3:], as_of=dt.date(2026, 10, 9), cal=CAL) == []
+
+
+def prospectus_documents(tmp_path: Path, text: str, sections: set[str]) -> registry.FilingText:
+    """The prospectus documents the gateway supplies for a selection of `sections`, EDGAR answering with `text`."""
+    prospectus = edgar.Filing(cik="0000000042", accession="0000000042-26-000007", form="424B4",
+                              filing_date=dt.date(2026, 6, 12), primary_document="prospectus.txt")
+    clock = fx.Clock()
+    client = edgar.EdgarClient(user_agent=fx.FAKE_UA, cache_dir=tmp_path / "cache", sleep=clock.sleep, jitter=0,
+                               transport=lambda url, headers, timeout: (200, {}, text.encode()),
+                               limiter=edgar.RateLimiter(5, clock=clock.monotonic, sleep=clock.sleep))
+    selection = documents.Selection(prospectus, True, False, frozenset(), documents.PROSPECTUS, frozenset(sections))
+    subs = type("Subs", (), {"filings": [prospectus]})()
+    (doc,) = registry.EdgarGateway(client).selection_documents(selection, ticker="NEWCO", cal=CAL, subs=subs,
+                                                               known_tags={})
+    return doc
+
+
+def test_the_dossiers_source_note_names_the_prospectus_sections_kept_and_those_not_found(tmp_path):
+    doc = prospectus_documents(tmp_path / "a", PROSPECTUS, {"business", "summary", "capital_stock"})
+    assert doc.tag == "NEWCO-424B4-2026-06-12"
+    assert doc.sections == ("business", "description of capital stock", "prospectus summary")
+    assert doc.note.startswith("sections kept: business, description of capital stock, prospectus summary (")
+    assert "Launch sentence 29" in doc.text and "Director" not in doc.text and "not found" not in doc.note
+    renamed = PROSPECTUS.replace("CERTAIN RELATIONSHIPS AND RELATED PERSON TRANSACTIONS", "TRANSACTIONS WITH INSIDERS")
+    doc = prospectus_documents(tmp_path / "b", renamed, {"business", "related_party", "capital_stock"})
+    assert doc.note.endswith("; not found by heading: related-party transactions")
+    assert "Launch sentence 29" in doc.text and "Class-B sentence 29" in doc.text

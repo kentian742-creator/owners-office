@@ -994,14 +994,16 @@ class EdgarGateway:
             doc = self._document(ticker, cal, filing, filing.primary_document, known_tags, tag=tag)
             if selection.sections and documents.form_family(filing.form):
                 text, found, missing = documents.extract_sections(doc.text, filing.form, selection.sections)
-                if missing:
+                if text == doc.text:
                     doc = dataclasses.replace(doc, note=f"the whole filing: section(s) not found by heading: "
                                                         f"{', '.join(documents.describe_sections(missing))}")
-                else:
+                else:  # a prospectus keeps the sections found and names the others
                     doc = dataclasses.replace(
                         doc, text=text, sections=tuple(documents.describe_sections(found)),
                         note=f"sections kept: {', '.join(documents.describe_sections(found))} "
-                             f"({len(text):,} of {len(doc.text):,} characters)")
+                             f"({len(text):,} of {len(doc.text):,} characters)"
+                             + (f"; not found by heading: {', '.join(documents.describe_sections(missing))}"
+                                if missing else ""))
             out.append(doc)
         if selection.exhibits:
             docs = edgar.filing_documents(filing.cik, filing.accession, client=self.client,
