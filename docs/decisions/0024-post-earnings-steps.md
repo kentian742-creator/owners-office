@@ -107,3 +107,28 @@ Questions the design and 0019 leave open:
 ## Date
 
 2026-09-27
+
+## Amendment, 2026-10-09: what an excerpt must share with its fact
+
+NVIDIA's first fact audit raised nine questions about excerpts (04A-Q03 to -Q21; HQ ruling R6 of 2026-10-09). The
+cutter attached a figure to whichever sentence held the same number and one common word, such as "Other (117)
+(0.3)%" for a 0.3% share of revenue. It also missed sentences that were there, because "R&D" is not "Research and
+development" and "36" written as text gave no number to look for. An excerpt now depends on how distinctive the value
+is:
+- A number of four digits or more (not a year), or a phrase of 15 characters or more, is attached where it shares a
+  word with the fact, or else at its first occurrence, as before.
+- A shorter number needs two shared words, or one word that is rare in the filing (in at most 1.5% of its lines),
+  or a table row whose own label is the fact's subject ("Revenue … Up 65%" for a growth in revenue).
+- A year needs two shared words, one of them rare, since filings print years everywhere.
+- A figure 16A marks as derived is attached only where the filing prints it with two shared words, one of them rare.
+  Otherwise it carries its inputs' excerpts ("derived from F068, F069: …"). 04A recomputes it from them in any case.
+- A filing's accession number is in its document's header, not its text, so such a value is not searched.
+
+Words are compared by their first seven letters, without a plural's "s". Abbreviations are written out ("R&D", "SBC",
+"capex"), "buyback" counts as "repurchase", and a few three-letter words count ("tax", "net"). Numbers given as text
+are read as numbers, and 17 is also looked for as 17.0. A statement locator (#IS, #BS, #CF) finds the statement in the
+filing's body, not its line in the index. "(1)" opening a line is a footnote marker, not −1.
+
+On NVIDIA's 730 facts, excerpts were missing for 242 instead of 328. Of the 402 excerpts cut before, 18 are now left
+out (12 of them filing dates or accession numbers matched by chance). 67 changed, and the flagged ones are now right
+or left out.
