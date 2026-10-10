@@ -111,6 +111,7 @@ SYSTEM_CA_BUNDLES = (
 )
 
 ACCESSION_RE = re.compile(r"^\d{10}-\d{2}-\d{6}$")
+ACCESSION_IN_TEXT_RE = re.compile(r"(?<!\d)\d{10}-\d{2}-\d{6}(?!\d)")
 PERIOD_RE = re.compile(r"^FY(\d{4})(?:Q([1-4]))?$")
 _OVERFLOW_PAGE_RE = re.compile(r"^CIK\d{10}-submissions-\d{3}\.json$")
 _DOC_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")

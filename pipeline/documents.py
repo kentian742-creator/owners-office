@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import functools
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
@@ -807,29 +808,40 @@ def tag_with_ordinal(ticker: str, filing: edgar.Filing, cal: edgar.FiscalCalenda
 
 _SENTENCE_END_RE = re.compile(r"(?<=[.!?;])\s+(?=[A-Z(\"'“$])")
 MAX_EXCERPT_CHARS = 400
+_PLAIN_NUMBER_RE = re.compile(r"[-\u2212]?\d{1,3}(?:,\d{3})+(?:\.\d+)?|[-\u2212]?\d+(?:\.\d+)?")
+_ISO_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
 def value_forms(value: Any) -> list[str]:
-    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); a date ->
-    July 24, 2026 and 2026-07-24; text as is, then the numbers in it ("12,256 against 11,200" -> 12,256, 11,200)."""
+    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); 17 -> 17.0 too; a
+    date -> July 24, 2026 and 2026-07-24; a number written as text ("36") as that number; other text as is, then the
+    numbers in it ("12,256 against 11,200" -> 12,256, 11,200)."""
     if isinstance(value, bool) or value is None:
         return []
     if isinstance(value, (list, tuple)):
         return [form for item in value for form in value_forms(item)]
     if isinstance(value, (dt.date, dt.datetime)):
         return slicing.date_forms(value)
+    if isinstance(value, str) and _PLAIN_NUMBER_RE.fullmatch(value.strip()):  # as written ("4.90"), then as a number
+        number = float(value.strip().replace(",", "").replace("−", "-"))
+        return list(dict.fromkeys([value.strip(), *value_forms(int(number) if number.is_integer() else number)]))
+    if isinstance(value, str) and _ISO_DATE_RE.fullmatch(value.strip()):
+        try:
+            return slicing.date_forms(dt.date.fromisoformat(value.strip()))
+        except ValueError:
+            pass
     if isinstance(value, (int, float)):
         number = float(value)
         forms = []
         if number.is_integer():
             whole = int(abs(number))
-            forms += [f"{whole:,}", str(whole)]
+            forms += [f"{whole:,}", str(whole)] + ([f"{whole}.0"] if whole < 1000 else [])  # "$17.0 billion"
         else:
             text = f"{abs(number):,.10f}".rstrip("0").rstrip(".")
             forms += [text, text.replace(",", "")]
         if number < 0:
             forms = [f"({f})" for f in forms] + [f"-{f}" for f in forms] + [f"−{f}" for f in forms]
-        return list(dict.fromkeys(f for f in forms if f and f not in ("0",)))
+        return list(dict.fromkeys(f for f in forms if f and f not in ("0", "0.0")))
     text = " ".join(str(value).split())
     forms = [text] if len(text) >= 3 else []
     return list(dict.fromkeys(forms + [n for n in slicing.number_forms(text) if n != text]))
@@ -856,7 +868,7 @@ def distinctive_patterns(value: Any) -> list[re.Pattern[str]]:
     for form, pattern in zip(value_forms(value), value_patterns(value)):
         bare = form.strip("()-−")
         if any(ch.isdigit() for ch in form):
-            if _YEAR_RE.match(bare) or (bare.isdigit() and len(bare) <= 2):
+            if _YEAR_RE.match(bare) or re.fullmatch(r"\d{1,2}(?:\.0)?", bare):  # "5" and "5.0" alike
                 continue
         elif len(form) < 15:
             continue
@@ -869,13 +881,51 @@ _STOP_WORDS = frozenset({"with", "from", "that", "this", "than", "into", "over",
                          "percent", "which", "their", "were", "have", "been", "also"})
 
 
+# Abbreviations a fact's description uses for what a filing writes out ("R&D as share of revenue" is the row
+# "Research and development").
+_ABBREVIATIONS: dict[str, tuple[str, ...]] = {
+    "r&d": ("research", "development"), "sg&a": ("selling", "general", "administrative"),
+    "d&a": ("depreciation", "amortization"), "capex": ("capital", "expenditure", "property", "equipment"),
+    "sbc": ("stock", "based", "compensation"), "eps": ("earnings", "share"), "fcf": ("free", "cash", "flow"),
+    "ocf": ("operating", "cash", "flow"), "roic": ("return", "invested", "capital"),
+}
+_ABBREVIATION_RE = re.compile(r"(?<![a-z&])(" + "|".join(re.escape(a) for a in _ABBREVIATIONS) + r")(?![a-z&])")
+
+
+_SHORT_WORDS = frozenset({"tax", "net", "oem", "gpu", "cpu", "ceo", "cfo"})  # three letters, yet telling
+_SYNONYMS = {"buyback": "repurchase"}
+STEM_LETTERS = 7  # words are compared by their first letters: "operating" and "operations", "repurchased" and "-ase"
+
+
 def _keywords(text: str) -> set[str]:
-    return {w for w in re.findall(r"[a-z]{4,}", text.lower()) if w not in _STOP_WORDS}
+    """The words of a text that can tie a fact to a sentence, by their first STEM_LETTERS letters: four letters or
+    more (or a telling three-letter word such as "tax"), not stop words, a plural's "s" dropped, abbreviations
+    written out ("R&D" is "research" and "development"), "buyback" read as "repurchase"."""
+    lower = text.lower()
+    words = re.findall(r"[a-z]{4,}", lower) + [w for w in re.findall(r"(?<![a-z])[a-z]{3}(?![a-z])", lower)
+                                                if w in _SHORT_WORDS]
+    words += [w for a in _ABBREVIATION_RE.findall(lower) for w in _ABBREVIATIONS[a]]
+    found = set()
+    for word in words:
+        if word in _STOP_WORDS:
+            continue
+        if len(word) > 4 and word.endswith("s") and not word.endswith("ss"):
+            word = word[:-1]
+        found.add(_SYNONYMS.get(word, word)[:STEM_LETTERS])
+    return found
 
 
 _PAGE_LOC_RE = re.compile(r"(?i)^p(?:age)?\s*([A-Z]{0,2}-?)(\d{1,4})$")
 _ITEM_LOC_RE = re.compile(r"(?i)^item\s*(\d{1,2}[A-Z]?)$")
 _NOTE_LOC_RE = re.compile(r"(?i)^note\s*(\d{1,2})$")
+_STATEMENT_LOC_RE = re.compile(r"(?i)^(IS|BS|CF)$")  # the income statement, balance sheet, cash-flow statement
+STATEMENT_TITLES = {
+    "IS": re.compile(r"(?i)(?:condensed )?consolidated statements? of (?:income|operations|earnings)"),
+    "BS": re.compile(r"(?i)(?:condensed )?consolidated (?:balance sheets?|statements? of financial (?:position|condition))"),
+    "CF": re.compile(r"(?i)(?:condensed )?consolidated statements? of cash flows?"),
+}
+_COMPREHENSIVE_RE = re.compile(r"(?i)(?:condensed )?consolidated statements? of (?:comprehensive income|"
+                               r"(?:changes in )?(?:shareholders'?|stockholders'?) equity).*")
 # A page's footer is its number alone on a line ("37", "K-66"), followed by the next page's first line, which has
 # words. The same number also stands alone in the table of contents, in the list of financial statements and as a
 # table cell, so the footers are told apart as a run of pages numbered one after another (_page_span).
@@ -897,6 +947,8 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
     if m := _ITEM_LOC_RE.match(loc):
         text, found, _missing = extract_sections(document, form, frozenset({f"item:{m.group(1).upper()}"}))
         return text if found else None
+    if m := _STATEMENT_LOC_RE.match(loc):
+        return _statement_section(lines, m.group(1).upper())
     if m := _NOTE_LOC_RE.match(loc):
         number = int(m.group(1))
         heads = _note_headings(lines)
@@ -917,6 +969,23 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
             *_, start, end = max(spans)
             return "\n".join(lines[start:end])
     return None
+
+
+def _statement_section(lines: Sequence[str], key: str) -> str | None:
+    """A primary statement (#IS, #BS, #CF): from its heading in the body to the next statement's heading or the notes'
+    title; of several such headings, the longest span, since a line of an index of statements is short."""
+    title = STATEMENT_TITLES[key]
+    ends = [pattern for other, pattern in STATEMENT_TITLES.items() if other != key] + [_COMPREHENSIVE_RE]
+    candidates = []
+    for start, line in enumerate(lines):
+        if len(line) > 150 or not title.fullmatch(" ".join(line.split())):
+            continue
+        end = next((i for i in range(start + 1, len(lines)) if len(lines[i]) <= 150 and (
+            any(p.fullmatch(" ".join(lines[i].split())) for p in ends) or _NOTES_TITLE_RE.match(lines[i])
+            or _ITEM_LINE_RE.match(lines[i]))), len(lines))
+        candidates.append((start, end, line))
+    span = _longest(candidates)
+    return "\n".join(lines[span[0]:span[1]]) if span and span[1] - span[0] >= 3 else None
 
 
 def _ends_page(lines: Sequence[str], i: int) -> bool:
@@ -1036,34 +1105,80 @@ def _note_headings(lines: Sequence[str]) -> dict[int, int]:
     return {i: number for i, (number, _) in sorted(heads.items()) if i not in rows}
 
 
-def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
-    """The sentence (or table row) of the document that contains the value, at most MAX_EXCERPT_CHARS long; None when
-    the value is not found. Numbers are matched as whole numbers (16,698 does not match 116,698). With `words` (what
-    the fact is about), a sentence that also shares one of those words is preferred, and a bare short number found
-    only in sentences that share none is left out rather than attached to an unrelated sentence. Of the sentences that
-    contain the value, the one sharing the most of those words wins (a number often recurs in other rows: the 04A audit
-    of SPGI found excerpts cut from the wrong row by a shared word such as "revenue")."""
+RARE_SHARE = 0.015  # a word in at most this share of a document's lines (or RARE_LINES) ties a fact to a line alone
+RARE_LINES = 3
+DISTINCT_DIGITS = 4  # a number with this many digits, not a year, rarely recurs by chance ("39,044"); "22" does
+DISTINCT_TEXT = 15  # a quoted phrase this long is found where it was said
+_LINE_LABEL_RE = re.compile(r"^\W*([A-Za-z][^\d$(—–]*)")  # a table row's label: the words before its figures
+_FOOTNOTE_MARK_RE = re.compile(r"\(\d\)")
+
+
+@functools.lru_cache(maxsize=16)
+def _line_frequencies(document: str) -> tuple[int, Mapping[str, int]]:
+    """(lines with text, word -> lines that hold it) of a document: how common each word is in it."""
+    counts: dict[str, int] = {}
+    lines = 0
+    for line in document.splitlines():
+        if line.strip():
+            lines += 1
+            for word in _keywords(line):
+                counts[word] = counts.get(word, 0) + 1
+    return lines, counts
+
+
+def cut_excerpt(document: str, value: Any, words: str = "", *, strict: bool = False,
+                within: str | None = None) -> str | None:
+    """The sentence (or table row) of the document that contains the value and says what the fact is about, at most
+    MAX_EXCERPT_CHARS long; None when there is none. Numbers are matched as whole numbers (16,698 does not match
+    116,698).
+
+    Without `words`, the first sentence holding the value. With `words` (what the fact is about), the sentence that
+    shares the most words that are rare in the document (in at most RARE_SHARE of the lines of `within`, the whole
+    filing when `document` is a part of it), then the most words, then the first. How much it must share depends on
+    how distinctive the value is:
+    - a number of DISTINCT_DIGITS digits or more (not a year), or a phrase of DISTINCT_TEXT characters: one word, else
+      the first sentence that holds it;
+    - a shorter number: two words, or one rare word, or every word of the label of the table row it stands in
+      ("Revenue ... Up 65%" for a growth in revenue; not "Operating leases (2)" for a change in operating income);
+    - a year, which filings print everywhere, and `strict`, a figure the dossier derived (the filing rarely prints
+      it): two words, one of them rare.
+    Otherwise no excerpt: an unrelated sentence misleads more than none. NVIDIA's first audit found "Other (117)
+    (0.3)%" attached to a revenue share and "Operating leases (2)" to a 2% change in operating income (04A-Q04, -Q07)."""
     lines = document.splitlines()
     wanted = _keywords(words)
+    total, frequency = _line_frequencies(within or document) if wanted else (0, {})
+    rare_limit = max(RARE_LINES, RARE_SHARE * total)
+    best: tuple[int, int, str] | None = None  # (rare words shared, words shared, excerpt)
     fallback = None
-    best: tuple[int, str] | None = None  # (words shared with the fact, excerpt): the most shared wins, then the first
     for form, pattern in zip(value_forms(value), value_patterns(value)):
+        digits = sum(ch.isdigit() for ch in form)
+        year = bool(_YEAR_RE.match(form.strip("()-−")))
+        distinct = not strict and (len(form) >= DISTINCT_TEXT if not digits else digits >= DISTINCT_DIGITS and not year)
+        marker = bool(_FOOTNOTE_MARK_RE.fullmatch(form))
         for index, line in enumerate(lines):
-            match = pattern.search(line)
-            if not match:
+            found = pattern.search(line)
+            if not found or (marker and not line[:found.start()].strip()):  # "(1)" opening a line marks a footnote
                 continue
             sentence = next((s for s in _sentences(line) if pattern.search(s)), line)
             label = _row_label(lines, index) if _is_cell(sentence) else None
             text = f"{label} … {sentence.strip()}" if label else sentence
             if not wanted:
                 return _clip(text, pattern)
-            shared = len(_keywords(text) & wanted)
-            if shared and (best is None or shared > best[0]):
-                best = (shared, _clip(text, pattern))
-            weak = len(form.strip("()-−")) <= 4 and "," not in form
-            if fallback is None and not weak:
+            shared = _keywords(text) & wanted
+            rare = sum(1 for word in shared if frequency.get(word, 0) <= rare_limit)
+            if strict or year:
+                qualifies = len(shared) >= 2 and rare >= 1
+            elif distinct:
+                qualifies = bool(shared)
+            else:
+                head = _LINE_LABEL_RE.match(sentence)
+                row = _keywords(label or (head.group(1) if head else ""))
+                qualifies = len(shared) >= 2 or rare >= 1 or (bool(row) and row <= wanted)
+            if qualifies and (best is None or (rare, len(shared)) > best[:2]):
+                best = (rare, len(shared), _clip(text, pattern))
+            if distinct and fallback is None:
                 fallback = _clip(text, pattern)
-    return best[1] if best is not None else fallback
+    return best[2] if best is not None else fallback
 
 
 _LETTERS_RE = re.compile(r"[A-Za-z]{3,}")
