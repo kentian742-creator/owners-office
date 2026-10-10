@@ -1,0 +1,232 @@
+sources:
+  - tag: NVDA-10K-FY2016
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2016 (business section and MD&A)
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2016
+    accession: 0001045810-16-000205
+    filed: '2016-03-17'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581016000205/nvda-2016x10k.htm
+    primary: true
+  - tag: NVDA-10K-FY2018
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2018
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2018
+    accession: 0001045810-18-000010
+    filed: '2018-02-28'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581018000010/nvda-2018x10k.htm
+    primary: true
+  - tag: NVDA-10K-FY2019
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2019
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2019
+    accession: 0001045810-19-000023
+    filed: '2019-02-21'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581019000023/
+    primary: true
+    note: Filing date as stated in the FY2020 10-K MD&A; URL is the EDGAR folder for the accession.
+  - tag: NVDA-10K-FY2020
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2020
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2020
+    accession: 0001045810-20-000010
+    filed: '2020-02-20'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581020000010/nvda-2020x10k.htm
+    primary: true
+  - tag: NVDA-10K-FY2021
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2021
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2021
+    accession: 0001045810-21-000010
+    filed: '2021-02-26'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581021000010/nvda-20210131.htm
+    primary: true
+  - tag: NVDA-10K-FY2022
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2022
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2022
+    accession: 0001045810-22-000036
+    filed: '2022-03-18'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581022000036/nvda-20220130.htm
+    primary: true
+  - tag: NVDA-10K-FY2023
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2023
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2023
+    accession: 0001045810-23-000017
+    filed: '2023-02-24'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm
+    primary: true
+  - tag: NVDA-10K-FY2024
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2024
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2024
+    accession: 0001045810-24-000029
+    filed: '2024-02-21'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm
+    primary: true
+  - tag: NVDA-10K-FY2025
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2025
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2025
+    accession: 0001045810-25-000023
+    filed: '2025-02-26'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581025000023/nvda-20250126.htm
+    primary: true
+  - tag: NVDA-10K-FY2026
+    kind: filing
+    title: NVIDIA Corporation Form 10-K for fiscal year 2026
+    issuer_cik: 0001045810
+    form: 10-K
+    period: FY2026
+    accession: 0001045810-26-000021
+    filed: '2026-02-25'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm
+    primary: true
+  - tag: NVDA-8K-2025-11-19
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, results for third quarter fiscal 2026 (EX-99.1 press release, EX-99.2 CFO
+      commentary)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: FY2026Q3
+    accession: 0001045810-25-000228
+    filed: '2025-11-19'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581025000228/q3fy26pr.htm
+    primary: true
+  - tag: NVDA-8K-2026-01-23
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, Item 5.02 (director resignation; date of report 2026-01-20)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: null
+    accession: 0001045810-26-000003
+    filed: '2026-01-23'
+    date: '2026-01-20'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000003/nvda-20260120.htm
+    primary: true
+  - tag: NVDA-8K-2026-02-25
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, results for fourth quarter and fiscal 2026 (EX-99.1 press release, EX-99.2
+      CFO commentary)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: FY2026Q4
+    accession: 0001045810-26-000019
+    filed: '2026-02-25'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000019/q4fy26pr.htm
+    primary: true
+  - tag: NVDA-8K-2026-03-06
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, Item 5.02 (fiscal 2027 variable compensation plan; date of report 2026-03-02)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: null
+    accession: 0001045810-26-000024
+    filed: '2026-03-06'
+    date: '2026-03-02'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000024/nvda-20260302.htm
+    primary: true
+  - tag: NVDA-8K-2026-04-27
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, Item 5.02 (chief accounting officer transition; date of report 2026-04-24)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: null
+    accession: 0001045810-26-000026
+    filed: '2026-04-27'
+    date: '2026-04-24'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000026/nvda-20260424.htm
+    primary: true
+  - tag: NVDA-8K-2026-05-08
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, Item 5.02 (director appointment; date of report 2026-05-07)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: null
+    accession: 0001045810-26-000028
+    filed: '2026-05-08'
+    date: '2026-05-07'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000028/nvda-20260507.htm
+    primary: true
+  - tag: NVDA-8K-2026-05-20
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, results for first quarter fiscal 2027 (EX-99.1 press release, EX-99.2 CFO
+      commentary)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: FY2027Q1
+    accession: 0001045810-26-000051
+    filed: '2026-05-20'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm
+    primary: true
+  - tag: NVDA-8K-2026-07-02
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, Item 5.02 (Worldwide Field Operations succession; date of report 2026-06-28)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: null
+    accession: 0001045810-26-000060
+    filed: '2026-07-02'
+    date: '2026-06-28'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000060/nvda-20260628.htm
+    primary: true
+  - tag: NVDA-8K-2026-08-17
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, Items 1.01, 2.03 and 7.01 (SB Energy residual value guaranties)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: null
+    accession: 0001045810-26-000069
+    filed: '2026-08-17'
+    date: '2026-08-17'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000069/nvda-20260817.htm
+    primary: true
+  - tag: NVDA-8K-2026-08-26
+    kind: filing
+    title: NVIDIA Corporation Form 8-K, results for second quarter fiscal 2027 (EX-99.1 press release, EX-99.2 CFO
+      commentary)
+    issuer_cik: 0001045810
+    form: 8-K
+    period: FY2027Q2
+    accession: 0001045810-26-000073
+    filed: '2026-08-26'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000073/q2fy27pr.htm
+    primary: true
+  - tag: NVDA-DEF14A-2026-05-12
+    kind: filing
+    title: NVIDIA Corporation definitive proxy statement (DEF 14A) for the 2026 annual meeting
+    issuer_cik: 0001045810
+    form: DEF 14A
+    period: FY2026
+    accession: 0001045810-26-000036
+    filed: '2026-05-12'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000036/nvda-20260512.htm
+    primary: true
+  - tag: NVDA-10Q-FY2027Q2
+    kind: filing
+    title: NVIDIA Corporation Form 10-Q for the quarter ended 2026-07-26 (FY2027Q2)
+    issuer_cik: 0001045810
+    form: 10-Q
+    period: FY2027Q2
+    accession: 0001045810-26-000075
+    filed: '2026-08-26'
+    url: https://www.sec.gov/Archives/edgar/data/1045810/000104581026000075/nvda-20260726.htm
+    primary: true
