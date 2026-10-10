@@ -10,7 +10,8 @@ built by the pipeline from primary sources (decisions/0027, 0028), and this modu
   (the business section and MD&A of the annual reports five and ten fiscal years back); then what the present largely
   repeats (the other releases of the last year, earlier quarterly reports). The caller adds them in this order while
   the estimated size stays within SOURCES_TOKENS, and lists what did not fit, so the dossier can name it in its
-  unknowns register instead of filling the gap from memory (00 §E3).
+  unknowns register instead of filling the gap from memory (00 §E3). A company that has filed no annual report yet
+  (it listed recently) is read from its offering prospectus instead, in parts (latest_prospectus(), PROSPECTUS_PARTS).
 - xbrl_summary(): the ten-year financial summary (01A's `xbrl_facts`) from EDGAR's companyfacts: for each line item,
   the value of each fiscal year as the latest annual report states it (so restatements win), with the accession it
   comes from and the source tag of that filing.
@@ -64,6 +65,19 @@ SUMMARY_ITEMS: tuple[tuple[str, str, str, str, tuple[str, ...]], ...] = (
      ("StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest")),
 )
 ANNUAL_FORMS = frozenset({"10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A"})
+# A company without an annual report yet: the parts of its prospectus that stand in for one, each a pick of its own so
+# that the budget keeps them in this order. "statements" is the financial pages: without the interim statements once
+# a later 10-Q supersedes them (documents.prospectus_sections).
+PROSPECTUS_PARTS: tuple[tuple[str, tuple[str, ...], str], ...] = (
+    ("record", ("mdna", "statements"),
+     "the offering prospectus, in place of an annual report: MD&A and the financial statements"),
+    ("business", ("business",), "the offering prospectus: the business section"),
+    ("governance", ("management", "executive_compensation", "related_party", "principal_stockholders",
+                    "capital_stock"),
+     "the offering prospectus, in place of a proxy statement: management, executive pay, related-party transactions, "
+     "principal stockholders and the capital stock"),
+    ("risks", ("risk_factors",), "the offering prospectus: risk factors (a 10-Q only updates them)"),
+)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -72,6 +86,33 @@ class Pick:
 
     selection: documents.Selection
     reason: str
+
+
+def latest_prospectus(filings: Sequence[edgar.Filing], *, as_of: dt.date) -> edgar.Filing | None:
+    """The prospectus a company without an annual report is read from: the final prospectus of its latest offering
+    (424B1, 424B4), else its latest registration statement (S-1, F-1 or an amendment). None once it has filed an annual
+    report, which then carries the record."""
+    known = [f for f in filings if f.filing_date <= as_of]
+    if any(f.form in ANNUAL_FORMS for f in known):
+        return None
+    for forms in (edgar.FINAL_PROSPECTUS_FORMS, edgar.REGISTRATION_FORMS):
+        found = [f for f in known if f.form in forms]
+        if found:
+            return max(found, key=lambda f: (f.filing_date, f.acceptance_datetime or "", f.accession))
+    return None
+
+
+def prospectus_picks(prospectus: edgar.Filing, parts: Iterable[str], *, superseded: bool) -> list[Pick]:
+    """The named PROSPECTUS_PARTS of a prospectus, in order; `superseded`: a later 10-Q replaces its interim
+    statements, so only the audited ones are kept."""
+    statements = "audited_statements" if superseded else "financial_statements"
+    picks = []
+    for name, sections, reason in PROSPECTUS_PARTS:
+        if name in parts:
+            keys = frozenset(statements if key == "statements" else key for key in sections)
+            picks.append(Pick(documents.Selection(prospectus, True, False, frozenset(), documents.PROSPECTUS, keys),
+                              reason))
+    return picks
 
 
 def build_selection(filings: Sequence[edgar.Filing], events: Sequence[edgar.EarningsEvent], *, as_of: dt.date,
@@ -100,24 +141,33 @@ def build_selection(filings: Sequence[edgar.Filing], events: Sequence[edgar.Earn
     year_ago = as_of - dt.timedelta(days=365)
     current = sorted((f for f in known if f.form == ("6-K" if foreign else "8-K") and f.filing_date > year_ago
                       and set(f.items) & CURRENT_REPORT_ITEMS), key=lambda f: f.filing_date, reverse=True)
+    prospectus = latest_prospectus(known, as_of=as_of)
 
     def release(event: edgar.EarningsEvent) -> None:
         add(event.filing, f"the earnings release for {event.period}", primary=foreign, exhibits=True,
             kind=documents.EARNINGS_RELEASE)
 
-    # 1. the present: the annual report, the latest release and quarterly report, the proxy, officer changes
+    def add_prospectus(*parts: str) -> None:  # parts of one filing, each a pick of its own
+        if prospectus is not None:
+            superseded = any(f.filing_date > prospectus.filing_date for f in quarterly)
+            picks.extend(prospectus_picks(prospectus, parts, superseded=superseded))
+
+    # 1. the present: the annual report, the latest release and quarterly report, the proxy, officer changes; before
+    # the first annual report, the prospectus in its place and the proxy statement's, its risk factors after them
     if latest is not None:
         add(latest, "the latest annual report, in full", kind=documents.ANNUAL_REPORT)
     if released:
         release(released[-1])
     for filing in quarterly[:1]:
         add(filing, "the latest quarterly report", kind=documents.QUARTERLY_REPORT)
+    add_prospectus("record", "business", "governance")
     if proxies:
         add(max(proxies, key=lambda f: f.filing_date), "the latest proxy statement (pay, ownership, the board)",
             kind=documents.PROXY)
     for filing in current[:MAX_CURRENT_REPORTS]:
         items = ", ".join(sorted(set(filing.items) & CURRENT_REPORT_ITEMS))
         add(filing, f"a current report of the last twelve months (items {items})", kind=documents.CURRENT_REPORT)
+    add_prospectus("risks")
     # 2. the history the dossier's ten-year parts need (the numbers are in xbrl_facts)
     if latest is not None and latest.report_date is not None:
         for years in HISTORY_YEARS:
@@ -160,7 +210,8 @@ def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date, cal:
     primary filing): the latest annual report and the latest quarterly report in full, then the MD&A of each earlier
     annual report: first those of the years in `declines` (which the premium turns on), then the others, newest first
     within each group, so that the budget keeps the filings that explain the declines. Years are fiscal years named
-    as xbrl_summary names them (a 52/53-week year ending on 2023-01-01 is FY2022)."""
+    as xbrl_summary names them (a 52/53-week year ending on 2023-01-01 is FY2022). A company without an annual
+    report yet: its latest quarterly report in full and its prospectus's MD&A and financial statements."""
 
     def fiscal_year(day: dt.date) -> int:
         try:
@@ -171,8 +222,15 @@ def valuation_selection(filings: Sequence[edgar.Filing], *, as_of: dt.date, cal:
     known = [f for f in filings if f.filing_date <= as_of]
     annual = sorted((f for f in known if f.form in ANNUAL_FORMS and not f.form.endswith("/A")),
                     key=lambda f: (f.report_date or f.filing_date, f.filing_date))
-    if not annual:
-        return []
+    if not annual:  # listed recently: the latest quarterly report, and the prospectus for the record before it
+        prospectus = latest_prospectus(known, as_of=as_of)
+        if prospectus is None:
+            return []
+        later = sorted((f for f in known if f.form == "10-Q" and f.filing_date > prospectus.filing_date),
+                       key=lambda f: f.filing_date)
+        picks = [Pick(documents.Selection(later[-1], True, False, frozenset(), documents.QUARTERLY_REPORT, None),
+                      "the latest quarterly report, in full")] if later else []
+        return picks + prospectus_picks(prospectus, ("record",), superseded=bool(later))
     latest = annual[-1]
     picks = [Pick(documents.Selection(latest, True, False, frozenset(), documents.ANNUAL_REPORT, None),
                   "the latest annual report, in full")]

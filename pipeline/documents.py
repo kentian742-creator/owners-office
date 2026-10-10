@@ -14,7 +14,9 @@ data it is given, and pipeline/registry.py fetches what it selects.
 - extract_sections() keeps, of a 10-K, 10-Q or 20-F, only the sections a clause names (MD&A, risk factors, legal
   proceedings, the business section, the financial statements, a named note, a 20-F item), found by the filing's own
   item and note headings; when a named section cannot be found, the whole filing is kept, and the caller records
-  which sections were cut.
+  which sections were cut. Of an offering prospectus (424B1, 424B4, S-1, F-1), which has no items, it keeps the
+  sections found by their headings (MD&A, the business section, management and its pay, the financial statements,
+  ...) and lists those it could not find: a whole prospectus is larger than any input budget.
 - tag_with_ordinal() gives a filing its archive tag (thesis-ci SPEC 3.3), numbering current reports of one form
   filed on the same day (-2, -3, ...), as SPEC 3.3 does.
 - cut_excerpt() finds the sentence of a document that contains a value: 04A's source_excerpt, cut by the pipeline
@@ -25,6 +27,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import functools
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
@@ -41,6 +44,7 @@ PROXY = "proxy"  # DEF 14A
 OWNERSHIP = "ownership"  # Forms 3, 4, 5
 BENEFICIAL_OWNERSHIP = "beneficial_ownership"  # Schedules 13D and 13G
 MERGER = "merger"  # S-4, F-4, DEFM14A, 425
+PROSPECTUS = "prospectus"  # an offering's prospectus (edgar.PROSPECTUS_FORMS): a new archive's record before its first 10-K
 REQUEST_KINDS = (EARNINGS_RELEASE, CURRENT_REPORT, PRESS_RELEASE, QUARTERLY_REPORT, ANNUAL_REPORT, PROXY, OWNERSHIP,
                  BENEFICIAL_OWNERSHIP, MERGER)
 
@@ -405,9 +409,46 @@ SECTION_TITLES = {"mdna": re.compile(r"management['\u2019]s discussion and analy
 SECTION_ENDS = {"mdna": re.compile(r"(?:item\s*8\b.*|financial statements and supplementary data)[.:]?", re.I)}
 MIN_SECTION_CHARS = 2_000  # an item "section" shorter than this is a table-of-contents or index entry, not the body
 SECTION_LABELS = {"mdna": "MD&A", "risk_factors": "risk factors", "legal_proceedings": "legal proceedings",
-                  "business": "business", "financial_statements": "financial statements and notes"}
+                  "business": "business", "financial_statements": "financial statements and notes",
+                  "summary": "prospectus summary", "management": "management",
+                  "executive_compensation": "executive compensation", "related_party": "related-party transactions",
+                  "principal_stockholders": "principal stockholders", "capital_stock": "description of capital stock",
+                  "audited_statements": "audited financial statements and notes"}
 _ITEM_LINE_RE = re.compile(r"^\s*ITEM\s+(\d{1,2}[A-Z]?)\s*[.:\u2013\u2014-]?\s*(.*)$", re.I)
 _PART_LINE_RE = re.compile(r"^\s*PART\s+(IV|I{1,3})\b", re.I)
+# A prospectus has no items. Its sections are the top-level headings its table of contents lists, each running to the
+# next: first the sections a selection can name (by key), then the other headings, which only end a section.
+# "audited_statements" is the financial pages without the interim statements marked unaudited (_audited_end).
+PROSPECTUS_HEADINGS: dict[str, re.Pattern[str]] = {
+    "summary": re.compile(r"prospectus summary", re.I),
+    "risk_factors": re.compile(r"risk factors", re.I),
+    "mdna": re.compile(r"management's discussion and analysis(?: of financial condition and results(?: of"
+                       r"(?: operations)?)?)?", re.I),
+    "business": re.compile(r"(?:our )?business", re.I),
+    "management": re.compile(r"management|(?:our )?(?:executive officers and directors|directors and executive officers)"
+                             r"|(?:directors|management),? executive officers and corporate governance"
+                             r"|management and (?:board of directors|corporate governance)", re.I),
+    "executive_compensation": re.compile(r"(?:executive|executive and director|director and executive) compensation",
+                                         re.I),
+    "related_party": re.compile(r"(?:certain relationships and )?related[- ](?:party|person) transactions", re.I),
+    "principal_stockholders": re.compile(r"principal (?:and selling )?(?:stockholders|shareholders)"
+                                         r"|security ownership of certain beneficial owners and management", re.I),
+    "capital_stock": re.compile(r"description of (?:our )?(?:capital stock|share capital)", re.I),
+    "financial_statements": re.compile(r"index to (?:the )?(?:consolidated )?financial statements", re.I),
+}
+PROSPECTUS_OTHER_HEADINGS = re.compile(
+    r"glossary(?: of (?:selected )?terms)?|the offering|(?:a )?letter from .{1,60}|industry(?: overview)?"
+    r"|(?:cautionary|special) (?:note|statement)s? regarding forward[- ]looking statements"
+    r"|market,? industry and other data|industry and market data|use of proceeds|dividend policy|capitalization"
+    r"|dilution|selected (?:consolidated )?(?:historical )?financial (?:and other )?data"
+    r"|shares eligible for future sale|(?:certain )?material (?:u\.s\. )?(?:federal )?(?:income )?tax considerations.*"
+    r"|underwriting.*|plan of distribution|legal matters|experts|where you can find (?:more|additional) information"
+    r"|part ii|information not required in (?:the )?prospectus", re.I)
+MIN_CAPITAL_HEADINGS = 3  # a prospectus with this many headings in capitals sets all its top-level headings so
+_AUDITOR_REPORT_RE = re.compile(r"reports? of independent registered public accounting firms?", re.I)
+_BALANCE_SHEET_RE = re.compile(r"(?:condensed )?consolidated (?:balance sheets?|statements? of financial "
+                               r"(?:position|condition))", re.I)
+_UNAUDITED_RE = re.compile(r"\(unaudited\)", re.I)
 
 
 def section_requests(clause: str) -> frozenset[str] | None:
@@ -421,6 +462,8 @@ def section_requests(clause: str) -> frozenset[str] | None:
 
 def form_family(form: str) -> str | None:
     key = edgar.form_key(form)
+    if form in edgar.PROSPECTUS_FORMS:
+        return PROSPECTUS
     return {"10K": "10-K", "10KA": "10-K", "10Q": "10-Q", "10QA": "10-Q", "20F": "20-F", "20FA": "20-F",
             "40F": "20-F"}.get(key)
 
@@ -486,6 +529,89 @@ def _chars(lines: Sequence[str], span: tuple[int, int, str] | None) -> int:
     return sum(len(line) for line in lines[span[0] + 1:span[1]]) if span else 0
 
 
+def _heading_text(line: str) -> str:
+    return " ".join(line.replace("’", "'").split())
+
+
+def _prospectus_headings(lines: Sequence[str]) -> list[tuple[int, str | None]]:
+    """The top-level headings of a prospectus: (line, section key, or None for a heading that only ends a section). A
+    heading is a line that is one of the known titles in full; the table of contents' entries carry dot leaders and
+    page numbers, so they are not. When the document sets its headings in capitals, only capitalized lines count, so
+    that a subheading in title case ("Management", "Dilution") does not end the section it is in."""
+    found = []
+    for i, line in enumerate(lines):
+        if len(line) > 150:
+            continue
+        text = _heading_text(line)
+        key = next((k for k, pattern in PROSPECTUS_HEADINGS.items() if pattern.fullmatch(text)), None)
+        if key is None and not PROSPECTUS_OTHER_HEADINGS.fullmatch(text):
+            continue
+        found.append((i, key, text == text.upper()))
+    if sum(capital for _, _, capital in found) >= MIN_CAPITAL_HEADINGS:
+        found = [heading for heading in found if heading[2]]
+    return [(i, key) for i, key, _ in found]
+
+
+def _audited_end(lines: Sequence[str], start: int, end: int) -> int:
+    """Where the audited statements among a prospectus's financial pages end: at the first balance sheet marked
+    unaudited after an auditor's report, which begins the interim statements; `end` when there is none."""
+    report = next((i for i in range(start, end) if _AUDITOR_REPORT_RE.fullmatch(_heading_text(lines[i]))), None)
+    if report is None:
+        return end
+    return next((i for i in range(report, end) if _BALANCE_SHEET_RE.fullmatch(_heading_text(lines[i]))
+                 and any(_UNAUDITED_RE.search(line) for line in lines[i + 1:i + 6])), end)
+
+
+def _prospectus_span(lines: Sequence[str], heads: Sequence[tuple[int, str | None]],
+                     key: str) -> tuple[int, int, str] | None:
+    """The section of a prospectus under the heading for `key`, to the next top-level heading; of several (a
+    capitalized title in the summary, say), the longest. A heading wrapped onto a second line ("... RESULTS OF" /
+    "OPERATIONS") is read as one, and the section starts after it."""
+    wanted = "financial_statements" if key == "audited_statements" else key
+    pattern = PROSPECTUS_HEADINGS[wanted]
+    candidates = []
+    for n, (line, found) in enumerate(heads):
+        if found != wanted:
+            continue
+        start, heading = line, _heading_text(lines[line])
+        if line + 1 < len(lines) and pattern.fullmatch(f"{heading} {_heading_text(lines[line + 1])}"):
+            start, heading = line + 1, f"{heading} {_heading_text(lines[line + 1])}"
+        end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
+        if key == "audited_statements":
+            end = _audited_end(lines, start, end)
+        candidates.append((start, end, heading))
+    return _longest(candidates)
+
+
+def prospectus_sections(text: str, wanted: frozenset[str]) -> tuple[str, list[str], list[str]]:
+    """(text, sections found, sections not found) of a prospectus: each named section under a "--- section:
+    <heading> ---" line, in document order. Unlike a periodic report's, a prospectus is never kept whole for a
+    section that cannot be found (it is larger than any input budget), unless none of them can be."""
+    lines = text.split("\n")
+    heads = _prospectus_headings(lines)
+    spans: list[tuple[int, int, str, str]] = []
+    missing: list[str] = []
+    for key in sorted(wanted):
+        span = _prospectus_span(lines, heads, key) if key in PROSPECTUS_HEADINGS or key == "audited_statements" \
+            else None
+        if span is None or _chars(lines, span) < MIN_SECTION_CHARS:
+            missing.append(key)
+        else:
+            spans.append((*span, key))
+    if not spans:
+        return text, [], missing
+    spans.sort()
+    kept: list[tuple[int, int, str, str]] = []
+    for span in spans:  # the audited statements inside the whole financial pages are not repeated
+        if kept and span[0] < kept[-1][1]:
+            last = kept[-1]
+            kept[-1] = (last[0], max(last[1], span[1]), last[2], last[3])
+            continue
+        kept.append(span)
+    parts = [f"--- section: {heading} ---\n" + "\n".join(lines[start + 1:end]).strip() for start, end, heading, _ in kept]
+    return "\n\n".join(parts) + "\n", sorted(s[3] for s in spans), missing
+
+
 def _note_title(lines: Sequence[str], start: int) -> str:
     """The title of the note headed at line `start`: after the number on the same line ("Note 23. Revenues from
     contracts with customers", "3. Revenue"), or on the next line for a heading alone on its line ("NOTE 12" in
@@ -522,8 +648,11 @@ def extract_sections(text: str, form: str, wanted: frozenset[str]) -> tuple[str,
     "--- section: <heading> ---" line, in document order. A named note that has no heading of its own (a filing
     without a subsequent-events note, or a heading the reader does not recognize) is replaced by the whole financial
     statements with their notes. When any other named section is not found, the whole text comes back (with the
-    missing ones listed), so the reader never gets less than the clause asked for."""
+    missing ones listed), so the reader never gets less than the clause asked for. A prospectus goes to
+    prospectus_sections()."""
     family = form_family(form)
+    if family == PROSPECTUS:
+        return prospectus_sections(text, wanted)
     lines = text.split("\n")
     heads = _headings(lines)
     spans: list[tuple[int, int, str, str]] = []
@@ -679,29 +808,40 @@ def tag_with_ordinal(ticker: str, filing: edgar.Filing, cal: edgar.FiscalCalenda
 
 _SENTENCE_END_RE = re.compile(r"(?<=[.!?;])\s+(?=[A-Z(\"'“$])")
 MAX_EXCERPT_CHARS = 400
+_PLAIN_NUMBER_RE = re.compile(r"[-\u2212]?\d{1,3}(?:,\d{3})+(?:\.\d+)?|[-\u2212]?\d+(?:\.\d+)?")
+_ISO_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
 def value_forms(value: Any) -> list[str]:
-    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); a date ->
-    July 24, 2026 and 2026-07-24; text as is, then the numbers in it ("12,256 against 11,200" -> 12,256, 11,200)."""
+    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); 17 -> 17.0 too; a
+    date -> July 24, 2026 and 2026-07-24; a number written as text ("36") as that number; other text as is, then the
+    numbers in it ("12,256 against 11,200" -> 12,256, 11,200)."""
     if isinstance(value, bool) or value is None:
         return []
     if isinstance(value, (list, tuple)):
         return [form for item in value for form in value_forms(item)]
     if isinstance(value, (dt.date, dt.datetime)):
         return slicing.date_forms(value)
+    if isinstance(value, str) and _PLAIN_NUMBER_RE.fullmatch(value.strip()):  # as written ("4.90"), then as a number
+        number = float(value.strip().replace(",", "").replace("−", "-"))
+        return list(dict.fromkeys([value.strip(), *value_forms(int(number) if number.is_integer() else number)]))
+    if isinstance(value, str) and _ISO_DATE_RE.fullmatch(value.strip()):
+        try:
+            return slicing.date_forms(dt.date.fromisoformat(value.strip()))
+        except ValueError:
+            pass
     if isinstance(value, (int, float)):
         number = float(value)
         forms = []
         if number.is_integer():
             whole = int(abs(number))
-            forms += [f"{whole:,}", str(whole)]
+            forms += [f"{whole:,}", str(whole)] + ([f"{whole}.0"] if whole < 1000 else [])  # "$17.0 billion"
         else:
             text = f"{abs(number):,.10f}".rstrip("0").rstrip(".")
             forms += [text, text.replace(",", "")]
         if number < 0:
             forms = [f"({f})" for f in forms] + [f"-{f}" for f in forms] + [f"−{f}" for f in forms]
-        return list(dict.fromkeys(f for f in forms if f and f not in ("0",)))
+        return list(dict.fromkeys(f for f in forms if f and f not in ("0", "0.0")))
     text = " ".join(str(value).split())
     forms = [text] if len(text) >= 3 else []
     return list(dict.fromkeys(forms + [n for n in slicing.number_forms(text) if n != text]))
@@ -728,7 +868,7 @@ def distinctive_patterns(value: Any) -> list[re.Pattern[str]]:
     for form, pattern in zip(value_forms(value), value_patterns(value)):
         bare = form.strip("()-−")
         if any(ch.isdigit() for ch in form):
-            if _YEAR_RE.match(bare) or (bare.isdigit() and len(bare) <= 2):
+            if _YEAR_RE.match(bare) or re.fullmatch(r"\d{1,2}(?:\.0)?", bare):  # "5" and "5.0" alike
                 continue
         elif len(form) < 15:
             continue
@@ -741,13 +881,51 @@ _STOP_WORDS = frozenset({"with", "from", "that", "this", "than", "into", "over",
                          "percent", "which", "their", "were", "have", "been", "also"})
 
 
+# Abbreviations a fact's description uses for what a filing writes out ("R&D as share of revenue" is the row
+# "Research and development").
+_ABBREVIATIONS: dict[str, tuple[str, ...]] = {
+    "r&d": ("research", "development"), "sg&a": ("selling", "general", "administrative"),
+    "d&a": ("depreciation", "amortization"), "capex": ("capital", "expenditure", "property", "equipment"),
+    "sbc": ("stock", "based", "compensation"), "eps": ("earnings", "share"), "fcf": ("free", "cash", "flow"),
+    "ocf": ("operating", "cash", "flow"), "roic": ("return", "invested", "capital"),
+}
+_ABBREVIATION_RE = re.compile(r"(?<![a-z&])(" + "|".join(re.escape(a) for a in _ABBREVIATIONS) + r")(?![a-z&])")
+
+
+_SHORT_WORDS = frozenset({"tax", "net", "oem", "gpu", "cpu", "ceo", "cfo"})  # three letters, yet telling
+_SYNONYMS = {"buyback": "repurchase"}
+STEM_LETTERS = 7  # words are compared by their first letters: "operating" and "operations", "repurchased" and "-ase"
+
+
 def _keywords(text: str) -> set[str]:
-    return {w for w in re.findall(r"[a-z]{4,}", text.lower()) if w not in _STOP_WORDS}
+    """The words of a text that can tie a fact to a sentence, by their first STEM_LETTERS letters: four letters or
+    more (or a telling three-letter word such as "tax"), not stop words, a plural's "s" dropped, abbreviations
+    written out ("R&D" is "research" and "development"), "buyback" read as "repurchase"."""
+    lower = text.lower()
+    words = re.findall(r"[a-z]{4,}", lower) + [w for w in re.findall(r"(?<![a-z])[a-z]{3}(?![a-z])", lower)
+                                                if w in _SHORT_WORDS]
+    words += [w for a in _ABBREVIATION_RE.findall(lower) for w in _ABBREVIATIONS[a]]
+    found = set()
+    for word in words:
+        if word in _STOP_WORDS:
+            continue
+        if len(word) > 4 and word.endswith("s") and not word.endswith("ss"):
+            word = word[:-1]
+        found.add(_SYNONYMS.get(word, word)[:STEM_LETTERS])
+    return found
 
 
 _PAGE_LOC_RE = re.compile(r"(?i)^p(?:age)?\s*([A-Z]{0,2}-?)(\d{1,4})$")
 _ITEM_LOC_RE = re.compile(r"(?i)^item\s*(\d{1,2}[A-Z]?)$")
 _NOTE_LOC_RE = re.compile(r"(?i)^note\s*(\d{1,2})$")
+_STATEMENT_LOC_RE = re.compile(r"(?i)^(IS|BS|CF)$")  # the income statement, balance sheet, cash-flow statement
+STATEMENT_TITLES = {
+    "IS": re.compile(r"(?i)(?:condensed )?consolidated statements? of (?:income|operations|earnings)"),
+    "BS": re.compile(r"(?i)(?:condensed )?consolidated (?:balance sheets?|statements? of financial (?:position|condition))"),
+    "CF": re.compile(r"(?i)(?:condensed )?consolidated statements? of cash flows?"),
+}
+_COMPREHENSIVE_RE = re.compile(r"(?i)(?:condensed )?consolidated statements? of (?:comprehensive income|"
+                               r"(?:changes in )?(?:shareholders'?|stockholders'?) equity).*")
 # A page's footer is its number alone on a line ("37", "K-66"), followed by the next page's first line, which has
 # words. The same number also stands alone in the table of contents, in the list of financial statements and as a
 # table cell, so the footers are told apart as a run of pages numbered one after another (_page_span).
@@ -769,6 +947,8 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
     if m := _ITEM_LOC_RE.match(loc):
         text, found, _missing = extract_sections(document, form, frozenset({f"item:{m.group(1).upper()}"}))
         return text if found else None
+    if m := _STATEMENT_LOC_RE.match(loc):
+        return _statement_section(lines, m.group(1).upper())
     if m := _NOTE_LOC_RE.match(loc):
         number = int(m.group(1))
         heads = _note_headings(lines)
@@ -789,6 +969,23 @@ def locator_section(document: str, locator: str, form: str = "10-K") -> str | No
             *_, start, end = max(spans)
             return "\n".join(lines[start:end])
     return None
+
+
+def _statement_section(lines: Sequence[str], key: str) -> str | None:
+    """A primary statement (#IS, #BS, #CF): from its heading in the body to the next statement's heading or the notes'
+    title; of several such headings, the longest span, since a line of an index of statements is short."""
+    title = STATEMENT_TITLES[key]
+    ends = [pattern for other, pattern in STATEMENT_TITLES.items() if other != key] + [_COMPREHENSIVE_RE]
+    candidates = []
+    for start, line in enumerate(lines):
+        if len(line) > 150 or not title.fullmatch(" ".join(line.split())):
+            continue
+        end = next((i for i in range(start + 1, len(lines)) if len(lines[i]) <= 150 and (
+            any(p.fullmatch(" ".join(lines[i].split())) for p in ends) or _NOTES_TITLE_RE.match(lines[i])
+            or _ITEM_LINE_RE.match(lines[i]))), len(lines))
+        candidates.append((start, end, line))
+    span = _longest(candidates)
+    return "\n".join(lines[span[0]:span[1]]) if span and span[1] - span[0] >= 3 else None
 
 
 def _ends_page(lines: Sequence[str], i: int) -> bool:
@@ -908,34 +1105,80 @@ def _note_headings(lines: Sequence[str]) -> dict[int, int]:
     return {i: number for i, (number, _) in sorted(heads.items()) if i not in rows}
 
 
-def cut_excerpt(document: str, value: Any, words: str = "") -> str | None:
-    """The sentence (or table row) of the document that contains the value, at most MAX_EXCERPT_CHARS long; None when
-    the value is not found. Numbers are matched as whole numbers (16,698 does not match 116,698). With `words` (what
-    the fact is about), a sentence that also shares one of those words is preferred, and a bare short number found
-    only in sentences that share none is left out rather than attached to an unrelated sentence. Of the sentences that
-    contain the value, the one sharing the most of those words wins (a number often recurs in other rows: the 04A audit
-    of SPGI found excerpts cut from the wrong row by a shared word such as "revenue")."""
+RARE_SHARE = 0.015  # a word in at most this share of a document's lines (or RARE_LINES) ties a fact to a line alone
+RARE_LINES = 3
+DISTINCT_DIGITS = 4  # a number with this many digits, not a year, rarely recurs by chance ("39,044"); "22" does
+DISTINCT_TEXT = 15  # a quoted phrase this long is found where it was said
+_LINE_LABEL_RE = re.compile(r"^\W*([A-Za-z][^\d$(—–]*)")  # a table row's label: the words before its figures
+_FOOTNOTE_MARK_RE = re.compile(r"\(\d\)")
+
+
+@functools.lru_cache(maxsize=16)
+def _line_frequencies(document: str) -> tuple[int, Mapping[str, int]]:
+    """(lines with text, word -> lines that hold it) of a document: how common each word is in it."""
+    counts: dict[str, int] = {}
+    lines = 0
+    for line in document.splitlines():
+        if line.strip():
+            lines += 1
+            for word in _keywords(line):
+                counts[word] = counts.get(word, 0) + 1
+    return lines, counts
+
+
+def cut_excerpt(document: str, value: Any, words: str = "", *, strict: bool = False,
+                within: str | None = None) -> str | None:
+    """The sentence (or table row) of the document that contains the value and says what the fact is about, at most
+    MAX_EXCERPT_CHARS long; None when there is none. Numbers are matched as whole numbers (16,698 does not match
+    116,698).
+
+    Without `words`, the first sentence holding the value. With `words` (what the fact is about), the sentence that
+    shares the most words that are rare in the document (in at most RARE_SHARE of the lines of `within`, the whole
+    filing when `document` is a part of it), then the most words, then the first. How much it must share depends on
+    how distinctive the value is:
+    - a number of DISTINCT_DIGITS digits or more (not a year), or a phrase of DISTINCT_TEXT characters: one word, else
+      the first sentence that holds it;
+    - a shorter number: two words, or one rare word, or every word of the label of the table row it stands in
+      ("Revenue ... Up 65%" for a growth in revenue; not "Operating leases (2)" for a change in operating income);
+    - a year, which filings print everywhere, and `strict`, a figure the dossier derived (the filing rarely prints
+      it): two words, one of them rare.
+    Otherwise no excerpt: an unrelated sentence misleads more than none. NVIDIA's first audit found "Other (117)
+    (0.3)%" attached to a revenue share and "Operating leases (2)" to a 2% change in operating income (04A-Q04, -Q07)."""
     lines = document.splitlines()
     wanted = _keywords(words)
+    total, frequency = _line_frequencies(within or document) if wanted else (0, {})
+    rare_limit = max(RARE_LINES, RARE_SHARE * total)
+    best: tuple[int, int, str] | None = None  # (rare words shared, words shared, excerpt)
     fallback = None
-    best: tuple[int, str] | None = None  # (words shared with the fact, excerpt): the most shared wins, then the first
     for form, pattern in zip(value_forms(value), value_patterns(value)):
+        digits = sum(ch.isdigit() for ch in form)
+        year = bool(_YEAR_RE.match(form.strip("()-−")))
+        distinct = not strict and (len(form) >= DISTINCT_TEXT if not digits else digits >= DISTINCT_DIGITS and not year)
+        marker = bool(_FOOTNOTE_MARK_RE.fullmatch(form))
         for index, line in enumerate(lines):
-            match = pattern.search(line)
-            if not match:
+            found = pattern.search(line)
+            if not found or (marker and not line[:found.start()].strip()):  # "(1)" opening a line marks a footnote
                 continue
             sentence = next((s for s in _sentences(line) if pattern.search(s)), line)
             label = _row_label(lines, index) if _is_cell(sentence) else None
             text = f"{label} … {sentence.strip()}" if label else sentence
             if not wanted:
                 return _clip(text, pattern)
-            shared = len(_keywords(text) & wanted)
-            if shared and (best is None or shared > best[0]):
-                best = (shared, _clip(text, pattern))
-            weak = len(form.strip("()-−")) <= 4 and "," not in form
-            if fallback is None and not weak:
+            shared = _keywords(text) & wanted
+            rare = sum(1 for word in shared if frequency.get(word, 0) <= rare_limit)
+            if strict or year:
+                qualifies = len(shared) >= 2 and rare >= 1
+            elif distinct:
+                qualifies = bool(shared)
+            else:
+                head = _LINE_LABEL_RE.match(sentence)
+                row = _keywords(label or (head.group(1) if head else ""))
+                qualifies = len(shared) >= 2 or rare >= 1 or (bool(row) and row <= wanted)
+            if qualifies and (best is None or (rare, len(shared)) > best[:2]):
+                best = (rare, len(shared), _clip(text, pattern))
+            if distinct and fallback is None:
                 fallback = _clip(text, pattern)
-    return best[1] if best is not None else fallback
+    return best[2] if best is not None else fallback
 
 
 _LETTERS_RE = re.compile(r"[A-Za-z]{3,}")

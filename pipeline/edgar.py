@@ -101,6 +101,9 @@ ANNUAL_FORMS = frozenset({"10-K", "10-K/A", "10-KT", "10-KT/A", "20-F", "20-F/A"
 QUARTERLY_FORMS = frozenset({"10-Q", "10-Q/A", "10-QT", "10-QT/A"})
 PERIODIC_FORMS = ANNUAL_FORMS | QUARTERLY_FORMS
 CLOSING_FORMS = frozenset({"10-Q", "10-K"})  # filings that close a domestic earnings event (amendments excluded)
+FINAL_PROSPECTUS_FORMS = frozenset({"424B1", "424B4"})  # an offering's final prospectus (Rule 424(b)(1), (4))
+REGISTRATION_FORMS = frozenset({"S-1", "S-1/A", "F-1", "F-1/A"})  # its registration statement, before the final one
+PROSPECTUS_FORMS = FINAL_PROSPECTUS_FORMS | REGISTRATION_FORMS
 SYSTEM_CA_BUNDLES = (
     "/etc/ssl/cert.pem",  # macOS, Alpine
     "/etc/ssl/certs/ca-certificates.crt",  # Debian, Ubuntu
@@ -108,6 +111,7 @@ SYSTEM_CA_BUNDLES = (
 )
 
 ACCESSION_RE = re.compile(r"^\d{10}-\d{2}-\d{6}$")
+ACCESSION_IN_TEXT_RE = re.compile(r"(?<!\d)\d{10}-\d{2}-\d{6}(?!\d)")
 PERIOD_RE = re.compile(r"^FY(\d{4})(?:Q([1-4]))?$")
 _OVERFLOW_PAGE_RE = re.compile(r"^CIK\d{10}-submissions-\d{3}\.json$")
 _DOC_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")

@@ -396,6 +396,11 @@ def test_prose_needs_a_source_tag_for_every_fact_number_and_01b_cites_only_the_d
     errors = outputs.cited_tag_errors("01B", {"dossier": dossier.text}, {"ledger": ledger})
     assert errors == ["ledger: source MCD-DOSSIER-2026-09-30 is not a source the dossier cites; cite the filing the "
                       "dossier cites for that fact instead (the dossier is private and cannot be cited)"]
+    # NVIDIA's first build (2026-10-09): the thesis and the ledger cited the dossier; only the thesis was named, so
+    # the retry redid the thesis alone and the ledger's citations failed the run
+    thesis = outputs.ParsedOutput("thesis", outputs.YAML, "ratings:\n  source: MCD-DOSSIER-2026-09-30\n")
+    errors = outputs.cited_tag_errors("01B", {"dossier": dossier.text}, {"thesis": thesis, "ledger": ledger})
+    assert [e.split(":")[0] for e in errors] == ["thesis", "ledger"]
 
 
 def test_a_model_review_returns_exactly_when_a_finding_is_must_fix():

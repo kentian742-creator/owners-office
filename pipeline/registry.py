@@ -994,14 +994,16 @@ class EdgarGateway:
             doc = self._document(ticker, cal, filing, filing.primary_document, known_tags, tag=tag)
             if selection.sections and documents.form_family(filing.form):
                 text, found, missing = documents.extract_sections(doc.text, filing.form, selection.sections)
-                if missing:
+                if text == doc.text:
                     doc = dataclasses.replace(doc, note=f"the whole filing: section(s) not found by heading: "
                                                         f"{', '.join(documents.describe_sections(missing))}")
-                else:
+                else:  # a prospectus keeps the sections found and names the others
                     doc = dataclasses.replace(
                         doc, text=text, sections=tuple(documents.describe_sections(found)),
                         note=f"sections kept: {', '.join(documents.describe_sections(found))} "
-                             f"({len(text):,} of {len(doc.text):,} characters)")
+                             f"({len(text):,} of {len(doc.text):,} characters)"
+                             + (f"; not found by heading: {', '.join(documents.describe_sections(missing))}"
+                                if missing else ""))
             out.append(doc)
         if selection.exhibits:
             docs = edgar.filing_documents(filing.cik, filing.accession, client=self.client,
@@ -2508,26 +2510,35 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
     tags = [t for f in facts if isinstance(f, dict) for t in _tags_of(f.get("source"))]
     texts, _, unresolved = cited_texts(ctx, tags)
     found = missing = 0
-    for fact in facts:
-        if not isinstance(fact, dict) or fact.get("value") is None:
-            continue
+    rows = [f for f in facts if isinstance(f, dict) and f.get("value") is not None]
+    by_id = {str(f.get("id")): f for f in rows}
+    # a derived figure after the facts it is computed from, so that it can carry their excerpts
+    for fact in sorted(rows, key=_is_derived):
+        derived = _is_derived(fact)
         excerpt = None
-        for cite in _tags_of(fact.get("source")):
+        # a filing's own accession number is in the header of its document, not in its text
+        cites = [] if edgar.ACCESSION_IN_TEXT_RE.search(str(fact.get("value"))) else _tags_of(fact.get("source"))
+        for cite in cites:
             tag, _, locator = cite.partition("#")
             document = texts.get(cite) or texts.get(tag)
             if document is None:
                 continue
-            words = f"{fact.get('what') or ''} {fact.get('subject') or ''}"
+            # what the fact is about; a value in words ("fiscal 2027 variable compensation plan") says it too
+            value = fact.get("value")
+            words = f"{fact.get('what') or ''} {fact.get('subject') or ''} {value if isinstance(value, str) else ''}"
             if "-RPT" in tag:
                 document = _report_page(document, locator)
             elif locator:  # the cited page, item or note first, then the whole filing
                 part = documents.locator_section(document, locator, "10-Q" if "-10Q-" in tag else "10-K")
-                excerpt = documents.cut_excerpt(part, fact.get("value"), words=words) if part else None
+                excerpt = documents.cut_excerpt(part, fact.get("value"), words=words, strict=derived,
+                                                within=document) if part else None
                 if excerpt:
                     break
-            excerpt = documents.cut_excerpt(document, fact.get("value"), words=words)
+            excerpt = documents.cut_excerpt(document, fact.get("value"), words=words, strict=derived)
             if excerpt:
                 break
+        if excerpt is None and derived:  # the filing seldom prints a derived figure: point to its inputs instead
+            excerpt = _inputs_excerpt(fact, by_id)
         if excerpt:
             fact["source_excerpt"] = excerpt
             found += 1
@@ -2540,6 +2551,26 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
         note += f"; {len(unresolved)} cited tag(s) not resolvable to a document"
     source = {**run.outputs_used(["fact_table"])[0], "transform": "source_excerpt cut by the pipeline"}
     return BuiltInput(dump_yaml(out), "yml", [source], note=note)
+
+
+INPUT_EXCERPT_CHARS = 200  # each input's excerpt in a derived figure's excerpt
+
+
+def _is_derived(fact: Mapping[str, Any]) -> bool:
+    """Whether 16A marked the fact as the dossier's own calculation (derived: true, with its inputs)."""
+    return str(fact.get("derived")).strip().lower() == "true"
+
+
+def _inputs_excerpt(fact: Mapping[str, Any], by_id: Mapping[str, Mapping[str, Any]]) -> str | None:
+    """A derived figure's excerpt: the excerpts of the facts it is computed from ("derived from F068 and F069: [F068]
+    …; [F069] …"), when every one of them has one; else None (04A recomputes it from its inputs either way)."""
+    inputs = [str(i) for i in fact.get("inputs") or [] if str(i)] if isinstance(fact.get("inputs"), list) else []
+    excerpts = [(i, (by_id.get(i) or {}).get("source_excerpt")) for i in inputs]
+    if not excerpts or not all(text for _, text in excerpts):
+        return None
+    clipped = [text if len(text) <= INPUT_EXCERPT_CHARS else text[:INPUT_EXCERPT_CHARS - 1].rstrip() + "…"
+               for _, text in excerpts]
+    return f"derived from {', '.join(inputs)}: " + "; ".join(f"[{i}] {text}" for (i, _), text in zip(excerpts, clipped))
 
 
 def _findings_tags(text: str | None) -> list[str]:

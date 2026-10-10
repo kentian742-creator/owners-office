@@ -384,6 +384,28 @@ def test_a_failed_evaluation_is_recorded_and_retried(env, shim, monkeypatch):
 # ---------------------------------------------------------------------------------------------------- 14T
 
 
+def test_a_derived_fact_carries_its_inputs_excerpts_and_an_accession_is_not_searched(env, shim):
+    """NVIDIA's first audit (04A-Q08): a derived figure matched an unrelated sentence holding the same number, and an
+    accession number's date matched a sentence about shares outstanding."""
+    draft = draft_chain(env)
+    fx.rewrite_output(draft, "update", "---\ncompany: APP\ndoc: update\nas_of: 2026-10-20\ndoc_status: draft\n---\n"
+                                       "Installs grew to 1,234 million [src:APP-10Q-FY2026Q2].\n")
+    product = env.assemble("16A", period=EVENT)
+    env.execute(product)
+    fx.rewrite_output(product, "fact_table", yaml.safe_dump({"as_of": "2026-10-20", "facts": [
+        {"id": "F002", "location": "update 1", "subject": "APP", "what": "installs per day", "value": 1234,
+         "unit": "thousand", "source": "APP-10Q-FY2026Q2", "derived": True, "inputs": ["F001"]},
+        {"id": "F001", "location": "update 1", "subject": "APP", "what": "installs", "value": 1234,
+         "unit": "million", "source": "APP-10Q-FY2026Q2"},
+        {"id": "F003", "location": "update 1", "subject": "APP 10-Q", "what": "accession and filing date",
+         "value": "accession 0001751008-26-000123; filed 2026-08-06", "source": "APP-10Q-FY2026Q2"}]}))
+    audit = env.assemble("04A", period=EVENT)
+    facts = {f["id"]: f for f in yaml.safe_load(read_input(audit, "fact_table"))["facts"]}
+    assert facts["F001"]["source_excerpt"] == "Installs grew to 1,234 million in the quarter."
+    assert facts["F002"]["source_excerpt"] == "derived from F001: [F001] Installs grew to 1,234 million in the quarter."
+    assert facts["F003"]["excerpt_missing"] is True
+
+
 def test_14t_gets_the_due_tests_without_thesis_wording_and_their_documents(env):
     bundle = env.assemble("14T", period=EVENT)
     assert manifest_of(bundle)["role"] == "judge" and list(inputs_of(bundle)) == ["event", "qualitative_tests",

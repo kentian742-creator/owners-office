@@ -135,7 +135,54 @@ def test_values_are_matched_as_filings_print_them():
     assert not any(p.search("In 2024 about 25 stores") for p in distinctive)  # years and short numbers are left out
     assert any(p.search("rose to 12,256 million") for p in distinctive) and any(p.search("8.3%") for p in distinctive)
     assert documents.distinctive_patterns(5) == [] and documents.distinctive_patterns("growth") == []
-    assert yaml.safe_load(yaml.safe_dump({"v": documents.value_forms(-3)})) == {"v": ["(3)", "-3", "−3"]}
+    assert yaml.safe_load(yaml.safe_dump({"v": documents.value_forms(-3)})) == {
+        "v": ["(3)", "(3.0)", "-3", "-3.0", "−3", "−3.0"]}  # "$3.0 billion" too
+
+
+def test_a_short_number_needs_two_shared_words_a_rare_one_or_its_rows_own_label():
+    """NVIDIA's first audit (2026-10-08, 04A-Q03 to -Q21): excerpts attached on one common shared word."""
+    rows = "\n".join([f"Line {i} on operating results, revenue and other matters of the year." for i in range(200)])
+    doc = rows + "\nOperating leases (2) (3)\nRevenue $ 215,938 $ 130,497 Up 65%\nResearch and development 8.6 9.9\n"
+    assert documents.cut_excerpt(doc, -2, words="Operating income change") is None  # "operating" alone, and common
+    assert documents.cut_excerpt(doc, 65, words="Revenue growth") == "Revenue $ 215,938 $ 130,497 Up 65%"  # its label
+    assert documents.cut_excerpt(doc, 8.6, words="R&D as share of revenue") == "Research and development 8.6 9.9"
+    assert documents.cut_excerpt("(1) Net income divided by weighted average shares.\n", -1,
+                                 words="diluted weighted shares change") is None  # a footnote marker, not -1
+    whole = "Payments related to repurchases of common stock ( 39,044 ) ( 23,815 )\n"
+    assert documents.cut_excerpt(whole, 39044, words="Buybacks (cash flow)") == whole.strip()  # five digits suffice
+
+
+def test_a_derived_figure_is_attached_only_where_the_filing_prints_it_with_its_own_words():
+    doc = "Proceeds from sales of equity securities 7,241 70\nOperating margin 62.4% in the year\n"
+    assert documents.cut_excerpt(doc, 7241, words="stock-based compensation, trailing twelve months",
+                                 strict=True) is None
+    assert documents.cut_excerpt(doc, 7241, words="stock-based compensation, trailing twelve months") == \
+        "Proceeds from sales of equity securities 7,241 70"  # not strict: a distinct number is attached as before
+
+
+def test_values_given_as_text_are_searched_as_the_filing_prints_them():
+    assert documents.value_forms("36") == ["36", "36.0"] and documents.value_forms("4.90") == ["4.90", "4.9"]
+    assert documents.value_forms("2026-01-25") == ["January 25, 2026", "2026-01-25"]
+    assert documents.value_forms(17) == ["17", "17.0"] and documents.value_forms(1234) == ["1,234", "1234"]
+    assert documents.cut_excerpt("In June 2026, we issued an aggregate of $25.0 billion of senior notes.\n", "25",
+                                 words="Senior notes issued") == \
+        "In June 2026, we issued an aggregate of $25.0 billion of senior notes."
+    assert {"researc", "develop", "repurch", "tax", "custome"} <= documents._keywords(
+        "R&D, buybacks, income tax and customers")  # abbreviations, synonyms, short words, plurals, stems
+
+
+def test_a_statement_locator_finds_the_statement_not_its_line_in_the_index():
+    text = "\n".join(["Index to Consolidated Financial Statements", "Consolidated Statements of Income 50",
+                     "Consolidated Balance Sheets 52", "Report of Independent Registered Public Accounting Firm",
+                     "Consolidated Statements of Income", "Revenue 215,938", "Cost of revenue 62,475",
+                     "Net income 120,067", "Consolidated Statements of Comprehensive Income", "Net income 120,067",
+                     "Consolidated Balance Sheets", "Cash 11,486", "Total assets 206,803",
+                     "Notes to the Consolidated Financial Statements", "Note 1 - Organization"])
+    income = documents.locator_section(text, "IS")
+    assert income.startswith("Consolidated Statements of Income\nRevenue 215,938") and "Comprehensive" not in income
+    balance = documents.locator_section(text, "BS")
+    assert balance.splitlines()[1:] == ["Cash 11,486", "Total assets 206,803"]
+    assert documents.locator_section(text, "CF") is None
 
 
 def test_an_excerpt_prefers_a_sentence_about_the_fact_and_skips_a_bare_coincidence():
