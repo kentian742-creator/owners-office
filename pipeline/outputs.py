@@ -858,9 +858,9 @@ def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[st
         cited = set(re.findall(r"\[src:([A-Za-z0-9][A-Za-z0-9._-]*)", out.text))
         cited |= set(re.findall(r"(?m)^\s*(?:source|settlement_source|acknowledged_source):\s*['\"]?([A-Z][A-Za-z0-9._-]*)",
                                 out.text))
-        for tag in sorted(t.split("#")[0] for t in cited):
-            if tag not in allowed and tag not in seen:
-                seen.add(tag)
+        for tag in sorted(t.split("#")[0] for t in cited):  # each output is told of each of its own, so that a
+            if tag not in allowed and (name, tag) not in seen:  # retry redoes every output that cites the tag
+                seen.add((name, tag))
                 errors.append(f"{name}: source {tag} is not a source the dossier cites; cite the filing the dossier "
                               "cites for that fact instead (the dossier is private and cannot be cited)")
     return errors
