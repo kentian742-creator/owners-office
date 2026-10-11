@@ -1,0 +1,640 @@
+# Header fields filer, exchange and trust_level are maintained by the pipeline (§G8) and are not set here.
+filer:
+  cik: "0001045810"
+  type: domestic
+  fiscal_year_end: "01-31"
+  earnings_form: 8-K
+  annual_form: 10-K
+trust_level: 1
+schema_version: "0.2"
+company: NVDA
+name: NVIDIA Corporation
+status: candidate
+as_of: "2026-10-09"
+category: cyclical
+category_secondary: fast_grower
+category_rationale: >-
+  Revenue compounded about 46.6% a year from $6,910M in FY2017 to $215,938M in FY2026
+  [src:NVDA-10K-FY2020#Item6][src:NVDA-10K-FY2026#IS], but operating income fell 25% in FY2020 and 58% in FY2023
+  [src:NVDA-10K-FY2020#Item7][src:NVDA-10K-FY2023#Item7], and Data Center, 92.5% of FY2027Q2 revenue
+  [src:NVDA-10Q-FY2027Q2#Note13], depends on customers' capital-spending cycle, so the stage of that cycle matters
+  more than any one quarter's growth.
+domain: semiconductors
+depends_on: []
+reviewed:
+  business: "2026-10-09"
+  economics: "2026-10-09"
+  moat: "2026-10-09"
+  capital_allocation: "2026-10-09"
+  management: "2026-10-09"
+  culture: "2026-10-09"
+  runway: "2026-10-09"
+  valuation: "2026-10-09"
+  bear_case: "2026-10-09"
+  monitoring: "2026-10-09"
+  thesis: "2026-10-09"
+  breakers: "2026-10-09"
+  munger: "2026-10-09"
+  unknowns: "2026-10-09"
+ratings:
+  business: A-
+  management: A-
+  capital_allocation: B+
+  culture: B+
+thesis:
+  summary: >-
+    NVIDIA sells complete, co-designed AI data-center systems together with the CUDA software base that runs on them.
+    That combination let it move from Hopper HGX systems to Blackwell full-scale data-center solutions delivered as
+    rack-scale systems [src:NVDA-10K-FY2026#Item7], hold GAAP gross margin at 75.0% in FY2027Q2
+    [src:NVDA-8K-2026-08-26#EX-99.1], and turn 60.4% of FY2026 revenue into operating income
+    [src:NVDA-10K-FY2026#Item7] while spending 2.8% of revenue on property, equipment and intangibles
+    [src:NVDA-10K-FY2026#CF][src:NVDA-10K-FY2026#IS]. The central risk is that current earnings are a cyclical peak
+    that NVIDIA is partly financing itself.
+  pillars:
+    - id: P1
+      claim: >-
+        The system-level advantage keeps GAAP gross margin above 70%, where it was 75.0% in FY2027Q2
+        [src:NVDA-8K-2026-08-26#EX-99.1], against custom chips, including in-house designs by large cloud companies,
+        and against other accelerated-computing suppliers such as AMD, Huawei and Intel [src:NVDA-10K-FY2026#Item1].
+      source: "NVDA-8K-2026-08-26#EX-99.1"
+    - id: P2
+      claim: >-
+        AI compute spending keeps widening from hyperscalers to AI clouds, enterprises, sovereign buyers and edge
+        devices, so that mid-cycle revenue stays far above the pre-FY2024 level of $26,974M in FY2023
+        [src:NVDA-10K-FY2023#Item7].
+      source: "NVDA-10K-FY2023#Item7"
+    - id: P3
+      claim: >-
+        Management keeps its new guarantees, customer equity stakes and capacity commitments small relative to cash
+        generation, while continuing to return surplus cash.
+  permanent_loss_paths:
+    - >-
+      Peak-cycle earnings: Data Center was 92.5% of FY2027Q2 revenue [src:NVDA-8K-2026-08-26#EX-99.2] and rides
+      customers' capital-spending cycle; operating income fell 25% in FY2020 and 58% in FY2023
+      [src:NVDA-10K-FY2020#Item7][src:NVDA-10K-FY2023#Item7], and mid-cycle earnings power could be a fraction of
+      current earnings.
+    - >-
+      Self-financed demand: guarantees capped at $105B for an OpenAI affiliate's lease and power payments, $36B of
+      AI-cloud agreement commitments, $20B of data-center leases for third parties [src:NVDA-10Q-FY2027Q2#Note10] and
+      $99B of equity stakes [src:NVDA-10Q-FY2027Q2#Item2] mean losses on that support would arrive in the same downturn
+      that cuts revenue.
+    - >-
+      Fixed supply against variable demand: $279B of supply and capacity commitments at 2026-07-26
+      [src:NVDA-10Q-FY2027Q2#Note10] would produce inventory and purchase-obligation charges on a much larger base than
+      the $4.5B H20 charge of FY2026Q1 [src:NVDA-10K-FY2026#Item7].
+    - >-
+      Custom silicon at the largest customers erodes pricing power: two direct customers took 22% and 14% of FY2026
+      revenue [src:NVDA-10K-FY2026#Note16], and those customers build their own chips [src:NVDA-10K-FY2026#Item1].
+    - >-
+      Political and regulatory loss of markets: China-headquartered customers fell from 19.2% of FY2025 revenue to 9.1%
+      of FY2026 revenue [src:NVDA-10K-FY2026#Note16], the company states it was effectively foreclosed from China's
+      data-center compute market [src:NVDA-10K-FY2026#Item1], and export rules could widen to further products
+      [src:NVDA-10Q-FY2027Q2#Item1A].
+tests:
+  - id: NVDA-Q1
+    type: quantitative
+    claim: GAAP gross margin has not collapsed
+    origin: archive:breaker
+    severity: breaker
+    covers: [moat, pricing_power]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric: gross_margin
+    fail_if: "GAAP gross margin below 60.0% in two consecutive fiscal quarters"
+    rule: {op: "<", threshold: 60, unit: "%", consecutive: 2, period: quarter}
+    data: xbrl
+    baseline: {value: 75.0, unit: "%", period: FY2027Q2, source: "NVDA-10Q-FY2027Q2#IS"}
+    note: >-
+      Thesis breaker 1. Decided from the 10-Q/10-K income statement on the reported basis. FY2027Q2 reading 75.0%
+      [src:NVDA-10Q-FY2027Q2#IS].
+
+  - id: NVDA-Q2
+    type: quantitative
+    claim: Data Center revenue has not collapsed
+    origin: archive:breaker
+    severity: breaker
+    covers: [growth, moat]
+    pillar: P2
+    effective_from: FY2027Q3
+    metric: segment_revenue_yoy
+    params:
+      segment: Data Center
+      basis: "Data Center market platform (Hyperscale plus AI Clouds, Industrial and Enterprise) in the revenue-by-market-platform table; prior-year quarter as presented in the same filing"
+    fail_if: "Data Center revenue down 30% or more from the same quarter a year earlier, in two consecutive fiscal quarters"
+    rule: {op: "<=", threshold: -30, unit: "%", consecutive: 2, period: quarter}
+    data: filing_text
+    note: >-
+      Thesis breaker 2. Decided from the 10-Q/10-K revenue-by-market-platform table. FY2027Q2 reading: $89,023M against
+      $41,096M, up 117% [src:NVDA-10Q-FY2027Q2#Note13][src:NVDA-8K-2026-08-26#EX-99.2]. The market platforms were
+      redefined from FY2027Q1 [src:NVDA-8K-2026-05-20#EX-99.2]; compare against the prior-year figure on the basis the
+      filing presents. FY2027Q4 has 14 weeks [src:NVDA-10Q-FY2027Q2#Note1], so the FY2028Q4 comparison carries one
+      week less and is read as reported.
+
+  - id: NVDA-Q3
+    type: quantitative
+    claim: Inventory and purchase-obligation provisions stay in line with revenue
+    origin: archive:breaker
+    severity: breaker
+    covers: [balance_sheet, growth]
+    pillar: P2
+    effective_from: FY2027Q3
+    metric_def:
+      id: inventory_provisions_to_revenue
+      description: Provisions for inventory and excess inventory purchase obligations for the fiscal year ÷ revenue for the fiscal year
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K Item 7 (MD&A), Gross Profit and Gross Margin; revenue from the 10-K income statement
+      formula: provisions / revenue
+      components:
+        provisions:
+          description: Provisions for inventory and excess inventory purchase obligations for the fiscal year, as stated in MD&A
+          unit: USD
+          where: 10-K Item 7, Gross Profit and Gross Margin
+        revenue:
+          description: Total revenue for the fiscal year
+          unit: USD
+          where: 10-K income statement
+    fail_if: "Provisions for inventory and excess inventory purchase obligations above 10% of revenue for a fiscal year"
+    rule: {op: ">", threshold: 10, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    note: >-
+      Thesis breaker 3. FY2026 reading: $7.2B on revenue of $215.9B, or 3.3% [src:NVDA-10K-FY2026#Item7]. Provisions
+      on supply bought ahead of demand drove the FY2023 decline [src:NVDA-10K-FY2023#Item7].
+
+  - id: NVDA-Q4
+    type: quantitative
+    claim: NVIDIA's data-center lease guarantees have not been called
+    origin: archive:breaker
+    severity: breaker
+    covers: [balance_sheet, capital_allocation]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric_def:
+      id: lease_guarantee_calls
+      description: >-
+        Payments NVIDIA has made under its guarantees of data-center lease obligations (the land, power and shell
+        guarantees of AI-cloud partners' leases, and the guarantees of lease and power payments at SB Energy's PORTS
+        campus), cumulative since the first guarantee; and whether NVIDIA has assumed a guaranteed lease after a tenant
+        default
+      unit: USD
+      frequency: quarter
+      data: filing_text
+      where: guarantees section of the commitments note of the 10-Q/10-K (Note 10 in the FY2027Q2 10-Q); any 8-K
+      components:
+        cumulative_payments:
+          description: Cumulative payments made by NVIDIA under data-center lease guarantees, as disclosed or as summed across filings
+          unit: USD
+          where: commitments and guarantees note of the 10-Q/10-K; 8-K
+        lease_assumed:
+          description: A filing discloses that NVIDIA assumed a guaranteed lease after a tenant default
+          unit: event
+          where: commitments and guarantees note of the 10-Q/10-K; 8-K
+    fail_if: "Cumulative payments by NVIDIA under data-center lease guarantees (SB Energy or AI-cloud guarantees) above $5B, or NVIDIA assumes a guaranteed lease after a tenant default"
+    rule:
+      any_of:
+        - {metric: lease_guarantee_calls.cumulative_payments, op: ">", threshold: 5000000000, unit: USD, consecutive: 1, period: quarter}
+        - {metric: lease_guarantee_calls.lease_assumed, op: event, period: event}
+    data: filing_text
+    note: >-
+      Thesis breaker 4. Reading as of the FY2027Q2 10-Q: no payment disclosed; maximum gross exposure $108.5B, of which
+      $105.0B is the SB Energy guarantees signed in August 2026 and $3.5B is for AI clouds
+      [src:NVDA-10Q-FY2027Q2#Note10]. The SB Energy guarantees take effect only as each lease commences, the first
+      phase expected in FY2029 [src:NVDA-10Q-FY2027Q2#Note10]. OpenAI's reimbursement undertaking is not netted
+      against payments [src:NVDA-8K-2026-08-17#Item1.01][src:NVDA-10Q-FY2027Q2#Item1A].
+
+  - id: NVDA-Q5
+    type: quantitative
+    claim: Debt stays below liquid assets
+    origin: archive:breaker
+    severity: breaker
+    covers: [balance_sheet, capital_allocation]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric_def:
+      id: debt_to_liquid_assets
+      description: Total debt (net carrying amount, including the current portion) ÷ (cash and cash equivalents + marketable debt securities) at the fiscal quarter-end
+      unit: x
+      frequency: quarter
+      data: filing_text
+      where: 10-Q/10-K balance sheet and debt note
+      formula: total_debt / liquid_assets
+      components:
+        total_debt:
+          description: Total debt, net carrying amount, including the current portion
+          unit: USD
+          where: 10-Q/10-K debt note
+        liquid_assets:
+          description: Cash and cash equivalents plus marketable debt securities (excluding marketable equity securities)
+          unit: USD
+          where: 10-Q/10-K balance sheet
+    fail_if: "Total debt above cash, cash equivalents and marketable debt securities at a fiscal quarter-end"
+    rule: {op: ">", threshold: 1, unit: x, consecutive: 1, period: quarter}
+    data: filing_text
+    note: >-
+      Thesis breaker 5. Reading as of 2026-07-26: $33.4B of debt (net carrying amount; $33.5B principal) against $56.6B
+      of cash, cash equivalents and marketable debt securities [src:NVDA-10Q-FY2027Q2#Note9][src:NVDA-10Q-FY2027Q2#Item2].
+
+  - id: NVDA-Q6
+    type: quantitative
+    claim: GAAP gross margin holds at the level of a system-level advantage
+    origin: archive:watch
+    severity: watch
+    covers: [pricing_power, moat]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric: gross_margin
+    fail_if: "GAAP gross margin below 65% in any quarter"
+    rule: {op: "<", threshold: 65, unit: "%", consecutive: 1, period: quarter}
+    warn_if: "GAAP gross margin below 70% in any quarter"
+    warn_rule: {op: "<", threshold: 70, unit: "%", consecutive: 1, period: quarter}
+    data: xbrl
+    baseline: {value: 75.0, unit: "%", period: FY2027Q2, source: "NVDA-8K-2026-08-26#EX-99.1"}
+    note: >-
+      Dashboard M1. Read from the 8-K Item 2.02 EX-99.1 income statement and 10-Q Item 1. FY2027Q2 reading 75.0%
+      [src:NVDA-8K-2026-08-26#EX-99.1]; FY2027Q3 outlook 74.0% plus or minus 0.5 points [src:NVDA-8K-2026-08-26#EX-99.1].
+
+  - id: NVDA-Q7
+    type: quantitative
+    claim: Operating income keeps turning into free cash flow
+    origin: archive:watch
+    severity: watch
+    covers: [free_cash_flow]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric_def:
+      id: fcf_to_operating_income_ttm
+      description: Free cash flow as the company defines it ÷ GAAP operating income, both summed over the trailing four fiscal quarters
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: 8-K Item 2.02 EX-99.1 free-cash-flow reconciliation and income statement
+      formula: free_cash_flow_ttm / operating_income_ttm
+      components:
+        free_cash_flow_ttm:
+          description: Free cash flow as reconciled by the company, sum of the trailing four fiscal quarters
+          unit: USD
+          where: 8-K EX-99.1 free-cash-flow reconciliation
+        operating_income_ttm:
+          description: GAAP operating income, sum of the trailing four fiscal quarters
+          unit: USD
+          where: 8-K EX-99.1 or 10-Q/10-K income statement
+    fail_if: "Trailing-four-quarter free cash flow below 45% of trailing-four-quarter operating income"
+    rule: {op: "<", threshold: 45, unit: "%", consecutive: 1, period: quarter}
+    warn_if: "Trailing-four-quarter free cash flow below 60% of trailing-four-quarter operating income"
+    warn_rule: {op: "<", threshold: 60, unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    note: >-
+      Dashboard M2. FY2027Q2 reading 64.2%: free cash flow of $126,886M over operating income of $197,579M for the four
+      quarters to FY2027Q2 [src:NVDA-8K-2026-08-26#EX-99.1][src:NVDA-8K-2026-02-25#EX-99.1][src:NVDA-10Q-FY2027Q2#IS][src:NVDA-10K-FY2026#IS].
+      The reading is depressed by receivables built under extended payment terms [src:NVDA-10Q-FY2027Q2#Item2]; the
+      healthy range assumes those terms do not spread.
+
+  - id: NVDA-Q8
+    type: quantitative
+    claim: Customer payment terms are not stretching cash collection
+    origin: archive:watch
+    severity: watch
+    covers: [free_cash_flow, balance_sheet]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric_def:
+      id: days_sales_outstanding
+      description: Days sales outstanding at the fiscal quarter-end, as the company reports it
+      unit: days
+      frequency: quarter
+      data: filing_text
+      where: 8-K Item 2.02 EX-99.2 CFO commentary, balance sheet section
+    fail_if: "Days sales outstanding above 70 days"
+    rule: {op: ">", threshold: 70, unit: days, consecutive: 1, period: quarter}
+    warn_if: "Days sales outstanding above 55 days"
+    warn_rule: {op: ">", threshold: 55, unit: days, consecutive: 1, period: quarter}
+    data: filing_text
+    baseline: {value: 60, unit: days, period: FY2027Q2, as_of: "2026-07-26", source: "NVDA-8K-2026-08-26#EX-99.2"}
+    note: >-
+      Dashboard M3. 45 days at the end of FY2027Q1 and 60 days at the end of FY2027Q2, the rise attributed to extended
+      payment terms on large, multi-quarter agreements with certain investment-grade customers
+      [src:NVDA-8K-2026-05-20#EX-99.2][src:NVDA-8K-2026-08-26#EX-99.2]. The FY2027Q2 reading is already inside the warn band.
+
+  - id: NVDA-Q9
+    type: quantitative
+    claim: Supply commitments do not run far ahead of revenue
+    origin: archive:watch
+    severity: watch
+    covers: [balance_sheet, growth]
+    pillar: P2
+    effective_from: FY2027Q3
+    metric_def:
+      id: supply_commitments_to_revenue_ttm
+      description: Total supply and capacity commitments at the fiscal quarter-end ÷ revenue of the trailing four fiscal quarters
+      unit: x
+      frequency: quarter
+      data: filing_text
+      where: commitments note of the 10-Q/10-K (Note 10 in the FY2027Q2 10-Q); revenue from the income statements
+      formula: supply_commitments / revenue_ttm
+      components:
+        supply_commitments:
+          description: Total supply and capacity commitments at the fiscal quarter-end
+          unit: USD
+          where: commitments note of the 10-Q/10-K
+        revenue_ttm:
+          description: Total revenue, sum of the trailing four fiscal quarters
+          unit: USD
+          where: 10-Q/10-K income statement
+    fail_if: "Supply and capacity commitments above 1.25x trailing-four-quarter revenue"
+    rule: {op: ">", threshold: 1.25, unit: x, consecutive: 1, period: quarter}
+    warn_if: "Supply and capacity commitments above 1.0x trailing-four-quarter revenue"
+    warn_rule: {op: ">", threshold: 1.0, unit: x, consecutive: 1, period: quarter}
+    data: filing_text
+    note: >-
+      Dashboard M4. Reading at 2026-07-26: $279B of commitments over trailing-four-quarter revenue of $302,970M, or
+      0.92x [src:NVDA-10Q-FY2027Q2#Note10][src:NVDA-10Q-FY2027Q2#IS][src:NVDA-10K-FY2026#IS]. Commitments were $119B one
+      quarter earlier [src:NVDA-10Q-FY2027Q2#Note10].
+
+  - id: NVDA-Q10
+    type: quantitative
+    claim: Inventory and purchase-obligation provisions do not erode gross margin
+    origin: archive:watch
+    severity: watch
+    covers: [balance_sheet, growth]
+    pillar: P2
+    effective_from: FY2027Q3
+    metric_def:
+      id: provision_gross_margin_impact
+      description: Net unfavorable impact on GAAP gross margin of provisions for inventory and excess inventory purchase obligations, in percentage points (unfavorable is positive)
+      unit: pp
+      frequency: quarter
+      data: filing_text
+      where: 10-Q Item 2, Gross Profit and Gross Margin
+    fail_if: "Net gross-margin impact of inventory and purchase-obligation provisions above 4.0 points in any quarter"
+    rule: {op: ">", threshold: 4.0, unit: pp, consecutive: 1, period: quarter}
+    warn_if: "Net gross-margin impact above 2.0 points"
+    warn_rule: {op: ">", threshold: 2.0, unit: pp, consecutive: 1, period: quarter}
+    data: filing_text
+    baseline: {value: 0.8, unit: pp, period: FY2027Q2, source: "NVDA-10Q-FY2027Q2#Item2"}
+    note: >-
+      Dashboard M5. The impact was 7.5 points in FY2023 [src:NVDA-10K-FY2023#Item7], 2.6 points in FY2026
+      [src:NVDA-10K-FY2026#Item7] and 0.8 points in FY2027Q2 [src:NVDA-10Q-FY2027Q2#Item2].
+
+  - id: NVDA-Q11
+    type: quantitative
+    claim: Balance-sheet support for customers stays small relative to cash generation
+    origin: archive:watch
+    severity: watch
+    covers: [capital_allocation, balance_sheet, management]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric_def:
+      id: support_exposure_to_fcf_ttm
+      description: >-
+        (Maximum gross exposure under data-center lease guarantees, including signed guarantees not yet effective, +
+        AI-cloud agreement commitments) ÷ free cash flow as the company defines it, trailing four fiscal quarters
+      unit: x
+      frequency: quarter
+      data: filing_text
+      where: 10-Q/10-K commitments note, guarantees and additional commitments (Note 10 in the FY2027Q2 10-Q); 8-K EX-99.1 free cash flow; any 8-K signing a guarantee
+      formula: (guarantee_max_exposure + ai_cloud_commitments) / free_cash_flow_ttm
+      components:
+        guarantee_max_exposure:
+          description: Maximum gross exposure under data-center lease guarantees, including signed guarantees not yet effective
+          unit: USD
+          where: 10-Q/10-K commitments note; 8-K
+        ai_cloud_commitments:
+          description: Commitments under AI-cloud agreements
+          unit: USD
+          where: 10-Q/10-K commitments note
+        free_cash_flow_ttm:
+          description: Free cash flow as reconciled by the company, sum of the trailing four fiscal quarters
+          unit: USD
+          where: 8-K EX-99.1 free-cash-flow reconciliation
+        guarantee_payment:
+          description: Any payment made by NVIDIA under a data-center lease guarantee
+          unit: event
+          where: 10-Q/10-K commitments note; 8-K
+    fail_if: "Ratio above 1.75x, or any payment made under a guarantee"
+    rule:
+      any_of:
+        - {metric: support_exposure_to_fcf_ttm, op: ">", threshold: 1.75, unit: x, consecutive: 1, period: quarter}
+        - {metric: support_exposure_to_fcf_ttm.guarantee_payment, op: event, period: event}
+    warn_if: "Ratio above 1.25x"
+    warn_rule: {op: ">", threshold: 1.25, unit: x, consecutive: 1, period: quarter}
+    data: filing_text
+    note: >-
+      Dashboard M6. Reading on the FY2027Q2 10-Q filed 2026-08-26: ($108.5B of guarantees + $36B of AI-cloud
+      commitments) over $126,886M of trailing free cash flow = 1.14x
+      [src:NVDA-10Q-FY2027Q2#Note10][src:NVDA-8K-2026-02-25#EX-99.1][src:NVDA-8K-2026-08-26#EX-99.1]. The numerator
+      already counts the full $105B SB Energy cap signed 2026-08-17, after the quarter end
+      [src:NVDA-10Q-FY2027Q2#Note10]; on guarantees in force at 2026-07-26 alone the reading is 0.31x
+      [src:NVDA-10Q-FY2027Q2#Note10][src:NVDA-8K-2026-02-25#EX-99.1][src:NVDA-8K-2026-08-26#EX-99.1]. The reading rises
+      if NVIDIA exercises its option to back about 3.8 further gigawatts [src:NVDA-10Q-FY2027Q2#Note10].
+
+  - id: NVDA-Q12
+    type: quantitative
+    claim: No single direct customer becomes dominant
+    origin: archive:watch
+    severity: watch
+    covers: [customer_concentration]
+    pillar: P2
+    effective_from: FY2027Q3
+    metric: customer_concentration
+    params:
+      basis: "Largest single direct customer, share of total revenue for the period (the quarter in a 10-Q, the fiscal year in a 10-K)"
+    fail_if: "Largest single direct customer 30% or more of revenue"
+    rule: {op: ">=", threshold: 30, unit: "%", consecutive: 1, period: quarter}
+    warn_if: "Largest single direct customer above 25% of revenue"
+    warn_rule: {op: ">", threshold: 25, unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    baseline: {value: 16, unit: "%", period: FY2027Q2, source: "NVDA-10Q-FY2027Q2#Note13"}
+    note: >-
+      Dashboard M7. Read from the 10-Q segment note (Note 13) and the 10-K segment note (Note 16). 16% in FY2027Q2
+      [src:NVDA-10Q-FY2027Q2#Note13]; 22% in FY2026 [src:NVDA-10K-FY2026#Note16].
+
+  - id: NVDA-Q13
+    type: quantitative
+    claim: Buybacks more than offset employee issuance
+    origin: archive:watch
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric: diluted_shares_yoy
+    fail_if: "Diluted weighted shares up more than 0.5% from the same quarter a year earlier"
+    rule: {op: ">", threshold: 0.5, unit: "%", consecutive: 1, period: quarter}
+    warn_if: "Diluted weighted shares up from the same quarter a year earlier"
+    warn_rule: {op: ">", threshold: 0, unit: "%", consecutive: 1, period: quarter}
+    data: xbrl
+    baseline: {value: -1.0, unit: "%", period: FY2027Q2, source: "NVDA-10Q-FY2027Q2#Note3", note: "24,285M in FY2027Q2 against 24,532M in FY2026Q2"}
+    note: >-
+      Dashboard M8. Read from the 10-Q net income per share note (Note 3). In FY2026, 282M shares were repurchased while
+      shares outstanding fell 173M, as 160M were issued to employees and 51M withheld for taxes
+      [src:NVDA-10K-FY2026#Equity].
+
+  - id: NVDA-Q14
+    type: quantitative
+    claim: The Data Center cycle has not turned into its declining stage
+    origin: template:cyclical
+    severity: watch
+    covers: [growth]
+    pillar: P2
+    effective_from: FY2027Q3
+    metric: segment_revenue_yoy
+    params:
+      segment: Data Center
+      basis: "Data Center market platform (Hyperscale plus AI Clouds, Industrial and Enterprise) in the revenue-by-market-platform table; prior-year quarter as presented in the same filing"
+    fail_if: "Data Center revenue down from the same quarter a year earlier, in two consecutive fiscal quarters"
+    rule: {op: "<", threshold: 0, unit: "%", consecutive: 2, period: quarter}
+    data: filing_text
+    note: >-
+      Replaces the template's provision-for-credit-losses test, which has no meaning for a company without a loan book.
+      The cycle indicator the archive names is Data Center revenue through the cycle; this watch fires before thesis
+      breaker NVDA-Q2 does. FY2027Q2 reading: up 117% [src:NVDA-10Q-FY2027Q2#Note13]. FY2027Q4 has 14
+      weeks [src:NVDA-10Q-FY2027Q2#Note1], so the FY2028Q4 comparison carries one week less and is read as reported.
+
+  - id: NVDA-Q15
+    type: quantitative
+    claim: Leverage has not risen ahead of the low point of the cycle
+    origin: template:cyclical
+    severity: watch
+    covers: [balance_sheet]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric_def:
+      id: debt_to_liquid_assets
+      description: Total debt (net carrying amount, including the current portion) ÷ (cash and cash equivalents + marketable debt securities) at the fiscal quarter-end
+      unit: x
+      frequency: quarter
+      data: filing_text
+      where: 10-Q/10-K balance sheet and debt note
+      formula: total_debt / liquid_assets
+      components:
+        total_debt:
+          description: Total debt, net carrying amount, including the current portion
+          unit: USD
+          where: 10-Q/10-K debt note
+        liquid_assets:
+          description: Cash and cash equivalents plus marketable debt securities (excluding marketable equity securities)
+          unit: USD
+          where: 10-Q/10-K balance sheet
+    fail_if: "Total debt above 0.75x cash, cash equivalents and marketable debt securities at a fiscal quarter-end"
+    rule: {op: ">", threshold: 0.75, unit: x, consecutive: 1, period: quarter}
+    data: filing_text
+    note: >-
+      Replaces the template's net debt ÷ EBITDA test: NVIDIA holds more liquid assets than debt, and the archive avoids
+      EBITDA. Total debt rose from $8,468M at the end of FY2026 [src:NVDA-10K-FY2026#Note11] to $33.4B at 2026-07-26
+      after $25.0B of notes issued in June 2026 [src:NVDA-10Q-FY2027Q2#Note9]; against $56.6B of liquid assets
+      [src:NVDA-10Q-FY2027Q2#Item2] the reading is 0.59x. The threshold flags further borrowing well before thesis
+      breaker NVDA-Q5 fires.
+
+  - id: NVDA-Q16
+    type: quantitative
+    claim: Returns on operating capital stay above the worst year in the record
+    origin: manual
+    severity: watch
+    covers: [returns_on_capital, moat]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric_def:
+      id: roic_operating
+      description: >-
+        After-tax operating income ÷ operating invested capital at the fiscal year-end. Operating invested capital =
+        shareholders' equity + total debt (current and long-term) − cash and cash equivalents − marketable securities
+        (debt and equity) − equity investments (non-marketable equity securities and publicly held equity in other
+        assets). After-tax operating income = operating income × (1 − effective tax rate), with a tax benefit set to 0%.
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K balance sheet, investment and debt notes, income statement and income tax note
+      formula: nopat / operating_invested_capital
+      components:
+        nopat:
+          description: Operating income × (1 − effective tax rate), with a negative effective rate set to 0%
+          unit: USD
+          where: 10-K income statement and income tax note
+        operating_invested_capital:
+          description: Equity + total debt − cash and cash equivalents − marketable securities − equity investments, at the fiscal year-end
+          unit: USD
+          where: 10-K balance sheet and investment and debt notes
+    fail_if: "Return on operating invested capital below 20% for 2 consecutive fiscal years; if operating invested capital is zero or negative, after-tax operating income negative for 2 consecutive fiscal years"
+    rule:
+      any_of:
+        - {metric: roic_operating, op: "<", threshold: 20, unit: "%", consecutive: 2, period: year}
+        - {metric: roic_operating.nopat, op: "<", threshold: 0, unit: USD, consecutive: 2, period: year}
+    data: filing_text
+    note: >-
+      Added for coverage of returns on capital, which the dashboard does not track. The registry roic deducts only cash
+      and would understate this business, which holds large marketable securities and equity investments. FY2026
+      reading 145.4%: after-tax operating income of $110,699M over operating invested capital of $76,114M
+      [src:NVDA-10K-FY2026#BS][src:NVDA-10K-FY2026#Note7][src:NVDA-10K-FY2026#Note11][src:NVDA-10K-FY2026#IS][src:NVDA-10K-FY2026#Note13].
+      The lowest complete-year reading in the record is 21.7% in FY2023: $4,224M over $19,459M
+      [src:NVDA-10K-FY2023#Item7][src:NVDA-10K-FY2024#p52][src:NVDA-10K-FY2024#Note9]. When operating invested capital
+      is zero or negative the ratio has no meaning, and the test reads after-tax operating income instead.
+
+  - id: NVDA-L1
+    type: qualitative
+    claim: No expensive buybacks or capacity are added at the top of the cycle without a stated view of the cycle
+    origin: template:cyclical
+    severity: watch
+    covers: [capital_allocation, management]
+    pillar: P3
+    effective_from: FY2027Q3
+    question: >-
+      For the most recent fiscal quarter covered by these documents: (a) was cash paid for repurchases of common stock,
+      or cash paid for purchases related to property and equipment and intangible assets, at least 50% higher than in
+      the same fiscal quarter a year earlier, in a quarter in which GAAP net income was higher than in each of the three
+      preceding fiscal quarters? (b) If so, do the documents state management's assumption about how long current
+      demand, revenue or profit levels will last?
+    fail_if: "Yes to (a) and no to (b)"
+    judge: independent_model
+    evidence: required
+    where:
+      - "10-Q or 10-K of this period and the three before: statement of cash flows, income statement, MD&A (Item 2 or Item 7)"
+      - "8-K Item 2.02 exhibits EX-99.1 (earnings release) and EX-99.2 (CFO commentary) of the same four periods"
+    lookback: 4
+    judge_notes:
+      - Read quarterly amounts from the quarterly statement of cash flows in the earnings release (8-K EX-99.1); if only year-to-date figures are available, derive the quarter by subtracting the prior quarter's year-to-date figure of the same fiscal year.
+      - Compare like fiscal quarters on the reported figures without adjustment; the fourth quarter of FY2027 has 14 weeks [src:NVDA-10Q-FY2027Q2#Note1].
+      - For (b), a statement counts only if it addresses how long demand, revenue or margins will last, or what the company would do if demand fell. General risk-factor language that would apply to any period does not count.
+      - If the answer to (a) is no, the answer to the test is no, and (b) is not judged.
+    note: >-
+      Template test for cyclicals. Cash buybacks were $19,732M in FY2027Q2 [src:NVDA-8K-2026-08-26#EX-99.1] against
+      $9,721M in FY2026Q2 [src:NVDA-10Q-FY2027Q2#CF]. Supply and capacity commitments, NVIDIA's equivalent of new
+      capacity, are tracked by NVDA-Q9; balance-sheet support of customers by NVDA-Q11.
+
+  - id: NVDA-S1
+    type: staleness
+    claim: The moat judgment goes no longer than four quarters without a review
+    origin: template:cyclical
+    severity: watch
+    covers: [moat]
+    effective_from: FY2027Q3
+    section: moat
+    max_age_quarters: 4
+
+  - id: NVDA-S2
+    type: staleness
+    claim: The management judgment goes no longer than four quarters without a review
+    origin: template:cyclical
+    severity: watch
+    covers: [management]
+    effective_from: FY2027Q3
+    section: management
+    max_age_quarters: 4
+
+  - id: NVDA-S3
+    type: staleness
+    claim: The bear case (where this is most likely wrong) is re-examined every two quarters
+    origin: template:cyclical
+    severity: watch
+    covers: [other]
+    effective_from: FY2027Q3
+    section: bear_case
+    max_age_quarters: 2
+todo:
+  - "Ledger: add the FY2026 10-K statements that capital expenditure will rise in FY2027 and that the company was finalizing an investment and partnership agreement with OpenAI [src:NVDA-10K-FY2026#Item7] as management commitments once the 10-K's filing date (made_at) is confirmed."
+  - "Ledger buybacks: add the monthly average repurchase prices and share counts the company disclosed for FY2026Q4 (10-K Item 5), FY2027Q1 (10-Q Part II Item 2) and FY2017–FY2025 (10-K Item 5 and 10-Q Part II Item 2 of each period)."
+  - "NVDA-Q10: confirm where the fourth-quarter net gross-margin impact of provisions is disclosed (10-K Item 7 gives the fiscal year); until confirmed, the fourth-quarter reading is marked unavailable."
+  - "NVDA-Q4 and NVDA-Q11: the terms of the SB Energy residual value guaranty are partly redacted (FY2027Q2 10-Q Exhibit 10.1); revisit the guarantee definitions when the terms are disclosed."
+  - "Candidate test once disclosed: revenue from customers covered by NVIDIA guarantees, investments or capacity commitments (not disclosed as of the FY2027Q2 10-Q)."
+  - "Management criterion (b): re-read each quarter of FY2027 whether shareholder returns were funded by the $25.0B of notes issued in June 2026 [src:NVDA-10Q-FY2027Q2#Note9]; no test registered yet."
+  - "NVDA-Q5 and NVDA-Q15: confirm the XBRL concepts for marketable debt securities, shown separately from marketable equity securities since FY2027Q1; read from filing text until then."
+  - "NVDA-Q2 and NVDA-Q14: confirm that each 10-Q presents the prior-year Data Center quarter on the market-platform basis adopted in FY2027Q1."
