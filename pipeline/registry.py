@@ -2509,6 +2509,19 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
     facts = _fact_rows(data)
     tags = [t for f in facts if isinstance(f, dict) for t in _tags_of(f.get("source"))]
     texts, _, unresolved = cited_texts(ctx, tags)
+    found, missing = cut_source_excerpts(facts, texts)
+    out = data if isinstance(data, dict) else {"facts": facts}
+    note = f"source excerpts cut: {found}; excerpt_missing: {missing}"
+    if unresolved:
+        note += f"; {len(unresolved)} cited tag(s) not resolvable to a document"
+    source = {**run.outputs_used(["fact_table"])[0], "transform": "source_excerpt cut by the pipeline"}
+    return BuiltInput(dump_yaml(out), "yml", [source], note=note)
+
+
+def cut_source_excerpts(facts: Sequence[Any], texts: Mapping[str, str]) -> tuple[int, int]:
+    """Gives each fact with a value the source excerpt cut from the document it cites (source_excerpt), or marks it
+    excerpt_missing; returns how many got one and how many did not. `texts` maps a cited tag, with or without its
+    locator, to the document's text (cited_texts)."""
     found = missing = 0
     rows = [f for f in facts if isinstance(f, dict) and f.get("value") is not None]
     by_id = {str(f.get("id")): f for f in rows}
@@ -2545,12 +2558,7 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
         else:
             fact["excerpt_missing"] = True
             missing += 1
-    out = data if isinstance(data, dict) else {"facts": facts}
-    note = f"source excerpts cut: {found}; excerpt_missing: {missing}"
-    if unresolved:
-        note += f"; {len(unresolved)} cited tag(s) not resolvable to a document"
-    source = {**run.outputs_used(["fact_table"])[0], "transform": "source_excerpt cut by the pipeline"}
-    return BuiltInput(dump_yaml(out), "yml", [source], note=note)
+    return found, missing
 
 
 INPUT_EXCERPT_CHARS = 200  # each input's excerpt in a derived figure's excerpt
