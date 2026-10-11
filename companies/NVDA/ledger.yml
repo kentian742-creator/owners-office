@@ -1,0 +1,103 @@
+company: NVDA
+entries:
+- id: NVDA-MGT-01
+  side: management
+  kind: numeric_target
+  statement: 'Outlook for FY2027Q3 revenue: $108.0B, plus or minus 2%, with no Data Center compute revenue from
+    China assumed [src:NVDA-8K-2026-08-26#EX-99.1].'
+  made_at: '2026-08-26'
+  due: '2026-10-25'
+  source: NVDA-8K-2026-08-26#EX-99.1
+  status: pending
+  note: Due at the end of FY2027Q3. Settled against reported FY2027Q3 total revenue in the earnings release and
+    10-Q.
+- id: NVDA-MGT-02
+  side: management
+  kind: numeric_target
+  statement: 'Outlook for FY2027Q3 gross margin: 74.0%, plus or minus 0.5 percentage points [src:NVDA-8K-2026-08-26#EX-99.1].'
+  made_at: '2026-08-26'
+  due: '2026-10-25'
+  source: NVDA-8K-2026-08-26#EX-99.1
+  status: pending
+  note: Due at the end of FY2027Q3. Settled against FY2027Q3 gross margin on the basis the outlook states, from
+    the earnings release and 10-Q.
+- id: NVDA-MGT-03
+  side: management
+  kind: product_timeline
+  statement: Vera Rubin production shipments begin in FY2027Q3.
+  made_at: '2026-08-26'
+  due: '2026-10-25'
+  source: NVDA-10Q-FY2027Q2#Item2
+  status: pending
+  note: Due at the end of FY2027Q3. Settled from the FY2027Q3 10-Q and earnings materials stating whether production
+    shipments began in the quarter.
+- id: NVDA-MGT-04
+  side: management
+  kind: other
+  statement: Nicholas Parker, appointed as successor to Ajay Puri (EVP, Worldwide Field Operations), was anticipated
+    to start on 2026-08-24, with Puri retiring on his successor's start date and staying on in a senior advisory
+    role.
+  made_at: '2026-07-02'
+  due: '2026-08-24'
+  source: NVDA-8K-2026-07-02#Item5.02
+  status: pending
+  note: Settled from the FY2027Q3 10-Q, the FY2027 10-K officer list or any 8-K Item 5.02.
+- id: NVDA-MGT-05
+  side: management
+  kind: other
+  statement: Suzanne Nora Johnson was appointed to the board and its Audit Committee, effective 2026-07-13.
+  made_at: '2026-05-08'
+  due: '2026-07-13'
+  source: NVDA-8K-2026-05-08#Item5.02
+  status: pending
+  note: Settled from the FY2027Q3 10-Q, the 2027 proxy statement or any 8-K Item 5.02.
+- id: NVDA-SYS-01
+  side: system
+  kind: prediction
+  statement: FY2027 total revenue is above $390,000M.
+  probability: 0.75
+  made_at: '2026-10-09'
+  due: '2027-01-31'
+  source: NVDA-10Q-FY2027Q2#IS
+  status: pending
+  note: 'Settlement: total revenue in the FY2027 10-K income statement is above $390,000M (FY2027 has 53 weeks [src:NVDA-10Q-FY2027Q2#Note1]).
+    Base: first-half revenue of $177,837M [src:NVDA-10Q-FY2027Q2#IS] and a FY2027Q3 outlook of $108.0B plus or minus
+    2% [src:NVDA-8K-2026-08-26#EX-99.1].'
+- id: NVDA-SYS-02
+  side: system
+  kind: prediction
+  statement: FY2027 GAAP gross margin is at or above 73.0%.
+  probability: 0.75
+  made_at: '2026-10-09'
+  due: '2027-01-31'
+  source: NVDA-10Q-FY2027Q2#IS
+  status: pending
+  note: 'Settlement: gross profit ÷ revenue in the FY2027 10-K income statement is at or above 73.0%. Base: first-half
+    GAAP gross margin of 75.0% [src:NVDA-10Q-FY2027Q2#IS] and a FY2027Q3 outlook of 74.0% [src:NVDA-8K-2026-08-26#EX-99.1].'
+- id: NVDA-SYS-03
+  side: system
+  kind: prediction
+  statement: In at least one of fiscal years FY2027 to FY2030, Data Center revenue is below the prior fiscal year's.
+  probability: 0.35
+  made_at: '2026-10-09'
+  due: '2030-01-27'
+  source: NVDA-10K-FY2026#Note16
+  status: pending
+  note: 'Settlement: in the 10-K of any of FY2027, FY2028, FY2029 or FY2030, Data Center revenue for the year is
+    below the prior year''s Data Center revenue as presented in the same 10-K, on the reported basis without adjustment
+    for 53-week years. Base: FY2026 Data Center revenue of $193,737M [src:NVDA-10K-FY2026#Note16]. The record shows
+    no annual Data Center decline: up 2% in FY2020 and 41% in FY2023 [src:NVDA-10K-FY2020#Item7][src:NVDA-10K-FY2023#Item7].
+    Due at the end of FY2030 (last Sunday of January 2030).'
+buybacks:
+- period: FY2027Q2 (2026-04-27 to 2026-05-24)
+  avg_price: 214.32
+  shares: 28700000
+  source: NVDA-10Q-FY2027Q2#PartII-Item2
+- period: FY2027Q2 (2026-05-25 to 2026-06-21)
+  avg_price: 211.29
+  shares: 7200000
+  source: NVDA-10Q-FY2027Q2#PartII-Item2
+- period: FY2027Q2 (2026-06-22 to 2026-07-26)
+  avg_price: 202.4
+  shares: 58500000
+  source: NVDA-10Q-FY2027Q2#PartII-Item2
