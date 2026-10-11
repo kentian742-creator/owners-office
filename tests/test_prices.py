@@ -42,6 +42,16 @@ def test_the_ten_year_yield_is_the_reading_of_the_day_or_the_last_business_day_b
     assert (reading.date.isoformat(), reading.percent) == ("2026-09-25", 5.20) and "10-year" in reading.note
 
 
+def test_a_treasury_table_is_cached_as_read_for_its_day_and_an_error_page_is_not(tmp_path):
+    table = 'Date,"10 Yr"\n10/09/2026,4.12\n'
+    reading = prices.ten_year_yield(dt.date(2026, 10, 9), fetch=lambda url: table, cache_dir=tmp_path)
+    again = prices.ten_year_yield(dt.date(2026, 10, 9), fetch=lambda url: 1 / 0, cache_dir=tmp_path)
+    assert reading == again and reading.percent == 4.12
+    with pytest.raises(prices.PriceError):
+        prices.ten_year_yield(dt.date(2026, 10, 10), fetch=lambda url: "<html>busy</html>", cache_dir=tmp_path)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["UST-PARYIELD-2026-2026-10-09.csv"]
+
+
 def test_every_price_and_yield_carries_the_pipelines_own_tag_and_a_private_sources_entry():
     closes = prices.history("BRK.B", dt.date(2026, 1, 5), fetch=lambda url: DATA)
     assert closes[-1].to_dict()["tag"] == "BRK-PRICES-2026-01-05#2026-01-02"

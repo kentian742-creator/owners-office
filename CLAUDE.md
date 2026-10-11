@@ -60,7 +60,7 @@ The detailed price rules are in 00 §H2: only four kinds of prices may appear, a
 | `industries/<id>/` | Industry modules and signposts (no holdings, no recommendations) |
 | `forecasts/`, `letters/`, `mistakes.md` | Forecasts and overrides, letters to the owner, mistakes list |
 | `pipeline/llm.py` | The only model-call entry point; backends `claude-code` (default, the owner's subscription) and `api` (fallback, budgeted) (`docs/decisions/0022`) |
-| `pipeline/runner.py`, `pipeline/registry.py` | Pipeline runner and its input registry: assemble a bundle, execute it, place the outputs (`docs/decisions/0019`, `0024`) |
+| `pipeline/runner.py`, `pipeline/registry.py`, `pipeline/factcheck.py` | Pipeline runner and its input registry: assemble a bundle, execute it, check every figure of the archive documents it writes, place the outputs (`docs/decisions/0019`, `0024`, `0034`) |
 | `pipeline/chain.py`, `pipeline/documents.py`, `pipeline/evaluation.py` | After an earnings event: the chain of steps with review stops, the documents a step reads, the evaluation of the quantitative tests (`docs/decisions/0024`) |
 | `scripts/accept.py` | Phase acceptance script |
 | `zh-CN/` | Chinese versions of the key documents, at the same relative paths |
@@ -88,7 +88,8 @@ The detailed price rules are in 00 §H2: only four kinds of prices may appear, a
 ../.venv/bin/python -m pipeline.runner execute runs/APP/2026-10-20-15A                   # backend claude-code (default)
 ../.venv/bin/python -m pipeline.runner execute runs/APP/2026-10-20-15A --backend api     # fallback: Anthropic API, counts against the budget
 ../.venv/bin/python -m pipeline.runner show runs/APP/2026-10-20-15A
-../.venv/bin/python -m pipeline.runner place runs/APP/2026-10-20-15A --check
+../.venv/bin/python -m pipeline.runner factcheck runs/MCD/2026-10-09-02                  # every figure checked; factcheck.yml lists those that need HQ's verdict (0034)
+../.venv/bin/python -m pipeline.runner place runs/APP/2026-10-20-15A --check             # place stops until each of them has an accepted verdict
 # After an earnings event (docs/decisions/0024): the whole chain, with stops for review; resumable
 ../.venv/bin/python -m pipeline.runner event AXP FY2026Q3 --run-date 2026-10-21 --dry-run   # fake backend; a rehearsal before the event
 ../.venv/bin/python -m pipeline.runner event AXP FY2026Q3 --run-date 2026-10-21             # runs until the next stop

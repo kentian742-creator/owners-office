@@ -211,12 +211,23 @@ def parse_treasury(text: str, url: str) -> list[Yield]:
     return sorted(out, key=lambda y: y.date)
 
 
-def ten_year_yield(as_of: dt.date, *, fetch: Callable[[str], str] = _fetch_text) -> Yield:
-    """The 10-year Treasury par yield of `as_of`, or of the last business day before it."""
+def ten_year_yield(as_of: dt.date, *, fetch: Callable[[str], str] = _fetch_text,
+                   cache_dir: Path | None = None) -> Yield:
+    """The 10-year Treasury par yield of `as_of`, or of the last business day before it. With `cache_dir`, each year's
+    table is kept as it was read for `as_of` (UST-PARYIELD-<year>-<as_of>.csv), as history() keeps prices, so the same
+    question gets the same answer later, also without a network."""
     for year in (as_of.year, as_of.year - 1):
         url = TREASURY_URL.format(year=year)
+        cache = cache_dir / f"UST-PARYIELD-{year}-{as_of.isoformat()}.csv" if cache_dir else None
         try:
-            readings = [y for y in parse_treasury(fetch(url), url) if y.date <= as_of]
+            if cache is not None and cache.is_file():
+                text = cache.read_text(encoding="utf-8")
+            else:
+                text = fetch(url)
+                if cache is not None and parse_treasury(text, url):  # a table, not an error page
+                    cache.parent.mkdir(parents=True, exist_ok=True)
+                    cache.write_text(text, encoding="utf-8")
+            readings = [y for y in parse_treasury(text, url) if y.date <= as_of]
         except Exception as exc:  # network or format
             raise PriceError(f"the 10-year Treasury yield could not be read ({type(exc).__name__})") from None
         if readings:

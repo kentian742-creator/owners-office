@@ -7,7 +7,8 @@ after an earnings event, 0024.
     python -m pipeline.runner assemble 15A APP FY2026Q3 --run-date 2026-10-20
     python -m pipeline.runner execute runs/APP/2026-10-20-15A [--backend claude-code|api|fake] [--retry]
     python -m pipeline.runner show runs/APP/2026-10-20-15A
-    python -m pipeline.runner place runs/APP/2026-10-20-15A [--announced 2026-11-05] [--check]
+    python -m pipeline.runner factcheck runs/MCD/2026-10-09-02 [--offline] [--out FILE]
+    python -m pipeline.runner place runs/APP/2026-10-20-15A [--announced 2026-11-05] [--check] [--offline]
     python -m pipeline.runner dry-run 15A APP FY2026Q3 --run-date 2026-10-20
     python -m pipeline.runner pr-body runs/APP/2026-10-20-15A
     python -m pipeline.runner evaluate AXP FY2026Q3 --run-date 2026-10-21
@@ -32,7 +33,9 @@ after an earnings event, 0024.
    from edgar.prereg_header()), flags public-bound text with CJK characters (owner policy 2026-09-25: the public
    repositories are English-first), writes each output to its 00 section F2 destination (public ones on a branch of
    owners-office, never on main), runs thesis-ci lint on both repositories and rolls back on errors. Committing,
-   pushing and opening pull requests stay with the operator.
+   pushing and opening pull requests stay with the operator. Before anything is written, every figure of the archive
+   documents it writes is checked (pipeline/factcheck.py, docs/decisions/0034), and placement stops while a figure
+   the checker cannot confirm has no accepted verdict in the run's factcheck.yml.
 4. dry-run (local). assemble + execute with the fake backend into work/pipeline-dry-run/ in the workspace, outside
    both repositories, so the whole path can be tested without any model access. A post-event step whose event is not
    on EDGAR yet runs as a rehearsal: the last reported quarter's filings stand in, marked as such.
@@ -41,6 +44,9 @@ after an earnings event, 0024.
    runs/<TICKER>/<run_date>-ci/ with manifest.yml, inputs, outputs/ci_results.yml and run.yml). No model.
 6. event (local; pipeline/chain.py). The post-earnings chain of one event, step by step, resumable, with stops for
    human review after the draft, after the audit and before placement.
+7. factcheck (local; docs/decisions/0034). The fact check of placement on its own: it checks every figure of the
+   archive documents a bundle would place and writes the run's factcheck.yml, one item per figure for HQ's verdict.
+   Verdicts already given stay with their items when it runs again.
 
 place knows the actions of 00 section F2 (write, front_matter, append, merge, patch, pr_body, pr_attachment) and
 routes a quarterly update by trust level (section G9): below level 2 its public files are staged in the private
@@ -67,7 +73,7 @@ from typing import Any, TextIO
 
 import yaml
 
-from . import documents, edgar, evaluation, fake_client, isolation, llm, registry, slicing
+from . import documents, edgar, evaluation, factcheck, fake_client, isolation, llm, registry, slicing
 from . import outputs as _outputs
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -2349,23 +2355,31 @@ def route_by_trust(writes: list[PlannedWrite], manifest: Mapping[str, Any], root
     return routing
 
 
-def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch: str | None = None,
-          announced: str | None = None, window: Sequence[str] | None = None, check: bool = False,
-          allow_cjk: bool = False, allow_fake: bool = False, lint: bool = True, now: dt.datetime | None = None,
-          edgar_gateway: Any = None, schemas_dir: str | os.PathLike[str] | None = None, publish: bool = False,
-          out: TextIO | None = None) -> dict[str, Any]:
-    """Copy each output of an executed bundle to its 00 section F2 destination. Returns the placement record.
+@dataclasses.dataclass
+class PlacementPlan:
+    """What placing a bundle would write, and what stops it so far (plan_placement)."""
 
-    Actions (docs/decisions/0024): write; front_matter (reviewed_sections into the update record); append (the
-    mistakes entry, newest first); merge (sources_additions into each repository's sources.yml by visibility); patch
-    (dossier_changes, part by part); pr_body (03's body plus the audit findings, the qualitative rulings, the inversion
-    list and the divergence map, kept as pr_body.md in the run directory); pr_attachment (nothing written; attached
-    through the PR body). A quarterly update is routed by trust level (section G9): at level 1 or below its public
-    files are staged in the private repository, and `publish` writes them to the public branch after HQ's review."""
-    roots = roots or resolve_roots()
-    out = out or sys.stdout
-    schemas = Path(schemas_dir) if schemas_dir else None
-    now = now or _utcnow()
+    bundle_dir: Path
+    manifest: dict[str, Any]
+    real: bool  # produced by a real model backend; the fake client's outputs are placeholders
+    writes: list[PlannedWrite]
+    problems: list[str]
+    warnings: list[str]
+    attachments: list[dict[str, Any]]
+    header: dict[str, Any] | None
+    basis: str | None
+    routing: dict[str, Any] | None
+
+    @property
+    def rel(self) -> str:
+        return str(self.manifest["bundle"])
+
+
+def plan_placement(bundle: str | os.PathLike[str], *, roots: Roots, now: dt.datetime, announced: str | None = None,
+                   window: Sequence[str] | None = None, allow_cjk: bool = False, allow_fake: bool = False,
+                   edgar_gateway: Any = None, schemas: Path | None = None, publish: bool = False) -> PlacementPlan:
+    """Everything place does before it writes: each output's writes under 00 section F2 and every problem that stops
+    the placement, except the fact check (gate_figures). Raises RunnerError for a bundle that is never placed."""
     bundle_dir = resolve_bundle(bundle, roots.private)
     manifest = load_manifest(bundle_dir)
     rel = manifest["bundle"]
@@ -2498,25 +2512,193 @@ def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch:
         if hits:
             problems.append(f"{w.path}: the PR body contains section H4 wording ({'; '.join(hits[:5])}); it goes "
                             "public with the pull request")
+    return PlacementPlan(bundle_dir, manifest, real, writes, problems, warnings, attachments, header, basis, routing)
+
+
+class FactCheckOpen(RunnerError):
+    """Placement stopped only because figures still need an accepted verdict in the bundle's factcheck.yml."""
+
+
+FACTCHECK_FILE = factcheck.REVIEW_FILE  # runs/<scope>/<run_dir>/factcheck.yml: the figures HQ reviews (decisions/0034)
+FACTCHECK_LISTED = 40  # open items listed in the error, like lint errors
+
+
+def archive_documents(writes: Sequence[PlannedWrite]) -> list[PlannedWrite]:
+    """The planned writes that are archive documents (outputs.ARCHIVE_DOCUMENTS): their figures are checked. Dossier
+    changes count once they are patched into the dossier; changes kept until a dossier exists are not a document."""
+    return [w for w in writes if w.output in _outputs.ARCHIVE_DOCUMENTS and w.path.endswith((".md", ".yml", ".yaml"))
+            and not (w.output == "dossier_changes" and "patch" not in w.action)]
+
+
+def check_documents(plan: PlacementPlan, roots: Roots, *, offline: bool = False,
+                    sources: factcheck.Sources | None = None) -> list[factcheck.DocumentCheck]:
+    """Every figure of the archive documents a placement writes, checked against the archive as the placement will
+    leave it: a source register, valuation or dossier the bundle also writes is read in its new version. A document
+    is named by its path in its repository (a staged update by the public path it will be published to)."""
+    documents_ = archive_documents(plan.writes)
+    if not documents_:
+        return []
+    planned = {((registry.PUBLIC_REPO, w.staged_from) if w.staged_from else (w.repo, w.path)): w.text
+               for w in plan.writes}
+    company = str(plan.manifest.get("company") or plan.manifest.get("scope") or "")
+    checker = factcheck.archive_checker(factcheck.ArchiveFiles(roots, planned), company, offline=offline,
+                                        sources=sources)
+    return [checker.check(w.staged_from or w.path, w.text, output=w.output) for w in documents_]
+
+
+def _fact_check_problem(result: factcheck.Gate, rel: str, figures: int) -> str:
+    lines = []
+    if result.open:
+        lines.append(f"fact check: {len(result.open)} of the {len(result.items)} item(s) to review in {figures:,} "
+                     f"figures have no accepted verdict in {rel}/{FACTCHECK_FILE}. Write or update the file with "
+                     f"`python -m pipeline.runner factcheck {rel}`, then give each item one of "
+                     f"{', '.join(factcheck.ACCEPTED_VERDICTS)}:")
+        lines += [f"  - {factcheck.describe_item(i)}" for i in result.open[:FACTCHECK_LISTED]]
+        if len(result.open) > FACTCHECK_LISTED:
+            lines.append(f"  - and {len(result.open) - FACTCHECK_LISTED} more")
+    if result.blocked:
+        lines.append(f"fact check: {len(result.blocked)} item(s) have the verdict "
+                     f"{' or '.join(factcheck.BLOCKING_VERDICTS)}: correct the text, then run the fact check again:")
+        lines += [f"  - {factcheck.describe_item(i)}" for i in result.blocked[:FACTCHECK_LISTED]]
+        if len(result.blocked) > FACTCHECK_LISTED:
+            lines.append(f"  - and {len(result.blocked) - FACTCHECK_LISTED} more")
+    return "\n".join(lines)
+
+
+def gate_figures(plan: PlacementPlan, roots: Roots, *, offline: bool = False,
+                 sources: factcheck.Sources | None = None) -> tuple[dict[str, Any], str | None]:
+    """The fact check of a placement (docs/decisions/0034, owner 2026-10-10): every figure of the archive documents it
+    writes is checked, and each figure the checker cannot confirm, and each calc error, needs an accepted verdict in
+    the bundle's factcheck.yml (which `factcheck` writes). Returns the record for placement.yml and the problem that
+    stops the placement, or None. There is no way past it but the review file. The fake client's placeholders are
+    not checked: they are never placed for real."""
+    if not plan.real:
+        return {"skipped": "outputs of the fake client or a test double are placeholders, never placed for real"}, None
+    checks = check_documents(plan, roots, offline=offline, sources=sources)
+    review = plan.bundle_dir / FACTCHECK_FILE
+    items, _ = factcheck.merge_verdicts(factcheck.review_items(checks), factcheck.load_review(review))
+    result = factcheck.gate(items)
+    record = {"review_file": f"{plan.rel}/{FACTCHECK_FILE}" if review.is_file() else None,
+              **({"review_sha256": _sha(review.read_bytes())} if review.is_file() else {}), "offline": offline,
+              **factcheck.summary(checks, result)}
+    unreadable = {tag: why for c in checks for tag, why in c.unreadable.items()}
+    if unreadable:
+        plan.warnings.append(f"fact check: {len(unreadable)} cited tag(s) could not be read: "
+                             + "; ".join(f"{tag} ({why})" for tag, why in list(unreadable.items())[:10]))
+    silent = [i for i in result.items if factcheck.verdict_of(i) in factcheck.ACCEPTED_VERDICTS and not i.get("how")]
+    if silent:
+        plan.warnings.append(f"fact check: {len(silent)} accepted verdict(s) do not say how the figure was checked "
+                             f"(`how` in {FACTCHECK_FILE})")
+    return record, None if result.passed else _fact_check_problem(result, plan.rel, record["totals"]["figures"])
+
+
+def earlier_review_files(private_root: Path, manifest: Mapping[str, Any], current: Path) -> list[Path]:
+    """The review files of the company's other runs, the latest run first."""
+    scope = str(manifest.get("scope") or manifest.get("company") or "")
+    found = sorted((private_root / "runs" / scope).glob(f"*/{FACTCHECK_FILE}"), reverse=True) if scope else []
+    return [p for p in found if p.resolve() != current.resolve()]
+
+
+def fact_check(bundle: str | os.PathLike[str], *, roots: Roots | None = None, offline: bool = False,
+               review_file: str | os.PathLike[str] | None = None, now: dt.datetime | None = None,
+               edgar_gateway: Any = None, schemas_dir: str | os.PathLike[str] | None = None,
+               sources: factcheck.Sources | None = None, out: TextIO | None = None) -> dict[str, Any]:
+    """`factcheck`: check every figure of the archive documents a bundle would place, and write the review file
+    (factcheck.yml in the run directory, or `review_file`): each document's counts by class, the tags that could not
+    be read, and one item per figure that needs a verdict (weak, unverified) and per calc error, with `verdict` and
+    `how` for HQ. A verdict already given stays with its item: an item is the same one again when its document,
+    figure and context are, wherever its line has moved. An item still without one takes the verdict given to the
+    same item in an earlier run's review file (`verdict_from` names it), and an earlier item with a verdict that no
+    longer appears is kept under no_longer_found. Returns the file's content."""
+    roots = roots or resolve_roots()
+    out = out or sys.stdout
+    now = now or _utcnow()
+    plan = plan_placement(bundle, roots=roots, now=now, edgar_gateway=edgar_gateway,
+                          schemas=Path(schemas_dir) if schemas_dir else None)
+    checks = check_documents(plan, roots, offline=offline, sources=sources)
+    path = Path(review_file) if review_file else plan.bundle_dir / FACTCHECK_FILE
+    items, stale = factcheck.merge_verdicts(factcheck.review_items(checks), factcheck.load_review(path))
+    for other in earlier_review_files(roots.private, plan.manifest, path):
+        if all(factcheck.verdict_of(i) for i in items):
+            break
+        items = factcheck.carry_verdicts(items, factcheck.load_review(other),
+                                         other.relative_to(roots.private).as_posix())
+    data = factcheck.review_document(checks, items, stale, bundle=plan.rel, checked_at=_iso(now), offline=offline)
+    write_yaml(path, data)
+    _print_fact_check(data, path, plan.problems, out)
+    return data
+
+
+def _counts(classes: Mapping[str, int]) -> str:
+    return ", ".join(f"{name} {count:,}" for name, count in classes.items())
+
+
+def _print_fact_check(data: Mapping[str, Any], path: Path, problems: Sequence[str], out: TextIO) -> None:
+    print(f"fact check of {data['bundle']}" + (" (offline: EDGAR and prices from the caches)" if data["offline"]
+                                               else "") + ":", file=out)
+    if not data["documents"]:
+        print("  no archive documents among its outputs", file=out)
+    for doc, row in data["documents"].items():
+        print(f"  {doc} ({row.get('output')}): {row['figures']:,} figures: {_counts(row['classes'])}; "
+              f"{row['calc_errors']} calc error(s); {row['to_review']} to review", file=out)
+        for tag, why in (row.get("unreadable_tags") or {}).items():
+            print(f"    not readable: {tag} ({why})", file=out)
+    totals = data["totals"]
+    print(f"  {totals['to_review']} item(s) to review: {totals['accepted']} with an accepted verdict, {totals['open']} "
+          f"open, {totals['blocking']} wrong or cannot-verify", file=out)
+    print(f"  review file: {path}", file=out)
+    for problem in problems:
+        print(f"  note: placement would also stop here: {problem}", file=out)
+
+
+def place(bundle: str | os.PathLike[str], *, roots: Roots | None = None, branch: str | None = None,
+          announced: str | None = None, window: Sequence[str] | None = None, check: bool = False,
+          allow_cjk: bool = False, allow_fake: bool = False, lint: bool = True, now: dt.datetime | None = None,
+          edgar_gateway: Any = None, schemas_dir: str | os.PathLike[str] | None = None, publish: bool = False,
+          offline: bool = False, factcheck_sources: factcheck.Sources | None = None,
+          out: TextIO | None = None) -> dict[str, Any]:
+    """Copy each output of an executed bundle to its 00 section F2 destination. Returns the placement record.
+
+    Actions (docs/decisions/0024): write; front_matter (reviewed_sections into the update record); append (the
+    mistakes entry, newest first); merge (sources_additions into each repository's sources.yml by visibility); patch
+    (dossier_changes, part by part); pr_body (03's body plus the audit findings, the qualitative rulings, the inversion
+    list and the divergence map, kept as pr_body.md in the run directory); pr_attachment (nothing written; attached
+    through the PR body). A quarterly update is routed by trust level (section G9): at level 1 or below its public
+    files are staged in the private repository, and `publish` writes them to the public branch after HQ's review.
+
+    Nothing is written until every figure of the archive documents it writes is checked (gate_figures,
+    docs/decisions/0034): a figure the checker cannot confirm needs an accepted verdict in the bundle's factcheck.yml.
+    `offline` reads EDGAR, prices and Treasury yields for that check from the local caches only."""
+    roots = roots or resolve_roots()
+    out = out or sys.stdout
+    schemas = Path(schemas_dir) if schemas_dir else None
+    now = now or _utcnow()
+    plan = plan_placement(bundle, roots=roots, now=now, announced=announced, window=window, allow_cjk=allow_cjk,
+                          allow_fake=allow_fake, edgar_gateway=edgar_gateway, schemas=schemas, publish=publish)
+    bundle_dir, manifest, rel = plan.bundle_dir, plan.manifest, plan.rel
+    writes, problems, warnings = plan.writes, plan.problems, plan.warnings
+    figures, figures_problem = gate_figures(plan, roots, offline=offline, sources=factcheck_sources)
     report: dict[str, Any] = {
         "placement_version": 1,
         "bundle": rel,
         "placed_at": _iso(now),
         "check_only": check,
         "publish": publish,
-        "prereg_header": {"basis": basis, **header} if header else None,
-        "routing": routing,
+        "prereg_header": {"basis": plan.basis, **plan.header} if plan.header else None,
+        "routing": plan.routing,
         "files": [{"output": w.output, "repo": w.repo, "visibility": w.visibility, "path": w.path,
                    "action": w.action, "status": w.status, "sha256": _sha(w.content), "remove": w.remove,
                    **({"staged_from": w.staged_from} if w.staged_from else {}),
                    **({"note": w.note} if w.note else {}),
                    **({"cjk_lines": len(w.cjk_lines)} if w.cjk_lines else {})} for w in writes],
-        "attachments": attachments,
+        "attachments": plan.attachments,
+        "factcheck": figures,
         "warnings": warnings,
         "allow_cjk": allow_cjk,
     }
-    if problems:
-        raise RunnerError(f"cannot place {rel}:\n- " + "\n- ".join(problems))
+    if problems or figures_problem:
+        error = FactCheckOpen if not problems else RunnerError
+        raise error(f"cannot place {rel}:\n- " + "\n- ".join([*problems, *filter(None, [figures_problem])]))
     if check:
         _print_placement(report, out)
         return report
@@ -2578,6 +2760,19 @@ def _print_placement(report: Mapping[str, Any], out: TextIO) -> None:
         header = report["prereg_header"]
         print(f"  prereg header: expected_release {header['event'].get('expected_release')}, placeholder "
               f"{header['event'].get('placeholder')}, deadline {header['deadline']} ({header['basis']})", file=out)
+    figures = report.get("factcheck") or {}
+    if figures.get("skipped"):
+        print(f"  fact check: skipped ({figures['skipped']})", file=out)
+    elif figures:
+        totals = figures["totals"]
+        verdicts = _counts(totals["verdicts"])
+        print(f"  fact check: {len(figures['documents'])} archive document(s), {totals['figures']:,} figures; "
+              f"{totals['to_review']} item(s) to review, every one with an accepted verdict"
+              + (f" ({verdicts})" if verdicts else "") + (f" in {figures['review_file']}" if figures['review_file']
+                                                          else ""), file=out)
+        for doc, row in figures["documents"].items():
+            print(f"    {doc}: {row['figures']:,} figures: {_counts(row['classes'])}; {row['calc_errors']} calc "
+                  f"error(s); {row['to_review']} reviewed", file=out)
     for warning in report.get("warnings") or []:
         print(f"  warning: {warning}", file=out)
     if report.get("lint"):
@@ -2682,6 +2877,14 @@ def build_parser() -> argparse.ArgumentParser:
                    help="run although the public checkout is not the pinned commit (recorded in run.yml)")
     p = sub.add_parser("pr-body", parents=[roots], help="print the pull-request body for an executed bundle")
     p.add_argument("bundle")
+    p = sub.add_parser("factcheck", parents=[roots],
+                       help="check every figure of the archive documents a bundle would place, and write factcheck.yml "
+                            "for HQ's verdicts (decisions/0034)")
+    p.add_argument("bundle")
+    p.add_argument("--offline", action="store_true",
+                   help="EDGAR, prices and Treasury yields from the local caches only")
+    p.add_argument("--out", type=Path, default=None,
+                   help="the review file to write and keep verdicts from (default: factcheck.yml in the run directory)")
     p = sub.add_parser("place", parents=[roots], help="copy an executed bundle's outputs to their destinations")
     p.add_argument("bundle")
     p.add_argument("--branch", default=None, help="public branch (default: the current one, or a new pipeline/... one)")
@@ -2695,6 +2898,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--publish", action="store_true",
                    help="after HQ's review: write a staged quarterly update (trust level 1 or below, section G9) to "
                         "the public branch")
+    p.add_argument("--offline", action="store_true",
+                   help="the fact check reads EDGAR, prices and Treasury yields from the local caches only")
     return parser
 
 
@@ -2751,10 +2956,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "pr-body":
             sys.stdout.write(pr_body(resolve_bundle(args.bundle, roots.private)))
             return 0
+        if args.command == "factcheck":
+            data = fact_check(args.bundle, roots=roots, offline=args.offline, review_file=args.out,
+                              schemas_dir=args.schemas_dir)
+            return 0 if not data["totals"]["open"] and not data["totals"]["blocking"] else 1
         if args.command == "place":
             place(args.bundle, roots=roots, branch=args.branch, announced=args.announced, window=args.window,
                   check=args.check, allow_cjk=args.allow_cjk, lint=not args.no_lint, schemas_dir=args.schemas_dir,
-                  publish=args.publish)
+                  publish=args.publish, offline=args.offline)
             return 0
     except RunnerError as exc:
         print(f"error: {exc}", file=sys.stderr)
