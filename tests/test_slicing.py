@@ -61,6 +61,20 @@ def test_merged_fact_tables_are_renumbered_in_slice_order_with_derived_inputs_to
     assert list(merged) == ["as_of", "facts", "generated_by"]
 
 
+def test_a_merged_fact_table_does_not_carry_one_slice_s_label_as_its_own():
+    """Walmart's audit (04A-Q16, -Q28): the merged table said "slice 1 of 2 (preamble and parts 1-6)" and carried the
+    second slice's note, "This slice holds part 2 of 2", so its header described neither slice nor the whole."""
+    first = {"product": "WMT dossier.md, draft dated 2026-10-09 (runs/WMT/2026-10-09-01A), slice 1 of 2 (preamble and "
+                        "parts 1-6)", "facts": [{"id": "F001", "value": 1}]}
+    second = {"as_of": "2026-10-09", "product": "WMT dossier.md, draft dated 2026-10-09 (runs/WMT/2026-10-09-01A), "
+                                                "slice 2 of 2 (parts 7-10)",
+              "note": "This slice holds part 2 of 2 of dossier.md.", "facts": [{"id": "F001", "value": 2}]}
+    merged, _ = slicing.merge_fact_tables([first, second])
+    assert merged["product"] == "WMT dossier.md, draft dated 2026-10-09 (runs/WMT/2026-10-09-01A)"
+    assert merged["note"] == "slice 2 of 2: This slice holds part 2 of 2 of dossier.md."
+    assert merged["as_of"] == "2026-10-09"
+
+
 def test_facts_are_packed_by_the_documents_they_cite():
     q, k, old = "10Q", "10K", "10K-OLD"
     tokens = {q: 100, k: 300, old: 300}

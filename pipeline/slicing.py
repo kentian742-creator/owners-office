@@ -146,15 +146,25 @@ def _renumber_inputs(value: Any, mapping: Mapping[str, str]) -> Any:
     return value
 
 
+_SLICE_LABEL_RE = re.compile(r",?\s*\(?slice \d+ of \d+\b[^,;]*\)?", re.I)  # "…, slice 1 of 2 (parts 1-6)"
+
+
 def merge_fact_tables(tables: Sequence[Any]) -> tuple[dict[str, Any], list[dict[str, str]]]:
     """16A: the slices' fact tables as one, ids renumbered F001... in slice order and derived facts' inputs to match.
     Returns the merged table and each slice's {old id: new id}."""
     merged: dict[str, Any] = {}
-    for table in tables:
+    notes: list[str] = []
+    for number, table in enumerate(tables, 1):
         if isinstance(table, Mapping):
             for key, value in table.items():
-                if key not in ("facts", "generated_by") and merged.get(key) is None:
+                if key == "note" and value:  # each slice's note is about that slice: all are kept, each labelled
+                    notes.append(f"slice {number} of {len(tables)}: {value}")
+                elif key == "product" and isinstance(value, str):  # the slice's part of it is not the merged table's
+                    merged.setdefault(key, _SLICE_LABEL_RE.sub("", value).strip())
+                elif key not in ("facts", "generated_by") and merged.get(key) is None:
                     merged[key] = value
+    if notes:
+        merged["note"] = "\n".join(notes)
     facts: list[Any] = []
     maps: list[dict[str, str]] = []
     number = 0
