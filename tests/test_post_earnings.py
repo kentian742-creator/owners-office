@@ -406,6 +406,32 @@ def test_a_derived_fact_carries_its_inputs_excerpts_and_an_accession_is_not_sear
     assert facts["F003"]["excerpt_missing"] is True
 
 
+def test_a_fact_without_a_source_takes_the_tags_of_its_place_in_the_product(env, shim):
+    """Costco's first audit (04A-Q02, -Q29): 16A named no source for 154 of 973 facts, so their documents never
+    reached the audit. A fact whose quote is found in the product takes the tags of its sentence, paragraph, list
+    lead-in or table; one in a place without tags stays without a source."""
+    draft = draft_chain(env)
+    fx.rewrite_output(draft, "update", "---\ncompany: APP\ndoc: update\nas_of: 2026-10-20\ndoc_status: draft\n---\n"
+                                       "The quarter's installs [src:APP-10Q-FY2026Q2]:\n\n"
+                                       "- Installs grew to 1,234 million in the quarter.\n\n"
+                                       "Elsewhere, 77 widgets were counted without any source at all.\n")
+    product = env.assemble("16A", period=EVENT)
+    env.execute(product)
+    fx.rewrite_output(product, "fact_table", yaml.safe_dump({"as_of": "2026-10-20", "facts": [
+        {"id": "F001", "location": "update 1", "subject": "APP", "what": "installs", "value": 1234,
+         "unit": "million", "excerpt": "Installs grew to 1,234 million in the quarter."},
+        {"id": "F002", "location": "update 2", "subject": "APP", "what": "widgets", "value": 77,
+         "excerpt": "Elsewhere, 77 widgets were counted without any source at all."}]}))
+    audit = env.assemble("04A", period=EVENT)
+    facts = {f["id"]: f for f in yaml.safe_load(read_input(audit, "fact_table"))["facts"]}
+    assert facts["F001"]["source"] == "APP-10Q-FY2026Q2" and facts["F001"]["source_inferred"] == \
+        registry.INFERRED_SOURCE
+    assert facts["F001"]["source_excerpt"] == "Installs grew to 1,234 million in the quarter."
+    assert "source" not in facts["F002"] and facts["F002"]["excerpt_missing"] is True
+    assert "1 fact(s) without a source given the tags of their place in the product" in \
+        inputs_of(audit)["fact_table"]["note"]
+
+
 def test_14t_gets_the_due_tests_without_thesis_wording_and_their_documents(env):
     bundle = env.assemble("14T", period=EVENT)
     assert manifest_of(bundle)["role"] == "judge" and list(inputs_of(bundle)) == ["event", "qualitative_tests",
