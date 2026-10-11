@@ -102,3 +102,59 @@ sources:
     date: 2025-12-04
     url: https://www.sec.gov/Archives/edgar/data/909832/000090983225000159/cost-20251204.htm
     primary: true
+
+  - tag: COST-10K-FY2018
+    kind: filing
+    title: COST 10-K filed 2018-10-26
+    form: 10-K
+    accession: 0000909832-18-000013
+    filed: '2018-10-26'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983218000013/cost10k9218.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2020
+    kind: filing
+    title: COST 10-K filed 2020-10-07
+    form: 10-K
+    accession: 0000909832-20-000017
+    filed: '2020-10-07'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983220000017/cost-20200830.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2022
+    kind: filing
+    title: COST 10-K filed 2022-10-05
+    form: 10-K
+    accession: 0000909832-22-000021
+    filed: '2022-10-05'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983222000021/cost-20220828.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2024
+    kind: filing
+    title: COST 10-K filed 2024-10-09
+    form: 10-K
+    accession: 0000909832-24-000049
+    filed: '2024-10-09'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983224000049/cost-20240901.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2025
+    kind: filing
+    title: COST 10-K filed 2025-10-08
+    form: 10-K
+    accession: 0000909832-25-000101
+    filed: '2025-10-08'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983225000101/cost-20250831.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-8K-2026-05-28
+    kind: filing
+    title: COSTCO WHOLESALE CORP /NEW 8-K filed 2026-05-28
+    issuer_cik: 0000909832
+    form: 8-K
+    accession: 0000909832-26-000046
+    filed: '2026-05-28'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983226000046/costex9918-k52826.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'

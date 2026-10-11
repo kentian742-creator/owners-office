@@ -16,11 +16,6 @@ companies:
   # Added by the owner on 2026-10-09 (decisions/0032). The order is the pipeline's, set by when each company's next
   # filing comes (decisions/0032): COST and WMT first; KO and MA after their third-quarter 10-Qs; V after its FY2026
   # 10-K; SPCX after its third-quarter 10-Q, with its prospectus as the source of its earlier years (decisions/0033).
-  - ticker: COST
-    name: Costco Wholesale Corporation
-    cik: "0000909832"
-    status: candidate
-    decided: "2026-10-09"
   - ticker: WMT
     name: Walmart Inc.
     cik: "0000104169"

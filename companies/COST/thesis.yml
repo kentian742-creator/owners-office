@@ -1,0 +1,453 @@
+schema_version: "0.2"
+company: COST
+name: Costco Wholesale Corporation
+exchange: NASDAQ
+status: candidate
+filer:
+  cik: "0000909832"
+  type: domestic
+  fiscal_year_end: "08-30"
+  earnings_form: 8-K
+  annual_form: 10-K
+category: stalwart
+category_rationale: "Net sales grew about 9.9% a year from FY2016 to FY2026 [src:COST-10K-FY2018#IS] [src:COST-10K-FY2026#Item8], reaching total revenue of $303,154 m in FY2026 [src:COST-10K-FY2026#Item8], so Costco is a large, steady compounder growing at the stalwart pace rather than a fast grower."
+domain: consumer
+depends_on: []
+trust_level: 1
+as_of: "2026-10-10"
+reviewed:
+  business: "2026-10-11"
+  economics: "2026-10-11"
+  moat: "2026-10-11"
+  capital_allocation: "2026-10-11"
+  management: "2026-10-11"
+  culture: "2026-10-11"
+  runway: "2026-10-11"
+  valuation: "2026-10-11"
+  bear_case: "2026-10-11"
+  monitoring: "2026-10-11"
+  thesis: "2026-10-11"
+  breakers: "2026-10-11"
+  munger: "2026-10-11"
+  unknowns: "2026-10-11"
+ratings:
+  business: A
+  management: A-
+  capital_allocation: B+
+  culture: A-
+thesis:
+  summary: "Costco runs a membership loop: members prepay a fee, Costco passes its purchasing scale back to them as price, and the volume that follows makes the scale larger. Member economics and unit growth can carry per-share earnings at roughly high single to low double digits for many years without help from tax or margin steps, as long as management keeps the merchandise spread thin and members, especially those acquired online and abroad, keep renewing."
+  pillars:
+    - id: P1
+      claim: "Members keep renewing after paying a higher fee: the U.S. and Canada renewal rate was 92.3% at the end of FY2026, a trailing measure made of renewals after the fee increase effective 2024-09-01 [src:COST-10K-FY2026#Item1] [src:COST-10K-FY2026#Item7]."
+      source: COST-10K-FY2026#Item1
+    - id: P2
+      claim: "Costco shares its scale with members instead of widening the spread: gross margin stayed between 10.48% and 11.35% of net sales in every year FY2014–FY2026 [src:COST-10K-FY2016#Item7] [src:COST-10K-FY2018#IS] [src:COST-10K-FY2020#IS] [src:COST-10K-FY2022#IS] [src:COST-10K-FY2024#IS] [src:COST-10K-FY2026#Item8], while SG&A including preopening fell from 10.46% of net sales in FY2016 to 9.15% in FY2026 [src:COST-10K-FY2018#IS] [src:COST-10K-FY2026#Item8]."
+      source: COST-10K-FY2026#Item8
+    - id: P3
+      claim: "Suppliers and members fund the working capital, so returns on capital are high: pretax return on capital was 53.7% in FY2026 and above 45% in every year since FY2021 [src:COST-10K-FY2022#BS] [src:COST-10K-FY2026#Item8], and accounts payable were 116.9% of merchandise inventories at the end of FY2026 [src:COST-10K-FY2026#Item8]."
+      source: COST-10K-FY2026#Item8
+    - id: P4
+      claim: "Growth is internally funded: capital expenditure was $6,435 m of $15,817 m of operating cash flow in FY2026 [src:COST-10K-FY2026#Item8], up to 33 openings including five relocations are planned for FY2027 against 939 warehouses at the end of FY2026 [src:COST-10K-FY2026#Item7] [src:COST-10K-FY2026#Item1], and every cohort opened since FY2018 still averages below the sales of the mature base [src:COST-10K-FY2026#Item5]."
+      source: COST-10K-FY2026#Item7
+    - id: P5
+      claim: "Surplus cash goes back to owners rather than outside the model: dividends and cash buybacks were 63% of free cash flow over FY2016–FY2026 [src:COST-10K-FY2018#CF] [src:COST-10K-FY2020#CF] [src:COST-10K-FY2022#CF] [src:COST-10K-FY2024#CF] [src:COST-10K-FY2025#CF] [src:COST-10K-FY2026#Item8], and long-term debt fell from $7,491 m at the end of FY2021 to $6,162 m at the end of FY2026 with no equity raised [src:COST-10K-FY2022#BS] [src:COST-10K-FY2026#Item8]."
+      source: COST-10K-FY2026#Item8
+  permanent_loss_paths:
+    - "Management widens the merchandise spread to lift near-term profit; renewals erode only years later, after the price gap that drives the membership loop has gone."
+    - "Members acquired online, through digital promotions and in international markets renew at lower rates than warehouse-acquired members, so the fee pool stops compounding as growth shifts toward them."
+    - "AI shopping agents and online price comparison shrink the perceived value of membership, and comparable traffic turns down."
+    - "The capital expenditure step-up goes into U.S. sites that cannibalize existing warehouses and international markets that do not mature, so incremental returns on capital fall."
+    - "Per-share earnings growth slows once the tax-rate and margin steps of the last decade are spent, and an owner who paid for perpetual compounding loses even though the business stays excellent."
+tests:
+  - id: COST-Q1
+    type: quantitative
+    claim: Growth has not slipped out of the stalwart range
+    origin: template:stalwart
+    severity: watch
+    covers: [growth]
+    pillar: P4
+    effective_from: FY2027Q1
+    metric: revenue_yoy
+    fail_if: below 5% for 4 consecutive quarters
+    rule: {op: "<", threshold: 5, unit: "%", consecutive: 4, period: quarter}
+    warn_if: below 6% for 2 consecutive quarters
+    warn_rule: {op: "<", threshold: 6, unit: "%", consecutive: 2, period: quarter}
+    data: xbrl
+    note: "The template's warn level is lowered because the archive's base case for net sales growth over FY2026–FY2031 starts below it, and reported revenue moves with gasoline prices, which were 11% of FY2026 net sales [src:COST-10K-FY2026#Item1]. Quarters compared against a 53-week year are distorted by the extra week."
+  - id: COST-Q2
+    type: quantitative
+    claim: Return on invested capital holds at the level of an excellent business
+    origin: template:stalwart
+    severity: watch
+    covers: [returns_on_capital, moat]
+    pillar: P3
+    effective_from: FY2027Q1
+    metric: roic
+    fail_if: below 12% for 2 consecutive years
+    rule: {op: "<", threshold: 12, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    note: "Registry definition (after tax, average capital). The archive's own pretax, year-end definition is tested in COST-Q13."
+  - id: COST-Q3
+    type: quantitative
+    claim: Buybacks keep dilution from employee stock in check
+    origin: template:stalwart
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P5
+    effective_from: FY2027Q1
+    metric: diluted_shares_yoy
+    fail_if: above 1% for 2 consecutive years
+    rule: {op: ">", threshold: 1, unit: "%", consecutive: 2, period: year}
+    warn_if: above 0.5% in a fiscal year
+    warn_rule: {op: ">", threshold: 0.5, unit: "%", consecutive: 1, period: year}
+    data: xbrl
+    note: "Threshold rewritten. Costco returns surplus cash mainly through regular and special dividends, and its buybacks absorb dilution from employee stock rather than shrink the share count: weighted diluted shares rose from 441.3 million in FY2016 to 444.4 million in FY2026 [src:COST-10K-FY2018#IS] [src:COST-10K-FY2026#Item8]. The template's zero threshold would fail on the expected pattern, so the test is set to catch dilution beyond it."
+  - id: COST-Q4
+    type: quantitative
+    claim: Profit turns into cash
+    origin: template:stalwart
+    severity: watch
+    covers: [free_cash_flow]
+    pillar: P3
+    effective_from: FY2027Q1
+    metric: fcf_conversion
+    fail_if: below 70% for 2 consecutive years
+    rule: {op: "<", threshold: 70, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    note: "Single-year version of the archive's three-year conversion indicator (COST-Q14); capital expenditure is rising, so single years can dip."
+  - id: COST-L1
+    type: qualitative
+    claim: Management delivers the opening and capital expenditure plans it publishes, or explains changes
+    origin: template:stalwart
+    severity: watch
+    covers: [management]
+    pillar: P4
+    effective_from: FY2027Q1
+    question: "The Form 10-K for fiscal 2026 stated that the company plans up to 33 warehouse openings in fiscal 2027, including five relocations, and expects capital expenditures of approximately $7,500 million in fiscal 2027 [src:COST-10K-FY2026#Item7]. Compare the planned openings and expected capital expenditures for the current fiscal year in the most recent Form 10-K with the figures in this period's documents. Did the company reduce either figure without stating a reason for the change?"
+    fail_if: "Yes"
+    judge: independent_model
+    evidence: required
+    where: ["Form 10-K Item 7 (Liquidity and Capital Resources; Overview)", "Form 10-Q Item 2 of this period and the three before", "Earnings 8-K Exhibits 99.1 and 99.2 of this period and the three before"]
+    lookback: 4
+    judge_notes:
+      - "A reduction counts if the number of planned openings or the expected capital expenditure for the current fiscal year is lower than the figure in the most recent Form 10-K, by any amount."
+      - "A reason stated anywhere in the period's documents counts as a stated reason."
+      - "A change in the year-end warehouse count estimate alone, without a change to planned openings, is not a reduction."
+    note: "Replaces the template's guidance test: Costco publishes no medium-term financial targets, and its testable plans are openings and capital expenditure. Openings have lagged plans before [src:COST-10K-FY2021#Item7] [src:COST-10K-FY2022#Item7]. The context in the question must be refreshed with each new 10-K under a new effective_from."
+  - id: COST-L2
+    type: qualitative
+    claim: Capital is not deployed in acquisitions outside the membership warehouse model
+    origin: archive:breaker
+    severity: breaker
+    covers: [capital_allocation, management]
+    pillar: P5
+    effective_from: FY2027Q1
+    question: "In this period, did the company announce, agree to or complete the acquisition of a business other than membership warehouses and the ancillary and e-commerce operations that serve warehouse members, for total consideration above 10% of the company's total assets at the end of the prior fiscal year? For reference, total assets were $89,045 million at the end of fiscal 2026 [src:COST-10K-FY2026#Item8]."
+    fail_if: "Yes"
+    judge: independent_model
+    evidence: required
+    where: ["Form 8-K Items 1.01 and 2.01 filed in this period", "Acquisition and business combination notes of this period's Form 10-Q or 10-K"]
+    lookback: 1
+    judge_notes:
+      - "Use total assets from the balance sheet of the most recent Form 10-K filed before the agreement."
+      - "Ancillary operations include gasoline stations, pharmacies, e-commerce, business centers, travel and logistics for delivery to members."
+      - "Total consideration includes cash, stock and assumed debt as disclosed."
+    note: "Thesis breaker 5 of the archive."
+  - id: COST-Q5
+    type: quantitative
+    claim: Members in the U.S. and Canada keep renewing
+    origin: archive:breaker
+    severity: breaker
+    covers: [moat, pricing_power]
+    pillar: P1
+    effective_from: FY2027Q1
+    metric_def:
+      id: renewal_rate_us_canada
+      description: Membership renewal rate, U.S. and Canada, at period end (company definition, a trailing measure)
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: 10-K Item 1 (Membership); earnings 8-K Exhibit 99.2 membership slide
+    fail_if: below 90.0% at two consecutive fiscal year-ends
+    rule: {op: "<", threshold: 90.0, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    baseline: {value: 92.3, unit: "%", period: FY2026, as_of: "2026-08-30", source: COST-10K-FY2026#Item1}
+    note: "Thesis breaker 1 of the archive; decided in the 10-K, Item 1."
+  - id: COST-Q6
+    type: quantitative
+    claim: The paid membership base does not shrink
+    origin: archive:breaker
+    severity: breaker
+    covers: [moat, growth]
+    pillar: P1
+    effective_from: FY2027Q1
+    metric_def:
+      id: paid_members_yoy
+      description: Year-on-year change in total paid members at fiscal year-end, on the same counting basis
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K Item 1 (Membership)
+    fail_if: paid members at a fiscal year-end fewer than at the prior fiscal year-end, on the same counting basis
+    rule: {op: "<", threshold: 0, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 84.1, unit: million members, period: FY2026, as_of: "2026-08-30", source: COST-10K-FY2026#Item1}
+    note: "Thesis breaker 2 of the archive. If the company changes its counting method, compare on the restated basis it discloses; the count includes memberships expired and not renewed within the prior 12 months [src:COST-10K-FY2026#Item1]."
+  - id: COST-Q7
+    type: quantitative
+    claim: Members keep coming to the warehouses
+    origin: archive:breaker
+    severity: breaker
+    covers: [moat, competition]
+    pillar: P2
+    effective_from: FY2027Q1
+    metric_def:
+      id: comparable_traffic
+      description: Total company comparable traffic (shopping frequency), year-on-year change (company definition)
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: Earnings 8-K Exhibit 99.2 sales slide
+    fail_if: negative in four consecutive reported quarters
+    rule: {op: "<", threshold: 0, unit: "%", consecutive: 4, period: quarter}
+    data: filing_text
+    baseline: {value: 3.3, unit: "%", period: FY2026Q4, source: COST-8K-2026-09-24#EX-99.2}
+    note: "Thesis breaker 3 of the archive."
+  - id: COST-Q8
+    type: quantitative
+    claim: The cost and price model still produces its operating margin
+    origin: archive:breaker
+    severity: breaker
+    covers: [unit_economics, pricing_power]
+    pillar: P2
+    effective_from: FY2027Q1
+    metric_def:
+      id: operating_margin_total_revenue
+      description: Operating income ÷ total revenue (net sales plus membership fees)
+      unit: "%"
+      frequency: year
+      data: xbrl
+      xbrl: [us-gaap:OperatingIncomeLoss, us-gaap:Revenues]
+      formula: operating_income / total_revenue
+    fail_if: below 3.0% of total revenue in two consecutive fiscal years
+    rule: {op: "<", threshold: 3.0, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    baseline: {value: 3.85, unit: "%", period: FY2026, source: COST-10K-FY2026#Item8}
+    note: "Thesis breaker 4 of the archive; decided in the 10-K, Item 8. The denominator is total revenue including membership fees, not net sales."
+  - id: COST-Q9
+    type: quantitative
+    claim: The U.S. and Canada renewal rate stays in its healthy range
+    origin: archive:watch
+    severity: watch
+    covers: [moat, pricing_power]
+    pillar: P1
+    effective_from: FY2027Q1
+    metric_def:
+      id: renewal_rate_us_canada
+      description: Membership renewal rate, U.S. and Canada, at period end (company definition, a trailing measure)
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: Earnings 8-K Exhibit 99.2 membership slide; 10-K Item 1 (Membership)
+    fail_if: below 91.0% at any quarter-end
+    rule: {op: "<", threshold: 91.0, unit: "%", consecutive: 1, period: quarter}
+    warn_if: below 91.5% at a quarter-end
+    warn_rule: {op: "<", threshold: 91.5, unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    baseline: {value: 92.3, unit: "%", period: FY2026Q4, source: COST-10K-FY2026#Item1}
+    note: "Dashboard indicator 1."
+  - id: COST-Q10
+    type: quantitative
+    claim: The worldwide renewal rate stays in its healthy range
+    origin: archive:watch
+    severity: watch
+    covers: [moat]
+    pillar: P1
+    effective_from: FY2027Q1
+    metric_def:
+      id: renewal_rate_worldwide
+      description: Membership renewal rate, worldwide, at period end (company definition, a trailing measure)
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: Earnings 8-K Exhibit 99.2 membership slide; 10-K Item 1 (Membership)
+    fail_if: below 88.5% at any quarter-end
+    rule: {op: "<", threshold: 88.5, unit: "%", consecutive: 1, period: quarter}
+    warn_if: below 89.0% at a quarter-end
+    warn_rule: {op: "<", threshold: 89.0, unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    baseline: {value: 89.8, unit: "%", period: FY2026Q4, source: COST-10K-FY2026#Item1}
+    note: "Dashboard indicator 2; reads whether members acquired online and abroad renew."
+  - id: COST-Q11
+    type: quantitative
+    claim: Paid membership keeps growing
+    origin: archive:watch
+    severity: watch
+    covers: [growth, moat]
+    pillar: P1
+    effective_from: FY2027Q1
+    metric_def:
+      id: paid_members_yoy
+      description: Year-on-year change in total paid members at quarter-end, on the same counting basis
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: Earnings 8-K Exhibit 99.2 membership slide; 10-K Item 1 (Membership)
+    fail_if: below 2.0% at two consecutive quarter-ends
+    rule: {op: "<", threshold: 2.0, unit: "%", consecutive: 2, period: quarter}
+    warn_if: below 3.0% at a quarter-end
+    warn_rule: {op: "<", threshold: 3.0, unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    baseline: {value: 3.8, unit: "%", period: FY2026Q4, source: COST-8K-2026-09-24#EX-99.2}
+    note: "Dashboard indicator 3."
+  - id: COST-Q12
+    type: quantitative
+    claim: Underlying comparable sales keep growing
+    origin: archive:watch
+    severity: watch
+    covers: [growth, competition]
+    pillar: P4
+    effective_from: FY2027Q1
+    metric_def:
+      id: comparable_sales_ex_gas_fx
+      description: Total company comparable sales growth excluding changes in gasoline prices and foreign exchange, fiscal year (company definition)
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: Fourth-quarter earnings 8-K Exhibit 99.1 comparable-sales table
+    fail_if: below 2.0% for a fiscal year
+    rule: {op: "<", threshold: 2.0, unit: "%", consecutive: 1, period: year}
+    warn_if: below 4.0% for a fiscal year
+    warn_rule: {op: "<", threshold: 4.0, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline: {value: 6.6, unit: "%", period: FY2026, source: COST-8K-2026-09-24#EX-99.1}
+    note: "Dashboard indicator 4; read quarterly, decided on the fiscal-year figure."
+  - id: COST-Q16
+    type: quantitative
+    claim: Comparable traffic stays positive
+    origin: archive:watch
+    severity: watch
+    covers: [moat, competition]
+    pillar: P2
+    effective_from: FY2027Q1
+    metric_def:
+      id: comparable_traffic
+      description: Total company comparable traffic (shopping frequency), year-on-year change (company definition)
+      unit: "%"
+      frequency: quarter
+      data: filing_text
+      where: Earnings 8-K Exhibit 99.2 sales slide
+    fail_if: at or below 0.0% in two consecutive quarters
+    rule: {op: "<=", threshold: 0.0, unit: "%", consecutive: 2, period: quarter}
+    warn_if: below 1.5% in a quarter
+    warn_rule: {op: "<", threshold: 1.5, unit: "%", consecutive: 1, period: quarter}
+    data: filing_text
+    baseline: {value: 3.3, unit: "%", period: FY2026Q4, source: COST-8K-2026-09-24#EX-99.2}
+    note: "Dashboard indicator 5."
+  - id: COST-Q15
+    type: quantitative
+    claim: The operating margin stays in its band, neither eroded nor widened at members' expense
+    origin: archive:watch
+    severity: watch
+    covers: [pricing_power, unit_economics, management]
+    pillar: P2
+    effective_from: FY2027Q1
+    metric_def:
+      id: operating_margin_total_revenue
+      description: Operating income ÷ total revenue (net sales plus membership fees)
+      unit: "%"
+      frequency: year
+      data: xbrl
+      xbrl: [us-gaap:OperatingIncomeLoss, us-gaap:Revenues]
+      formula: operating_income / total_revenue
+    fail_if: below 3.4% for a fiscal year
+    rule: {op: "<", threshold: 3.4, unit: "%", consecutive: 1, period: year}
+    warn_if: outside 3.5%–4.3% for a fiscal year
+    warn_rule: {op: outside, threshold: [3.5, 4.3], unit: "%", consecutive: 1, period: year}
+    data: xbrl
+    baseline: {value: 3.85, unit: "%", period: FY2026, source: COST-10K-FY2026#Item8}
+    note: "Dashboard indicator 6. The upper bound of the healthy band is intentional: a margin above it together with weak traffic would point to a retreat from pricing restraint."
+  - id: COST-Q13
+    type: quantitative
+    claim: Pretax return on capital stays at the level the funding model produces
+    origin: archive:watch
+    severity: watch
+    covers: [returns_on_capital]
+    pillar: P3
+    effective_from: FY2027Q1
+    metric_def:
+      id: pretax_return_on_capital
+      description: Operating income ÷ (total equity including noncontrolling interests + long-term debt including current portion − cash and cash equivalents), at fiscal year-end; short-term investments and leases excluded
+      unit: "%"
+      frequency: year
+      data: xbrl
+      xbrl: [us-gaap:OperatingIncomeLoss, us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest, us-gaap:LongTermDebtNoncurrent, us-gaap:LongTermDebtCurrent, us-gaap:CashAndCashEquivalentsAtCarryingValue]
+      formula: operating_income / (total_equity + long_term_debt_noncurrent + long_term_debt_current - cash)
+    fail_if: below 35% for a fiscal year
+    rule: {op: "<", threshold: 35, unit: "%", consecutive: 1, period: year}
+    warn_if: below 40% for a fiscal year
+    warn_rule: {op: "<", threshold: 40, unit: "%", consecutive: 1, period: year}
+    data: xbrl
+    baseline: {value: 53.7, unit: "%", period: FY2026, source: COST-10K-FY2026#Item8, note: "Calculated: operating income 11,685 ÷ (35,803 + 3,914 + 2,248 − 20,207) [src:COST-10K-FY2026#Item8]."}
+    note: "Dashboard indicator 7, the archive's own definition (pretax, year-end capital)."
+  - id: COST-Q14
+    type: quantitative
+    claim: Free cash flow keeps pace with net income over three years
+    origin: archive:watch
+    severity: watch
+    covers: [free_cash_flow, capital_allocation]
+    pillar: P3
+    effective_from: FY2027Q1
+    metric_def:
+      id: fcf_conversion_3y
+      description: Free cash flow (operating cash flow − capital expenditure) ÷ consolidated net income, summed over the trailing three fiscal years
+      unit: "%"
+      frequency: year
+      data: xbrl
+      xbrl: [us-gaap:NetCashProvidedByUsedInOperatingActivities, us-gaap:PaymentsToAcquirePropertyPlantAndEquipment, us-gaap:ProfitLoss, us-gaap:NetIncomeLoss]
+      formula: sum_3y(operating_cash_flow - capex) / sum_3y(net_income)
+    fail_if: below 65%
+    rule: {op: "<", threshold: 65, unit: "%", consecutive: 1, period: year}
+    warn_if: below 80%
+    warn_rule: {op: "<", threshold: 80, unit: "%", consecutive: 1, period: year}
+    data: xbrl
+    baseline: {value: 96.6, unit: "%", period: FY2024–FY2026, source: COST-10K-FY2026#Item8, note: "Calculated: free cash flow 23,848 ÷ net income 24,692 [src:COST-10K-FY2026#Item8]."}
+    note: "Dashboard indicator 8. FY2026 operating cash flow included working-capital and deferred-tax tailwinds [src:COST-10K-FY2026#Item7] [src:COST-10K-FY2026#Item8]."
+  - id: COST-S1
+    type: staleness
+    claim: The moat judgment goes no longer than four quarters without a review
+    origin: template:stalwart
+    severity: watch
+    covers: [moat]
+    pillar: P1
+    effective_from: FY2027Q1
+    section: moat
+    max_age_quarters: 4
+  - id: COST-S2
+    type: staleness
+    claim: The management judgment goes no longer than four quarters without a review
+    origin: template:stalwart
+    severity: watch
+    covers: [management]
+    effective_from: FY2027Q1
+    section: management
+    max_age_quarters: 4
+    note: "Leadership is in transition at the top and in senior operating roles, so this review matters more than usual."
+  - id: COST-S3
+    type: staleness
+    claim: The bear case (where this is most likely wrong) is re-examined every two quarters
+    origin: template:stalwart
+    severity: watch
+    covers: [other]
+    effective_from: FY2027Q1
+    section: bear_case
+    max_age_quarters: 2
+todo:
+  - "Confirm against Costco's EDGAR companyfacts that us-gaap:Revenues carries total revenue (net sales plus membership fees) and that the equity and debt concepts in pretax_return_on_capital are populated; otherwise switch those metric_defs to filing_text."
+  - "Refresh the context in COST-L1 with the plans in each new 10-K, as a changed test with a new effective_from."
+  - "Fill the moat series gaps (unknowns U2): paid member counts at the ends of FY2017–FY2020 and FY2022–FY2024, renewal rates at the ends of FY2017–FY2020 and FY2023–FY2024, from each year's 10-K Item 1 and Item 7."
+  - "Add segment operating income for FY2022–FY2023 (unknowns U6) to complete the five-year reading of criterion (a) for management."
+  - "Record past management guidance (FY2017, FY2022 and FY2023 capital expenditure; FY2022 openings) in the ledger once the filing dates of the FY2016, FY2021 and FY2022 10-Ks are confirmed."
+  - "Watch for a new share repurchase authorization before the current one expires in January 2027 [src:COST-10K-FY2026#Item5] (unknowns U9)."
+  - "The culture rating rests only on company-reported primary filings; no independent employee, supplier or customer evidence has been reviewed yet."

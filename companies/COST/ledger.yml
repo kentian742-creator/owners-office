@@ -1,0 +1,147 @@
+company: COST
+entries:
+  - id: COST-LM-01
+    side: management
+    kind: capex_plan
+    statement: "The company expects to spend approximately $7,500 million on capital expenditures in fiscal 2027 [src:COST-10K-FY2026#Item7]."
+    made_at: "2026-10-07"
+    due: "2027-08-29"
+    source: COST-10K-FY2026#Item7
+    status: pending
+    note: "Settled against additions to property and equipment in the FY2027 10-K cash flow statement."
+  - id: COST-LM-02
+    side: management
+    kind: other
+    statement: "The company plans up to 33 warehouse openings in fiscal 2027, including five relocations [src:COST-10K-FY2026#Item7]."
+    made_at: "2026-10-07"
+    due: "2027-08-29"
+    source: COST-10K-FY2026#Item7
+    status: pending
+    note: "Settled against openings reported in the FY2027 10-K Item 7."
+  - id: COST-LM-03
+    side: management
+    kind: numeric_target
+    statement: "The company estimates 967 warehouses at the end of fiscal 2027 [src:COST-8K-2026-09-24#EX-99.2]."
+    made_at: "2026-09-24"
+    due: "2027-08-29"
+    source: COST-8K-2026-09-24#EX-99.2
+    status: pending
+    note: "Settled against the year-end warehouse count in the FY2027 10-K Item 2."
+  - id: COST-LM-04
+    side: management
+    kind: other
+    statement: "For the $155 million of IEEPA tariff refunds received after fiscal 2026, the company intends to continue to invest the majority of the refunds in increased value for the member [src:COST-10K-FY2026#Item7]."
+    made_at: "2026-10-07"
+    due: "2027-08-29"
+    source: COST-10K-FY2026#Item7
+    status: pending
+    note: "Settled against the FY2027 10-Q and 10-K gross margin discussion of refunds and price reinvestment."
+  - id: COST-LM-05
+    side: management
+    kind: buyback
+    statement: "The share repurchase program authorized in January 2023 provides for up to $4,000 million [src:COST-10K-FY2026#Item5]. The amount remaining at the end of fiscal 2026 was $1,115 million, and the authorization expires in January 2027 [src:COST-10K-FY2026#Item5]."
+    made_at: "2026-10-07"
+    due: "2027-01-31"
+    source: COST-10K-FY2026#Item5
+    status: pending
+    note: "Recorded from the FY2026 10-K; the exact approval date in January 2023 is not stated in the archive. An authorization is a ceiling, not a promise to spend."
+  - id: COST-LM-06
+    side: management
+    kind: numeric_target
+    statement: "The company estimated 944 warehouses at the end of fiscal 2026 [src:COST-8K-2025-09-25#EX-99.2]."
+    made_at: "2025-09-25"
+    due: "2026-08-30"
+    source: COST-8K-2025-09-25#EX-99.2
+    status: pending
+    note: "Already due; settled independently against the FY2026 10-K Item 2."
+  - id: COST-LM-07
+    side: management
+    kind: numeric_target
+    statement: "The company estimated 942 warehouses at the end of fiscal 2026 [src:COST-8K-2025-12-11#EX-99.2]."
+    made_at: "2025-12-11"
+    due: "2026-08-30"
+    source: COST-8K-2025-12-11#EX-99.2
+    status: pending
+    note: "Already due; settled independently against the FY2026 10-K Item 2."
+  - id: COST-LM-08
+    side: management
+    kind: numeric_target
+    statement: "The company estimated 940 warehouses at the end of fiscal 2026 [src:COST-8K-2026-05-28#EX-99.2]."
+    made_at: "2026-05-28"
+    due: "2026-08-30"
+    source: COST-8K-2026-05-28#EX-99.2
+    status: pending
+    note: "Already due; settled independently against the FY2026 10-K Item 2."
+  - id: COST-LS-01
+    side: system
+    kind: prediction
+    statement: "The U.S. and Canada membership renewal rate is at or above 91.5% at the end of fiscal 2027; it was 92.3% at the end of fiscal 2026 [src:COST-10K-FY2026#Item1]."
+    probability: 0.75
+    made_at: "2026-10-11"
+    due: "2027-08-29"
+    source: COST-10K-FY2026#Item1
+    status: pending
+    note: "Settled on the year-end U.S. and Canada renewal rate in the FY2027 10-K Item 1; kept if at or above the stated level."
+  - id: COST-LS-02
+    side: system
+    kind: prediction
+    statement: "The board declares a special cash dividend before the end of fiscal 2028; cash and short-term investments were $21,301 million at the end of fiscal 2026 [src:COST-10K-FY2026#Item7]."
+    probability: 0.60
+    made_at: "2026-10-11"
+    due: "2028-09-03"
+    source: COST-10K-FY2026#Item7
+    status: pending
+    note: "Due date is the end of fiscal 2028. Kept if an 8-K, 10-Q or 10-K discloses a special dividend declared on or before that date."
+  - id: COST-LS-03
+    side: system
+    kind: prediction
+    statement: "Net sales grow at a compound rate between 6% and 10% a year from fiscal 2026 to fiscal 2031, excluding the effect of changes in gasoline prices, from $297,247 million in fiscal 2026 [src:COST-10K-FY2026#Item8]."
+    probability: 0.70
+    made_at: "2026-10-11"
+    due: "2031"
+    source: COST-10K-FY2026#Item8
+    status: pending
+    note: "Settled on the FY2031 10-K: compound annual growth of net sales over the five fiscal years, with each year's growth adjusted by the gasoline-price effect the company discloses in Item 7; kept if inside the stated band."
+  - id: COST-LS-04
+    side: system
+    kind: prediction
+    statement: "Diluted EPS compounds at between 7% and 12% a year from fiscal 2026 to fiscal 2031, from $20.76 in fiscal 2026 [src:COST-10K-FY2026#Item8]."
+    probability: 0.65
+    made_at: "2026-10-11"
+    due: "2031"
+    source: COST-10K-FY2026#Item8
+    status: pending
+    note: "Settled on reported diluted EPS in the FY2031 10-K; kept if the compound annual growth rate is inside the stated band."
+  - id: COST-LS-05
+    side: system
+    kind: prediction
+    statement: "Weighted average diluted shares for fiscal 2027 are within 0.5% above or below the fiscal 2026 figure of 444.4 million [src:COST-10K-FY2026#Item8]."
+    probability: 0.85
+    made_at: "2026-10-11"
+    due: "2027-08-29"
+    source: COST-10K-FY2026#Item8
+    status: pending
+    note: "Settled on the full-year weighted average diluted share count in the FY2027 10-K income statement."
+  - id: COST-LS-06
+    side: system
+    kind: prediction
+    statement: "Membership fee revenue grows by less than 11% in fiscal 2027; it grew 11% in fiscal 2026, to $5,907 million [src:COST-10K-FY2026#Item7] [src:COST-10K-FY2026#Item8]."
+    probability: 0.85
+    made_at: "2026-10-11"
+    due: "2027-08-29"
+    source: COST-10K-FY2026#Item8
+    status: pending
+    note: "Settled on membership fees in the FY2027 10-K income statement against the FY2026 figure; a 53-week fiscal year would be noted but not adjusted."
+buybacks:
+  - {period: FY2015, avg_price: 142.87, shares: 3456000, source: COST-10K-FY2016#Item7}
+  - {period: FY2016, avg_price: 149.90, shares: 3184000, source: COST-10K-FY2016#Item7}
+  - {period: FY2017, avg_price: 157.87, shares: 2998000, source: COST-10K-FY2018#Item7}
+  - {period: FY2018, avg_price: 183.13, shares: 1756000, source: COST-10K-FY2018#Item7}
+  - {period: FY2019, avg_price: 225.16, shares: 1097000, source: COST-10K-FY2020#Item7}
+  - {period: FY2020, avg_price: 308.45, shares: 643000, source: COST-10K-FY2021#Item7}
+  - {period: FY2021, avg_price: 364.39, shares: 1358000, source: COST-10K-FY2021#Item7}
+  - {period: FY2022, avg_price: 511.46, shares: 863000, source: COST-10K-FY2022#Item7}
+  - {period: FY2023, avg_price: 504.68, shares: 1341000, source: COST-10K-FY2024#Item7}
+  - {period: FY2024, avg_price: 695.29, shares: 1004000, source: COST-10K-FY2026#Item8-Note6}
+  - {period: FY2025, avg_price: 957.66, shares: 943000, source: COST-10K-FY2026#Item8-Note6}
+  - {period: FY2026, avg_price: 950.90, shares: 891000, source: COST-10K-FY2026#Item8-Note6}
