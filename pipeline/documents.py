@@ -30,6 +30,7 @@ import datetime as dt
 import functools
 import re
 from collections.abc import Iterable, Mapping, Sequence
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from . import edgar, slicing
@@ -809,22 +810,37 @@ def tag_with_ordinal(ticker: str, filing: edgar.Filing, cal: edgar.FiscalCalenda
 _SENTENCE_END_RE = re.compile(r"(?<=[.!?;])\s+(?=[A-Z(\"'“$])")
 MAX_EXCERPT_CHARS = 400
 _PLAIN_NUMBER_RE = re.compile(r"[-\u2212]?\d{1,3}(?:,\d{3})+(?:\.\d+)?|[-\u2212]?\d+(?:\.\d+)?")
+_NUMBER_FORM_RE = re.compile(r"[(\-\u2212]?[\d,]*\d(?:\.\d+)?\)?")  # a form that is a number alone: "(3)", "16,698"
 _ISO_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+_RANGE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%?\s*(?:-|\u2013|\u2014|to)\s*(\d+(?:\.\d+)?)\s*%?")  # "3.5-4.5"
+_BILLIONS_RE = re.compile(r"(?i)\b(?:bn|billions?)\b")
+_MILLIONS_RE = re.compile(r"(?i)\b(?:m|mn|mm|millions?)\b")
+_SHARES_RE = re.compile(r"(?i)\bshares?\b")
+_DASHES = "\\-\u2010\u2011\u2012\u2013\u2014"
 
 
-def value_forms(value: Any) -> list[str]:
-    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); 17 -> 17.0 too; a
-    date -> July 24, 2026 and 2026-07-24; a number written as text ("36") as that number; other text as is, then the
-    numbers in it ("12,256 against 11,200" -> 12,256, 11,200)."""
+def value_forms(value: Any, unit: Any = None) -> list[str]:
+    """The ways a value may be written in a filing: 16698 -> 16,698; 72.229 -> 72.229; -3 -> (3); 17 -> 17.0 and
+    135.2 -> 135.20 too; a date -> July 24, 2026 and 2026-07-24; a number written as text ("36") as that number; a
+    range ("3.5-4.5") also as "3.5% to 4.5%" and "3.5 to 4.5"; other text as is, then the numbers in it ("12,256
+    against 11,200" -> 12,256, 11,200). An amount whose unit is billions is also looked for in millions, as tables
+    print it (7.876 USD bn -> 7,876), and one in millions in billions (1,500 USD m -> 1.5); shares are not scaled."""
+    forms = _forms(value)
+    scaled = [form for item in (value if isinstance(value, (list, tuple)) else [value])
+              for form in _scaled_forms(item, unit)]
+    return list(dict.fromkeys(forms + scaled))
+
+
+def _forms(value: Any) -> list[str]:
     if isinstance(value, bool) or value is None:
         return []
     if isinstance(value, (list, tuple)):
-        return [form for item in value for form in value_forms(item)]
+        return [form for item in value for form in _forms(item)]
     if isinstance(value, (dt.date, dt.datetime)):
         return slicing.date_forms(value)
     if isinstance(value, str) and _PLAIN_NUMBER_RE.fullmatch(value.strip()):  # as written ("4.90"), then as a number
         number = float(value.strip().replace(",", "").replace("−", "-"))
-        return list(dict.fromkeys([value.strip(), *value_forms(int(number) if number.is_integer() else number)]))
+        return list(dict.fromkeys([value.strip(), *_forms(int(number) if number.is_integer() else number)]))
     if isinstance(value, str) and _ISO_DATE_RE.fullmatch(value.strip()):
         try:
             return slicing.date_forms(dt.date.fromisoformat(value.strip()))
@@ -839,33 +855,76 @@ def value_forms(value: Any) -> list[str]:
         else:
             text = f"{abs(number):,.10f}".rstrip("0").rstrip(".")
             forms += [text, text.replace(",", "")]
+            if len(text.rpartition(".")[2]) == 1:  # "$135.20" for an average price of 135.2
+                forms += [f"{text}0", f"{text.replace(',', '')}0"]
         if number < 0:
             forms = [f"({f})" for f in forms] + [f"-{f}" for f in forms] + [f"−{f}" for f in forms]
-        return list(dict.fromkeys(f for f in forms if f and f not in ("0", "0.0")))
+        return list(dict.fromkeys(f for f in forms if f and f not in ("0", "0.0", "0.00")))
     text = " ".join(str(value).split())
     forms = [text] if len(text) >= 3 else []
+    if match := _range(text):
+        low, high = match.groups()
+        forms += [f"{low} to {high}"] if _YEAR_RE.match(low) else [f"{low}% to {high}%", f"{low} to {high}",
+                                                                     f"{low}%-{high}%"]
     return list(dict.fromkeys(forms + [n for n in slicing.number_forms(text) if n != text]))
 
 
-def value_patterns(value: Any) -> list[re.Pattern[str]]:
-    """value_forms() as patterns: numbers match as whole numbers (16,698 does not match 116,698), text ignores case."""
-    patterns = []
-    for form in value_forms(value):
-        if any(ch.isdigit() for ch in form):
-            patterns.append(re.compile(r"(?<![\d.,])" + re.escape(form) + r"(?![\d]|[.,]\d)"))
+def _range(text: str) -> re.Match[str] | None:
+    """A range of two numbers, the lower first ("3.5-4.5", "2017 to 2019"); not a year and month ("2024-01")."""
+    match = _RANGE_RE.fullmatch(text)
+    return match if match and float(match.group(1)) < float(match.group(2)) else None
+
+
+def _scaled_forms(value: Any, unit: Any) -> list[str]:
+    """A number in billions as millions, or in millions as billions, written as value_forms() writes it."""
+    if isinstance(value, bool) or not unit or _SHARES_RE.search(str(unit)):
+        return []
+    try:
+        amount = Decimal(str(value).strip().replace(",", "").replace("−", "-"))
+    except (InvalidOperation, ValueError):
+        return []
+    if _BILLIONS_RE.search(str(unit)):
+        scaled = amount * 1000
+    elif _MILLIONS_RE.search(str(unit)):
+        scaled = amount / 1000
+    else:
+        return []
+    if scaled == scaled.to_integral_value():
+        return _forms(int(scaled))
+    if -scaled.normalize().as_tuple().exponent <= 3:  # 2.875 billion, not 0.0481 (48.1 million)
+        return _forms(float(scaled))
+    return []
+
+
+def value_patterns(value: Any, unit: Any = None) -> list[re.Pattern[str]]:
+    """value_forms() as patterns. Numbers match as whole numbers (16,698 does not match 116,698); text matches whole
+    words, ignoring case, a space also as a hyphen ("one month" matches "one-month")."""
+    return [_form_pattern(form) for form in value_forms(value, unit)]
+
+
+@functools.lru_cache(maxsize=4096)
+def _form_pattern(form: str) -> re.Pattern[str]:
+    if _NUMBER_FORM_RE.fullmatch(form):
+        return re.compile(r"(?<![\d.,])" + re.escape(form) + r"(?![\d]|[.,]\d)")
+    body = ""
+    for i, part in enumerate(re.split(rf"([\s{_DASHES}]+)", form)):
+        if i % 2:  # a run of spaces and dashes: a dash matches a dash, a space a space or a dash
+            body += rf"\s*[{_DASHES}]\s*" if re.search(rf"[{_DASHES}]", part) else rf"[\s{_DASHES}]+"
         else:
-            patterns.append(re.compile(re.escape(form), re.I))
-    return patterns
+            body += re.escape(part)
+    start = r"(?<![\w.,])" if form[:1].isdigit() else r"(?<!\w)" if form[:1].isalnum() else ""
+    end = r"(?![\d]|[.,]\d)" if form[-1:].isdigit() else r"(?!\w)" if form[-1:].isalnum() else ""
+    return re.compile(start + body + end, re.I)
 
 
 _YEAR_RE = re.compile(r"^(19|20)\d{2}$")
 
 
-def distinctive_patterns(value: Any) -> list[re.Pattern[str]]:
+def distinctive_patterns(value: Any, unit: Any = None) -> list[re.Pattern[str]]:
     """value_patterns() without the forms that match almost anywhere in a filing: years, one- and two-digit whole
     numbers, and text shorter than 15 characters (used to cut a long document to windows, pipeline/slicing.py)."""
     kept = []
-    for form, pattern in zip(value_forms(value), value_patterns(value)):
+    for form, pattern in zip(value_forms(value, unit), value_patterns(value, unit)):
         bare = form.strip("()-−")
         if any(ch.isdigit() for ch in form):
             if _YEAR_RE.match(bare) or re.fullmatch(r"\d{1,2}(?:\.0)?", bare):  # "5" and "5.0" alike
@@ -878,7 +937,8 @@ def distinctive_patterns(value: Any) -> list[re.Pattern[str]]:
 
 _STOP_WORDS = frozenset({"with", "from", "that", "this", "than", "into", "over", "under", "each", "year", "years",
                          "total", "fiscal", "period", "against", "current", "prior", "company", "million", "billion",
-                         "percent", "which", "their", "were", "have", "been", "also"})
+                         "percent", "percentage", "which", "their", "were", "have", "been", "also", "other",
+                         "number"})
 
 
 # Abbreviations a fact's description uses for what a filing writes out ("R&D as share of revenue" is the row
@@ -888,19 +948,22 @@ _ABBREVIATIONS: dict[str, tuple[str, ...]] = {
     "d&a": ("depreciation", "amortization"), "capex": ("capital", "expenditure", "property", "equipment"),
     "sbc": ("stock", "based", "compensation"), "eps": ("earnings", "share"), "fcf": ("free", "cash", "flow"),
     "ocf": ("operating", "cash", "flow"), "roic": ("return", "invested", "capital"),
+    "ceo": ("chief", "executive", "officer"), "cfo": ("chief", "financial", "officer"),
+    "coo": ("chief", "operating", "officer"),
 }
 _ABBREVIATION_RE = re.compile(r"(?<![a-z&])(" + "|".join(re.escape(a) for a in _ABBREVIATIONS) + r")(?![a-z&])")
 
 
-_SHORT_WORDS = frozenset({"tax", "net", "oem", "gpu", "cpu", "ceo", "cfo"})  # three letters, yet telling
-_SYNONYMS = {"buyback": "repurchase"}
+_SHORT_WORDS = frozenset({"tax", "net", "oem", "gpu", "cpu", "roi", "roa", "age"})  # three letters, yet telling
+_SYNONYMS = {"buyback": "repurchase", "growth": "increase", "grew": "increase", "grow": "increase"}
 STEM_LETTERS = 7  # words are compared by their first letters: "operating" and "operations", "repurchased" and "-ase"
 
 
 def _keywords(text: str) -> set[str]:
     """The words of a text that can tie a fact to a sentence, by their first STEM_LETTERS letters: four letters or
-    more (or a telling three-letter word such as "tax"), not stop words, a plural's "s" dropped, abbreviations
-    written out ("R&D" is "research" and "development"), "buyback" read as "repurchase"."""
+    more (or a telling three-letter word such as "tax" or "ROI"), not stop words, a plural's "s" dropped,
+    abbreviations written out ("R&D" is "research" and "development", "CEO" "chief executive officer"), "buyback" read
+    as "repurchase" and "growth" as "increase"."""
     lower = text.lower()
     words = re.findall(r"[a-z]{4,}", lower) + [w for w in re.findall(r"(?<![a-z])[a-z]{3}(?![a-z])", lower)
                                                 if w in _SHORT_WORDS]
@@ -1105,12 +1168,45 @@ def _note_headings(lines: Sequence[str]) -> dict[int, int]:
     return {i: number for i, (number, _) in sorted(heads.items()) if i not in rows}
 
 
-RARE_SHARE = 0.015  # a word in at most this share of a document's lines (or RARE_LINES) ties a fact to a line alone
+# A word a line shares with a fact weighs by how rare it is in the filing: 2 when it is in at most RARE_SHARE of the
+# filing's lines (or RARE_LINES), COMMON_WEIGHT when it is in more than COMMON_SHARE (and COMMON_LINES), as "net" and
+# "sales" are in a retailer's 10-K, and 1 otherwise.
+RARE_SHARE = 0.015
 RARE_LINES = 3
+COMMON_SHARE = 0.05
+COMMON_LINES = 10
+COMMON_WEIGHT = 0.5
 DISTINCT_DIGITS = 4  # a number with this many digits, not a year, rarely recurs by chance ("39,044"); "22" does
-DISTINCT_TEXT = 15  # a quoted phrase this long is found where it was said
+DISTINCT_TEXT = 15  # a quoted phrase this long is found where it was said...
+DISTINCT_LINES = 3  # ...when the filing prints it in at most this many lines ("short-term borrowings" recurs)
+HEADING_REACH = 30  # how many lines above a table row its title and its header of fiscal years are looked for
+PROSE_WORDS = 12  # a line with this many words is text, not a table's row or title
 _LINE_LABEL_RE = re.compile(r"^\W*([A-Za-z][^\d$(—–]*)")  # a table row's label: the words before its figures
 _FOOTNOTE_MARK_RE = re.compile(r"\(\d\)")
+_NUMBER = r"(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?"
+_CELL = rf"\(\s*[$€£]?\s*{_NUMBER}\s*\)\s*%?|[$€£]?\s*[-−]?{_NUMBER}\s*%?|[—–]"  # "$ 1,234", "( 26,642 )", "4.3 %", "—"
+_CELL_RE = re.compile(_CELL)
+_CELLS_END_RE = re.compile(rf"(?:(?:^|\s+)(?:{_CELL}))+\s*$")  # the figures that end a table row
+_YEARS_END_RE = re.compile(r"(?<![\w.,])((?:(?:19|20)\d{2}\s+)+(?:19|20)\d{2})\s*$")  # a header: "... 2026 2025 2024"
+_FISCAL_YEAR_RE = re.compile(r"^FY((?:19|20)\d{2})(?:\s+year[- ]end)?$", re.I)
+# The fiscal years a sentence speaks of: "in fiscal 2026 and 2025", "for fiscal 2026, 2025 and 2024"
+_FISCAL_YEARS_RE = re.compile(r"(?i)\bfiscal(?:\s+years?)?\s+((?:19|20)\d{2}(?:\s*(?:,|and|,\s*and|to|through|-|–)\s*"
+                              r"(?:19|20)\d{2})*)")
+_MONTH_BEFORE_RE = re.compile(r"(?i)\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*$")
+# A number that names a part of a document or a proposal ("Note 5", "Item 7", "Form 10-K", "Proposals 5 through 8")
+_REFERENCE_BEFORE_RE = re.compile(r"(?i)\b(?:proposals?|items?|notes?|pages?|exhibits?|sections?|parts?|rules?|"
+                                  r"schedules?|forms?|no\.)\s+(?:[\dA-Z][\w.]*\s*(?:,|and|or|through|to|-|–)\s*)*$")
+_WORDS_RE = re.compile(r"[A-Za-z]{2,}")
+# What a figure measures, by the words around it: "4.3%" a percentage, "$3.9 billion" money, "5 basis points"...
+_AFTER_UNIT_RE = re.compile(r"\s*(?:(%|percent\b|percentage points?\b)|(basis points?\b|bps\b)|(billion\b|million\b|"
+                            r"thousand\b|bn\b)|(x\b|times\b))", re.I)
+_UNIT_CLASHES = {  # what a fact's unit measures -> what the filing may not print next to its value
+    "percent": {"money", "amount", "bps", "multiple"}, "bps": {"percent", "money", "amount", "multiple"},
+    "money": {"percent", "bps", "multiple"}, "multiple": {"percent", "money", "amount", "bps"},
+    "count": {"percent", "money", "bps"},
+}
+_NO_UNITS = frozenset({"", "none", "null", "not stated", "unstated", "n/a", "na", "unknown"})
+_RATIO_UNIT_RE = re.compile(r"\bper\s+(?:us)?[$€£]|\bper\s+(?:usd|eur|gbp)\b")
 
 
 @functools.lru_cache(maxsize=16)
@@ -1126,59 +1222,289 @@ def _line_frequencies(document: str) -> tuple[int, Mapping[str, int]]:
     return lines, counts
 
 
-def cut_excerpt(document: str, value: Any, words: str = "", *, strict: bool = False,
-                within: str | None = None) -> str | None:
+@functools.lru_cache(maxsize=256)
+def _form_lines(document: str, pattern: re.Pattern[str]) -> int:
+    """How many lines of a document hold a value form."""
+    return sum(1 for line in document.splitlines() if pattern.search(line))
+
+
+@dataclasses.dataclass(frozen=True)
+class _Candidate:
+    """A sentence (or table row) that holds the value, ranked by rank()."""
+
+    whole: bool  # it holds both ends of a range ("3.5-4.5") or every year of "2019-11 to 2026-01"
+    score: float  # the weight of the fact's words it shares, its table's title included
+    column: bool  # the value stands in the column of the fact's fiscal year
+    labelled: bool  # its row's label consists of the fact's words
+    words: int  # how many of the fact's words it shares
+    order: int  # earlier forms and lines first
+    text: str
+
+    def rank(self) -> tuple[Any, ...]:
+        return self.whole, self.score, self.column, self.labelled, self.words, -self.order
+
+
+def cut_excerpt(document: str, value: Any, words: str = "", *, strict: bool = False, within: str | None = None,
+                entity: str = "", unit: Any = None, period: Any = None, filing_year: int | None = None) -> str | None:
     """The sentence (or table row) of the document that contains the value and says what the fact is about, at most
     MAX_EXCERPT_CHARS long; None when there is none. Numbers are matched as whole numbers (16,698 does not match
-    116,698).
+    116,698), an amount in billions also as millions (value_forms).
 
-    Without `words`, the first sentence holding the value. With `words` (what the fact is about), the sentence that
-    shares the most words that are rare in the document (in at most RARE_SHARE of the lines of `within`, the whole
-    filing when `document` is a part of it), then the most words, then the first. How much it must share depends on
-    how distinctive the value is:
-    - a number of DISTINCT_DIGITS digits or more (not a year), or a phrase of DISTINCT_TEXT characters: one word, else
-      the first sentence that holds it;
-    - a shorter number: two words, or one rare word, or every word of the label of the table row it stands in
-      ("Revenue ... Up 65%" for a growth in revenue; not "Operating leases (2)" for a change in operating income);
-    - a year, which filings print everywhere, and `strict`, a figure the dossier derived (the filing rarely prints
-      it): two words, one of them rare.
+    Without `words` or `entity`, the first sentence holding the value. Otherwise a sentence qualifies by the words it
+    shares with `words` (what the fact measures) and `entity` (whom it is about, other than the filer itself), each
+    weighed by how rare it is in the filing (`within`, the whole filing, when `document` is a part of it): 2 for a
+    word in at most RARE_SHARE of its lines, COMMON_WEIGHT for one in more than COMMON_SHARE (the company's name,
+    "net sales"), else 1. Common words never qualify a sentence alone, and the value's own words never count: every
+    sentence holding "one month" shares "month". A sentence qualifies when it holds every word of `words` (two or
+    more), when the label of its table row consists of the fact's words ("Revenue ... Up 65%" for a growth in
+    revenue; not "Operating leases (2)" for a change in operating income), or when the weight it shares reaches:
+    - 1, for a number of DISTINCT_DIGITS digits or more (not a year), a phrase of DISTINCT_TEXT characters that the
+      filing prints in at most DISTINCT_LINES lines, or a range whose ends both stand in it; else the first sentence
+      that holds it;
+    - 2, for another number;
+    - 3 with a rare word, for a short word or phrase ("sold", "none"), a year, which filings print everywhere, and
+      `strict`, a figure the dossier derived (the filing rarely prints it); the row's label does not suffice.
+    A sentence is passed over
+    - when `entity` has words and none of them is in its line, its row's label or its table's title: it is about
+      another segment or person ("Walmart U.S." for Walmart International);
+    - when the value stands in a table column headed by another fiscal year than the fact's `period` ("FY2024"), or,
+      as a figure, in a sentence that names only other fiscal years, as long as the filing names its fiscal years
+      as the archive does (its tables' latest year and "fiscal 2026" are its `filing_year`);
+    - when the filing prints the value with another unit than the fact's `unit`: "5 basis points" or "$3.9 billion"
+      for a percentage, "$1.9 billion" for a multiple;
+    - when the number is the day of a date ("July 31"), the number of a note, item, page or proposal ("Proposals 5
+      through 8"), or a footnote marker opening the line ("(1)");
+    - when it holds only one end of a range ("3.5" of "3.5-4.5") or one year of a value with several.
+    Of the sentences that qualify, the one holding a whole range comes first, then the highest weight (its table's
+    title counted too), the column of the fact's year, a row labelled with the fact's words, the most words, the first.
     Otherwise no excerpt: an unrelated sentence misleads more than none. NVIDIA's first audit found "Other (117)
-    (0.3)%" attached to a revenue share and "Operating leases (2)" to a 2% change in operating income (04A-Q04, -Q07)."""
+    (0.3)%" attached to a revenue share and "Operating leases (2)" to a 2% change in operating income (04A-Q04, -Q07);
+    Walmart's found a vesting period of "one month" attached to a one-month consolidation lag, and the International
+    segment's margin row attached to Sam's Club's margin (04A-Q01, -Q10)."""
     lines = document.splitlines()
-    wanted = _keywords(words)
-    total, frequency = _line_frequencies(within or document) if wanted else (0, {})
+    forms = value_forms(value, unit)
+    patterns = value_patterns(value, unit)
+    about = _keywords(words) | _keywords(entity)
+    own = set().union(*(_keywords(form) for form in forms))
+    wanted = about - own
+    metric = _keywords(words) - own
+    filing = within or document
+    total, frequency = _line_frequencies(filing) if about else (0, {})
     rare_limit = max(RARE_LINES, RARE_SHARE * total)
-    best: tuple[int, int, str] | None = None  # (rare words shared, words shared, excerpt)
+    common_limit = max(COMMON_LINES, COMMON_SHARE * total)
+
+    def weight(word: str) -> float:
+        lines_with = frequency.get(word, 0)
+        return 2 if lines_with <= rare_limit else COMMON_WEIGHT if lines_with > common_limit else 1
+
+    names = _keywords(entity) - own
+    year = _fiscal_year(period)
+    # the filing names its fiscal years as the archive does ("fiscal 2026" in WMT-10K-FY2026), so a sentence about
+    # other fiscal years than the fact's is about another period
+    years_named = bool(year and filing_year and re.search(rf"(?i)\bfiscal\s+{filing_year}\b", filing))
+    clashes = _UNIT_CLASHES.get(_unit_kind(unit), set())
+    parts = _parts(value)
+    part_forms = {form for group in parts for form in group}
+    best: _Candidate | None = None
     fallback = None
-    for form, pattern in zip(value_forms(value), value_patterns(value)):
+    order = 0
+    for form, pattern in zip(forms, patterns):
         digits = sum(ch.isdigit() for ch in form)
-        year = bool(_YEAR_RE.match(form.strip("()-−")))
-        distinct = not strict and (len(form) >= DISTINCT_TEXT if not digits else digits >= DISTINCT_DIGITS and not year)
+        is_year = bool(_YEAR_RE.match(form.strip("()-−")))
+        long_form = len(form) >= DISTINCT_TEXT if not digits else digits >= DISTINCT_DIGITS and not is_year
+        distinct = not strict and long_form and (digits > 0 or _form_lines(filing, pattern) <= DISTINCT_LINES)
+        word_like = not digits and len(form) < DISTINCT_TEXT
+        day = bool(re.fullmatch(r"\d{1,2}", form))
+        reference = bool(re.fullmatch(r"\d{1,3}", form))
+        numeric = bool(_NUMBER_FORM_RE.fullmatch(form))
         marker = bool(_FOOTNOTE_MARK_RE.fullmatch(form))
         for index, line in enumerate(lines):
-            found = pattern.search(line)
-            if not found or (marker and not line[:found.start()].strip()):  # "(1)" opening a line marks a footnote
+            if not pattern.search(line):
                 continue
-            sentence = next((s for s in _sentences(line) if pattern.search(s)), line)
-            label = _row_label(lines, index) if _is_cell(sentence) else None
-            text = f"{label} … {sentence.strip()}" if label else sentence
-            if not wanted:
-                return _clip(text, pattern)
-            shared = _keywords(text) & wanted
-            rare = sum(1 for word in shared if frequency.get(word, 0) <= rare_limit)
-            if strict or year:
-                qualifies = len(shared) >= 2 and rare >= 1
-            elif distinct:
-                qualifies = bool(shared)
-            else:
-                head = _LINE_LABEL_RE.match(sentence)
-                row = _keywords(label or (head.group(1) if head else ""))
-                qualifies = len(shared) >= 2 or rare >= 1 or (bool(row) and row <= wanted)
-            if qualifies and (best is None or (rare, len(shared)) > best[:2]):
-                best = (rare, len(shared), _clip(text, pattern))
-            if distinct and fallback is None:
-                fallback = _clip(text, pattern)
-    return best[2] if best is not None else fallback
+            cells = _row_cells(line)
+            heading = None
+            for offset, sentence in _sentence_spans(line):
+                found = _value_in(sentence, pattern, line, offset, marker=marker, day=day, reference=reference,
+                                  clashes=clashes)
+                if found is None:
+                    continue
+                order += 1
+                whole = bool(parts) and all(any(_form_pattern(f).search(sentence) for f in group) for group in parts)
+                if form in part_forms and not whole:
+                    continue  # one end of a range is not the range
+                label = _row_label(lines, index) if _is_cell(sentence) else None
+                text = f"{label} … {sentence.strip()}" if label else sentence
+                if not about:
+                    return _clip(text, pattern)
+                if heading is None:
+                    heading = "" if _is_prose(line) else _heading(lines, index)
+                if names and not names & (_keywords(line) | _keywords(label or "") | _keywords(heading)):
+                    continue  # about another entity
+                if years_named and numeric and cells is None and _other_years(sentence, year):
+                    continue  # a figure of other fiscal years
+                column = None
+                if cells is not None and year and filing_year:
+                    column = _column_matches(lines, index, line, cells, pattern, year, filing_year)
+                    if column is False:
+                        continue  # another fiscal year's column
+                shared = _keywords(text) & wanted
+                score = sum(weight(word) for word in shared)
+                context = sum(weight(word) for word in (_keywords(heading) & wanted) - shared)
+                head = _LINE_LABEL_RE.match(sentence) if not _is_prose(line) else None
+                row = _keywords(label or (head.group(1) if head else "")) - own
+                labelled = bool(row) and row <= wanted
+                covered = len(metric) >= 2 and metric <= shared
+                uncommon = any(weight(word) >= 1 for word in shared)  # common words never qualify a line alone
+                if strict or is_year or word_like:
+                    qualifies = covered or (score >= 3 and any(weight(word) == 2 for word in shared))
+                elif distinct or whole:
+                    qualifies = covered or labelled or (score >= 1 and uncommon)
+                else:
+                    qualifies = covered or labelled or (score >= 2 and uncommon)
+                candidate = _Candidate(whole, score + context, bool(column), labelled, len(shared), order,
+                                       _clip(text, pattern))
+                if qualifies and (best is None or candidate.rank() > best.rank()):
+                    best = candidate
+                if (distinct or whole) and fallback is None:
+                    fallback = candidate.text
+    return best.text if best is not None else fallback
+
+
+def _value_in(sentence: str, pattern: re.Pattern[str], line: str, offset: int, *, marker: bool, day: bool,
+              reference: bool, clashes: set[str]) -> re.Match[str] | None:
+    """The first place in a sentence where the value stands as itself: not after a letter ("Q3", "COVID-19"), not a
+    footnote marker opening the line ("(1)"), not the day of a date ("July 31") or the number of a note, item, page
+    or proposal ("Proposals 5 through 8"), not printed with a unit the fact's unit clashes with."""
+    for found in pattern.finditer(sentence):
+        before = line[:offset + found.start()]
+        if before[-1:].isalpha() or (marker and not before.strip()):
+            continue
+        if (day and _MONTH_BEFORE_RE.search(before)) or (reference and _REFERENCE_BEFORE_RE.search(before)):
+            continue
+        if clashes and _printed_unit(line, offset + found.start(), offset + found.end()) & clashes:
+            continue
+        return found
+    return None
+
+
+def _printed_unit(line: str, start: int, end: int) -> set[str]:
+    """What the words around a figure say it measures: percent, bps, money, amount (billion, million), multiple."""
+    kinds = set()
+    if re.search(r"[$€£]\s*\(?\s*$", line[:start]):
+        kinds.add("money")
+    if after := _AFTER_UNIT_RE.match(line, end):
+        kinds.add(("percent", "bps", "amount", "multiple")[next(i for i, g in enumerate(after.groups()) if g)])
+    return kinds
+
+
+def _parts(value: Any) -> list[tuple[str, ...]]:
+    """The numbers that are only parts of a value, each with the forms it may take: both ends of a range ("3.5-4.5",
+    "2017-2019") and the years of a value that holds several ("2019-11 to 2026-01")."""
+    if not isinstance(value, str):
+        return []
+    text = " ".join(value.split())
+    if match := _range(text):
+        return [tuple(_forms(match.group(1))), tuple(_forms(match.group(2)))]
+    years = list(dict.fromkeys(n for n in slicing.number_forms(text) if _YEAR_RE.match(n)))
+    return [(year,) for year in years] if len(years) >= 2 else []
+
+
+def _unit_kind(unit: Any) -> str | None:
+    """What a fact's unit measures (see _UNIT_CLASHES): any unit that is not a percentage, basis points, money or a
+    multiple counts things (stores, shares, years); None when the unit is not stated."""
+    text = str(unit or "").strip().lower()
+    if text in _NO_UNITS or not re.search(r"[a-z%$€£]", text) or _RATIO_UNIT_RE.search(text):
+        return None  # a ratio of two amounts ("US$ per US$100 of net sales") may be printed as a percentage
+    if re.search(r"\bbps\b|basis points?", text):
+        return "bps"
+    if "%" in text or "percent" in text:
+        return "percent"
+    if re.search(r"\b(?:usd|eur|gbp|jpy|cny|inr|cad|chf)\b|[$€£]|dollar|currency|per share", text):
+        return "money"
+    if re.fullmatch(r"x|times|x \w+|times \w+", text):
+        return "multiple"
+    return "count"  # stores, people, shares, years, warehouses
+
+
+def _other_years(sentence: str, year: int) -> bool:
+    """Whether a sentence names fiscal years, none of them `year`."""
+    named = {int(found) for match in _FISCAL_YEARS_RE.finditer(sentence)
+             for found in re.findall(r"(?:19|20)\d{2}", match.group(1))}
+    return bool(named) and year not in named
+
+
+def _fiscal_year(period: Any) -> int | None:
+    """The fiscal year a fact's period names when it is a whole fiscal year ("FY2024"); None otherwise."""
+    match = _FISCAL_YEAR_RE.match(str(period or "").strip())
+    return int(match.group(1)) if match else None
+
+
+def _is_prose(text: str) -> bool:
+    return len(_WORDS_RE.findall(text)) >= PROSE_WORDS
+
+
+def _row_cells(line: str) -> list[tuple[int, int]] | None:
+    """The spans of the figures that end a table row ("Net sales $ 706,413 $ 674,538": two), or None when the line
+    does not end in figures. Years that open the figures belong to the label ("January 31, 2025 $ 1,234")."""
+    run = _CELLS_END_RE.search(line)
+    if run is None:
+        return None
+    cells = [(run.start() + c.start(), run.start() + c.end()) for c in _CELL_RE.finditer(line[run.start():])]
+    while cells and _YEAR_RE.match(line[cells[0][0]:cells[0][1]].strip()):
+        cells.pop(0)
+    return cells or None
+
+
+def _column_matches(lines: Sequence[str], index: int, line: str, cells: Sequence[tuple[int, int]],
+                    pattern: re.Pattern[str], year: int, filing_year: int) -> bool | None:
+    """Whether the value stands in the column of the fact's fiscal year: the header of years nearest above the row
+    ("2026 2025 2024") has as many years as the row has figures, its latest year is the filing's own fiscal year,
+    and it holds the fact's year. None when that cannot be told."""
+    years = _header_years(lines, index)
+    if not years or len(years) != len(cells) or max(years) != filing_year or year not in years:
+        return None
+    columns = {k for k, (start, end) in enumerate(cells) for found in pattern.finditer(line)
+               if start <= found.start() < end}
+    if not columns:
+        return None
+    return years.index(year) in columns
+
+
+def _header_years(lines: Sequence[str], index: int) -> list[int] | None:
+    """The fiscal years heading the columns of the table a row is in: the nearest line above, within the table,
+    that ends in consecutive years ("(Amounts in millions) 2026 2025", "2026 2025 2024")."""
+    for back in range(index - 1, max(-1, index - HEADING_REACH - 1), -1):
+        text = lines[back].strip()
+        if match := _YEARS_END_RE.search(text):
+            years = [int(y) for y in match.group(1).split()]
+            steps = {b - a for a, b in zip(years, years[1:])}
+            if steps in ({1}, {-1}):
+                return years
+        if _is_prose(text):
+            return None
+    return None
+
+
+def _heading(lines: Sequence[str], index: int) -> str:
+    """The title of the table a row is in: the lines of words without figures above it, up to the text before the
+    table (a caption ending in a colon is the title), at most HEADING_REACH lines up. A row's label whose figures
+    stand on the next line ("Operating expenses", then "18.6 % 18.5 %") is not a title."""
+    found = []
+    for back in range(index - 1, max(-1, index - HEADING_REACH - 1), -1):
+        text = lines[back].strip()
+        if not text or not _LETTERS_RE.search(text):
+            continue
+        if _is_prose(text):
+            if text.endswith(":"):
+                found.append(text)
+            break
+        if _row_cells(text) is not None:
+            continue
+        below = next((lines[i].strip() for i in range(back + 1, min(len(lines), back + 3)) if lines[i].strip()), "")
+        if below and _is_cell(below):
+            continue
+        found.append(text)
+    return " ".join(reversed(found))
 
 
 _LETTERS_RE = re.compile(r"[A-Za-z]{3,}")
@@ -1202,8 +1528,14 @@ def _row_label(lines: Sequence[str], index: int, reach: int = 12) -> str | None:
     return None
 
 
-def _sentences(line: str) -> list[str]:
-    return [s for s in _SENTENCE_END_RE.split(line) if s.strip()]
+def _sentence_spans(line: str) -> list[tuple[int, str]]:
+    """The sentences of a line with the offset at which each starts."""
+    spans, start = [], 0
+    for end in [m.start() for m in _SENTENCE_END_RE.finditer(line)] + [len(line)]:
+        if line[start:end].strip():
+            spans.append((start, line[start:end]))
+        start = end
+    return spans
 
 
 def _clip(text: str, pattern: re.Pattern[str]) -> str:

@@ -132,3 +132,53 @@ filing's body, not its line in the index. "(1)" opening a line is a footnote mar
 On NVIDIA's 730 facts, excerpts were missing for 242 instead of 328. Of the 402 excerpts cut before, 18 are now left
 out (12 of them filing dates or accession numbers matched by chance). 67 changed, and the flagged ones are now right
 or left out.
+
+## Amendment, 2026-10-11: rare words, the fact's own row, unit and scale
+
+Walmart's fact audit of 2026-10-09 ran after the amendment above and still found excerpts cut from unrelated lines
+(04A-Q01, -Q05, -Q10, -Q14, -Q16, -Q18, -Q22, -Q25, -Q27). Its examples show five causes:
+- **The value's own words.** A value given in words, such as "one month", made every line holding it share "month"
+  with the fact, so a vesting period of one month stood for a one-month consolidation lag. The value's own words no
+  longer count.
+- **Common words.** "Walmart" and "sales", which fill a retailer's 10-K, were two shared words, so "Walmart U.S.
+  comparable sales increased 4.3%" stood for another segment's 4.3% margin. A shared word now weighs 2 when it is in
+  at most 1.5% of the filing's lines, 0.5 when it is in more than 5%, and 1 otherwise, and common words never qualify
+  a line on their own. A line that holds every word of what the fact measures qualifies whatever their weight.
+- **Another entity's row, another year's column.** The International segment's row stood for Sam's Club's margins,
+  since both rows hold 2.8% and 3.0% under the same label. The fact's subject, less the company's own name, is now an
+  entity the line, its row's label or its table's title must name ("Club" for Sam's Club U.S.). Where a table's
+  columns are fiscal years and its latest year is the annual report's own, the value must stand in the column of the
+  fact's year: 5.1% in the fiscal 2024 column is not net sales growth for fiscal 2026. A figure in a sentence that
+  names only other fiscal years is passed over too.
+- **Scale and unit.** A release prints the prior year's adjusted operating income of $7.876 billion as 7,876, in
+  millions, and the cutter looked only for 7.876. An amount in billions is now also looked for in millions, and one
+  in millions in billions. A value printed with another unit is another figure: "5 basis points" or "$3.9 billion"
+  is not a percentage, and "$1.9 billion" is not a multiple of 1.9.
+- **Derived figures.** Capital expenditure of 1.9 times depreciation got "net consideration of $1.9 billion". A
+  figure 16A marks as derived now carries its inputs' excerpts first. Only when an input has none is the figure
+  itself looked for, and it needs as much as a year: a rare shared word and more, or every word of what it measures.
+
+The examples also showed smaller faults, now fixed. A number that is a date's day ("July 31") or names a note, item,
+page or proposal ("Proposals 5 through 8") is not the value. Text matches whole words, so "negative" no longer matches
+"negatively", and a space also matches a hyphen ("one-month"). A range ("3.5-4.5") is found where both ends stand,
+also written "3.5% to 4.5%", and a value with several years ("2019-11 to 2026-01") where all of them do. 135.2 is
+also looked for as 135.20. "ROI" and "ROA" stay apart, and "CEO", "CFO" and "COO" are written out.
+
+`scripts/excerpt_eval.py` measures the cutter on a past 04A run against hand labels, which stay in `work/` since the
+facts come from the private repository. On Walmart's run, 507 facts were labelled: those the questions name, every
+recorded excerpt, and every fact the new cutter gives an excerpt for the first time. Recorded and new excerpts:
+
+| | Right | Wrong | None |
+| --- | ---: | ---: | ---: |
+| Recorded (owners-office#7) | 266 | 37 | 204 |
+| New | 472 | 0 | 35 |
+
+Of the 35 facts left without one, 14 have no line in the cited documents that states them. Nine of the 265 excerpts
+judged right before are lost: their lines share only common words, or too few words for a short value, or hold one
+end of a range. Costco's run, assembled
+before #7, served as further test material: of the 227 facts whose excerpt changed, 73 were right, 49 wrong and 105
+without one before, and 178 are right, none wrong and 49 without one now; 18 of those 49 had a right excerpt.
+
+### Date
+
+2026-10-11
