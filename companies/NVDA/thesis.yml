@@ -93,7 +93,7 @@ thesis:
 tests:
   - id: NVDA-Q1
     type: quantitative
-    claim: GAAP gross margin has not collapsed below 60%
+    claim: GAAP gross margin has not collapsed
     origin: archive:breaker
     severity: breaker
     covers: [moat, pricing_power]
@@ -424,7 +424,8 @@ tests:
       commitments) over $126,886M of trailing free cash flow = 1.14x
       [src:NVDA-10Q-FY2027Q2#Note10][src:NVDA-8K-2026-02-25#EX-99.1][src:NVDA-8K-2026-08-26#EX-99.1]. The numerator
       already counts the full $105B SB Energy cap signed 2026-08-17, after the quarter end
-      [src:NVDA-10Q-FY2027Q2#Note10]; on guarantees in force at 2026-07-26 alone the reading is 0.31x. The reading rises
+      [src:NVDA-10Q-FY2027Q2#Note10]; on guarantees in force at 2026-07-26 alone the reading is 0.31x
+      [src:NVDA-10Q-FY2027Q2#Note10][src:NVDA-8K-2026-02-25#EX-99.1][src:NVDA-8K-2026-08-26#EX-99.1]. The reading rises
       if NVIDIA exercises its option to back about 3.8 further gigawatts [src:NVDA-10Q-FY2027Q2#Note10].
 
   - id: NVDA-Q12
@@ -486,7 +487,7 @@ tests:
     note: >-
       Replaces the template's provision-for-credit-losses test, which has no meaning for a company without a loan book.
       The cycle indicator the archive names is Data Center revenue through the cycle; this watch fires before thesis
-      breaker NVDA-Q2 at a 30% decline. FY2027Q2 reading: up 117% [src:NVDA-10Q-FY2027Q2#Note13]. FY2027Q4 has 14
+      breaker NVDA-Q2 does. FY2027Q2 reading: up 117% [src:NVDA-10Q-FY2027Q2#Note13]. FY2027Q4 has 14
       weeks [src:NVDA-10Q-FY2027Q2#Note1], so the FY2028Q4 comparison carries one week less and is read as reported.
 
   - id: NVDA-Q15
@@ -521,8 +522,8 @@ tests:
       Replaces the template's net debt ÷ EBITDA test: NVIDIA holds more liquid assets than debt, and the archive avoids
       EBITDA. Total debt rose from $8,468M at the end of FY2026 [src:NVDA-10K-FY2026#Note11] to $33.4B at 2026-07-26
       after $25.0B of notes issued in June 2026 [src:NVDA-10Q-FY2027Q2#Note9]; against $56.6B of liquid assets
-      [src:NVDA-10Q-FY2027Q2#Item2] the reading is 0.59x. The 0.75x threshold flags further borrowing well before thesis
-      breaker NVDA-Q5 at 1.0x.
+      [src:NVDA-10Q-FY2027Q2#Item2] the reading is 0.59x. The threshold flags further borrowing well before thesis
+      breaker NVDA-Q5 fires.
 
   - id: NVDA-Q16
     type: quantitative
