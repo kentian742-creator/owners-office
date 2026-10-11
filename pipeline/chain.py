@@ -29,7 +29,8 @@ HQ's gate; holdings also get the blind read, the independent judge, the red team
                a second return stops the chain for HQ to resolve by hand
     -- stop "placement": review the revision (and HQ's gate decision) before anything is placed --
     place      every bundle of the chain (not the draft, ci or a superseded revision); a quarterly update below trust
-               level 2 is staged in the private repository (section G9) until `place --publish`
+               level 2 is staged in the private repository (section G9) until `place --publish`. A bundle whose
+               figures still need HQ's verdicts (factcheck.yml, decisions/0034) stops the chain for that review
 
 A dry run (--dry-run) runs the same chain with the fake backend into a directory outside both repositories, as a
 rehearsal when the event has not happened yet; its stops are passed without review and its placement is a check
@@ -259,7 +260,7 @@ def _run_stage(stage: Stage, ctx: registry.RunContext, *, roots: runner.Roots, b
                      approve_stops=approve_stops, root=roots.private)
     if stage.kind == "place":
         return _place_all(ctx, roots=roots, base=base, ticker=ticker, period=period, dry_run=dry_run,
-                          gateway=gateway, schemas_dir=schemas_dir, lint=lint)
+                          gateway=gateway, offline=offline, schemas_dir=schemas_dir, lint=lint)
     runs = _existing(base, stage.name, ticker, period, stage.round)
     done = [r for r in runs if r.status == "succeeded"]
     if done:
@@ -347,9 +348,9 @@ def _stop(stage: Stage, ctx: registry.RunContext, *, base: Path, ticker: str, pe
 
 
 def _place_all(ctx: registry.RunContext, *, roots: runner.Roots, base: Path, ticker: str, period: str,
-               dry_run: bool, gateway: Any, schemas_dir: Any, lint: bool) -> StageState:
+               dry_run: bool, gateway: Any, schemas_dir: Any, lint: bool, offline: bool = False) -> StageState:
     """Place every bundle of the chain that is not placed yet (the draft and ci are not placed). A dry run checks the
-    plan only."""
+    plan only. A bundle whose figures still need HQ's verdicts (runner.FactCheckOpen) stops the chain for review."""
     runs = [r for r in registry.index_runs(base) if r.succeeded and r.company == ticker and r.period == period
             and r.step in PLACED]
     final = max((r.round for r in runs if r.step == "03R"), default=1)
@@ -358,8 +359,12 @@ def _place_all(ctx: registry.RunContext, *, roots: runner.Roots, base: Path, tic
     for run in sorted(runs, key=lambda r: (r.step == "03R", r.run_date, r.rel)):  # 03R last: its PR body attaches
         if (run.path / runner.PLACEMENT_RECORD).is_file():
             continue
-        report = runner.place(run.path, roots=roots, check=dry_run, allow_fake=dry_run, lint=lint and not dry_run,
-                              edgar_gateway=gateway, schemas_dir=schemas_dir, out=_Quiet())
+        try:
+            report = runner.place(run.path, roots=roots, check=dry_run, allow_fake=dry_run,
+                                  lint=lint and not dry_run, edgar_gateway=gateway, schemas_dir=schemas_dir,
+                                  offline=offline, out=_Quiet())
+        except runner.FactCheckOpen as exc:  # HQ gives the figures their verdicts in factcheck.yml (decisions/0034)
+            return StageState("place", "waiting", f"{exc} (then run again)", run.rel)
         (checked if dry_run else placed).append(f"{run.path.name}: {len(report['files'])} file(s)"
                                                 + (f", {report['routing']['route']}" if report.get("routing") else ""))
     if dry_run:

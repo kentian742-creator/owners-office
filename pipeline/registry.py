@@ -2506,14 +2506,17 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
     if run is None or text is None:
         raise MissingInput(f"{name}: no succeeded 16A run (round {ctx.round}) for {ctx.company} {ctx.period}")
     data = yaml.safe_load(text)
-    facts = _fact_rows(data)
+    facts, inferred = _audited_facts(run, data)
     tags = [t for f in facts if isinstance(f, dict) for t in _tags_of(f.get("source"))]
     texts, _, unresolved = cited_texts(ctx, tags)
     company = str(ctx.company or "")
-    name = ctx.thesis().get("name") if company else None
-    found, missing = cut_source_excerpts(facts, texts, documents.owner_names(company, name, short_name(name, company)))
+    called = ctx.thesis().get("name") if company else None
+    found, missing = cut_source_excerpts(facts, texts, documents.owner_names(company, called,
+                                                                             short_name(called, company)))
     out = data if isinstance(data, dict) else {"facts": facts}
     note = f"source excerpts cut: {found}; excerpt_missing: {missing}"
+    if inferred:
+        note += f"; {inferred} fact(s) without a source given the tags of their place in the product"
     if unresolved:
         note += f"; {len(unresolved)} cited tag(s) not resolvable to a document"
     source = {**run.outputs_used(["fact_table"])[0], "transform": "source_excerpt cut by the pipeline"}
@@ -2603,6 +2606,64 @@ def _inputs_first(rows: Sequence[dict[str, Any]], by_id: Mapping[str, dict[str, 
     return ordered
 
 
+INFERRED_SOURCE = ("the tags of its sentence, paragraph or table in the product (16A named no source; the pipeline "
+                   "took them from the product)")
+MIN_QUOTE_CHARS = 12  # a shorter quote of the product could stand in too many places to say which one it is
+_QUOTE_NOISE_RE = re.compile(r"\s*\[src:[^\]]*\]|[*_`]")
+
+
+def _quote(text: Any) -> str:
+    """Product text as a fact's quote of it is compared: without its tags or Markdown emphasis, spaces collapsed."""
+    return " ".join(_QUOTE_NOISE_RE.sub("", str(text or "")).split())
+
+
+def product_units(run: PriorRun) -> list[Any]:
+    """The sentences and table rows of the product a 16A run extracted its facts from, with each one's own tags and
+    its context's (pipeline/factcheck.py): the product of the single call, or of each slice."""
+    from . import factcheck  # imported here: factcheck imports this module
+
+    paths = sorted(run.path.glob("inputs/product.*")) + sorted(run.path.glob("slices/*/inputs/product.*"))
+    return [unit for path in paths for unit in factcheck.markdown_units(path.read_text(encoding="utf-8"))]
+
+
+def infer_sources(rows: Sequence[Any], units: Sequence[Any]) -> int:
+    """Give each fact that names no source the tags of the place in the product its quote (`excerpt`) comes from: the
+    sentence's own tags, else those of its paragraph, list lead-in or table, else its table row's cells. The fact's
+    documents then reach the audit (pipeline/slicing.py), and its source excerpt can be cut. A fact whose quote is
+    short, or not in the product, or in a place without tags, stays without one: 04A finds it unsourced. COST's first
+    16A (2026-10-09) named no source for 154 of its 973 facts, and the audit could not open their documents (04A-Q02,
+    -Q29). Returns how many facts got tags."""
+    index = [(_quote(unit.text), unit) for unit in units]
+    count = 0
+    for row in rows:
+        if not isinstance(row, dict) or _tags_of(row.get("source")):
+            continue
+        quote = _quote(row.get("excerpt"))
+        if len(quote) < MIN_QUOTE_CHARS:
+            continue
+        unit = next((u for text, u in index if quote in text or (len(text) > 3 * MIN_QUOTE_CHARS and text in quote)),
+                    None)
+        if unit is None:
+            continue
+        cells = [tag for _, tags in (unit.cells or []) for tag in tags]
+        tags = list(dict.fromkeys(unit.own or unit.context or cells))
+        if tags:
+            row["source"] = tags if len(tags) > 1 else tags[0]
+            row["source_inferred"] = INFERRED_SOURCE
+            count += 1
+    return count
+
+
+def _audited_facts(run: PriorRun, data: Any) -> tuple[list[Any], int]:
+    """16A's fact rows for 04A, an untagged fact given its place's tags in the product (infer_sources)."""
+    rows = _fact_rows(data)
+    try:
+        units = product_units(run)
+    except OSError:
+        return rows, 0
+    return rows, infer_sources(rows, units)
+
+
 INPUT_EXCERPT_CHARS = 200  # each input's excerpt in a derived figure's excerpt
 
 
@@ -2642,8 +2703,8 @@ def _sources(ctx: RunContext, name: str) -> BuiltInput:
     if ctx.step.step == "04A":
         run = ctx.latest_run("16A", period=ctx.period, round_=ctx.round)
         text = run.read_output("fact_table") if run else None
-        tags = [t for f in _fact_rows(yaml.safe_load(text) if text else None) if isinstance(f, dict)
-                for t in _tags_of(f.get("source"))]
+        rows = _audited_facts(run, yaml.safe_load(text))[0] if run and text else []
+        tags = [t for f in rows if isinstance(f, dict) for t in _tags_of(f.get("source"))]
     elif ctx.step.step == "03R":
         draft = revised_outputs(ctx)
         audit = ctx.latest_run("04A", period=ctx.period)
@@ -2823,9 +2884,16 @@ def _industries(ctx: RunContext, name: str) -> BuiltInput:
 
 @assembler("existing_dossier")
 def _existing_dossier(ctx: RunContext, name: str) -> BuiltInput:
-    """01A round 2: the first draft, to be revised after the audit; a rebuild: the current dossier."""
+    """01A round 2: the first draft, to be revised after the audit; a rebuild: the current dossier. A rerun of a
+    revision that has succeeded revises that revision: HQ's fact check found errors in it, and HQ's rulings list the
+    corrections (docs/decisions/0035)."""
     company = _need_company(ctx, name)
     if ctx.round > 1:
+        revision = ctx.latest_run("01A", period=ctx.period, round_=ctx.round) if ctx.rerun > 1 else None
+        text = revision.read_output("dossier") if revision is not None else None
+        if text is not None:
+            return BuiltInput(text, "md", revision.outputs_used(["dossier"]),
+                              note=f"the revision under correction: {revision.rel}")
         run = ctx.latest_run("01A", period=ctx.period, round_=ctx.round - 1)
         text = run.read_output("dossier") if run is not None else None
         if text is None:
