@@ -551,6 +551,28 @@ def test_the_revision_reads_hqs_rulings_on_the_audit_of_this_build(env, monkeypa
     assert "R1 continuing basis" in built.text and "old build" not in built.text
 
 
+def test_a_rerun_of_a_revision_that_succeeded_corrects_that_revision_and_not_the_first_draft(env):
+    """HQ's fact check of a revision sends the corrections back to 01A (decisions/0035)."""
+    draft = succeeded_run(env, "runs/NEWCO/2026-09-28-01A", {"step": "01A", "company": "NEWCO", "period": "FY2026Q2"})
+    fx.write(draft / "outputs" / "dossier.md", "# Newco: the first draft\n")
+
+    def rerun() -> registry.RunContext:
+        ctx = context(env, "01A", 2)
+        ctx.rerun = 2
+        return ctx
+
+    built = registry.INPUTS["existing_dossier"](rerun(), "existing_dossier")  # no revision succeeded: the draft again
+    assert built.text == "# Newco: the first draft\n" and built.sources[0]["run"] == "runs/NEWCO/2026-09-28-01A"
+    revision = succeeded_run(env, "runs/NEWCO/2026-09-28-01A-r2",
+                             {"step": "01A", "company": "NEWCO", "period": "FY2026Q2", "round": 2})
+    fx.write(revision / "outputs" / "dossier.md", "# Newco: the revision\n")
+    built = registry.INPUTS["existing_dossier"](rerun(), "existing_dossier")
+    assert built.text == "# Newco: the revision\n" and built.sources[0]["run"] == "runs/NEWCO/2026-09-28-01A-r2"
+    assert "revision under correction" in built.note
+    first = registry.INPUTS["existing_dossier"](context(env, "01A", 2), "existing_dossier")  # not a rerun
+    assert first.text == "# Newco: the first draft\n"
+
+
 def test_a_valuation_in_a_later_period_reads_the_rulings_on_the_latest_build_only(env):
     """01C may value the placed dossier, and 04C review it, in a period with no 01A run of its own."""
     fx.write(env.private / "runs" / "hq" / "2026-09-01-17A-NEWCO" / "rulings.md", "old build\n")

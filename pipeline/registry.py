@@ -2833,9 +2833,16 @@ def _industries(ctx: RunContext, name: str) -> BuiltInput:
 
 @assembler("existing_dossier")
 def _existing_dossier(ctx: RunContext, name: str) -> BuiltInput:
-    """01A round 2: the first draft, to be revised after the audit; a rebuild: the current dossier."""
+    """01A round 2: the first draft, to be revised after the audit; a rebuild: the current dossier. A rerun of a
+    revision that has succeeded revises that revision: HQ's fact check found errors in it, and HQ's rulings list the
+    corrections (docs/decisions/0035)."""
     company = _need_company(ctx, name)
     if ctx.round > 1:
+        revision = ctx.latest_run("01A", period=ctx.period, round_=ctx.round) if ctx.rerun > 1 else None
+        text = revision.read_output("dossier") if revision is not None else None
+        if text is not None:
+            return BuiltInput(text, "md", revision.outputs_used(["dossier"]),
+                              note=f"the revision under correction: {revision.rel}")
         run = ctx.latest_run("01A", period=ctx.period, round_=ctx.round - 1)
         text = run.read_output("dossier") if run is not None else None
         if text is None:
