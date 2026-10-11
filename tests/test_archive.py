@@ -406,6 +406,24 @@ def test_each_year_end_close_comes_with_that_days_ten_year_treasury_yield(env, m
         "UST-PARYIELD-2025-12-31", "UST-PARYIELD-2024-12-31", "UST-PARYIELD-2023-12-31", "UST-PARYIELD-2022-12-31"}
 
 
+def test_a_52_53_week_fiscal_year_ends_where_its_annual_report_says(env, monkeypatch):
+    """NVIDIA's fiscal year ends on the last Sunday of January (FY2026 on 2026-01-25): the backtest's year-end closes
+    were taken on January 30 and 31, up to a week late (2026-10-09)."""
+    from pipeline import prices
+    tenks = [filing(f"n-10k-{y}", "10-K", f"{y}-02-25", report) for y, report in
+             ((2026, "2026-01-25"), (2025, "2025-01-26"), (2024, "2024-01-28"))]
+    subs = edgar.Submissions(cik="0000000042", name="NEWCO CORP", tickers=("NEWCO",), fiscal_year_end="0131",
+                             entity_type="operating", category=None, filings=tenks, pages=[], pages_loaded=[])
+    monkeypatch.setattr(edgar, "submissions", lambda *args, **kwargs: subs)
+    ctx = context(env, "01C", run_date=dt.date(2026, 10, 9))
+    assert registry.fiscal_year_ends(ctx) == [dt.date(2026, 1, 25), dt.date(2025, 1, 26), dt.date(2024, 1, 28),
+                                              dt.date(2023, 1, 31), dt.date(2022, 1, 31)]  # no 10-K: the MM-DD
+    closes = [prices.Close("NEWCO", dt.date(2026, 1, 23), 180.0, "u"), prices.Close("NEWCO", dt.date(2026, 1, 30), 191.0,
+                                                                                     "u")]
+    assert [c.date for c in prices.year_end_closes(closes, ends=registry.fiscal_year_ends(ctx)[:1])] == [
+        dt.date(2026, 1, 23)]  # the Friday before the year's last Sunday, not the month's last trading day
+
+
 LENNAR_13F = b"""<informationTable xmlns="http://www.sec.gov/edgar/document/thirteenf/informationtable">
   <infoTable><nameOfIssuer>LENNAR CORP</nameOfIssuer><titleOfClass>CL A</titleOfClass><cusip>526057104</cusip>
     <value>10000</value><shrsOrPrnAmt><sshPrnamt>100</sshPrnamt><sshPrnamtType>SH</sshPrnamtType></shrsOrPrnAmt>
