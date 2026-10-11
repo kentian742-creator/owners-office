@@ -2509,7 +2509,9 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
     facts = _fact_rows(data)
     tags = [t for f in facts if isinstance(f, dict) for t in _tags_of(f.get("source"))]
     texts, _, unresolved = cited_texts(ctx, tags)
-    found, missing = cut_source_excerpts(facts, texts)
+    company = str(ctx.company or "")
+    name = ctx.thesis().get("name") if company else None
+    found, missing = cut_source_excerpts(facts, texts, documents.owner_names(company, name, short_name(name, company)))
     out = data if isinstance(data, dict) else {"facts": facts}
     note = f"source excerpts cut: {found}; excerpt_missing: {missing}"
     if unresolved:
@@ -2518,40 +2520,24 @@ def _fact_table(ctx: RunContext, name: str) -> BuiltInput:
     return BuiltInput(dump_yaml(out), "yml", [source], note=note)
 
 
-def cut_source_excerpts(facts: Sequence[Any], texts: Mapping[str, str]) -> tuple[int, int]:
+def cut_source_excerpts(facts: Sequence[Any], texts: Mapping[str, str], owners: Iterable[str] = ()) -> tuple[int, int]:
     """Gives each fact with a value the source excerpt cut from the document it cites (source_excerpt), or marks it
     excerpt_missing; returns how many got one and how many did not. `texts` maps a cited tag, with or without its
-    locator, to the document's text (cited_texts)."""
+    locator, to the document's text (cited_texts). `owners` are the words that name the company itself
+    (documents.owner_names): the rest of a fact's subject ("International" of "Walmart International") is the entity
+    its excerpt must name. A derived figure carries the excerpts of the facts it is computed from (_inputs_excerpt):
+    the filing seldom prints it, and where the same digits stand they are mostly another figure ("$1.9 billion" for a
+    ratio of 1.9, 04A-Q18). Only when an input has no excerpt is the figure itself looked for, as `strict` asks."""
     found = missing = 0
     rows = [f for f in facts if isinstance(f, dict) and f.get("value") is not None]
     by_id = {str(f.get("id")): f for f in rows}
-    # a derived figure after the facts it is computed from, so that it can carry their excerpts
-    for fact in sorted(rows, key=_is_derived):
-        derived = _is_derived(fact)
-        excerpt = None
-        # a filing's own accession number is in the header of its document, not in its text
-        cites = [] if edgar.ACCESSION_IN_TEXT_RE.search(str(fact.get("value"))) else _tags_of(fact.get("source"))
-        for cite in cites:
-            tag, _, locator = cite.partition("#")
-            document = texts.get(cite) or texts.get(tag)
-            if document is None:
-                continue
-            # what the fact is about; a value in words ("fiscal 2027 variable compensation plan") says it too
-            value = fact.get("value")
-            words = f"{fact.get('what') or ''} {fact.get('subject') or ''} {value if isinstance(value, str) else ''}"
-            if "-RPT" in tag:
-                document = _report_page(document, locator)
-            elif locator:  # the cited page, item or note first, then the whole filing
-                part = documents.locator_section(document, locator, "10-Q" if "-10Q-" in tag else "10-K")
-                excerpt = documents.cut_excerpt(part, fact.get("value"), words=words, strict=derived,
-                                                within=document) if part else None
-                if excerpt:
-                    break
-            excerpt = documents.cut_excerpt(document, fact.get("value"), words=words, strict=derived)
-            if excerpt:
-                break
-        if excerpt is None and derived:  # the filing seldom prints a derived figure: point to its inputs instead
-            excerpt = _inputs_excerpt(fact, by_id)
+    names = [re.escape(name) for name in owners if name]
+    owned = re.compile(rf"(?<!\w)(?:{'|'.join(names)})(?:['’]s)?(?!\w)", re.I) if names else None
+    for fact in _inputs_first(rows, by_id):
+        if _is_derived(fact):
+            excerpt = _inputs_excerpt(fact, by_id) or _fact_excerpt(fact, texts, owned, derived=True)
+        else:
+            excerpt = _fact_excerpt(fact, texts, owned, derived=False)
         if excerpt:
             fact["source_excerpt"] = excerpt
             found += 1
@@ -2559,6 +2545,62 @@ def cut_source_excerpts(facts: Sequence[Any], texts: Mapping[str, str]) -> tuple
             fact["excerpt_missing"] = True
             missing += 1
     return found, missing
+
+
+_ANNUAL_TAG_RE = re.compile(r"-(?:10K|20F|40F)A?-FY(\d{4})$")  # WMT-10K-FY2026: the annual report for fiscal 2026
+
+
+def _fact_excerpt(fact: Mapping[str, Any], texts: Mapping[str, str], owned: re.Pattern[str] | None, *,
+                  derived: bool) -> str | None:
+    """The excerpt of the first document the fact cites that holds its value (documents.cut_excerpt): the cited page,
+    item or note first, then the whole filing. The fact's subject less the company's own name (`owned`) is the entity
+    the excerpt must name."""
+    value = fact.get("value")
+    if edgar.ACCESSION_IN_TEXT_RE.search(str(value)):  # a filing's accession number is in its header, not its text
+        return None
+    subject = str(fact.get("subject") or "")
+    about = {"words": str(fact.get("what") or ""), "entity": owned.sub(" ", subject) if owned else subject,
+             "strict": derived, "unit": fact.get("unit"), "period": fact.get("period")}
+    for cite in _tags_of(fact.get("source")):
+        tag, _, locator = cite.partition("#")
+        document = texts.get(cite) or texts.get(tag)
+        if document is None:
+            continue
+        annual = _ANNUAL_TAG_RE.search(tag)
+        options = {**about, "filing_year": int(annual.group(1)) if annual else None}
+        if "-RPT" in tag:
+            document = _report_page(document, locator)
+        elif locator:
+            part = documents.locator_section(document, locator, "10-Q" if "-10Q-" in tag else "10-K")
+            excerpt = documents.cut_excerpt(part, value, within=document, **options) if part else None
+            if excerpt:
+                return excerpt
+        excerpt = documents.cut_excerpt(document, value, **options)
+        if excerpt:
+            return excerpt
+    return None
+
+
+def _inputs_first(rows: Sequence[dict[str, Any]], by_id: Mapping[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """The facts in the order their excerpts are cut: the facts the filings state, then each derived figure after the
+    derived figures it is computed from."""
+    ordered = [f for f in rows if not _is_derived(f)]
+    placed: set[int] = set()
+
+    def place(fact: dict[str, Any], path: frozenset[int]) -> None:
+        if id(fact) in placed or id(fact) in path:
+            return
+        for name in fact.get("inputs") if isinstance(fact.get("inputs"), list) else []:
+            source = by_id.get(str(name))
+            if source is not None and _is_derived(source):
+                place(source, path | {id(fact)})
+        placed.add(id(fact))
+        ordered.append(fact)
+
+    for fact in rows:
+        if _is_derived(fact):
+            place(fact, frozenset())
+    return ordered
 
 
 INPUT_EXCERPT_CHARS = 200  # each input's excerpt in a derived figure's excerpt
@@ -3276,7 +3318,7 @@ def _fact_documents(row: Any, docs: Iterable[FilingText], reports: Iterable[str]
 def _windowed(doc: FilingText, rows: Iterable[Any], why: str) -> FilingText:
     """A document cut to the lines around the values the given facts state."""
     rows = [r for r in rows if isinstance(r, Mapping)]
-    patterns = [p for r in rows for p in documents.distinctive_patterns(r.get("value"))]
+    patterns = [p for r in rows for p in documents.distinctive_patterns(r.get("value"), r.get("unit"))]
     text, hits = slicing.windows(doc.text, patterns)
     note = (f"cut by the pipeline to the lines around the values {len(rows)} fact(s) state ({hits} matching "
             f"line(s)), because {why}; a value missing here may still be in the full document at the url above")
