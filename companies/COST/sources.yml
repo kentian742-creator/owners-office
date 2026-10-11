@@ -1,0 +1,160 @@
+sources:
+  - tag: COST-10K-FY2026
+    kind: filing
+    title: Costco Wholesale annual report on Form 10-K for the fiscal year ended 2026-08-30
+    issuer_cik: 0000909832
+    form: 10-K
+    period: FY2026
+    accession: 0000909832-26-000093
+    filed: 2026-10-07
+    date: 2026-10-07
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983226000093/cost-20260830.htm
+    primary: true
+  - tag: COST-10K-FY2021
+    kind: filing
+    title: Costco Wholesale annual report on Form 10-K for the fiscal year ended 2021-08-29
+    issuer_cik: 0000909832
+    form: 10-K
+    period: FY2021
+    accession: 0000909832-21-000014
+    filed: 2021-10-06
+    date: 2021-10-06
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983221000014/cost-20210829.htm
+    primary: true
+    note: Business section and MD&A reviewed.
+  - tag: COST-10K-FY2016
+    kind: filing
+    title: Costco Wholesale annual report on Form 10-K for the fiscal year ended 2016-08-28
+    issuer_cik: 0000909832
+    form: 10-K
+    period: FY2016
+    accession: 0000909832-16-000032
+    filed: 2016-10-12
+    date: 2016-10-12
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983216000032/cost10k82816.htm
+    primary: true
+    note: Business section and MD&A reviewed.
+  - tag: COST-8K-2026-09-24
+    kind: filing
+    title: 'Form 8-K: fourth quarter and fiscal year 2026 operating results (EX-99.1, EX-99.2)'
+    issuer_cik: 0000909832
+    form: 8-K
+    period: FY2026Q4
+    accession: 0000909832-26-000084
+    filed: 2026-09-24
+    date: 2026-09-24
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983226000084/costex9918-k92426.htm
+    primary: true
+    note: Unaudited; operating and investing cash flows differ from the 10-K (15,825 vs 15,817; 6,386 vs 6,378).
+  - tag: COST-8K-2026-03-05
+    kind: filing
+    title: 'Form 8-K: second quarter fiscal 2026 operating results and February sales results (EX-99.1, EX-99.2)'
+    issuer_cik: 0000909832
+    form: 8-K
+    period: FY2026Q2
+    accession: 0000909832-26-000025
+    filed: 2026-03-05
+    date: 2026-03-05
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983226000025/costex9918-k3526.htm
+    primary: true
+  - tag: COST-8K-2025-12-11
+    kind: filing
+    title: 'Form 8-K: first quarter fiscal 2026 operating results (EX-99.1, EX-99.2)'
+    issuer_cik: 0000909832
+    form: 8-K
+    period: FY2026Q1
+    accession: 0000909832-25-000164
+    filed: 2025-12-11
+    date: 2025-12-11
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983225000164/costex9918-k121125.htm
+    primary: true
+  - tag: COST-8K-2025-09-25
+    kind: filing
+    title: 'Form 8-K: fourth quarter and fiscal year 2025 operating results (EX-99.1, EX-99.2)'
+    issuer_cik: 0000909832
+    form: 8-K
+    period: FY2025Q4
+    accession: 0000909832-25-000093
+    filed: 2025-09-25
+    date: 2025-09-25
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983225000093/costex9918-k92525.htm
+    primary: true
+  - tag: COST-8K-2025-10-20
+    kind: filing
+    title: 'Form 8-K (Item 5.02): fiscal 2026 executive bonus criteria'
+    issuer_cik: 0000909832
+    form: 8-K
+    period: FY2026
+    accession: 0000909832-25-000107
+    filed: 2025-10-20
+    date: 2025-10-20
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983225000107/cost-20251014.htm
+    primary: true
+    note: Date of earliest event reported 2025-10-14.
+  - tag: COST-DEF14A-2025-12-04
+    kind: filing
+    title: Costco Wholesale definitive proxy statement for the 2026 annual meeting (DEF 14A)
+    issuer_cik: 0000909832
+    form: DEF 14A
+    period: FY2025
+    accession: 0000909832-25-000159
+    filed: 2025-12-04
+    date: 2025-12-04
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983225000159/cost-20251204.htm
+    primary: true
+
+  - tag: COST-10K-FY2018
+    kind: filing
+    title: COST 10-K filed 2018-10-26
+    form: 10-K
+    accession: 0000909832-18-000013
+    filed: '2018-10-26'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983218000013/cost10k9218.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2020
+    kind: filing
+    title: COST 10-K filed 2020-10-07
+    form: 10-K
+    accession: 0000909832-20-000017
+    filed: '2020-10-07'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983220000017/cost-20200830.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2022
+    kind: filing
+    title: COST 10-K filed 2022-10-05
+    form: 10-K
+    accession: 0000909832-22-000021
+    filed: '2022-10-05'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983222000021/cost-20220828.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2024
+    kind: filing
+    title: COST 10-K filed 2024-10-09
+    form: 10-K
+    accession: 0000909832-24-000049
+    filed: '2024-10-09'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983224000049/cost-20240901.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-10K-FY2025
+    kind: filing
+    title: COST 10-K filed 2025-10-08
+    form: 10-K
+    accession: 0000909832-25-000101
+    filed: '2025-10-08'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983225000101/cost-20250831.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: COST-8K-2026-05-28
+    kind: filing
+    title: COSTCO WHOLESALE CORP /NEW 8-K filed 2026-05-28
+    issuer_cik: 0000909832
+    form: 8-K
+    accession: 0000909832-26-000046
+    filed: '2026-05-28'
+    url: https://www.sec.gov/Archives/edgar/data/909832/000090983226000046/costex9918-k52826.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
