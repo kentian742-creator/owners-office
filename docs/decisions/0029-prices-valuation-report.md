@@ -58,3 +58,12 @@ Values in 13Fs filed before 2023-01-03 are in thousands of dollars, and the pars
 cannot see is stated with them: trades after the 13F's report date, holdings outside the 13F (non-US listings), and
 positions with no US ticker or no price history, which keep their report-date value and lower the stated coverage.
 The 04C model review sees both inputs.
+
+## Amendment, 2026-10-09: a fiscal year ends where its annual report says
+
+The year ends of `year_end_closes` and `backtest_holdings_marks` were the filer's fiscal year end as a month and day,
+"01-31" for NVIDIA. NVIDIA's fiscal year ends on the last Sunday of January (FY2026 on 2026-01-25), so its backtest
+closes were taken on January 30 and 31, up to a week after its year ends. Costco's 52/53-week year has the same
+problem. Each backtest year end is now the period date of the annual report filed by the run date, where one falls
+within ten days of the nominal date; otherwise the nominal date is used. The close is the last one on or before that
+day.

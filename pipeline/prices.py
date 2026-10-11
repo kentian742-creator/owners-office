@@ -129,24 +129,32 @@ def close_on_or_before(closes: Sequence[Close], day: dt.date) -> Close:
     return earlier[-1]
 
 
-def year_end_closes(closes: Sequence[Close], year_end: str = "12-31", years: int = 5,
-                    as_of: dt.date | None = None) -> list[Close]:
-    """The close on or before each of the last `years` fiscal year ends (MM-DD) before `as_of`, newest first."""
-    as_of = as_of or closes[-1].date
+def year_end_dates(year_end: str, years: int, as_of: dt.date) -> list[dt.date]:
+    """The last `years` dates MM-DD (`year_end`) before `as_of`, newest first; 02-29 is 02-28 in a common year."""
     month, day = (int(x) for x in year_end.split("-"))
-    out = []
-    year = as_of.year
-    while len(out) < years and year > as_of.year - years - 2:
+    out, year = [], as_of.year
+    while len(out) < years:
         try:
             end = dt.date(year, month, day)
         except ValueError:  # 02-29 in a common year
             end = dt.date(year, month, 28)
         if end < as_of:
-            try:
-                out.append(close_on_or_before(closes, end))
-            except PriceError:
-                break
+            out.append(end)
         year -= 1
+    return out
+
+
+def year_end_closes(closes: Sequence[Close], year_end: str = "12-31", years: int = 5,
+                    as_of: dt.date | None = None, ends: Sequence[dt.date] | None = None) -> list[Close]:
+    """The close on or before each fiscal year end, newest first: each of `ends` when given (the year ends the annual
+    reports state), else each of the last `years` dates MM-DD before `as_of`. The list stops where the history does."""
+    as_of = as_of or closes[-1].date
+    out = []
+    for end in ends if ends is not None else year_end_dates(year_end, years, as_of):
+        try:
+            out.append(close_on_or_before(closes, end))
+        except PriceError:
+            break
     return out
 
 

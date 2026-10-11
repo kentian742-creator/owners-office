@@ -2891,14 +2891,33 @@ def _price_reference(ctx: RunContext, name: str) -> BuiltInput:
     return BuiltInput(dump_yaml({"price_reference": close.to_dict()}), "yml", [_price_source(close)])
 
 
+BACKTEST_YEARS = 5  # §V5: the backtest runs at each of the last five fiscal year ends
+REPORTED_YEAR_END_DAYS = 10  # a 52/53-week fiscal year ends within a week of the month end it is named for
+
+
+def fiscal_year_ends(ctx: RunContext, years: int = BACKTEST_YEARS) -> list[dt.date]:
+    """The last `years` fiscal year ends before the run date, newest first: each as the annual report filed by then
+    states it, where there is one (a 52/53-week year ends on a Sunday: NVIDIA's FY2026 on 2026-01-25, not on 01-31),
+    else on the filer's fiscal year end MM-DD."""
+    filer = ctx.filer()
+    nominal = prices.year_end_dates(filer.fiscal_year_end or "12-31", years, ctx.run_date)
+    subs = edgar.submissions(filer.cik, client=ctx.gateway().client)
+    reported = {f.report_date for f in subs.filings
+                if f.form in edgar.ANNUAL_FORMS and f.report_date is not None and f.filing_date <= ctx.run_date}
+    out = []
+    for end in nominal:
+        near = [day for day in reported if abs((day - end).days) <= REPORTED_YEAR_END_DAYS]
+        out.append(min(near, key=lambda day: abs((day - end).days)) if near else end)
+    return out
+
+
 @assembler("year_end_closes")
 def _year_end_closes(ctx: RunContext, name: str) -> BuiltInput:
     """The closes at the last five fiscal year ends, for the backtest (§V5, §V12): split-adjusted, not
     dividend-adjusted, as the note on each says."""
     company = _need_company(ctx, name)
     symbol = PRICE_SYMBOLS.get(company, company)
-    closes = prices.year_end_closes(price_history(ctx, symbol), ctx.filer().fiscal_year_end or "12-31", 5,
-                                    ctx.run_date)
+    closes = prices.year_end_closes(price_history(ctx, symbol), ends=fiscal_year_ends(ctx))
     rows, sources = [], [_price_source(c) for c in closes]
     for close in closes:  # the backtest grades each year-end at that day's own risk-free rate (§V5, §V12)
         row = close.to_dict()
@@ -3042,8 +3061,7 @@ def _backtest_holdings_marks(ctx: RunContext, name: str) -> BuiltInput:
     if not any(f.form == holdings.FORM_13F for f in subs.filings):
         raise Omit(f"{company} files no 13F-HR: it holds no listed equity portfolio to mark")
     symbol = PRICE_SYMBOLS.get(company, company)
-    year_ends = [c.date for c in prices.year_end_closes(price_history(ctx, symbol),
-                                                        ctx.filer().fiscal_year_end or "12-31", 5, ctx.run_date)]
+    year_ends = [c.date for c in prices.year_end_closes(price_history(ctx, symbol), ends=fiscal_year_ends(ctx))]
     blocks, sources, notes, seen = [], [], [], set()
     for year_end in year_ends:
         latest = _latest_13f(ctx, name, subs, year_end)
