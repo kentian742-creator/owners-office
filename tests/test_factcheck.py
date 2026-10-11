@@ -1,16 +1,23 @@
-"""Every figure checked: pipeline/factcheck.py (docs/decisions/0034).
+"""Every figure checked (pipeline/factcheck.py) and the fact-check gate of placement (docs/decisions/0034).
 
-No network: the checker reads FakeSources, a few short documents by tag.
+No network: the checker reads FakeSources, a few short documents by tag, and the runner tests build their bundles in
+the synthetic repositories of tests/runner_fixtures.py.
 """
 
 from __future__ import annotations
 
+import datetime as dt
+import io
 import json
+from pathlib import Path
 
 import pytest
+import yaml
 
-from pipeline import edgar, factcheck as fc, registry, runner
+from pipeline import chain, edgar, factcheck as fc, outputs, registry, runner
 from tests import runner_fixtures as fx
+
+NOW = dt.datetime(2026, 10, 20, 12, 0, tzinfo=dt.timezone.utc)
 
 
 class FakeSources(fc.Sources):
@@ -394,3 +401,201 @@ def test_the_evidence_is_the_valuation_its_working_in_force_other_valuations_and
         ("valuation", "companies/BRK/valuation.yml", "implied_", "BRK"),
         ("dossier", "companies/MCD/dossier.md", "dossier", None)]
     assert [n.text for n in key_figures] == ["208.9"] and names == {"BRK": ["BRK", "Berkshire Hathaway", "Berkshire"]}
+
+
+# ---------------------------------------------------------------------------------------------------- the gate
+
+
+def test_the_archive_documents_are_named_in_the_placement_table():
+    assert outputs.ARCHIVE_DOCUMENTS <= set(outputs.PLACEMENT)
+    assert not outputs.ARCHIVE_DOCUMENTS & {"findings", "fact_verdicts", "questions", "sources_additions", "prereg",
+                                            "pr_body", "mistakes_entry", "letter", "archive_patch"}
+
+
+REPORT_MD = ("---\ncompany: APP\ndoc: report_02\nas_of: 2026-10-20\ndoc_status: draft\n---\n\n# AppLovin\n\n"
+             "Revenue was $1,234.5M [src:APP-10K-FY2025]. Margins rose 4% [src:APP-10K-FY2025].\n\n"
+             "Nobody cites 7,777.\n")
+SOURCES = FakeSources({"APP-10K-FY2025": "Revenue 1,234.5 million; growth 4 percent and 4% of 14 units."})
+
+
+@pytest.fixture
+def env(tmp_path):
+    return fx.make_env(tmp_path)
+
+
+def report_bundle(env, text: str = REPORT_MD, *, client: str = "claude-code") -> Path:
+    """A succeeded 02 bundle of APP with a research report and its questions, as a real backend would leave it."""
+    run_dir = "2026-10-20-02"
+    bundle = env.private / "runs" / "APP" / run_dir
+    files = {"report": ("outputs/report.md", "markdown", text), "questions": ("outputs/questions.yml", "yaml", "[]\n")}
+    for _, (rel, _, content) in files.items():
+        fx.write(bundle / rel, content)
+    fx.write_yaml(bundle / runner.MANIFEST, {
+        "manifest_version": runner.MANIFEST_VERSION, "bundle": f"runs/APP/{run_dir}", "step": "02", "company": "APP",
+        "scope": "APP", "period": "FY2026Q3", "run_date": "2026-10-20", "prompt": {"id": "02"},
+        "context": {"company": "APP", "run_date": "2026-10-20", "run_dir": run_dir, "scope": "APP"}})
+    fx.write_yaml(bundle / runner.RUN_RECORD, {"status": "succeeded", "backend": client, "client": client, "outputs": {
+        name: {"status": "written", "file": rel, "format": fmt, "sha256": registry.sha256_text(content)}
+        for name, (rel, fmt, content) in files.items()}})
+    return bundle
+
+
+def fact_check(env, bundle: Path, **kwargs) -> dict:
+    return runner.fact_check(bundle, roots=env.roots, sources=SOURCES, now=NOW, out=io.StringIO(), **kwargs)
+
+
+def place(env, bundle: Path, **kwargs) -> dict:
+    kwargs.setdefault("factcheck_sources", SOURCES)
+    kwargs.setdefault("out", io.StringIO())
+    return runner.place(bundle, roots=env.roots, lint=False, now=NOW, **kwargs)
+
+
+def review_file(bundle: Path) -> dict:
+    return yaml.safe_load((bundle / runner.FACTCHECK_FILE).read_text(encoding="utf-8"))
+
+
+def give_verdicts(bundle: Path, *verdicts: str) -> None:
+    data = review_file(bundle)
+    for item, verdict in zip(data["items"], verdicts):
+        item.update(verdict=verdict, how="checked by hand")
+    runner.write_yaml(bundle / runner.FACTCHECK_FILE, data)
+
+
+def test_factcheck_writes_the_review_file_with_counts_by_class_and_one_item_per_figure_to_review(env):
+    bundle = report_bundle(env)
+    data = fact_check(env, bundle)
+    doc = "reports/APP/2026-10-20-02/report.md"
+    assert data["bundle"] == "runs/APP/2026-10-20-02" and data["checked_at"] == "2026-10-20T12:00:00Z"
+    assert data["documents"] == {doc: {"output": "report", "figures": 3, "classes": {"found": 1, "weak": 1,
+                                                                                   "unverified": 1},
+                                       "calc_errors": 0, "to_review": 2}}
+    assert [(i["doc"], i["figure"], i["class"], i["line"], i["verdict"], i["how"]) for i in data["items"]] == [
+        (doc, "4%", "weak", 10, None, None), (doc, "7,777", "unverified", 12, None, None)]
+    assert data["totals"] == {"figures": 3, "to_review": 2, "accepted": 0, "open": 2, "blocking": 0, "verdicts": {}}
+    assert review_file(bundle) == data and set(data["verdicts"]) == set(fc.VERDICTS)
+
+
+def test_placement_stops_while_an_item_has_no_accepted_verdict_and_lists_the_items_like_lint_errors(env):
+    bundle = report_bundle(env)
+    with pytest.raises(runner.FactCheckOpen, match=r"(?s)2 of the 2 item\(s\) to review in 3 figures have no accepted "
+                                                   r"verdict.*factcheck runs/APP/2026-10-20-02.*"
+                                                   r"report.md:10: 4% \[weak\].*report.md:12: 7,777 \[unverified\]"):
+        place(env, bundle)
+    fact_check(env, bundle)
+    give_verdicts(bundle, "correct")
+    with pytest.raises(runner.FactCheckOpen, match=r"1 of the 2 item"):
+        place(env, bundle, check=True)
+    assert not (env.private / "reports" / "APP").exists() and not (bundle / runner.PLACEMENT_RECORD).exists()
+
+
+def test_placement_goes_ahead_with_accepted_verdicts_and_records_the_fact_check(env):
+    bundle = report_bundle(env)
+    fact_check(env, bundle)
+    give_verdicts(bundle, "correct", "Not a fact")
+    out = io.StringIO()
+    report = place(env, bundle, check=True, out=out)
+    assert "fact check: 1 archive document(s), 3 figures; 2 item(s) to review, every one with an accepted verdict " \
+           "(correct 1, not-a-fact 1)" in out.getvalue()
+    report = place(env, bundle)
+    record = yaml.safe_load((bundle / runner.PLACEMENT_RECORD).read_text(encoding="utf-8"))["factcheck"]
+    assert record == report["factcheck"] and record["review_file"] == "runs/APP/2026-10-20-02/factcheck.yml"
+    assert record["review_sha256"] == registry.sha256_bytes((bundle / runner.FACTCHECK_FILE).read_bytes())
+    assert record["totals"]["verdicts"] == {"correct": 1, "not-a-fact": 1}
+    assert (env.private / "reports" / "APP" / "2026-10-20-02" / "report.md").read_text(encoding="utf-8") == REPORT_MD
+
+
+def test_a_wrong_figure_blocks_placement_until_the_text_is_corrected_and_the_item_is_gone(env):
+    bundle = report_bundle(env)
+    fact_check(env, bundle)
+    give_verdicts(bundle, "correct", "wrong")
+    with pytest.raises(runner.FactCheckOpen, match=r"(?s)1 item\(s\) have the verdict wrong or cannot-verify: "
+                                                   r"correct the text.*7,777 \[unverified\] verdict wrong"):
+        place(env, bundle)
+    corrected = REPORT_MD.replace("Nobody cites 7,777.", "Revenue again: $1,234.5M [src:APP-10K-FY2025].")
+    fx.rewrite_output(bundle, "report", corrected)
+    data = fact_check(env, bundle)
+    assert [(i["figure"], i["verdict"]) for i in data["items"]] == [("4%", "correct")]
+    assert [(i["figure"], i["verdict"]) for i in data["no_longer_found"]] == [("7,777", "wrong")]
+    assert place(env, bundle)["factcheck"]["totals"]["accepted"] == 1
+
+
+def test_a_rerun_keeps_the_verdicts_when_the_lines_move(env):
+    bundle = report_bundle(env)
+    fact_check(env, bundle)
+    give_verdicts(bundle, "correct", "cannot-verify")
+    fx.rewrite_output(bundle, "report", REPORT_MD.replace("# AppLovin\n", "# AppLovin\n\nA new paragraph.\n"))
+    data = fact_check(env, bundle)
+    assert [(i["figure"], i["line"], i["verdict"], i["how"]) for i in data["items"]] == [
+        ("4%", 12, "correct", "checked by hand"), ("7,777", 14, "cannot-verify", "checked by hand")]
+    assert data["totals"]["blocking"] == 1 and "no_longer_found" not in data
+
+
+def test_an_earlier_runs_verdict_reaches_the_same_item_in_a_new_bundle(env):
+    first = report_bundle(env)
+    fact_check(env, first)
+    give_verdicts(first, "correct", "derived-correct")
+    data = review_file(first)
+    second = first.parent / "2026-10-21-02"
+    for item in data["items"]:  # a document of the same path in a later run (a dossier patched by an update, say)
+        item["doc"] = "reports/APP/2026-10-21-02/report.md"
+    fx.write_yaml(second / runner.FACTCHECK_FILE, {"items": []})
+    runner.write_yaml(first / runner.FACTCHECK_FILE, data)
+    again = runner.fact_check(report_bundle_at(env, "2026-10-21-02"), roots=env.roots, sources=SOURCES, now=NOW,
+                              out=io.StringIO())
+    origin = "runs/APP/2026-10-20-02/factcheck.yml"
+    assert [(i["verdict"], i.get("verdict_from")) for i in again["items"]] == [
+        ("correct", origin), ("derived-correct", origin)]
+
+
+def report_bundle_at(env, run_dir: str) -> Path:
+    bundle = report_bundle(env)
+    target = bundle.parent / run_dir
+    for path in sorted(bundle.rglob("*")):
+        if path.is_file() and path.name != runner.FACTCHECK_FILE:
+            fx.write(target / path.relative_to(bundle), path.read_text(encoding="utf-8"))
+    manifest = yaml.safe_load((target / runner.MANIFEST).read_text(encoding="utf-8"))
+    manifest["bundle"] = f"runs/APP/{run_dir}"
+    manifest["run_date"] = manifest["context"]["run_date"] = run_dir[:10]
+    manifest["context"]["run_dir"] = run_dir
+    runner.write_yaml(target / runner.MANIFEST, manifest)
+    return target
+
+
+def test_the_fake_clients_placeholders_are_not_checked_and_the_command_refuses_them(env):
+    bundle = report_bundle(env, client="fake")
+    report = runner.place(bundle, roots=env.roots, lint=False, now=NOW, out=io.StringIO(), allow_fake=True,
+                          check=True)
+    assert report["factcheck"] == {"skipped": "outputs of the fake client or a test double are placeholders, never "
+                                              "placed for real"}
+    with pytest.raises(runner.RunnerError, match="are placeholders and are never placed"):
+        fact_check(env, bundle)
+
+
+def test_the_command_line_writes_the_review_file_where_asked_and_exits_1_while_items_are_open(env, monkeypatch,
+                                                                                             tmp_path):
+    bundle = report_bundle(env)
+    monkeypatch.setattr(fc, "ArchiveSources", lambda files, company, **kwargs: SOURCES)
+    args = ["factcheck", "runs/APP/2026-10-20-02", "--public-root", str(env.public), "--private-root",
+            str(env.private), "--workspace-root", str(env.workspace), "--offline", "--out", str(tmp_path / "f.yml")]
+    assert runner.main(args) == 1
+    data = yaml.safe_load((tmp_path / "f.yml").read_text(encoding="utf-8"))
+    assert data["offline"] is True and data["totals"]["open"] == 2 and not (bundle / runner.FACTCHECK_FILE).exists()
+    for item in data["items"]:
+        item["verdict"] = "correct"
+    runner.write_yaml(tmp_path / "f.yml", data)
+    assert runner.main(args) == 0
+
+
+def test_the_chain_waits_for_the_verdicts_instead_of_failing(env, monkeypatch):
+    run = env.private / "runs" / "APP" / "2026-10-20-03R"
+    fx.write_yaml(run / runner.MANIFEST, {"bundle": "runs/APP/2026-10-20-03R", "step": "03R", "company": "APP",
+                                          "period": "FY2026Q3"})
+    fx.write_yaml(run / runner.RUN_RECORD, {"status": "succeeded"})
+
+    def blocked(bundle, **kwargs):
+        raise runner.FactCheckOpen("cannot place runs/APP/2026-10-20-03R:\n- fact check: 2 of the 2 item(s)")
+
+    monkeypatch.setattr(runner, "place", blocked)
+    state = chain._place_all(None, roots=env.roots, base=env.private, ticker="APP", period="FY2026Q3", dry_run=False,
+                             gateway=None, schemas_dir=None, lint=False)
+    assert (state.state, state.bundle) == ("waiting", "runs/APP/2026-10-20-03R") and "fact check" in state.detail

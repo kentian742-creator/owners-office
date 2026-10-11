@@ -1173,6 +1173,14 @@ PLACEMENT: dict[str, tuple[Destination, ...]] = {
 DEFAULT_DESTINATION = _d(PRIVATE, "runs/{scope}/{run_dir}/{output}.{ext}",
                          note="§F2: outputs not listed in the table go to the private repository")
 TRUST_ROUTED_PROMPTS = frozenset({"03"})  # §G9: quarterly updates are routed by trust level
+# The archive documents whose every figure placement checks before writing them (docs/decisions/0034): the dossier
+# (01A writes it whole, 03's dossier_changes patch it part by part, and the patched dossier is checked), the system
+# files (thesis, story, ledger), the quarterly update record, the valuation (its YAML and its working), and the
+# research reports and documents (02, 05, 06–08, 10, 11, 13). The other outputs are not archive documents and are not
+# checked: audit verdicts, findings and questions, sources, pre-registrations and their settlements, the pull
+# request's body, the mistakes entry, letters, memos, rankings, layouts and patch proposals.
+ARCHIVE_DOCUMENTS = frozenset({"dossier", "dossier_changes", "thesis", "story", "ledger", "update", "valuation_yml",
+                               "valuation_md", "report", "revised_report", "document", "revised_document"})
 
 
 class PlacementError(ValueError):
