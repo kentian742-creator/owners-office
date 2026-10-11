@@ -403,6 +403,31 @@ def test_prose_needs_a_source_tag_for_every_fact_number_and_01b_cites_only_the_d
     assert [e.split(":")[0] for e in errors] == ["thesis", "ledger"]
 
 
+def test_thesis_and_ledger_free_text_is_scanned_as_the_placement_lint_scans_it():
+    """NVIDIA's 01B (2026-10-09) succeeded, and placement then failed thesis-ci C-SRC-FACT on four numbers in claims
+    and notes, three of them thresholds. The run now checks the same fields, so the retry fixes them."""
+    thesis = {"tests": [
+        {"id": "X-Q1", "claim": "GAAP gross margin has not collapsed below 60%",
+         "fail_if": "GAAP gross margin below 60.0% in two consecutive fiscal quarters",
+         "rule": {"op": "<", "threshold": 60.0}, "note": "FY2027Q2 reading 75.0% [src:X-10Q-FY2027Q2#IS]."},
+        {"id": "X-Q2", "claim": "Leverage stays low", "note": "The 0.75x threshold flags borrowing early."}],
+        "todo": ["Check the 12% figure next quarter."]}
+    ledger = {"entries": [
+        {"id": "S1", "side": "system", "statement": "Revenue grows at least 10% in FY2028."},
+        {"id": "M1", "side": "management", "statement": "Capex will be about $6.0bn.", "source": "X-10K-FY2026#Item7"}]}
+    parsed = {"thesis": outputs.ParsedOutput("thesis", outputs.YAML, "", thesis),
+              "ledger": outputs.ParsedOutput("ledger", outputs.YAML, "", ledger)}
+    errors = outputs.system_fact_errors(parsed)
+    assert [e.split(": ")[1] for e in errors] == ["tests[0].claim", "tests[1].note", "entries[1].statement"]
+    assert all("has no [src:] tag" in e and "fail_if, warn_if and rule hold it" in e for e in errors)
+    assert not any(outputs.is_prose_error(e, n) for e in errors for n in ("thesis", "ledger"))  # redone, not repaired
+    assert outputs.coverage_errors("01B", {}, parsed) == errors
+    thesis["tests"][0]["claim"] = "GAAP gross margin has not collapsed"
+    thesis["tests"][1]["note"] = "The threshold flags borrowing early."
+    ledger["entries"][1]["statement"] = "Capex will be about $6.0bn [src:X-10K-FY2026#Item7]."
+    assert outputs.system_fact_errors(parsed) == []
+
+
 def test_a_model_review_returns_exactly_when_a_finding_is_must_fix():
     def reply(decision, *groups):
         findings = [{"id": f"04C-{i}", "group": g} for i, g in enumerate(groups, 1)]

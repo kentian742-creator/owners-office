@@ -844,6 +844,45 @@ def valuation_text_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
     return errors[:MAX_PROSE_ERRORS]
 
 
+SYSTEM_FACT_YAML = ("thesis", "ledger")  # YAML outputs whose free text thesis-ci scans for fact numbers (C-SRC-FACT)
+PREDICTION_SIDES = ("system", "owner")  # ledger entries that are predictions, not facts (thesis-ci, 00 §E1)
+
+
+def system_fact_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """A fact number without a [src:] tag in the free text of thesis.yml or ledger.yml (claims, notes, statements and
+    the like). thesis-ci's C-SRC-FACT scans the same fields once placed, so a reply that passes here passes the
+    placement lint. NVIDIA's 01B (2026-10-09) succeeded and then failed placement on four such numbers, three of them
+    thresholds restated in a claim or note."""
+    try:
+        from thesis_ci.checks.sources import free_text
+        from thesis_ci.textscan import untagged_facts
+    except ImportError:  # thesis-ci is not installed: lint catches it at placement
+        return []
+    errors: list[str] = []
+    for name in SYSTEM_FACT_YAML:
+        out = parsed.get(name)
+        if out is None or out.empty or not isinstance(out.data, (dict, list)):
+            continue
+        for where, text in free_text(out.data):
+            if name == "ledger" and _ledger_prediction(out.data, where):
+                continue
+            path = "".join(f"[{p}]" if isinstance(p, int) else f".{p}" for p in where).lstrip(".")
+            for _line, sentence, number in untagged_facts(text, False):
+                errors.append(f"{name}: {path}: fact number '{number}' has no [src:] tag in its sentence (00 §E1). "
+                              "Tag it with its source; a threshold or another test's level stays out of claims and "
+                              f"notes (fail_if, warn_if and rule hold it): {' '.join(sentence.split())[:140]}")
+    return errors[:MAX_PROSE_ERRORS]
+
+
+def _ledger_prediction(data: Any, where: tuple) -> bool:
+    """The statement or note of a system or owner ledger entry: a prediction, which needs no tag (thesis-ci)."""
+    if len(where) != 3 or where[0] != "entries" or where[2] not in ("statement", "note"):
+        return False
+    entries = data.get("entries") if isinstance(data, dict) else None
+    entry = entries[where[1]] if isinstance(entries, list) and isinstance(where[1], int) else None
+    return isinstance(entry, dict) and entry.get("side") in PREDICTION_SIDES
+
+
 def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """01B turns the dossier into system files: they may cite only the sources the dossier cites (a tag for the
     dossier itself, which is private, cannot be resolved in the public files)."""
@@ -868,9 +907,10 @@ def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[st
 
 def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """Checks of a reply against the inputs it answers: 04A gives every fact under facts in its fact_table exactly one
-    verdict and no other (a slice's context_facts get none; pipeline/slicing.py); prose carries its source tags; 01B
-    cites only what the dossier cites."""
-    errors = prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed) + valuation_text_errors(parsed)
+    verdict and no other (a slice's context_facts get none; pipeline/slicing.py); prose, the valuation's notes and the
+    free text of thesis.yml and ledger.yml carry their source tags; 01B cites only what the dossier cites."""
+    errors = (prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed) + valuation_text_errors(parsed)
+              + system_fact_errors(parsed))
     if errors:
         return errors
     if part_id == "04C":
