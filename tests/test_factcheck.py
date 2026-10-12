@@ -156,7 +156,7 @@ def test_found_context_weak_xbrl_and_unverified():
     assert classes(check) == [("$26,885M", "found"), ("3%", "found"), ("45,356", "context"), ("4%", "weak"),
                               ("$12,393M", "unverified"), ("17", "weak"), ("1,111", "unverified")]
     by = {f.text: f for f in check.figures}
-    assert by["3%"].how == "MCD-RPT1-2026-09-01#p2, the cited part (as written)"  # a page of the owner's report
+    assert by["3%"].how == "MCD-RPT1-2026-09-01#p2, the cited part (as written, next to its label)"  # a report page
     assert by["17"].how == "MCD-10K-FY2025 XBRL: a short number equal to a fact of the filing"
     assert by["1,111"].how == "no tag in its sentence, row, paragraph or table"
     assert check.unreadable == {"MCD-10Q-FY2026Q2": "not among the test documents"}
@@ -217,6 +217,78 @@ def test_another_companys_names_come_from_its_thesis_and_a_shared_first_word_is_
     assert [fc.company_names(files, t) for t in ("BRK", "AXP", "SPGI", "PDD", "NEW")] == [
         ["BRK", "Berkshire Hathaway", "Berkshire"], ["AXP", "American Express"], ["SPGI", "S&P Global"],
         ["PDD", "PDD Holdings"], ["NEW"]]
+
+
+# ---------------------------------------------------------------------------------------------------- specific
+
+
+def test_a_slip_of_the_last_digit_is_one_more_and_one_less_in_that_digit_as_written():
+    (number,) = fc.figures_of("$1,999.9M")
+    fig = fc.Figure("d", 1, number.text, number.value, number.unit, number.decimals, [], [], "")
+    assert [(s.text, s.value) for s in fc.slips(fig)] == [("$2,000.0M", 2000.0), ("$1,999.8M", 1999.8)]
+    (number,) = fc.figures_of("(0)")
+    assert [s.text for s in fc.slips(fc.Figure("d", 1, number.text, number.value, "", 0, [], [], ""))] == ["(1)"]
+
+
+def test_a_figure_in_its_source_counts_only_next_to_its_label_and_when_no_slip_stands_there_too():
+    ten_k = ("Item 7\nComparable sales increased 4.2% in fiscal 2026 and 4.3% in fiscal 2025.\n"
+             "Gross margin was 24.9%. Membership fee income was $5,323 million, and 7,000 people joined.\n")
+    check = checker({"COST-10K-FY2026": ten_k}).check("doc.md", (
+        "Comparable sales grew 4.2% [src:COST-10K-FY2026#Item7]. The gross margin was 24.9% [src:COST-10K-FY2026#Item7]. "
+        "Store traffic was $5,323M [src:COST-10K-FY2026#Item7]."))
+    assert classes(check) == [("4.2%", "weak"), ("24.9%", "found"), ("$5,323M", "weak")]
+    assert check.figures[0].how.endswith("next to its label, but so is 4.3%, a slip of its last digit")
+    assert check.figures[1].how == "COST-10K-FY2026#Item7, the cited part (as written, next to its label)"
+    assert check.figures[2].how.endswith("not next to its label")  # membership fees are not store traffic
+
+
+def test_a_table_cell_is_named_by_its_column_header_and_row_label():
+    cf = "Cash flows\n(Amounts in millions) 2021 2020 2019\nDepreciation and amortization 11,152 10,987 10,678\n"
+    check = checker({"WMT-10K-FY2021": cf}).check("doc.md", (
+        "| Fiscal year | Capex | D&A |\n| --- | --- | --- |\n| FY2020 | 10.705 | 10.987 [src:WMT-10K-FY2021#CF] |\n"))
+    assert classes(check)[-1] == ("10.987", "found")
+    assert check.figures[-1].names == "D&A FY2020"
+
+
+def test_a_number_whose_unit_is_another_kind_of_quantity_is_not_the_figure():
+    assert checker().found_in(fc.Figure("d", 1, "3%", 3.0, "%", 0, [], [], ""), "margins rose 3 points") is None
+    assert checker().found_in(fc.Figure("d", 1, "$45M", 45.0, "M", 0, [], [], ""), "a share of 45%") is None
+    assert checker().found_in(fc.Figure("d", 1, "3%", 3.0, "%", 0, [], [], ""), "growth: 3") == "as written"
+
+
+def test_an_xbrl_fact_or_the_archives_evidence_counts_only_when_no_slip_is_there_too():
+    check = checker({"MCD-10K-FY2025": "nothing"}, xbrl={"MCD-10K-FY2025": {12393.0, 12394.0}}).check(
+        "doc.md", "Operating income was $12,393M [src:MCD-10K-FY2025].")
+    assert [(f.cls, f.how) for f in check.figures] == [
+        ("weak", "MCD-10K-FY2025 XBRL: so is $12,394M, a slip of its last digit")]
+    evidence = [fc.Evidence("dossier", "companies/MCD/dossier.md", "C8 capex $14,077.0M; C9 $14,077.1M")]
+    check = checker(evidence=evidence).check("doc.md", "Capex was $14,077.0M.")
+    assert [(f.cls, f.how) for f in check.figures] == [
+        ("weak", "companies/MCD/dossier.md (as written): so is $14,077.1M, a slip of its last digit")]
+
+
+def test_a_figure_is_not_recomputed_when_a_slip_of_its_last_digit_is_recomputed_too():
+    check = checker().check("doc.md", "Parts of 10.0, 20.0 and 20.1 make 30.0 here.")
+    assert classes(check)[-1] == ("30.0", "weak")
+    assert check.figures[-1].how == ("recomputed as 10.0 + 20.0, but so is 30.1, a slip of its last digit "
+                                     "(10.0 + 20.1)")
+
+
+def test_a_sum_with_a_figure_under_ten_units_of_the_last_digit_is_a_near_copy_not_a_recompute():
+    check = checker().check("doc.md", "Charges were $9,370M before, then 1 more, so $9,371M.")
+    assert classes(check)[-1] == ("$9,371M", "unverified")
+
+
+@pytest.mark.parametrize("sentence, error, loose", [
+    ("Over ten years 1.053^10 ÷ 1.072^10 = 1.675 ÷ 2.004 = 0.836.", "1.053^10 ÷ 1.072^10 = 1.675 ÷ 2.004", True),
+    ("Over ten years 1.053^10 ÷ 1.072^10 = 1.676 ÷ 2.004 = 0.836.", None, None),
+    ("A factor 1.05 × 1.05 = 1.10 holds as written.", None, None),
+    ("A factor 1.05 × 1.05 = 1.11 holds only within the rounding of 1.05.", "1.05 × 1.05 = 1.11", True),
+    ("A factor 1.05 × 1.05 = 1.13 does not hold.", "1.05 × 1.05 = 1.13", False),
+])
+def test_written_arithmetic_holds_as_written_and_a_chain_is_checked_part_by_part(sentence, error, loose):
+    errors, _ = fc.calc_errors(fc.markdown_units(sentence), "doc.md")
+    assert [(e.expression, e.loose) for e in errors] == ([(error, loose)] if error else [])
 
 
 # ---------------------------------------------------------------------------------------------------- reverse
