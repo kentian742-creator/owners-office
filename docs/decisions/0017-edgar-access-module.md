@@ -57,3 +57,36 @@ Things the design document, 00 and 15A don't cover and that had to be decided he
 ## Date
 
 2026-09-25
+
+## Amendment, 2026-10-11: quarter ends from the company's own filings
+
+Rounding quarter ends to the nearest month end fails for Costco. Its fiscal year ends on the Sunday nearest August 31
+and its quarters are 12, 12, 12 and 16 weeks long, so its second and third quarters end in mid-February and early May
+(2026-02-15 and 2026-05-10). Its third-quarter releases of 2025-05-29 and 2026-05-28 came before the rounded quarter
+end of May 31, so each was taken for a second release of the second quarter: FY2025Q3 and FY2026Q3 had no earnings
+event, and the post-earnings chain would never have run for them. Its 10-Qs for those quarters got no period, so a tag
+such as `COST-10Q-FY2026Q3` did not resolve, and FY2026Q2 had no 10-Q to close it.
+
+The quarter ends now come from the company's own periodic reports wherever rounding misplaces them
+(`edgar.fiscal_calendar`):
+
+- The report dates of its 10-Ks are its year ends; rounding places these correctly.
+- The original 10-Qs whose report dates fall between two consecutive year ends are that year's first, second and third
+  quarters, in order of report date. A year with more or fewer than three keeps the rounded ends for those quarters,
+  so a late or missing 10-Q never shifts a quarter. An amendment has its original's report date, and so its period.
+- The quarters of later years are projected: the same quarter a year earlier, plus 364 days. A 53-week year moves a
+  projection by 7 days, so a date within 7 days of a known or projected quarter end belongs to that quarter.
+- Where rounding already puts every quarter end found this way in its own quarter, the rounded calendar stays. That is
+  the case for quarters that end at month ends, such as McDonald's or Walmart's (whose year ends on January 31), and for
+  52/53-week years whose quarters end within days of a month end, such as Apple's.
+
+The calendar is learned wherever the pipeline reads a company's submissions: earnings events and release estimates,
+the check of sources tables and the filing a source tag names, the results and filings a post-earnings step reads, the
+filings of a new archive and of a valuation check, and the releases expected next month. One place keeps the rounded
+quarter end: the cutoff for the ledger entries due by an event's quarter, which uses the fiscal year end alone.
+
+On EDGAR as of 2026-10-11, Costco's events since 2014 grow from 38 to 51: every third quarter is back with its 10-Q,
+and the seven second quarters that had no 10-Q now have theirs. `COST-10Q-FY2026Q3` resolves, and the estimate for
+FY2027Q3 rests on the three past third-quarter releases. The events of Walmart, McDonald's, Apple, NVIDIA, Microsoft,
+American Express, S&P Global, Berkshire Hathaway and AppLovin since 2014 are unchanged. Kroger, whose quarters run 16,
+12, 12 and 12 weeks, keeps all its periods, and 18 of its events since 2014 now have the 10-Q that closes them.

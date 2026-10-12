@@ -2,7 +2,9 @@
 
 pipeline/llm.py calls parse_reply() when a reply arrives: it splits the reply into <output name="..."> blocks,
 validates each one against its declared format, and returns {output name: ParsedOutput} and a list of errors; when
-there are errors, llm.py retries once with that list.
+there are errors, llm.py retries once with that list. An output whose only fault is untagged fact numbers is repaired
+on the retry instead of written again (apply_repairs): Markdown prose and the valuation's notes by sentence, the free
+text of thesis.yml and ledger.yml by field (docs/decisions/0036).
 
 - Formats are declared by the prompts (output_formats in the 00 front matter, which a part can override with
   formats) and passed in by the caller as formats: yaml, markdown, text, file (00 §F0).
@@ -30,12 +32,14 @@ not in the table go to the private repository, per the last row of §F2.
 
 from __future__ import annotations
 
+import copy
 import dataclasses
 import datetime as dt
 import functools
 import os
 import re
 import string
+import tempfile
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -443,6 +447,8 @@ def _parse_yaml(
     if not errors and schema is None:
         errors = _cap(structure_errors(name, data))
     if errors:
+        if name in SYSTEM_FACT_YAML and isinstance(data, (dict, list)):
+            errors += fact_field_errors(name, data)  # the retry that writes it again hears of these too
         return None, errors
     injected = False
     strict = validator is not None and rejects_extra_keys(validator)
@@ -785,13 +791,18 @@ def _repair_yaml(name: str, output: ParsedOutput, items: Sequence[Any]) -> tuple
     return dataclasses.replace(output, text=text, data=after), []
 
 
-def apply_repairs(name: str, output: ParsedOutput, raw: str) -> tuple[ParsedOutput | None, list[str]]:
-    """A retry's <output name="<name>_repairs">: a YAML list of {find, replace}, each find a sentence of the output
-    exactly as written. Returns the repaired output, or the errors."""
+def apply_repairs(name: str, output: ParsedOutput, raw: str, *, validators: Mapping[str, Any] | None = None,
+                  pipeline_fields: Mapping[str, Any] | None = None) -> tuple[ParsedOutput | None, list[str]]:
+    """A retry's <output name="<name>_repairs">. For thesis.yml and ledger.yml (FIELD_REPAIRABLE) it is a YAML mapping
+    {field path: the field's new text} (see repair_fields; validators and pipeline_fields are the call's); for the
+    other outputs it is a YAML list of {find, replace}, each find a sentence of the output exactly as written. Returns
+    the repaired output, or the errors."""
     try:
         items = load_yaml_text(raw)
     except Exception as exc:
         return None, [f"{name}_repairs: the YAML does not parse: {_yaml_problem(exc)}"]
+    if name in FIELD_REPAIRABLE and output.format == YAML:
+        return repair_fields(name, output, items, validators=validators, pipeline_fields=pipeline_fields)
     if not isinstance(items, list):
         return None, [f"{name}_repairs: should be a list of {{find, replace}}"]
     if output.format == YAML:
@@ -845,7 +856,55 @@ def valuation_text_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
 
 
 SYSTEM_FACT_YAML = ("thesis", "ledger")  # YAML outputs whose free text thesis-ci scans for fact numbers (C-SRC-FACT)
+FIELD_REPAIRABLE = SYSTEM_FACT_YAML  # a retry replaces their fields with untagged numbers, not the whole file
 PREDICTION_SIDES = ("system", "owner")  # ledger entries that are predictions, not facts (thesis-ci, 00 §E1)
+
+
+@dataclasses.dataclass(frozen=True)
+class FactField:
+    """A free-text field of thesis.yml or ledger.yml whose text states a fact number without a [src:] tag."""
+
+    path: str  # as the errors name the field: tests[3].note, thesis.permanent_loss_paths[2]
+    where: tuple[str | int, ...]  # the same path as keys and list indices: ("tests", 3, "note")
+    text: str  # the field's text as it stands
+    untagged: tuple[tuple[str, str], ...]  # (fact number, its sentence) for each sentence without a tag
+
+
+def field_path(where: Sequence[str | int]) -> str:
+    """The path thesis-ci writes for a field: tests[3].note for ("tests", 3, "note")."""
+    return "".join(f"[{p}]" if isinstance(p, int) else f".{p}" for p in where).lstrip(".")
+
+
+def fact_fields(name: str, data: Any) -> list[FactField]:
+    """The free-text fields of thesis.yml or ledger.yml (claims, notes, statements and the like: the fields
+    thesis-ci's C-SRC-FACT scans once the file is placed) that state a fact number without a [src:] tag. The statement
+    and note of a system or owner ledger entry are predictions, which need no tag."""
+    try:
+        from thesis_ci.checks.sources import free_text
+        from thesis_ci.textscan import untagged_facts
+    except ImportError:  # thesis-ci is not installed: lint catches it at placement
+        return []
+    out = []
+    for where, text in free_text(data):
+        if name == "ledger" and _ledger_prediction(data, where):
+            continue
+        found = untagged_facts(text, False)
+        if found:
+            out.append(FactField(field_path(where), tuple(where), text,
+                                 tuple((number, " ".join(sentence.split())) for _line, sentence, number in found)))
+    return out
+
+
+def fact_field_errors(name: str, data: Any) -> list[str]:
+    """One error for each sentence of fact_fields(), naming the field by its path."""
+    errors = [f"{name}: {field.path}: fact number '{number}' has no [src:] tag in its sentence (00 §E1). Tag it with "
+              "its source; a threshold or another test's level stays out of claims and notes (fail_if, warn_if and "
+              f"rule hold it): {sentence[:140]}"
+              for field in fact_fields(name, data) for number, sentence in field.untagged]
+    if len(errors) > MAX_PROSE_ERRORS:
+        errors = errors[:MAX_PROSE_ERRORS] + [f"{name}: ... and {len(errors) - MAX_PROSE_ERRORS} more sentences with "
+                                              "an untagged number"]
+    return errors
 
 
 def system_fact_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
@@ -853,25 +912,263 @@ def system_fact_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
     the like). thesis-ci's C-SRC-FACT scans the same fields once placed, so a reply that passes here passes the
     placement lint. NVIDIA's 01B (2026-10-09) succeeded and then failed placement on four such numbers, three of them
     thresholds restated in a claim or note."""
-    try:
-        from thesis_ci.checks.sources import free_text
-        from thesis_ci.textscan import untagged_facts
-    except ImportError:  # thesis-ci is not installed: lint catches it at placement
-        return []
     errors: list[str] = []
     for name in SYSTEM_FACT_YAML:
         out = parsed.get(name)
         if out is None or out.empty or not isinstance(out.data, (dict, list)):
             continue
-        for where, text in free_text(out.data):
-            if name == "ledger" and _ledger_prediction(out.data, where):
-                continue
-            path = "".join(f"[{p}]" if isinstance(p, int) else f".{p}" for p in where).lstrip(".")
-            for _line, sentence, number in untagged_facts(text, False):
-                errors.append(f"{name}: {path}: fact number '{number}' has no [src:] tag in its sentence (00 §E1). "
-                              "Tag it with its source; a threshold or another test's level stays out of claims and "
-                              f"notes (fail_if, warn_if and rule hold it): {' '.join(sentence.split())[:140]}")
-    return errors[:MAX_PROSE_ERRORS]
+        errors += fact_field_errors(name, out.data)
+    return errors
+
+
+_FACT_FIELD_ERROR_RE = re.compile(r"(\w+): (.+?): fact number '[^']*' has no \[src:\] tag in its sentence \(00 §E1\)")
+
+
+def is_fact_field_error(error: str, name: str) -> bool:
+    """An untagged-number error of a free-text field of thesis.yml or ledger.yml ("thesis: tests[3].note: fact number
+    ..."), which a field repair fixes."""
+    if name not in FIELD_REPAIRABLE:
+        return False
+    if error.startswith(f"{name}: ... and "):
+        return True
+    match = _FACT_FIELD_ERROR_RE.match(error)
+    return match is not None and match.group(1) == name
+
+
+_FIELD_PATH_RE = re.compile(r"[A-Za-z_][\w-]*(?:\.[A-Za-z_][\w-]*|\[\d+\])*")
+_FIELD_PATH_PART_RE = re.compile(r"\[(\d+)\]|([A-Za-z_][\w-]*)")
+
+
+def _field_exists(data: Any, path: str) -> bool:
+    if not _FIELD_PATH_RE.fullmatch(path):
+        return False
+    node = data
+    for index, key in _FIELD_PATH_PART_RE.findall(path):
+        part: Any = int(index) if index else key
+        if isinstance(node, list) and isinstance(part, int) and part < len(node) or \
+                isinstance(node, dict) and isinstance(part, str) and part in node:
+            node = node[part]
+        else:
+            return False
+    return True
+
+
+def _kind(value: Any) -> str:
+    if value is None:
+        return "empty"
+    if isinstance(value, bool):
+        return "true or false"
+    if isinstance(value, (int, float)):
+        return "a number"
+    if isinstance(value, (dt.date, dt.datetime)):
+        return "a date"
+    return "a mapping" if isinstance(value, Mapping) else "a list" if isinstance(value, list) else type(value).__name__
+
+
+def repair_fields(name: str, output: ParsedOutput, items: Any, *, validators: Mapping[str, Any] | None = None,
+                  pipeline_fields: Mapping[str, Any] | None = None) -> tuple[ParsedOutput | None, list[str]]:
+    """Field repairs in thesis.yml or ledger.yml: items maps the path of each field the retry listed (fact_fields of
+    the first attempt) to the field's new text. Each listed field takes its new text in the first attempt's data, and
+    the file is written again in its format: only the scalar of each field is rewritten in the text, so every other
+    byte stays as the model wrote it (when the text cannot be patched in place, the data is dumped whole). The result
+    is validated again like a new output, against its schema with the pipeline's fields written in; the caller checks
+    the untagged numbers again (coverage_errors). A path that was not listed, or a new text that is not a string, is
+    an error."""
+    if isinstance(items, Mapping) and set(items) == {f"{name}_repairs"}:
+        items = items[f"{name}_repairs"]  # the mapping under the block's own name, one level down
+    if not isinstance(items, Mapping) or not items:
+        return None, [f"{name}_repairs: should be a YAML mapping from each listed path to the field's new text"]
+    listed = {field.path: field for field in fact_fields(name, output.data)}
+    errors: list[str] = []
+    changes: dict[tuple[str | int, ...], str] = {}
+    for key, value in items.items():
+        path = str(key)
+        if path not in listed:
+            errors.append(f"{name}_repairs: {path} " + ("was not listed; replace only the fields listed"
+                                                        if _field_exists(output.data, path)
+                                                        else f"is not a field of the {name}; give each path as listed"))
+        elif not isinstance(value, str):
+            errors.append(f"{name}_repairs: {path}: the new text must be a string, not {_kind(value)}")
+        else:
+            changes[listed[path].where] = value.strip()
+    if errors:
+        return None, errors
+    data = copy.deepcopy(output.data)
+    for where, value in changes.items():
+        node = data
+        for part in where[:-1]:
+            node = node[part]
+        node[where[-1]] = value
+    text = _patch_scalars(output.text, changes)
+    if text is None or not _loads_to(text, data):
+        text = dump_yaml(data)
+    if validators is None:
+        validators = validators_for([name])
+    return parse_output(name, text, fmt=YAML, generated_by=output.generated_by or {}, validators=validators,
+                        fields=pipeline_fields)
+
+
+def _loads_to(text: str, data: Any) -> bool:
+    try:
+        return jsonable(load_yaml_text(text)) == jsonable(data)
+    except Exception:
+        return False
+
+
+def _patch_scalars(text: str, changes: Mapping[tuple[str | int, ...], str]) -> str | None:
+    """The YAML text with the scalar at each path written again for its new value, on one line and in its old quoting
+    style where that style can hold the value; every other byte stays as it was. None when a path does not lead to a
+    scalar written once in the text (behind an alias or a merge key, or in a stream of several documents)."""
+    yaml = _yaml()
+    try:
+        root = yaml.compose(text, Loader=yaml.SafeLoader)
+    except yaml.YAMLError:
+        return None
+    spans = []
+    for where, value in changes.items():
+        node, in_flow = root, False
+        for part in where:
+            in_flow = in_flow or bool(getattr(node, "flow_style", False))
+            if isinstance(part, int) and isinstance(node, yaml.SequenceNode) and part < len(node.value):
+                node = node.value[part]
+            elif isinstance(part, str) and isinstance(node, yaml.MappingNode):
+                found = [v for k, v in node.value if isinstance(k, yaml.ScalarNode) and k.value == part]
+                if len(found) != 1:
+                    return None
+                node = found[0]
+            else:
+                return None
+        if not isinstance(node, yaml.ScalarNode):
+            return None
+        start, end = node.start_mark.index, node.end_mark.index
+        # a block scalar becomes a quoted one; so does a plain one inside [...] or {...}, where a comma or a bracket
+        # of the new text would end it
+        style = '"' if node.style in ("|", ">") or (node.style is None and in_flow) else node.style
+        written = one_line_scalar(value, style)
+        if node.style in ("|", ">"):  # a block scalar's span runs on to the end of its last line: keep the breaks
+            block = text[start:end]
+            written += block[len(block.rstrip("\r\n")):]
+        spans.append((start, end, written))
+    spans.sort()
+    if any(earlier[1] > later[0] for earlier, later in zip(spans, spans[1:])):
+        return None
+    for start, end, written in reversed(spans):
+        text = text[:start] + written + text[end:]
+    return text
+
+
+def one_line_scalar(value: str, style: str | None) -> str:
+    """value as a YAML scalar on one line, in the given quoting style when that style can hold it on one line (None:
+    plain where YAML allows it, else quoted), else double-quoted, which always can."""
+    yaml = _yaml()
+    for choice in dict.fromkeys((style, '"')):
+        dumped = yaml.dump([value], Dumper=yaml.SafeDumper, default_style=choice, default_flow_style=False,
+                           width=float("inf"), allow_unicode=True)
+        line = dumped[2:].rstrip("\n")  # "- <scalar>\n"
+        if "\n" not in line:
+            return line
+    raise AssertionError("a double-quoted scalar fits on one line")  # pragma: no cover
+
+
+STORY_THESIS_KEYS = ("company", "status", "category")  # the story's front matter repeats these from thesis.yml
+
+
+def align_story(parsed: Mapping[str, ParsedOutput]) -> tuple[dict[str, ParsedOutput], list[str]]:
+    """The front matter of story.md repeats thesis.yml's company, status and category, and thesis-ci's C-STORY fails
+    placement where they differ (Walmart's 01B, 2026-10-11: the story said slow_grower, the thesis stalwart). When the
+    two files of a reply differ on one of them, the story takes the thesis's value: the thesis's company and status are
+    the pipeline's (00 §G8), and its category is the one its tests were built from. For the category alone it goes
+    the other way when the thesis's own template tests (origin template:<category>) name the story's category: then
+    the thesis's category field is the one at fault. Only that scalar is rewritten in the file, and the key joins the
+    output's pipeline_fields. Returns the outputs and a note for each change."""
+    out = dict(parsed)
+    story, thesis = out.get("story"), out.get("thesis")
+    if (story is None or story.empty or story.format != MARKDOWN or not isinstance(story.data, dict)
+            or thesis is None or thesis.empty or not isinstance(thesis.data, dict)):
+        return out, []
+    to_story: dict[str, Any] = {}
+    to_thesis: dict[str, Any] = {}
+    notes = []
+    for key in STORY_THESIS_KEYS:
+        told, recorded = story.data.get(key), thesis.data.get(key)
+        if told is None or recorded is None or told == recorded:
+            continue
+        if key == "category" and told == _template_category(thesis.data):
+            to_thesis[key] = told
+            notes.append(f"thesis.{key}: {recorded!r} -> {told!r}, the category of the story and of the thesis's "
+                         "template tests")
+        else:
+            to_story[key] = recorded
+            notes.append(f"story.{key}: {told!r} -> {recorded!r}, as thesis.yml has it")
+    if to_story:
+        out["story"] = _set_front_matter(story, to_story)
+    if to_thesis:
+        out["thesis"] = _set_top_fields(thesis, to_thesis)
+    return out, notes
+
+
+def _template_category(thesis: Mapping[str, Any]) -> str | None:
+    """The Lynch category whose template the thesis's tests in force were copied from, when they all name one."""
+    tests = thesis.get("tests")
+    named = {str(t["origin"]).split(":", 1)[1] for t in tests if isinstance(t, Mapping) and not t.get("retired_at")
+             and str(t.get("origin") or "").startswith("template:")} if isinstance(tests, list) else set()
+    return next(iter(named)) if len(named) == 1 else None
+
+
+def _with_pipeline_fields(output: ParsedOutput, text: str, data: Any, keys: Iterable[str]) -> ParsedOutput:
+    written = output.pipeline_fields + tuple(k for k in keys if k not in output.pipeline_fields)
+    return dataclasses.replace(output, text=text, data=data, pipeline_fields=written)
+
+
+def _set_top_fields(output: ParsedOutput, changes: Mapping[str, Any]) -> ParsedOutput:
+    """A YAML output with these top-level scalars set, each rewritten in place (else the data dumped whole)."""
+    data = {**output.data, **changes}
+    text = _patch_scalars(output.text, {(key,): value for key, value in changes.items()})
+    if text is None or not _loads_to(text, data):
+        text = dump_yaml(data)
+    return _with_pipeline_fields(output, text, data, changes)
+
+
+def _set_front_matter(output: ParsedOutput, changes: Mapping[str, Any]) -> ParsedOutput:
+    """A Markdown output with these front matter keys set, each rewritten in place (else the front matter dumped
+    whole); the body stays as it was."""
+    front = {**output.data, **changes}
+    parts = split_front_matter(output.text)
+    if parts is None:  # pragma: no cover (the output parsed with its front matter)
+        return output
+    fm_text, body = parts
+    start = len(output.text.splitlines(keepends=True)[0])
+    patched = _patch_scalars(fm_text, {(key,): value for key, value in changes.items()})
+    if patched is not None and _loads_to(patched, front):
+        text = output.text[:start] + patched + output.text[start + len(fm_text):]
+    else:
+        text = f"---\n{dump_yaml(front)}---\n{body}"
+    return _with_pipeline_fields(output, text, front, changes)
+
+
+def story_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """thesis-ci's C-STORY, run on the story and the thesis of a reply as the placement lint will run it on the placed
+    files: the story's front matter against its schema, its company, status and category against thesis.yml, and the
+    length of its body. The two files are written to a temporary companies/<company>/ for the check."""
+    story, thesis = parsed.get("story"), parsed.get("thesis")
+    if story is None or story.empty or thesis is None or thesis.empty or not isinstance(thesis.data, dict):
+        return []
+    company = thesis.data.get("company")
+    if not isinstance(company, str) or not re.fullmatch(r"[A-Z][A-Z0-9.]{0,9}", company):
+        return []  # the thesis schema rejects such a company; a temporary directory cannot be named after it
+    try:
+        from thesis_ci.checks.archive import c_story
+        from thesis_ci.engine import Context
+        from thesis_ci.repo import Repo
+    except ImportError:  # thesis-ci is not installed: lint catches it at placement
+        return []
+    with tempfile.TemporaryDirectory(prefix="owners-office-story-") as tmp:
+        folder = Path(tmp) / "companies" / company
+        folder.mkdir(parents=True)
+        (folder / "story.md").write_text(story.text, encoding="utf-8")
+        (folder / "thesis.yml").write_text(thesis.text, encoding="utf-8")
+        issues = list(c_story(Context(Repo(tmp))))
+    return [f"story: {issue.message} (thesis-ci C-STORY)" for issue in issues]
 
 
 def _ledger_prediction(data: Any, where: tuple) -> bool:
@@ -908,9 +1205,10 @@ def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[st
 def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """Checks of a reply against the inputs it answers: 04A gives every fact under facts in its fact_table exactly one
     verdict and no other (a slice's context_facts get none; pipeline/slicing.py); prose, the valuation's notes and the
-    free text of thesis.yml and ledger.yml carry their source tags; 01B cites only what the dossier cites."""
+    free text of thesis.yml and ledger.yml carry their source tags; 01B cites only what the dossier cites; the story
+    passes thesis-ci's C-STORY beside the thesis."""
     errors = (prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed) + valuation_text_errors(parsed)
-              + system_fact_errors(parsed))
+              + system_fact_errors(parsed) + story_errors(parsed))
     if errors:
         return errors
     if part_id == "04C":

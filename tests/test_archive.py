@@ -131,10 +131,22 @@ def test_a_company_on_the_intake_list_is_known_before_its_thesis_exists(env):
     assert registry.variables_for(ctx)["status"] == "holding"
     fields = registry.STEPS["01B"].pipeline_fields(context(env, "01B"))
     assert fields["thesis"] == {"schema_version": "0.2", "company": "NEWCO", "name": "Newco Corporation",
-                                "status": "holding", "trust_level": 1,
+                                "status": "holding", "trust_level": 1, "as_of": "2026-09-28",
                                 "filer": {"cik": "0000000042", "type": "domestic", "fiscal_year_end": "12-31",
                                           "earnings_form": "8-K", "annual_form": "10-K"}}
     assert fields["ledger"] == {"company": "NEWCO"}
+
+
+def test_the_pipeline_dates_the_system_files_of_a_build_and_of_a_rebuild(env):
+    """Walmart's 01B (2026-10-11): prompt 01 leaves as_of to the pipeline, the model left it out, and the thesis
+    failed its schema. The pipeline writes the run date, the day the system files are written and reviewed."""
+    later = dt.date(2026, 10, 11)
+    assert registry.STEPS["01B"].pipeline_fields(context(env, "01B", run_date=later))["thesis"]["as_of"] == "2026-10-11"
+    fx.write(env.public / "companies" / "NEWCO" / "thesis.yml",  # built: a rebuild, no longer the intake list's
+             "company: NEWCO\nname: Newco Corporation\nstatus: holding\ntrust_level: 2\nas_of: \"2026-09-28\"\n")
+    rebuild = registry.STEPS["01B"].pipeline_fields(context(env, "01B", run_date=later))["thesis"]
+    assert rebuild["as_of"] == "2026-10-11" and rebuild["trust_level"] == 2  # the rest is copied, as by 03
+    assert "as_of" not in registry.STEPS["03R"].pipeline_fields(context(env, "03R", run_date=later))["thesis"]
 
 
 def test_the_first_draft_is_not_given_findings_and_a_company_off_the_list_needs_its_thesis(env):
@@ -179,6 +191,9 @@ class StubRun:
     def output_file(self, name):
         return self.files.get(name)
 
+    def placed_file(self, name):
+        return getattr(self, "placed", {}).get(name)
+
     def read_output(self, name):
         path = self.files.get(name)
         return path.read_text(encoding="utf-8") if path else None
@@ -209,6 +224,36 @@ def test_the_model_review_sees_the_proposed_version_and_its_findings_go_back_onl
     assert "double discounting" in registry.INPUTS["findings_04C"](context(env, "01C"), "findings_04C").text
     returned = registry.INPUTS["valuation"](context(env, "01C"), "valuation")
     assert "doc_status: proposed" in returned.text and "04C returned" in returned.text
+
+
+def test_a_rerun_of_the_valuation_corrects_the_version_04c_approved_when_hqs_fact_check_finds_it_wrong(env, tmp_path,
+                                                                                                       monkeypatch):
+    """Decision 0035 for 01C: the approved version, not yet placed, goes back to 01C with HQ's rulings."""
+    runs = {"01C": StubRun(tmp_path, "runs/NEWCO/2026-09-28-01C-rerun2", {"valuation_yml": "doc_status: proposed\n"}),
+            "04C": StubRun(tmp_path, "runs/NEWCO/2026-09-29-04C-rerun2",
+                           {"valuation_decision": "valuation_decision: approved\nversion: runs/NEWCO/2026-09-28-01C-rerun2\n"})}
+    monkeypatch.setattr(registry.RunContext, "latest_run", lambda self, step, **kw: runs.get(step))
+
+    def rerun(number: int = 3) -> registry.RunContext:
+        ctx = context(env, "01C")
+        ctx.rerun = number
+        return ctx
+
+    built = registry.INPUTS["valuation"](rerun(), "valuation")
+    assert "doc_status: proposed" in built.text and "under correction" in built.note
+    with pytest.raises(registry.Omit, match="has not returned"):  # an approved version brings no findings
+        registry.INPUTS["findings_04C"](rerun(), "findings_04C")
+    with pytest.raises(registry.Omit, match="builds it from the dossier"):  # not a rerun: a new build
+        registry.INPUTS["valuation"](rerun(1), "valuation")
+    runs["04C"] = StubRun(tmp_path, "runs/NEWCO/2026-09-29-04C-rerun3",
+                          {"valuation_decision": "valuation_decision: approved\nversion: runs/NEWCO/2026-09-28-01C\n"})
+    with pytest.raises(registry.Omit):  # 04C approved another version than the latest 01C run
+        registry.INPUTS["valuation"](rerun(), "valuation")
+    runs["04C"] = StubRun(tmp_path, "runs/NEWCO/2026-09-29-04C-rerun4",
+                          {"valuation_decision": "valuation_decision: approved\nversion: runs/NEWCO/2026-09-28-01C-rerun2\n"})
+    runs["01C"].placed = {"valuation_md": tmp_path / "placed.md"}
+    with pytest.raises(registry.Omit):  # already placed: an effective valuation is corrected by HQ with a ruling
+        registry.INPUTS["valuation"](rerun(), "valuation")
 
 
 def succeeded_run(env, rel: str, manifest: dict) -> Path:

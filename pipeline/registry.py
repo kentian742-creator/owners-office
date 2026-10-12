@@ -485,14 +485,19 @@ THESIS_SCHEMA_VERSION = "0.2"
 def _build_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
     """01B: the header fields the pipeline maintains (00 §G8). A new archive takes its name and status from
     companies/intake.yml, its filer block from EDGAR, and starts at trust level 1; a rebuild copies them from the
-    current thesis.yml, as a quarterly update does."""
+    current thesis.yml, as a quarterly update does. Either way as_of is the run date: prompt 01 leaves as_of to the
+    pipeline, and the system files are current as of the day 01B writes them, the day their parts are reviewed
+    (Walmart's 01B of 2026-10-11 failed one attempt on a thesis the model had left without as_of)."""
     if ctx.intake() is None:
-        return _update_fields(ctx)
+        fields = _update_fields(ctx)
+        fields["thesis"]["as_of"] = ctx.run_date.isoformat()
+        return fields
     thesis, filer = ctx.thesis(), ctx.filer()
     block = {"cik": filer.cik, "type": filer.type, "fiscal_year_end": filer.fiscal_year_end,
              "earnings_form": filer.earnings_form, "annual_form": filer.annual_form}
     fields = {"schema_version": THESIS_SCHEMA_VERSION, "company": ctx.company, "name": thesis.get("name"),
-              "status": thesis.get("status"), "filer": {k: v for k, v in block.items() if v}, "trust_level": 1}
+              "status": thesis.get("status"), "filer": {k: v for k, v in block.items() if v}, "trust_level": 1,
+              "as_of": ctx.run_date.isoformat()}
     return {"thesis": {k: v for k, v in fields.items() if v is not None}, "ledger": {"company": ctx.company}}
 
 
@@ -884,10 +889,16 @@ class EdgarGateway:
         return edgar.next_release(filer.cik, period, fiscal_year_end=filer.fiscal_year_end, filer_type=filer.type,
                                   form=filer.earnings_form, as_of=as_of, client=self.client)
 
+    def fiscal_calendar(self, filer: edgar.Filer, *, since: dt.date | None = None) -> edgar.FiscalCalendar:
+        """The issuer's fiscal calendar, with the quarter ends its own 10-Ks and 10-Qs filed since `since` give
+        (edgar.fiscal_calendar)."""
+        subs = edgar.submissions(filer.cik, client=self.client, since=since)
+        return edgar.fiscal_calendar(subs, filer.fiscal_year_end)
+
     def _context(self, filer: edgar.Filer, fiscal_year: int, *, years_back: int = 2) -> tuple[
             edgar.Submissions, edgar.FiscalCalendar, str, str]:
         subs = edgar.submissions(filer.cik, client=self.client, since=dt.date(fiscal_year - years_back, 1, 1))
-        cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+        cal = edgar.fiscal_calendar(subs, filer.fiscal_year_end)
         kind = filer.type or edgar.infer_filer_type(subs)
         ticker = filer.ticker or str(subs.tickers[0] if subs.tickers else filer.cik)
         return subs, cal, kind, ticker
@@ -1717,7 +1728,9 @@ def _phase_status(ctx: RunContext, name: str) -> BuiltInput:
 
 
 def _upcoming_events(ctx: RunContext, start: dt.date, end: dt.date) -> list[dict[str, Any]]:
-    """Results releases expected in [start, end] for holdings and candidates, from EDGAR (placeholder dates flagged)."""
+    """Results releases expected in [start, end] for holdings and candidates, from EDGAR (placeholder dates flagged):
+    those of the quarters that end, in the company's own calendar, between 100 days before start and 10 days before
+    end."""
     rows = []
     for thesis_path in sorted(ctx.public_root.glob("companies/*/thesis.yml")):
         data = load_yaml_file(thesis_path)
@@ -1729,20 +1742,18 @@ def _upcoming_events(ctx: RunContext, start: dt.date, end: dt.date) -> list[dict
             cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or "12-31")
         except ValueError:
             continue
-        day = start - dt.timedelta(days=100)
-        seen = set()
-        while day <= end:
-            quarter_end = month_end(day)
-            day = quarter_end + dt.timedelta(days=1)
-            if quarter_end > end - dt.timedelta(days=10):
+        try:  # quarter ends from the company's own 10-Ks and 10-Qs: Costco's third quarter ends in early May
+            cal = ctx.gateway().fiscal_calendar(filer, since=dt.date(start.year - 3, 1, 1))
+        except edgar.MissingUserAgent:
+            raise
+        except edgar.EdgarError:
+            pass  # keep the month-end quarters; each estimate below reports the EDGAR failure
+        first, last = start - dt.timedelta(days=100), end - dt.timedelta(days=10)
+        quarters = sorted((cal.quarter_end(year, quarter), f"FY{year}Q{quarter}")
+                          for year in range(start.year - 1, end.year + 2) for quarter in (1, 2, 3, 4))
+        for quarter_end, period in quarters:
+            if not first <= quarter_end <= last:
                 continue
-            try:
-                period = cal.quarter_label(quarter_end)
-            except ValueError:
-                continue  # not a quarter end of this company's fiscal year
-            if period in seen:
-                continue
-            seen.add(period)
             try:
                 estimate = ctx.gateway().release_estimate(filer, period, ctx.run_date)
             except edgar.MissingUserAgent:
@@ -2778,7 +2789,7 @@ def _build_sources(ctx: RunContext, name: str) -> BuiltInput:
     filer = ctx.filer()
     gateway = ctx.gateway()
     subs = edgar.submissions(filer.cik, client=gateway.client)
-    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    cal = edgar.fiscal_calendar(subs, filer.fiscal_year_end)
     kind = filer.type or edgar.infer_filer_type(subs)
     events = edgar.earnings_events(subs.cik, cal.label, filer_type=kind, since=ctx.run_date - dt.timedelta(days=500),
                                    until=ctx.run_date, client=gateway.client, subs=subs)
@@ -2822,7 +2833,7 @@ def _valuation_filings(ctx: RunContext, name: str) -> BuiltInput:
     filer = ctx.filer()
     gateway = ctx.gateway()
     subs = edgar.submissions(filer.cik, client=gateway.client)
-    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    cal = edgar.fiscal_calendar(subs, filer.fiscal_year_end)
     known = known_filing_tags((ctx.public_root, ctx.private_root), company)
     facts, _ = gateway.companyfacts(filer.cik)
     declines = archive.decline_years(archive.xbrl_summary(facts, cal=cal, tags=lambda accession: None))
@@ -3238,11 +3249,21 @@ def _valuation(ctx: RunContext, name: str) -> BuiltInput:
     if ctx.step.step == "01C":  # the version 04C returned, to revise
         review = ctx.latest_run("04C", period=ctx.period)
         run = ctx.latest_run("01C", period=ctx.period)
-        if review is None or run is None or _valuation_decision(review) != "returned":
-            raise Omit("04C has not returned a valuation; 01C builds it from the dossier")
-        text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
-                                         f"The proposed valuation version of {company} that 04C returned ({run.rel}).")
-        return BuiltInput(text, "txt", sources, note=f"returned by {review.rel}: {run.rel}")
+        decision = _valuation_decision(review)
+        if review is not None and run is not None and decision == "returned":
+            text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
+                                             f"The proposed valuation version of {company} that 04C returned "
+                                             f"({run.rel}).")
+            return BuiltInput(text, "txt", sources, note=f"returned by {review.rel}: {run.rel}")
+        if (review is not None and run is not None and decision == "approved" and ctx.rerun > 1
+                and _reviewed_version(review) == run.rel and run.placed_file("valuation_md") is None):
+            # HQ's fact check found errors in the version 04C approved, before it was placed: the rerun corrects that
+            # version as HQ's rulings list, and 04C reviews the correction (decisions/0035)
+            text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
+                                             f"The valuation version of {company} that 04C approved ({run.rel}) and "
+                                             "HQ's fact check found wrong; HQ's rulings list the corrections.")
+            return BuiltInput(text, "txt", sources, note=f"approved by {review.rel}, under correction: {run.rel}")
+        raise Omit("04C has not returned a valuation; 01C builds it from the dossier")
     if ctx.step.step == "04C":
         run = ctx.latest_run("01C", period=ctx.period)
         if run is not None:
@@ -3313,6 +3334,14 @@ def _findings_04c(ctx: RunContext, name: str) -> BuiltInput:
     if not text or _outputs.is_empty_mark(text):
         raise Omit(f"04C returned the valuation without findings ({review.rel})")
     return BuiltInput(text, "yml", review.outputs_used(["findings"]), note=f"04C returned it: {review.rel}")
+
+
+def _reviewed_version(review: Any) -> str | None:
+    """The 01C run a 04C run's valuation_decision names as the version it reviewed (its `version` key), if any."""
+    text = review.read_output("valuation_decision") if review is not None else None
+    data = yaml.safe_load(text) if text else None
+    version = data.get("version") if isinstance(data, dict) else None
+    return str(version).strip().rstrip("/") if isinstance(version, str) and version.strip() else None
 
 
 def _valuation_decision(review: Any) -> str | None:

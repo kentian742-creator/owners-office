@@ -1347,3 +1347,133 @@ def test_untagged_valuation_notes_are_repaired_with_tags_only_not_rewritten(env)
     assert result.outputs["valuation_md"].text.endswith("Formula.\n")
     assert llm.REPAIR_MARK.format("valuation_yml") in result.text  # the record keeps what the model returned
     assert '<output name="valuation_yml_repairs">' in result.text.split(llm.REPAIR_MARK.format("valuation_yml"))[1]
+
+
+THESIS_WITH_NOTES = """# Header fields are the pipeline's (00 §G8).
+company: TEST
+trust_level: 1
+tests:
+  - id: TEST-Q1
+    claim: "Revenue keeps growing [src:TEST-10K-FY2026#p30]"
+    note: "Revenue grew 12% in FY2026. The test reads it each quarter."
+  - id: TEST-Q2
+    claim: Margins hold
+    note: >-
+      The template threshold of 70% is lowered
+      for this company.
+  - id: TEST-Q3
+    claim: Cash covers the dividend
+    note: 'Free cash flow was $1.2bn in FY2026 [src:TEST-10K-FY2026#p41].'
+"""
+THESIS_FIELD_REPAIRS = ('<output name="thesis_repairs">\n'
+                        'tests[0].note: "Revenue grew 12% in FY2026 [src:TEST-10K-FY2026#p30]. The test reads it each '
+                        'quarter."\n'
+                        "tests[1].note: The template threshold is lowered for this company.\n</output>\n")
+
+
+def test_untagged_numbers_in_thesis_fields_are_repaired_field_by_field_not_rewritten(env):
+    """Walmart's 01B (2026-10-11) failed three times: each retry wrote the 25 KB thesis again to tag a note or two,
+    and each new version had other untagged numbers. The retry now asks only for the new text of the listed fields,
+    and the rest of the file stays as the first attempt wrote it, byte for byte."""
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_WITH_NOTES, questions="none"))
+    client = FakeClient(bad, make_response(THESIS_FIELD_REPAIRS))
+    result = call(env, client, pipeline_fields={"thesis": {"company": "TEST", "trust_level": 1}})
+    retried = client.messages.stream_calls[1]["messages"][0]["content"]
+    assert "Do not write thesis again" in retried and '<output name="thesis_repairs">' in retried
+    assert "Produce only" not in retried and "Also produce" not in retried  # nothing is written again
+    assert ('1. tests[0].note\n   text: "Revenue grew 12% in FY2026. The test reads it each quarter."\n   error: fact '
+            "number '12%' has no [src:] tag in its sentence: Revenue grew 12% in FY2026.") in retried
+    assert '2. tests[1].note\n   text: "The template threshold of 70% is lowered for this company."' in retried
+    assert "tests[2].note" not in retried  # its number has a tag
+    expected = THESIS_WITH_NOTES.replace(
+        '"Revenue grew 12% in FY2026. The test reads it each quarter."',
+        '"Revenue grew 12% in FY2026 [src:TEST-10K-FY2026#p30]. The test reads it each quarter."').replace(
+        ">-\n      The template threshold of 70% is lowered\n      for this company.\n",
+        '"The template threshold is lowered for this company."\n')  # a block scalar comes back on one line, quoted
+    thesis = result.outputs["thesis"]
+    assert thesis.text == expected and result.attempts == 2
+    assert thesis.data["tests"][1]["note"] == "The template threshold is lowered for this company."
+    assert thesis.pipeline_fields == ("company", "trust_level")
+    assert llm.FIELD_REPAIR_MARK.format("thesis") in result.text  # the record keeps what the model returned
+    assert '<output name="thesis_repairs">' in result.text.split(llm.FIELD_REPAIR_MARK.format("thesis"))[1]
+    first, second = read_log(env.log)
+    assert [e.split(": ")[1] for e in first["validation_errors"]] == ["tests[0].note", "tests[1].note"]
+    assert "validation_errors" not in second
+
+
+@pytest.mark.parametrize("entry, message", [
+    ('tests[7].note: "No such test."', "thesis_repairs: tests[7].note is not a field of the thesis; give each path "
+                                       "as listed"),
+    ('tests[0].claim: "Revenue keeps growing"', "thesis_repairs: tests[0].claim was not listed; replace only the "
+                                                "fields listed"),
+    ("tests[1].note: 70", "thesis_repairs: tests[1].note: the new text must be a string, not a number"),
+])
+def test_a_field_repair_with_a_wrong_path_or_value_fails_the_call_cleanly(env, entry, message):
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_WITH_NOTES, questions="none"))
+    good = "tests[1].note: The template threshold is lowered for this company.\n"
+    repairs = THESIS_FIELD_REPAIRS.replace(good, "" if entry.startswith("tests[1].note") else good)
+    client = FakeClient(bad, make_response(repairs.replace("</output>", entry + "\n</output>")))
+    with pytest.raises(llm.LLMOutputInvalid) as info:
+        call(env, client)
+    assert info.value.errors[0] == message and client.call_count == 2
+    assert llm.FIELD_REPAIR_MARK.format("thesis") in info.value.result.text and len(read_log(env.log)) == 2
+
+
+def test_a_thesis_that_also_fails_its_schema_is_produced_again_and_told_of_both(env):
+    """A schema error and an untagged number in one thesis: a field repair cannot mend the schema, so the thesis is
+    written again. It is scanned for untagged numbers all the same, so the new version hears of them too."""
+    no_level = "company: TEST\ntests:\n  - id: TEST-Q1\n    note: \"Revenue grew 12% in FY2026.\"\n"
+    fixed = ("company: TEST\ntrust_level: 1\ntests:\n  - id: TEST-Q1\n"
+             "    note: \"Revenue grew 12% in FY2026 [src:TEST-10K-FY2026#p30].\"\n")
+    bad = make_response(envelope(update=UPDATE_MD, thesis=no_level, questions="none"))
+    client = FakeClient(bad, make_response(envelope(thesis=fixed)))
+    result = call(env, client)
+    retried = client.messages.stream_calls[1]["messages"][0]["content"]
+    assert "Produce only thesis again" in retried and "thesis_repairs" not in retried
+    assert "- thesis: thesis.schema.json /: 'trust_level' is a required property" in retried
+    assert "- thesis: tests[0].note: fact number '12%' has no [src:] tag" in retried
+    assert result.outputs["thesis"].text == fixed and llm.RETRY_MARK.format("thesis") in result.text
+
+
+def test_sentence_repairs_and_field_repairs_go_together_in_one_retry(env):
+    update = UPDATE_MD + "Revenue grew 12% in the quarter.\n"
+    bad = make_response(envelope(update=update, thesis=THESIS_WITH_NOTES, questions="none"))
+    retry = ('<output name="update_repairs">\n- find: "Revenue grew 12% in the quarter."\n'
+             '  replace: "Revenue grew 12% in the quarter [src:TEST-10Q-FY2026Q2#p2]."\n</output>\n'
+             + THESIS_FIELD_REPAIRS)
+    client = FakeClient(bad, make_response(retry))
+    result = call(env, client)
+    retried = client.messages.stream_calls[1]["messages"][0]["content"]
+    assert "Do not write update again" in retried and "Do not write thesis again" in retried
+    assert "[src:TEST-10Q-FY2026Q2#p2]" in result.outputs["update"].text
+    assert "[src:TEST-10K-FY2026#p30]. The test reads" in result.outputs["thesis"].text
+    assert "===== retry: sentence repairs for update, field repairs for thesis; " in result.text
+
+
+STORY_MD = "---\ncompany: TEST\nas_of: 2026-09-24\nstatus: candidate\ncategory: slow_grower\n---\nTwo-minute story.\n"
+THESIS_STALWART = ("company: TEST\ntrust_level: 1\nstatus: candidate\ncategory: stalwart\ntests:\n"
+                   "  - id: TEST-Q1\n    origin: \"template:stalwart\"\n")
+
+
+def test_a_story_that_differs_from_the_thesis_takes_its_values_without_a_retry(env):
+    """Walmart's 01B (2026-10-11, attempt 4) passed the run's checks and failed placement on thesis-ci C-STORY: the
+    story's front matter said slow_grower, the thesis stalwart. The story now takes the thesis's value in the run."""
+    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=THESIS_STALWART, questions="none",
+                                               story=STORY_MD)))
+    result = call(env, client)
+    story = result.outputs["story"]
+    assert client.call_count == 1 and result.attempts == 1
+    assert story.text == STORY_MD.replace("category: slow_grower", "category: stalwart")
+    assert story.data["category"] == "stalwart" and story.pipeline_fields == ("category",)
+    assert read_log(env.log)[0]["aligned"] == ["story.category: 'slow_grower' -> 'stalwart', as thesis.yml has it"]
+
+
+def test_a_story_that_c_story_still_rejects_is_produced_again_alone(env):
+    long_story = STORY_MD.replace("slow_grower", "stalwart") + "word " * 351 + "\n"
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_STALWART, questions="none", story=long_story))
+    client = FakeClient(bad, make_response(envelope(story=STORY_MD)))
+    result = call(env, client)
+    retried = client.messages.stream_calls[1]["messages"][0]["content"]
+    assert "Produce only story again" in retried and "(thesis-ci C-STORY)" in retried and "words" in retried
+    assert result.outputs["thesis"].text == THESIS_STALWART  # kept as it passed
+    assert result.outputs["story"].data["category"] == "stalwart"  # the new story is aligned too
