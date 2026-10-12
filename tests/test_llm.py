@@ -1449,3 +1449,31 @@ def test_sentence_repairs_and_field_repairs_go_together_in_one_retry(env):
     assert "[src:TEST-10K-FY2026#p30]. The test reads" in result.outputs["thesis"].text
     assert "===== retry: sentence repairs for update, field repairs for thesis; " in result.text
 
+
+STORY_MD = "---\ncompany: TEST\nas_of: 2026-09-24\nstatus: candidate\ncategory: slow_grower\n---\nTwo-minute story.\n"
+THESIS_STALWART = ("company: TEST\ntrust_level: 1\nstatus: candidate\ncategory: stalwart\ntests:\n"
+                   "  - id: TEST-Q1\n    origin: \"template:stalwart\"\n")
+
+
+def test_a_story_that_differs_from_the_thesis_takes_its_values_without_a_retry(env):
+    """Walmart's 01B (2026-10-11, attempt 4) passed the run's checks and failed placement on thesis-ci C-STORY: the
+    story's front matter said slow_grower, the thesis stalwart. The story now takes the thesis's value in the run."""
+    client = FakeClient(make_response(envelope(update=UPDATE_MD, thesis=THESIS_STALWART, questions="none",
+                                               story=STORY_MD)))
+    result = call(env, client)
+    story = result.outputs["story"]
+    assert client.call_count == 1 and result.attempts == 1
+    assert story.text == STORY_MD.replace("category: slow_grower", "category: stalwart")
+    assert story.data["category"] == "stalwart" and story.pipeline_fields == ("category",)
+    assert read_log(env.log)[0]["aligned"] == ["story.category: 'slow_grower' -> 'stalwart', as thesis.yml has it"]
+
+
+def test_a_story_that_c_story_still_rejects_is_produced_again_alone(env):
+    long_story = STORY_MD.replace("slow_grower", "stalwart") + "word " * 351 + "\n"
+    bad = make_response(envelope(update=UPDATE_MD, thesis=THESIS_STALWART, questions="none", story=long_story))
+    client = FakeClient(bad, make_response(envelope(story=STORY_MD)))
+    result = call(env, client)
+    retried = client.messages.stream_calls[1]["messages"][0]["content"]
+    assert "Produce only story again" in retried and "(thesis-ci C-STORY)" in retried and "words" in retried
+    assert result.outputs["thesis"].text == THESIS_STALWART  # kept as it passed
+    assert result.outputs["story"].data["category"] == "stalwart"  # the new story is aligned too

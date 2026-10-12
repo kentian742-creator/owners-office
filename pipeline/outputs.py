@@ -39,6 +39,7 @@ import functools
 import os
 import re
 import string
+import tempfile
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -1069,6 +1070,107 @@ def one_line_scalar(value: str, style: str | None) -> str:
     raise AssertionError("a double-quoted scalar fits on one line")  # pragma: no cover
 
 
+STORY_THESIS_KEYS = ("company", "status", "category")  # the story's front matter repeats these from thesis.yml
+
+
+def align_story(parsed: Mapping[str, ParsedOutput]) -> tuple[dict[str, ParsedOutput], list[str]]:
+    """The front matter of story.md repeats thesis.yml's company, status and category, and thesis-ci's C-STORY fails
+    placement where they differ (Walmart's 01B, 2026-10-11: the story said slow_grower, the thesis stalwart). When the
+    two files of a reply differ on one of them, the story takes the thesis's value: the thesis's company and status are
+    the pipeline's (00 §G8), and its category is the one its tests were built from. For the category alone it goes
+    the other way when the thesis's own template tests (origin template:<category>) name the story's category: then
+    the thesis's category field is the one at fault. Only that scalar is rewritten in the file, and the key joins the
+    output's pipeline_fields. Returns the outputs and a note for each change."""
+    out = dict(parsed)
+    story, thesis = out.get("story"), out.get("thesis")
+    if (story is None or story.empty or story.format != MARKDOWN or not isinstance(story.data, dict)
+            or thesis is None or thesis.empty or not isinstance(thesis.data, dict)):
+        return out, []
+    to_story: dict[str, Any] = {}
+    to_thesis: dict[str, Any] = {}
+    notes = []
+    for key in STORY_THESIS_KEYS:
+        told, recorded = story.data.get(key), thesis.data.get(key)
+        if told is None or recorded is None or told == recorded:
+            continue
+        if key == "category" and told == _template_category(thesis.data):
+            to_thesis[key] = told
+            notes.append(f"thesis.{key}: {recorded!r} -> {told!r}, the category of the story and of the thesis's "
+                         "template tests")
+        else:
+            to_story[key] = recorded
+            notes.append(f"story.{key}: {told!r} -> {recorded!r}, as thesis.yml has it")
+    if to_story:
+        out["story"] = _set_front_matter(story, to_story)
+    if to_thesis:
+        out["thesis"] = _set_top_fields(thesis, to_thesis)
+    return out, notes
+
+
+def _template_category(thesis: Mapping[str, Any]) -> str | None:
+    """The Lynch category whose template the thesis's tests in force were copied from, when they all name one."""
+    tests = thesis.get("tests")
+    named = {str(t["origin"]).split(":", 1)[1] for t in tests if isinstance(t, Mapping) and not t.get("retired_at")
+             and str(t.get("origin") or "").startswith("template:")} if isinstance(tests, list) else set()
+    return next(iter(named)) if len(named) == 1 else None
+
+
+def _with_pipeline_fields(output: ParsedOutput, text: str, data: Any, keys: Iterable[str]) -> ParsedOutput:
+    written = output.pipeline_fields + tuple(k for k in keys if k not in output.pipeline_fields)
+    return dataclasses.replace(output, text=text, data=data, pipeline_fields=written)
+
+
+def _set_top_fields(output: ParsedOutput, changes: Mapping[str, Any]) -> ParsedOutput:
+    """A YAML output with these top-level scalars set, each rewritten in place (else the data dumped whole)."""
+    data = {**output.data, **changes}
+    text = _patch_scalars(output.text, {(key,): value for key, value in changes.items()})
+    if text is None or not _loads_to(text, data):
+        text = dump_yaml(data)
+    return _with_pipeline_fields(output, text, data, changes)
+
+
+def _set_front_matter(output: ParsedOutput, changes: Mapping[str, Any]) -> ParsedOutput:
+    """A Markdown output with these front matter keys set, each rewritten in place (else the front matter dumped
+    whole); the body stays as it was."""
+    front = {**output.data, **changes}
+    parts = split_front_matter(output.text)
+    if parts is None:  # pragma: no cover (the output parsed with its front matter)
+        return output
+    fm_text, body = parts
+    start = len(output.text.splitlines(keepends=True)[0])
+    patched = _patch_scalars(fm_text, {(key,): value for key, value in changes.items()})
+    if patched is not None and _loads_to(patched, front):
+        text = output.text[:start] + patched + output.text[start + len(fm_text):]
+    else:
+        text = f"---\n{dump_yaml(front)}---\n{body}"
+    return _with_pipeline_fields(output, text, front, changes)
+
+
+def story_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """thesis-ci's C-STORY, run on the story and the thesis of a reply as the placement lint will run it on the placed
+    files: the story's front matter against its schema, its company, status and category against thesis.yml, and the
+    length of its body. The two files are written to a temporary companies/<company>/ for the check."""
+    story, thesis = parsed.get("story"), parsed.get("thesis")
+    if story is None or story.empty or thesis is None or thesis.empty or not isinstance(thesis.data, dict):
+        return []
+    company = thesis.data.get("company")
+    if not isinstance(company, str) or not re.fullmatch(r"[A-Z][A-Z0-9.]{0,9}", company):
+        return []  # the thesis schema rejects such a company; a temporary directory cannot be named after it
+    try:
+        from thesis_ci.checks.archive import c_story
+        from thesis_ci.engine import Context
+        from thesis_ci.repo import Repo
+    except ImportError:  # thesis-ci is not installed: lint catches it at placement
+        return []
+    with tempfile.TemporaryDirectory(prefix="owners-office-story-") as tmp:
+        folder = Path(tmp) / "companies" / company
+        folder.mkdir(parents=True)
+        (folder / "story.md").write_text(story.text, encoding="utf-8")
+        (folder / "thesis.yml").write_text(thesis.text, encoding="utf-8")
+        issues = list(c_story(Context(Repo(tmp))))
+    return [f"story: {issue.message} (thesis-ci C-STORY)" for issue in issues]
+
+
 def _ledger_prediction(data: Any, where: tuple) -> bool:
     """The statement or note of a system or owner ledger entry: a prediction, which needs no tag (thesis-ci)."""
     if len(where) != 3 or where[0] != "entries" or where[2] not in ("statement", "note"):
@@ -1103,9 +1205,10 @@ def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[st
 def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """Checks of a reply against the inputs it answers: 04A gives every fact under facts in its fact_table exactly one
     verdict and no other (a slice's context_facts get none; pipeline/slicing.py); prose, the valuation's notes and the
-    free text of thesis.yml and ledger.yml carry their source tags; 01B cites only what the dossier cites."""
+    free text of thesis.yml and ledger.yml carry their source tags; 01B cites only what the dossier cites; the story
+    passes thesis-ci's C-STORY beside the thesis."""
     errors = (prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed) + valuation_text_errors(parsed)
-              + system_fact_errors(parsed))
+              + system_fact_errors(parsed) + story_errors(parsed))
     if errors:
         return errors
     if part_id == "04C":

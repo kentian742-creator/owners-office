@@ -535,6 +535,58 @@ def test_a_field_repair_dumps_the_data_whole_when_the_text_cannot_be_patched_in_
     assert [t["note"] for t in fixed.data["tests"]] == ["Sales grew.", "Sales held."]
 
 
+def story_output(text):
+    front = outputs.load_yaml_text(outputs.split_front_matter(text)[0])
+    return outputs.ParsedOutput("story", outputs.MARKDOWN, text, front, schema="story")
+
+
+def thesis_output(text):
+    return outputs.ParsedOutput("thesis", outputs.YAML, text, outputs.load_yaml_text(text), schema="thesis")
+
+
+STORY_FM = ("---\ncompany: WMT\nas_of: 2026-10-11\nstatus: candidate\ncategory: slow_grower\n---\n"
+            "Walmart sells groceries.\n")
+THESIS_CATEGORY = "company: WMT\nstatus: candidate\ncategory: stalwart\ntests:\n  - origin: \"template:stalwart\"\n"
+
+
+def test_a_story_takes_the_thesis_values_unless_the_thesis_template_tests_side_with_the_story():
+    """Walmart's 01B (2026-10-11): the story said slow_grower, the thesis stalwart (slow_grower was its secondary
+    category), and placement failed thesis-ci C-STORY. The story's front matter now takes the thesis's value."""
+    story = story_output(STORY_FM.replace("company: WMT", "company: WMT.X").replace("candidate", "holding"))
+    thesis = thesis_output(THESIS_CATEGORY)
+    aligned, notes = outputs.align_story({"story": story, "thesis": thesis})
+    assert aligned["story"].text == STORY_FM.replace("slow_grower", "stalwart") and aligned["thesis"] is thesis
+    assert aligned["story"].pipeline_fields == ("company", "status", "category")
+    assert notes[2] == "story.category: 'slow_grower' -> 'stalwart', as thesis.yml has it"
+    # the thesis's own template tests name the story's category: the thesis's category field is the one at fault
+    other = THESIS_CATEGORY.replace("template:stalwart", "template:slow_grower")
+    aligned, notes = outputs.align_story({"story": story_output(STORY_FM), "thesis": thesis_output(other)})
+    assert aligned["thesis"].text == other.replace("category: stalwart", "category: slow_grower")
+    assert aligned["thesis"].pipeline_fields == ("category",) and aligned["story"].text == STORY_FM
+    assert notes == ["thesis.category: 'stalwart' -> 'slow_grower', the category of the story and of the thesis's "
+                     "template tests"]
+    # tests from two templates in force: no side is taken, and the story follows the thesis
+    mixed = THESIS_CATEGORY + "  - origin: \"template:slow_grower\"\n"
+    assert outputs.align_story({"story": story_output(STORY_FM), "thesis": thesis_output(mixed)})[0]["story"].data[
+        "category"] == "stalwart"
+    retired = mixed.replace("template:stalwart\"\n", "template:stalwart\"\n    retired_at: FY2026Q1\n")
+    assert outputs.align_story({"story": story_output(STORY_FM), "thesis": thesis_output(retired)})[0]["thesis"].data[
+        "category"] == "slow_grower"
+
+
+def test_the_story_is_checked_beside_the_thesis_as_the_placement_lint_checks_it():
+    parsed = {"story": story_output(STORY_FM), "thesis": thesis_output(THESIS_CATEGORY)}
+    assert outputs.story_errors(parsed) == ["story: front matter category 'slow_grower' does not match thesis.yml "
+                                            "category 'stalwart' (thesis-ci C-STORY)"]
+    assert outputs.coverage_errors("01B", {}, parsed) == outputs.story_errors(parsed)
+    assert outputs.story_errors(outputs.align_story(parsed)[0]) == []
+    long = story_output(STORY_FM.replace("slow_grower", "stalwart") + "word " * 350)
+    assert outputs.story_errors({"story": long, "thesis": parsed["thesis"]}) == [
+        "story: story body is 353 words (limit 350 words for a story in English, tags and markup excluded) "
+        "(thesis-ci C-STORY)"]
+    assert outputs.story_errors({"story": parsed["story"]}) == []  # no thesis in the reply: nothing to compare
+
+
 def test_a_model_review_returns_exactly_when_a_finding_is_must_fix():
     def reply(decision, *groups):
         findings = [{"id": f"04C-{i}", "group": g} for i, g in enumerate(groups, 1)]

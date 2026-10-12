@@ -25,13 +25,14 @@ docs/decisions/0009):
    (00 §G6) is refused before any request is sent. Page images (rendered_pages) go into their <input> block as
    base64 image blocks.
 5. Output: split at <output name="...">, validated against the declared formats (pipeline/outputs.py: names,
-   required outputs, YAML, thesis-ci schema, front matter) and checked as the placement lint will check its source
-   tags. If it is invalid, the errors are appended to the original request, which is retried once; if the output
-   is still invalid, LLMOutputInvalid is raised and nothing is handed over. The retry asks only for what failed: an
-   output that passed is kept, and an output whose only fault is untagged fact numbers is repaired, not written
-   again, sentence by sentence (Markdown prose, the valuation's notes) or field by field (the free text of
-   thesis.yml and ledger.yml; docs/decisions/0036). generated_by is injected into the front matter of every Markdown
-   output; placement follows 00 §F2 (LLMResult.placements()).
+   required outputs, YAML, thesis-ci schema, front matter) and checked as the placement lint will check it (source
+   tags; the story beside the thesis, whose company, status and category its front matter takes). If it is invalid,
+   the errors are appended to the original request, which is retried once; if the output is still invalid,
+   LLMOutputInvalid is raised and nothing is handed over. The retry asks only for what failed: an output that passed
+   is kept, and an output whose only fault is untagged fact numbers is repaired, not written again, sentence by
+   sentence (Markdown prose, the valuation's notes) or field by field (the free text of thesis.yml and ledger.yml;
+   docs/decisions/0036). generated_by is injected into the front matter of every Markdown output; placement follows
+   00 §F2 (LLMResult.placements()).
 6. Backends (docs/decisions/0022). The same system prompt, user content, validation, retry and logging serve all
    three; only the transport differs:
    - claude-code (the default; OWNERS_OFFICE_BACKEND overrides it): the Claude Code CLI in print mode on the owner's
@@ -1774,6 +1775,9 @@ def complete(
                     parsed[name] = repaired
             result = dataclasses.replace(result, text=first_text + "\n\n" + _retry_mark(redo, repairs, field_repairs)
                                          + "\n\n" + replied)
+        parsed, aligned = _outputs.align_story(parsed)  # the story's front matter takes thesis.yml's values
+        if aligned:
+            record["aligned"] = aligned
         errors = errors + _outputs.coverage_errors(call.label, inputs, parsed)  # all faults at once, parsed or not
         if errors:
             record["validation_errors"] = errors[:50]

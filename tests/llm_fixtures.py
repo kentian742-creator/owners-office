@@ -160,7 +160,8 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "thesis": {
         "type": "object",
         "required": ["company", "trust_level", "tests"],
-        "properties": {"company": {"type": "string"}, "trust_level": {"type": "integer"}, "tests": {"type": "array"}},
+        "properties": {"company": {"type": "string"}, "trust_level": {"type": "integer"}, "tests": {"type": "array"},
+                       "status": {"type": "string"}, "category": {"type": "string"}},
         "additionalProperties": False,
     },
     "story": {
@@ -170,6 +171,7 @@ SCHEMAS: dict[str, dict[str, Any]] = {
             "company": {"type": "string"},
             "as_of": {"type": "string", "format": "date"},
             "status": {"enum": ["holding", "candidate", "archive"]},
+            "category": {"type": "string"},
         },
         "additionalProperties": False,
     },
