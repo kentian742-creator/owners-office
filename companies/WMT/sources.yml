@@ -62,3 +62,49 @@ sources:
     url: https://www.sec.gov/Archives/edgar/data/104169/000010416916000079/wmtform10-kx1312016.htm
     primary: true
     note: Excerpt supplied (Item 1); MD&A is in Exhibit 13, not supplied.
+
+  - tag: WMT-10K-FY2019
+    kind: filing
+    title: WMT 10-K filed 2019-03-28
+    form: 10-K
+    accession: 0000104169-19-000016
+    filed: '2019-03-28'
+    url: https://www.sec.gov/Archives/edgar/data/104169/000010416919000016/wmtform10-kx1312019.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: WMT-10K-FY2023
+    kind: filing
+    title: WMT 10-K filed 2023-03-17
+    form: 10-K
+    accession: 0000104169-23-000020
+    filed: '2023-03-17'
+    url: https://www.sec.gov/Archives/edgar/data/104169/000010416923000020/wmt-20230131.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: WMT-10K-FY2025
+    kind: filing
+    title: WMT 10-K filed 2025-03-14
+    form: 10-K
+    accession: 0000104169-25-000021
+    filed: '2025-03-14'
+    url: https://www.sec.gov/Archives/edgar/data/104169/000010416925000021/wmt-20250131.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: WMT-8K-2025-11-14
+    kind: filing
+    title: WMT 8-K filed 2025-11-14
+    form: 8-K
+    accession: 0000104169-25-000172
+    filed: '2025-11-14'
+    url: https://www.sec.gov/Archives/edgar/data/104169/000010416925000172/wmt-20251111.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'
+  - tag: WMT-8K-2026-01-16
+    kind: filing
+    title: WMT 8-K filed 2026-01-16
+    form: 8-K
+    accession: 0000104169-26-000023
+    filed: '2026-01-16'
+    url: https://www.sec.gov/Archives/edgar/data/104169/000010416926000023/wmt-20260115.htm
+    primary: true
+    note: 'registered by the pipeline: an EDGAR document supplied to one of its runs and cited in the archive'

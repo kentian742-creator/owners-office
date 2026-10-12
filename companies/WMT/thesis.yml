@@ -1,0 +1,646 @@
+filer:
+  cik: "0000104169"
+  type: domestic
+  fiscal_year_end: "01-31"
+  earnings_form: 8-K
+  annual_form: 10-K
+trust_level: 1
+schema_version: "0.2"
+company: WMT
+name: Walmart Inc.
+status: candidate
+as_of: "2026-10-11"
+category: stalwart
+category_secondary: slow_grower
+category_rationale: "Walmart is a large, mature, grocery-led retailer whose total revenues grew in every fiscal year from FY2017 to FY2026, by 4.7% in FY2026 to $713.2bn [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2023#IS] [src:WMT-10K-FY2025#IS] [src:WMT-10K-FY2026#Item8], and operating income per diluted share rose 48.6% from the FY2017–FY2019 average to the FY2024–FY2026 average [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2025#p58]; it is steady and defensive like a stalwart, but its revenue growth sits below Lynch's stalwart growth band, so slow_grower is the secondary category."
+domain: consumer
+depends_on: []
+reviewed:
+  business: "2026-10-11"
+  economics: "2026-10-11"
+  moat: "2026-10-11"
+  capital_allocation: "2026-10-11"
+  management: "2026-10-11"
+  culture: "2026-10-11"
+  runway: "2026-10-11"
+  valuation: "2026-10-11"
+  bear_case: "2026-10-11"
+  monitoring: "2026-10-11"
+  thesis: "2026-10-11"
+  breakers: "2026-10-11"
+  munger: "2026-10-11"
+  unknowns: "2026-10-11"
+ratings:
+  business: "A−"
+  management: "B+"
+  capital_allocation: "B"
+  culture: "B"
+thesis:
+  summary: >-
+    Walmart's U.S. stores, distribution network and purchasing volume give it a cost-to-serve advantage in grocery-led
+    mass retail that lets it hold its price gap and still earn a Walmart U.S. segment margin of 5.2% in FY2025 and FY2026
+    [src:WMT-10K-FY2026#Item7], with inventory more than fully funded by suppliers (accounts payable $63.1bn against
+    inventories $58.9bn at 2026-01-31) [src:WMT-10K-FY2026#Item8]. The same stores have become the fulfillment network
+    for U.S. online retail, and the traffic they carry is now sold as advertising and membership, income lines that can
+    lift operating income faster than sales. Owning it is a bet that capital expenditure, which rose from an average of
+    2.07% of total revenues in FY2017–FY2019 to 3.47% in FY2024–FY2026 [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2019#CF]
+    [src:WMT-10K-FY2025#IS] [src:WMT-10K-FY2025#CF] [src:WMT-10K-FY2026#Item8], converts into higher free cash flow per
+    share, which it has not yet done: free cash flow per diluted share averaged $2.08 in FY2017–FY2019 and $1.76 in
+    FY2024–FY2026 [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2019#CF] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2021#CF]
+    [src:WMT-10K-FY2025#p58] [src:WMT-10K-FY2026#Item8]. The case fails if the U.S. margin or the after-tax return on
+    invested capital (14.5% in FY2026, computed from [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Note5]
+    [src:WMT-10K-FY2026#Note6] [src:WMT-10K-FY2025#BS]) falls materially, or if free cash flow cannot cover the dividend.
+  pillars:
+    - id: P1
+      claim: >-
+        The U.S. cost advantage holds: the Walmart U.S. segment margin stays at or above 5% (5.2% in FY2026, 5.0% in
+        FY2024) and Walmart U.S. comparable sales stay positive (4.3% in FY2026) [src:WMT-10K-FY2026#Item7].
+      source: WMT-10K-FY2026#Item7
+    - id: P2
+      claim: >-
+        Stores serve as the fulfillment network for online orders: eCommerce keeps growing with improving economics;
+        eCommerce net sales were 21.3% of FY2026 net sales and grew 24.4% over FY2025 [src:WMT-10K-FY2026#Note11],
+        while eCommerce profit or loss is not disclosed.
+      source: WMT-10K-FY2026#Note11
+    - id: P3
+      claim: >-
+        Higher-margin income (advertising, membership, marketplace) lifts consolidated operating income above the band
+        of 3.3%–4.7% of total revenues it held in FY2017–FY2026 [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2025#IS]
+        [src:WMT-10K-FY2026#Item8]; membership fee revenue rose from $3.1bn in FY2024 to $4.4bn in FY2026
+        [src:WMT-10K-FY2026#Note1].
+      source: WMT-10K-FY2026#Note1
+    - id: P4
+      claim: >-
+        The capital expenditure earns at least the current return, an after-tax return on invested capital of about 14%
+        or more (14.5% in FY2026, computed from [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Note5]
+        [src:WMT-10K-FY2026#Note6] [src:WMT-10K-FY2025#BS]), and free cash flow per share resumes growth.
+      source: WMT-10K-FY2026#Item8
+  permanent_loss_paths:
+    - >-
+      The capex program does not earn its return: capital expenditure stays near the guided 4.0% of net sales
+      [src:WMT-8K-2026-08-20#EX-99.1] while the operating margin stays inside the band of 3.3%–4.7% of total revenues of
+      FY2017–FY2026 [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2025#IS] [src:WMT-10K-FY2026#Item8], so free cash flow per
+      share keeps falling, as it did from an average of $2.08 in FY2017–FY2019 to $1.76 in FY2024–FY2026
+      [src:WMT-10K-FY2019#CF] [src:WMT-10K-FY2021#CF] [src:WMT-10K-FY2025#p58] [src:WMT-10K-FY2026#Item8].
+    - >-
+      Costs outrun a thin margin: wages, associate healthcare, self-insured liability claims, pharmacy price regulation
+      and tariffs act on an operating margin of 4.2% of FY2026 net sales [src:WMT-10K-FY2026#Item7], where one point of
+      gross margin equals about 24% of FY2026 operating income [src:WMT-10K-FY2026#Item8]; operating expenses already grew
+      faster than net sales in FY2025, FY2026 and the first half of FY2027 [src:WMT-10K-FY2026#Item7]
+      [src:WMT-10Q-FY2027Q2#Item2].
+    - >-
+      AI-enabled and agentic shopping platforms take over product search, discovery and purchasing, which the company
+      names as a risk to traffic in its stores and clubs [src:WMT-10K-FY2026#Item1A], removing the traffic on which
+      advertising and membership income depend.
+    - >-
+      Regulators restrict the supplier terms that fund inventory (accounts payable 107% of inventories at 2026-01-31)
+      [src:WMT-10K-FY2026#Item8], building on the 2024-12 Mexican competition ruling on supplier contributions and the
+      pending final order of the Competition Commission of India against Flipkart subsidiaries [src:WMT-10Q-FY2027Q2#Note5].
+    - >-
+      Capital is misallocated without outside correction: Walmart International earned segment operating income equal to
+      5.9% of its FY2026 year-end segment assets, which include $23.6bn of goodwill [src:WMT-10K-FY2026#Note11]
+      [src:WMT-10K-FY2026#Note1]; dividends and repurchases exceeded free cash flow in the first half of FY2027, with the
+      gap funded by new borrowing [src:WMT-10Q-FY2027Q2#Item1]; and one family vehicle votes 44.11% of the shares
+      [src:WMT-DEF14A-2026-04-23#p98].
+tests:
+  # ---------- Template tests (stalwart, plus _common) ----------
+  - id: WMT-Q1
+    type: quantitative
+    claim: Growth has not slipped out of the range of Walmart's own record
+    origin: template:stalwart
+    severity: watch
+    covers: [growth]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric: revenue_yoy
+    fail_if: below 2% for 4 consecutive quarters
+    rule: {op: "<", threshold: 2, unit: "%", consecutive: 4, period: quarter}
+    warn_if: below 3% for 2 consecutive quarters
+    warn_rule: {op: "<", threshold: 3, unit: "%", consecutive: 2, period: quarter}
+    data: xbrl
+    baseline:
+      value: 4.7
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "Annual total revenues 713.163 / 680.985 − 1 [src:WMT-10K-FY2026#Item8]; quarterly readings are taken by the pipeline."
+    note: "Template thresholds rewritten. Reported total revenue growth was below 5% in five of the nine fiscal years FY2018–FY2026: 3.0%, 2.8%, 1.9%, 2.4% and 4.7% in FY2018, FY2019, FY2020, FY2022 and FY2026, computed from total revenues of 485.873, 500.343, 514.405, 523.964, 559.151, 572.754, 680.985 and 713.163 ($bn) [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2023#IS] [src:WMT-10K-FY2025#IS] [src:WMT-10K-FY2026#Item8], so the template would flag ordinary years. The new fail level sits below every annual reading in the record except FY2020 (1.9%), which followed the sale of 80% of Walmart Brazil in FY2019 [src:WMT-10K-FY2021#Item7]. Readings are reported, including currency and portfolio changes; International operations other than Canada are consolidated with a one-month lag [src:WMT-10K-FY2026#Note1]. A breach in a period affected by a divestiture is a basis question to be handled under §G3."
+
+  - id: WMT-Q2
+    type: quantitative
+    claim: Return on invested capital (registry basis) holds at the level of an excellent business
+    origin: template:stalwart
+    severity: watch
+    covers: [returns_on_capital, moat]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric: roic
+    fail_if: below 12% for 2 consecutive years
+    rule: {op: "<", threshold: 12, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    note: >-
+      Kept from the template as an automatic cross-check of WMT-Q6 and WMT-Q13. The registry measure (equity + debt −
+      cash) leaves out finance and operating lease obligations, which were 6.761 and 15.572 ($bn) at 2026-01-31
+      [src:WMT-10K-FY2026#Note6], so it reads higher than the lease-inclusive measure the thesis rests on. No baseline on
+      the registry basis was computed in this run.
+
+  - id: WMT-Q3
+    type: quantitative
+    claim: Buybacks really shrink the share count instead of offsetting stock-based compensation
+    origin: template:stalwart
+    severity: watch
+    covers: [capital_allocation]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric: diluted_shares_yoy
+    fail_if: above 0 for 2 consecutive years
+    rule: {op: ">", threshold: 0, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    baseline:
+      value: -0.7
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "Weighted-average diluted shares 8,022m in FY2026 against 8,081m in FY2025 [src:WMT-10K-FY2026#Item8]."
+    note: >-
+      Diluted shares fell 14.1% from FY2017 (9,336m, converted from 3,112m as filed) to FY2026 (8,022m)
+      [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2025#p58] [src:WMT-10K-FY2026#Item8]. In FY2026 the company retired 85m
+      shares while 30m were added on the line the statement of shareholders' equity labels 'Other'
+      [src:WMT-10K-FY2026#Item8]. Unrecognized compensation cost of about $3bn at 2026-01-31 relates primarily to
+      subsidiary plans [src:WMT-10K-FY2026#Note3]; it dilutes subsidiary ownership, not Walmart share count.
+
+  - id: WMT-Q4
+    type: quantitative
+    claim: Profit turns into cash
+    origin: template:stalwart
+    severity: watch
+    covers: [free_cash_flow]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric: fcf_conversion
+    fail_if: below 60% for 2 consecutive years
+    rule: {op: "<", threshold: 60, unit: "%", consecutive: 2, period: year}
+    warn_if: below 70% for 2 consecutive years
+    warn_rule: {op: "<", threshold: 70, unit: "%", consecutive: 2, period: year}
+    data: xbrl
+    baseline:
+      value: 68
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "FCF 14.923 / net income attributable to Walmart 21.893 ($bn) [src:WMT-10K-FY2026#Item7] [src:WMT-10K-FY2026#Item8]."
+    note: "Template fail level moved to the warn level and a lower fail level added. FY2025 (12.660 / 19.436 = 65.1%) and FY2026 (68%) are both already below 70% [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Item7], because capital expenditure rose to 3.77% of net sales in FY2026 [src:WMT-10K-FY2026#Item8] and is guided to about 4.0% for FY2027 [src:WMT-8K-2026-08-20#EX-99.1]; a fail level at the template's threshold would only restate a known reading, while the warn keeps it in view and the fail catches deterioration beyond it. Net income includes fair-value changes of equity investments from FY2019 [src:WMT-10K-FY2019#p56], which can move the ratio without any change in cash. Over FY2017–FY2026 cumulative FCF was 116% of cumulative net income attributable to Walmart [src:WMT-10K-FY2019#CF] [src:WMT-10K-FY2021#CF] [src:WMT-10K-FY2023#CF] [src:WMT-10K-FY2025#CF] [src:WMT-10K-FY2026#Item8]."
+
+  - id: WMT-L1
+    type: qualitative
+    claim: Management has not lowered the financial targets it published
+    origin: template:stalwart
+    severity: watch
+    covers: [management]
+    pillar: P3
+    effective_from: FY2027Q3
+    question: >-
+      Walmart's annual report for the fiscal year ended 2026-01-31 states an objective of growing operating income
+      faster than net sales [src:WMT-10K-FY2026#Item7]. On 2026-08-20 Walmart stated full-year FY2027 guidance of
+      constant-currency net sales growth of 4.0%–5.0% and constant-currency adjusted operating income growth of
+      7.0%–8.5%, raised from 3.5%–4.5% and 6%–8% given on 2026-02-19, and capital expenditure of about 4.0% of net sales
+      [src:WMT-8K-2026-08-20#EX-99.1]. In the documents for this period and the three before it, did management lower or
+      withdraw any of these published financial targets, or any later full-year or multi-year financial target that
+      replaced them?
+    fail_if: Yes, without giving new, testable targets at the same time
+    judge: independent_model
+    evidence: required
+    where:
+      - "Walmart earnings press releases (Form 8-K, Exhibit 99.1) for this period and the three before it"
+      - "Walmart 10-Q Item 2 and 10-K Item 7 for the same periods"
+    lookback: 4
+    judge_notes:
+      - "A target counts as lowered if the low end or the high end of a stated range is reduced, or if a stated objective that appeared in an earlier document is dropped without a replacement."
+      - "A change in currency assumptions that leaves the constant-currency ranges unchanged is not a lowering."
+      - "Replacing a completed fiscal year's guidance with guidance for the next fiscal year is not a withdrawal."
+      - "A raise in capital expenditure guidance is not a lowering of a financial target."
+    note: >-
+      Guards P3, the claim that higher-margin income lifts operating income faster than sales. Earnings call transcripts
+      are not yet available to the pipeline, so targets stated only on calls are not judged.
+
+  - id: WMT-S1
+    type: staleness
+    claim: The moat judgment goes no longer than four quarters without a review
+    origin: template:stalwart
+    severity: watch
+    covers: [moat]
+    effective_from: FY2027Q3
+    section: moat
+    max_age_quarters: 4
+
+  - id: WMT-S2
+    type: staleness
+    claim: The management judgment goes no longer than four quarters without a review
+    origin: template:stalwart
+    severity: watch
+    covers: [management]
+    effective_from: FY2027Q3
+    section: management
+    max_age_quarters: 4
+    note: The CEO and all three segment CEOs took their current roles on 2026-02-01 [src:WMT-8K-2026-01-16#Item5.02] [src:WMT-8K-2025-11-14#Item5.02].
+
+  - id: WMT-S3
+    type: staleness
+    claim: The bear case (where this is most likely wrong) is re-examined every two quarters
+    origin: template:stalwart
+    severity: watch
+    covers: [other]
+    effective_from: FY2027Q3
+    section: bear_case
+    max_age_quarters: 2
+
+  # ---------- Thesis breakers (dossier part 12) ----------
+  - id: WMT-Q5
+    type: quantitative
+    claim: The Walmart U.S. cost advantage still earns a viable segment margin
+    origin: archive:breaker
+    severity: breaker
+    covers: [moat, pricing_power, unit_economics]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric: segment_operating_margin
+    params: {segment: "Walmart U.S.", basis: "company-stated segment operating income ÷ segment net sales, 10-K Item 7 'Walmart U.S. Segment' table"}
+    fail_if: below 4.0% in each of two consecutive fiscal years
+    rule: {op: "<", threshold: 4.0, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    baseline:
+      value: 5.2
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item7
+    note: >-
+      Read on the segment allocation basis in force for the year read; Walmart changed how it allocates certain corporate
+      overhead to segments from 2026-02 and revised prior periods [src:WMT-10Q-FY2027Q2#Note6]. FY2027 includes about
+      $2.9bn of tariff refunds recorded as a reduction of cost of sales, primarily in Walmart U.S.
+      [src:WMT-10Q-FY2027Q2#Note5]; the FY2027 reading states the refund amount beside the reported figure.
+
+  - id: WMT-Q6
+    type: quantitative
+    claim: The capital base still earns an acceptable after-tax return
+    origin: archive:breaker
+    severity: breaker
+    covers: [returns_on_capital, capital_allocation]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric_def:
+      id: roic_after_tax_lease_adjusted
+      description: >-
+        After-tax return on invested capital: operating income × (1 − provision for income taxes ÷ income before income
+        taxes), divided by the average of opening and closing invested capital, where invested capital = total
+        shareholders' equity + short-term borrowings + long-term debt including the current portion + finance lease
+        obligations (current and long-term) + operating lease obligations (current and long-term) − cash and cash
+        equivalents.
+      unit: "%"
+      frequency: year
+      data: filing_text
+      formula: operating_income * (1 - income_tax / pretax_income) / avg(equity + short_term_borrowings + long_term_debt + finance_lease_obligations + operating_lease_obligations - cash)
+      where: 10-K consolidated statements of income and balance sheets; debt note (Note 5); lease note (Note 6)
+    fail_if: below 11.0% in each of two consecutive fiscal years
+    rule: {op: "<", threshold: 11.0, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    baseline:
+      value: 14.5
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "NOPAT 29.825 × (1 − 7.199 / 29.469) = 22.539 over average invested capital (148.498 + 162.255) / 2 = 155.377 ($bn) [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Note5] [src:WMT-10K-FY2026#Note6] [src:WMT-10K-FY2025#BS]."
+    note: "In the record, FY2021 (10.8%) and FY2023 (10.1%) were depressed by effective tax rates of 33.3% and 33.6% inflated by items below operating income, and FY2023 operating income carried $4.1bn of legal and restructuring charges [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2021#BS] [src:WMT-10K-FY2023#IS] [src:WMT-10K-FY2023#BS] [src:WMT-10K-FY2023#p40]; no two consecutive years have been below the fail level. The FY2027 reading is raised by about $2.9bn of tariff refunds [src:WMT-10Q-FY2027Q2#Note5] and states the refund amount beside the reported figure."
+
+  - id: WMT-Q7
+    type: quantitative
+    claim: Walmart U.S. keeps growing its comparable business
+    origin: archive:breaker
+    severity: breaker
+    covers: [moat, growth, competition]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric_def:
+      id: walmart_us_comparable_sales
+      description: Walmart U.S. calendar comparable sales including fuel, fiscal year, as stated by the company
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K Item 7 'Growth' comparable sales table (Walmart U.S., with fuel)
+    fail_if: negative in each of two consecutive fiscal years
+    rule: {op: "<", threshold: 0, unit: "%", consecutive: 2, period: year}
+    data: filing_text
+    baseline:
+      value: 4.3
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item7
+
+  - id: WMT-Q8
+    type: quantitative
+    claim: Free cash flow covers the dividend over a three-year span
+    origin: archive:breaker
+    severity: breaker
+    covers: [free_cash_flow, capital_allocation, balance_sheet]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric_def:
+      id: fcf_to_dividends_3y
+      description: >-
+        Cumulative free cash flow (net cash provided by operating activities − payments for property and equipment) over
+        three consecutive fiscal years ÷ cumulative dividends paid over the same three years. A reading below 1.0 means
+        cumulative free cash flow fell below cumulative dividends paid.
+      unit: x
+      frequency: year
+      data: xbrl
+      xbrl: [us-gaap:NetCashProvidedByUsedInOperatingActivities, us-gaap:PaymentsToAcquirePropertyPlantAndEquipment, us-gaap:PaymentsOfDividendsCommonStock, us-gaap:PaymentsOfDividends]
+      formula: sum_3y(operating_cash_flow - capex) / sum_3y(dividends)
+    fail_if: cumulative FCF below cumulative dividends paid over any three consecutive fiscal years (ratio below 1.0)
+    rule: {op: "<", threshold: 1.0, unit: x, consecutive: 1, period: year}
+    data: xbrl
+    baseline:
+      value: 2.10
+      unit: x
+      period: FY2024-FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "Cumulative FCF 15.120 + 12.660 + 14.923 = 42.703 over dividends paid 6.140 + 6.688 + 7.507 = 20.335 ($bn) [src:WMT-10K-FY2025#CF] [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Item7]."
+    note: Decided from the 10-K consolidated statements of cash flows; the ratio form is equivalent to the dossier's statement of the breaker.
+
+  # ---------- Dashboard indicators (dossier part 10) ----------
+  - id: WMT-Q9
+    type: quantitative
+    claim: The Walmart U.S. segment margin stays in its healthy range
+    origin: archive:watch
+    severity: watch
+    covers: [moat, pricing_power, unit_economics]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric: segment_operating_margin
+    params: {segment: "Walmart U.S.", basis: "company-stated segment operating income ÷ segment net sales; 10-K Item 7 'Walmart U.S. Segment', 10-Q Item 2"}
+    fail_if: below 4.8% for a fiscal year
+    rule: {op: "<", threshold: 4.8, unit: "%", consecutive: 1, period: year}
+    warn_if: outside 5.0%–6.5% for a fiscal year
+    warn_rule: {op: outside, threshold: [5.0, 6.5], unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline:
+      value: 5.2
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item7
+    note: >-
+      Read quarterly, judged on the fiscal year. FY2027 H1 was 5.8% [src:WMT-10Q-FY2027Q2#Item2], including most of the
+      about $2.9bn of tariff refunds received in FY2027Q2 [src:WMT-10Q-FY2027Q2#Note5]; each FY2027 reading states the
+      refund amount beside the reported figure. Read on the segment allocation basis in force for the year read, which
+      changed from 2026-02 [src:WMT-10Q-FY2027Q2#Note6]. FY2023 (4.9%) would have warned [src:WMT-10K-FY2023#p41].
+
+  - id: WMT-Q10
+    type: quantitative
+    claim: Walmart U.S. comparable sales stay healthy
+    origin: archive:watch
+    severity: watch
+    covers: [moat, growth, competition]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric_def:
+      id: walmart_us_comparable_sales
+      description: Walmart U.S. calendar comparable sales including fuel, fiscal year, as stated by the company
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K Item 7 'Growth' comparable sales table (Walmart U.S., with fuel); 10-Q Item 2 for interim readings
+    fail_if: below 1.0% for a fiscal year
+    rule: {op: "<", threshold: 1.0, unit: "%", consecutive: 1, period: year}
+    warn_if: below 2.5% for a fiscal year
+    warn_rule: {op: "<", threshold: 2.5, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline:
+      value: 4.3
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item7
+    note: >-
+      Read quarterly, judged on the fiscal year. FY2027 H1 was 3.8% [src:WMT-10Q-FY2027Q2#Item2]; pharmacy maximum fair
+      price regulation reduced Walmart U.S. comparable sales excluding fuel by about 125 basis points in FY2027Q2
+      [src:WMT-8K-2026-08-20#EX-99.1].
+
+  - id: WMT-Q11
+    type: quantitative
+    claim: eCommerce keeps growing at a rate that supports the store-fulfillment thesis
+    origin: archive:watch
+    severity: watch
+    covers: [growth, competition]
+    pillar: P2
+    effective_from: FY2027Q3
+    metric_def:
+      id: ecommerce_net_sales_yoy
+      description: >-
+        Year-on-year growth of global eCommerce net sales, the sum of the eCommerce net sales of Walmart U.S., Walmart
+        International and Sam's Club U.S. as disclosed in the disaggregated revenue note (company definition, including
+        store-fulfilled digital orders and certain advertising, fulfillment and data arrangements)
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K Note 11 / 10-Q Note 6 'Disaggregated Revenues'; 10-Q Item 2 for interim growth
+    fail_if: below 10% for a fiscal year
+    rule: {op: "<", threshold: 10, unit: "%", consecutive: 1, period: year}
+    warn_if: below 15% for a fiscal year
+    warn_rule: {op: "<", threshold: 15, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline:
+      value: 24.4
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Note11
+      note: "150.4 / 120.9 − 1 ($bn) [src:WMT-10K-FY2026#Note11]."
+    note: Read quarterly, judged on the fiscal year. FY2027 H1 growth was 24% [src:WMT-10Q-FY2027Q2#Item2].
+
+  - id: WMT-Q12
+    type: quantitative
+    claim: Membership fee revenue keeps growing, a direct reading of pricing power
+    origin: archive:watch
+    severity: watch
+    covers: [pricing_power, moat]
+    pillar: P3
+    effective_from: FY2027Q3
+    metric_def:
+      id: membership_fee_revenue_yoy
+      description: Year-on-year growth of global membership fee revenue as disclosed by the company
+      unit: "%"
+      frequency: year
+      data: filing_text
+      where: 10-K Note 1 'Membership and Other Income'
+    fail_if: below 3% for a fiscal year
+    rule: {op: "<", threshold: 3, unit: "%", consecutive: 1, period: year}
+    warn_if: below 8% for a fiscal year
+    warn_rule: {op: "<", threshold: 8, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline:
+      value: 16
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Note1
+      note: "4.4 / 3.8 − 1 on figures rounded to $0.1bn [src:WMT-10K-FY2026#Note1]; bounds 13.0% to 18.7% [src:WMT-10K-FY2026#Note1]."
+    note: >-
+      The 10-K gives membership fee revenue rounded to $0.1bn [src:WMT-10K-FY2026#Note1]; when only rounded figures are
+      available, the reading states the bounds that rounding allows. Sam's Club raised its fees effective 2026-05-01
+      [src:WMT-10Q-FY2027Q2#Item2], which should support FY2027 and FY2028 readings.
+
+  - id: WMT-Q13
+    type: quantitative
+    claim: The after-tax return on invested capital stays in its healthy range
+    origin: archive:watch
+    severity: watch
+    covers: [returns_on_capital]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric_def:
+      id: roic_after_tax_lease_adjusted
+      description: >-
+        After-tax return on invested capital: operating income × (1 − provision for income taxes ÷ income before income
+        taxes), divided by the average of opening and closing invested capital, where invested capital = total
+        shareholders' equity + short-term borrowings + long-term debt including the current portion + finance lease
+        obligations (current and long-term) + operating lease obligations (current and long-term) − cash and cash
+        equivalents.
+      unit: "%"
+      frequency: year
+      data: filing_text
+      formula: operating_income * (1 - income_tax / pretax_income) / avg(equity + short_term_borrowings + long_term_debt + finance_lease_obligations + operating_lease_obligations - cash)
+      where: 10-K consolidated statements of income and balance sheets; debt note (Note 5); lease note (Note 6)
+    fail_if: below 12.5% for a fiscal year
+    rule: {op: "<", threshold: 12.5, unit: "%", consecutive: 1, period: year}
+    warn_if: below 13.5% for a fiscal year
+    warn_rule: {op: "<", threshold: 13.5, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline:
+      value: 14.5
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "Inputs as in WMT-Q6 [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Note5] [src:WMT-10K-FY2026#Note6] [src:WMT-10K-FY2025#BS]."
+    note: >-
+      The company's own ROI is read beside it as a reported figure, not tested, because its numerator adds back
+      depreciation, amortization and rent: 15.1% in FY2026 [src:WMT-10K-FY2026#Item7] and 15.4% for the twelve months
+      to 2026-07-31 [src:WMT-10Q-FY2027Q2#Item2]. FY2021 (10.8%) and FY2023 (10.1%) would have failed, both on tax rates
+      inflated by items below operating income [src:WMT-10K-FY2021#Item7] [src:WMT-10K-FY2023#p41]. The FY2027 reading
+      is raised by about $2.9bn of tariff refunds [src:WMT-10Q-FY2027Q2#Note5] and states the refund amount beside the
+      reported figure.
+
+  - id: WMT-Q14
+    type: quantitative
+    claim: Capital intensity stays within the range the thesis can absorb
+    origin: archive:watch
+    severity: watch
+    covers: [capital_allocation, free_cash_flow]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric_def:
+      id: capex_to_net_sales
+      description: Payments for property and equipment ÷ net sales, fiscal year
+      unit: "%"
+      frequency: year
+      data: filing_text
+      formula: capex / net_sales
+      where: 10-K consolidated statements of cash flows (payments for property and equipment) and income statement (net sales)
+    fail_if: above 4.5% for a fiscal year
+    rule: {op: ">", threshold: 4.5, unit: "%", consecutive: 1, period: year}
+    warn_if: outside 3.0%–4.5% for a fiscal year
+    warn_rule: {op: outside, threshold: [3.0, 4.5], unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline:
+      value: 3.77
+      unit: "%"
+      period: FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "26.642 / 706.413 ($bn) [src:WMT-10K-FY2026#Item8]."
+    note: FY2027 guidance was raised on 2026-08-20 from about 3.5% to about 4.0% of net sales [src:WMT-8K-2026-08-20#EX-99.1].
+
+  - id: WMT-Q15
+    type: quantitative
+    claim: Shareholder returns are funded by free cash flow, not by borrowing
+    origin: archive:watch
+    severity: watch
+    covers: [capital_allocation, free_cash_flow, balance_sheet]
+    pillar: P4
+    effective_from: FY2027Q3
+    metric_def:
+      id: shareholder_return_to_fcf_3y
+      description: >-
+        (Dividends paid + share repurchases) over three consecutive fiscal years ÷ cumulative free cash flow (net cash
+        provided by operating activities − payments for property and equipment) over the same three years
+      unit: "%"
+      frequency: year
+      data: xbrl
+      xbrl: [us-gaap:PaymentsOfDividendsCommonStock, us-gaap:PaymentsOfDividends, us-gaap:PaymentsForRepurchaseOfCommonStock, us-gaap:NetCashProvidedByUsedInOperatingActivities, us-gaap:PaymentsToAcquirePropertyPlantAndEquipment]
+      formula: (sum_3y(dividends) + sum_3y(buybacks)) / sum_3y(operating_cash_flow - capex)
+    fail_if: above 120% (three fiscal years rolling)
+    rule: {op: ">", threshold: 120, unit: "%", consecutive: 1, period: year}
+    warn_if: above 100% (three fiscal years rolling)
+    warn_rule: {op: ">", threshold: 100, unit: "%", consecutive: 1, period: year}
+    data: xbrl
+    baseline:
+      value: 83.6
+      unit: "%"
+      period: FY2024-FY2026
+      source: WMT-10K-FY2026#Item8
+      note: "Dividends paid plus repurchases 35.696 over cumulative FCF 42.703 ($bn) [src:WMT-10K-FY2025#CF] [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Item7]."
+    note: >-
+      FY2022–FY2024 (107.1%) would have warned [src:WMT-10K-FY2023#CF] [src:WMT-10K-FY2025#CF]. In FY2027 H1 dividends
+      and repurchases of $9.049bn were 164% of FCF of $5.529bn, with the gap funded by new borrowing
+      [src:WMT-10Q-FY2027Q2#Item1].
+
+  - id: WMT-Q16
+    type: quantitative
+    claim: Suppliers keep funding the inventory
+    origin: archive:watch
+    severity: watch
+    covers: [moat, balance_sheet, regulation]
+    pillar: P1
+    effective_from: FY2027Q3
+    metric_def:
+      id: payables_to_inventories
+      description: Accounts payable ÷ inventories at fiscal year-end
+      unit: "%"
+      frequency: year
+      data: filing_text
+      formula: accounts_payable / inventories
+      where: 10-K consolidated balance sheet
+    fail_if: below 95% at a fiscal year-end
+    rule: {op: "<", threshold: 95, unit: "%", consecutive: 1, period: year}
+    warn_if: below 100% at a fiscal year-end
+    warn_rule: {op: "<", threshold: 100, unit: "%", consecutive: 1, period: year}
+    data: filing_text
+    baseline:
+      value: 107.2
+      unit: "%"
+      period: FY2026
+      as_of: "2026-01-31"
+      source: WMT-10K-FY2026#Item8
+      note: "63.061 / 58.851 ($bn) [src:WMT-10K-FY2026#Item8]."
+    note: >-
+      FY2022 (97.8%) and FY2023 (95.0%), when inventories rose sharply, would have warned [src:WMT-10K-FY2023#BS].
+      $5.989bn of FY2026 year-end payables sat in supplier financing programs [src:WMT-10K-FY2026#Note1].
+todo:
+  - >-
+    Pre-registration candidate: statement: Walmart U.S. segment operating income ÷ segment net sales is at or above 5.0%
+    in each of FY2027, FY2028, FY2029, FY2030 and FY2031, on the segment allocation basis in force for each year;
+    probability: 0.70; criterion: the company-stated Walmart U.S. segment margin in the 10-K Item 7 'Walmart U.S. Segment'
+    table of each year, on the reported basis; happened if every one of the five readings is 5.0% or higher, not_happened
+    if any reading is below 5.0%; data_source: Walmart 10-K Item 7 for FY2027–FY2031; horizon: the FY2031 10-K (fiscal
+    year ending 2031-01-31); domain: consumer; reference: FY2026 reading 5.2% [src:WMT-10K-FY2026#Item7].
+  - >-
+    Pre-registration candidate: statement: Walmart U.S. eCommerce net sales exceed 30% of Walmart U.S. segment net sales
+    in at least one fiscal year up to and including FY2030; probability: 0.65; criterion: Walmart U.S. eCommerce net sales
+    ÷ Walmart U.S. net sales from the disaggregated revenue note of the 10-K, company definition of eCommerce; happened if
+    any of FY2027–FY2030 is above 30%; data_source: Walmart 10-K disaggregated revenue note (Note 11 in the FY2026 10-K);
+    horizon: the FY2030 10-K (fiscal year ending 2030-01-31); domain: consumer; reference: FY2026 reading 20.6% (99.6 /
+    482.975, $bn) [src:WMT-10K-FY2026#Note11].
+  - "Advertising revenue in dollars is not disclosed; only growth rates are given [src:WMT-8K-2026-08-20#EX-99.1]. Needed as a base for P3; check each annual report."
+  - eCommerce profit or loss by segment is not disclosed; needed to test the 'improving economics' half of P2.
+  - Flipkart and PhonePe revenue and profit or loss are not disclosed; needed for §V14 criterion (a), left blank, and for the return on the India purchase. A PhonePe offering document would supply them.
+  - India's net sales sit inside International 'other' and are not disclosed; share of International goodwill attributable to Flipkart is not split in the filings (FY2019 10-K business combinations note to be supplied).
+  - Share of the FY2027Q2 tariff refunds spent on price investment is not quantified; expected to be read in the FY2027Q3 10-Q and the FY2027 10-K. Needed to separate underlying earnings in WMT-Q6, WMT-Q9 and WMT-Q13 readings.
+  - Walmart+ member count and Sam's Club renewal rate are not disclosed; a candidate qualitative or quantitative retention test waits on disclosure.
+  - Amount of the Sam's Club fee increase effective 2026-05-01 not yet read; the FY2027Q1 10-Q was not supplied.
+  - Membership fee revenue is disclosed rounded to $0.1bn; WMT-Q12 readings carry rounding bounds until a more precise figure is found.
+  - Insider transactions on Forms 4 for FY2026–FY2027Q2 (including sales under the Rule 10b5-1 plans of Furner and Nicholas) were not reviewed; a management-ownership test waits on that review.
+  - Earnings call transcripts are not available to the pipeline; WMT-L1 judges only press releases and filings until they are.
+  - Company ROI for FY2024 (FY2025 10-K Item 7) and FY2016 operating and segment results (FY2016 10-K Exhibit 13) are available but were not supplied.
