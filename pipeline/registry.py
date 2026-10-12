@@ -884,10 +884,16 @@ class EdgarGateway:
         return edgar.next_release(filer.cik, period, fiscal_year_end=filer.fiscal_year_end, filer_type=filer.type,
                                   form=filer.earnings_form, as_of=as_of, client=self.client)
 
+    def fiscal_calendar(self, filer: edgar.Filer, *, since: dt.date | None = None) -> edgar.FiscalCalendar:
+        """The issuer's fiscal calendar, with the quarter ends its own 10-Ks and 10-Qs filed since `since` give
+        (edgar.fiscal_calendar)."""
+        subs = edgar.submissions(filer.cik, client=self.client, since=since)
+        return edgar.fiscal_calendar(subs, filer.fiscal_year_end)
+
     def _context(self, filer: edgar.Filer, fiscal_year: int, *, years_back: int = 2) -> tuple[
             edgar.Submissions, edgar.FiscalCalendar, str, str]:
         subs = edgar.submissions(filer.cik, client=self.client, since=dt.date(fiscal_year - years_back, 1, 1))
-        cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+        cal = edgar.fiscal_calendar(subs, filer.fiscal_year_end)
         kind = filer.type or edgar.infer_filer_type(subs)
         ticker = filer.ticker or str(subs.tickers[0] if subs.tickers else filer.cik)
         return subs, cal, kind, ticker
@@ -1717,7 +1723,9 @@ def _phase_status(ctx: RunContext, name: str) -> BuiltInput:
 
 
 def _upcoming_events(ctx: RunContext, start: dt.date, end: dt.date) -> list[dict[str, Any]]:
-    """Results releases expected in [start, end] for holdings and candidates, from EDGAR (placeholder dates flagged)."""
+    """Results releases expected in [start, end] for holdings and candidates, from EDGAR (placeholder dates flagged):
+    those of the quarters that end, in the company's own calendar, between 100 days before start and 10 days before
+    end."""
     rows = []
     for thesis_path in sorted(ctx.public_root.glob("companies/*/thesis.yml")):
         data = load_yaml_file(thesis_path)
@@ -1729,20 +1737,18 @@ def _upcoming_events(ctx: RunContext, start: dt.date, end: dt.date) -> list[dict
             cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or "12-31")
         except ValueError:
             continue
-        day = start - dt.timedelta(days=100)
-        seen = set()
-        while day <= end:
-            quarter_end = month_end(day)
-            day = quarter_end + dt.timedelta(days=1)
-            if quarter_end > end - dt.timedelta(days=10):
+        try:  # quarter ends from the company's own 10-Ks and 10-Qs: Costco's third quarter ends in early May
+            cal = ctx.gateway().fiscal_calendar(filer, since=dt.date(start.year - 3, 1, 1))
+        except edgar.MissingUserAgent:
+            raise
+        except edgar.EdgarError:
+            pass  # keep the month-end quarters; each estimate below reports the EDGAR failure
+        first, last = start - dt.timedelta(days=100), end - dt.timedelta(days=10)
+        quarters = sorted((cal.quarter_end(year, quarter), f"FY{year}Q{quarter}")
+                          for year in range(start.year - 1, end.year + 2) for quarter in (1, 2, 3, 4))
+        for quarter_end, period in quarters:
+            if not first <= quarter_end <= last:
                 continue
-            try:
-                period = cal.quarter_label(quarter_end)
-            except ValueError:
-                continue  # not a quarter end of this company's fiscal year
-            if period in seen:
-                continue
-            seen.add(period)
             try:
                 estimate = ctx.gateway().release_estimate(filer, period, ctx.run_date)
             except edgar.MissingUserAgent:
@@ -2778,7 +2784,7 @@ def _build_sources(ctx: RunContext, name: str) -> BuiltInput:
     filer = ctx.filer()
     gateway = ctx.gateway()
     subs = edgar.submissions(filer.cik, client=gateway.client)
-    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    cal = edgar.fiscal_calendar(subs, filer.fiscal_year_end)
     kind = filer.type or edgar.infer_filer_type(subs)
     events = edgar.earnings_events(subs.cik, cal.label, filer_type=kind, since=ctx.run_date - dt.timedelta(days=500),
                                    until=ctx.run_date, client=gateway.client, subs=subs)
@@ -2822,7 +2828,7 @@ def _valuation_filings(ctx: RunContext, name: str) -> BuiltInput:
     filer = ctx.filer()
     gateway = ctx.gateway()
     subs = edgar.submissions(filer.cik, client=gateway.client)
-    cal = edgar.FiscalCalendar.parse(filer.fiscal_year_end or subs.fiscal_year_end)
+    cal = edgar.fiscal_calendar(subs, filer.fiscal_year_end)
     known = known_filing_tags((ctx.public_root, ctx.private_root), company)
     facts, _ = gateway.companyfacts(filer.cik)
     declines = archive.decline_years(archive.xbrl_summary(facts, cal=cal, tags=lambda accession: None))
