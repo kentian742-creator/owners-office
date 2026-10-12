@@ -1202,13 +1202,52 @@ def cited_tag_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[st
     return errors
 
 
+def xbrl_metric_errors(parsed: Mapping[str, ParsedOutput]) -> list[str]:
+    """A quantitative test read from the XBRL facts (data: xbrl) names a metric thesis-ci can compute: a registry
+    metric with an XBRL formula, or a metric_def whose formula thesis-ci parses over names it knows
+    (thesis_ci.metrics.computable, SPEC 9.1). Any other gets no reading and stays undetermined at every evaluation:
+    Walmart's 01B of 2026-10-11 wrote six such formulas (typographic signs, avg(), unknown names), and AppLovin's
+    breaker APP-Q6 has had no reading since it was placed (decision 0037)."""
+    out = parsed.get("thesis")
+    if out is None or out.empty or not isinstance(out.data, dict):
+        return []
+    try:
+        from thesis_ci import contract
+        from thesis_ci.metrics import REGISTRY_FORMULAS, computable
+    except ImportError:  # thesis-ci is not installed: the evaluation finds no reading instead
+        return []
+    registry = contract.metrics()
+    errors: list[str] = []
+    for n, test in enumerate(out.data.get("tests") or []):
+        if not isinstance(test, dict) or test.get("type") != "quantitative":
+            continue
+        definition = test.get("metric_def") if isinstance(test.get("metric_def"), dict) else None
+        metric = test.get("metric") if isinstance(test.get("metric"), str) else None
+        data = test.get("data") or (definition or {}).get("data") or (registry.get(metric) or {}).get("data")
+        if data != "xbrl":
+            continue
+        where = f"thesis: tests[{n}] ({test.get('id')})"
+        if definition is not None:
+            ok, why = computable(definition)
+            if not ok:
+                errors.append(f"{where}: metric_def {definition.get('id')!r} is read from XBRL (data: xbrl), but "
+                              f"thesis-ci cannot compute it: {why}. Write its formula with the names and functions "
+                              "of thesis-ci's SPEC 9.1, use a registry metric, or read it from the filings "
+                              "(data: filing_text, with where:)")
+        elif metric and not (metric in REGISTRY_FORMULAS and (registry.get(metric) or {}).get("data") == "xbrl"):
+            errors.append(f"{where}: registry metric {metric!r} is read from XBRL, but thesis-ci does not compute it "
+                          "from the XBRL facts; give it a metric_def with a formula, or read it from the filings "
+                          "(data: filing_text, with where:)")
+    return errors[:MAX_PROSE_ERRORS]
+
+
 def coverage_errors(part_id: str, inputs: Mapping[str, str], parsed: Mapping[str, ParsedOutput]) -> list[str]:
     """Checks of a reply against the inputs it answers: 04A gives every fact under facts in its fact_table exactly one
     verdict and no other (a slice's context_facts get none; pipeline/slicing.py); prose, the valuation's notes and the
     free text of thesis.yml and ledger.yml carry their source tags; 01B cites only what the dossier cites; the story
     passes thesis-ci's C-STORY beside the thesis."""
     errors = (prose_errors(parsed) + cited_tag_errors(part_id, inputs, parsed) + valuation_text_errors(parsed)
-              + system_fact_errors(parsed) + story_errors(parsed))
+              + system_fact_errors(parsed) + story_errors(parsed) + xbrl_metric_errors(parsed))
     if errors:
         return errors
     if part_id == "04C":

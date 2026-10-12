@@ -665,3 +665,32 @@ def test_a_valuation_tag_repair_adds_tags_across_folded_lines_and_quotes_and_not
 def repr_yaml(text):
     import json
     return json.dumps(text, ensure_ascii=False)
+
+
+def test_a_thesis_test_read_from_xbrl_must_be_one_thesis_ci_can_compute():
+    """Decision 0037: a data: xbrl metric thesis-ci cannot compute would stay undetermined at every evaluation."""
+    pytest.importorskip("thesis_ci.metrics", reason="thesis-ci is not installed")
+
+    def thesis(*tests):
+        data = {"tests": list(tests)}
+        return {"thesis": outputs.ParsedOutput("thesis", outputs.YAML, json.dumps(data), data=data)}
+
+    computable = {"id": "T-Q1", "type": "quantitative", "data": "xbrl",
+                  "metric_def": {"id": "margin", "data": "xbrl", "unit": "%", "frequency": "year",
+                                 "formula": "operating_income / total_revenue"}}
+    typographic_ok = {"id": "T-Q2", "type": "quantitative", "data": "xbrl",
+                      "metric_def": {"id": "capex_share", "data": "xbrl", "unit": "%", "frequency": "year",
+                                     "formula": "capex ÷ revenue"}}
+    unknown_function = {"id": "T-Q3", "type": "quantitative", "data": "xbrl",
+                        "metric_def": {"id": "median_margin", "data": "xbrl", "unit": "%", "frequency": "year",
+                                       "formula": "median(operating_income / revenue)"}}
+    registry_ok = {"id": "T-Q4", "type": "quantitative", "metric": "revenue_yoy"}
+    text_metric = {"id": "T-Q5", "type": "quantitative", "data": "filing_text",
+                   "metric_def": {"id": "renewal", "data": "filing_text", "formula": "anything at all"}}
+    assert outputs.xbrl_metric_errors(thesis(computable, registry_ok, text_metric)) == []
+    from thesis_ci.metrics import computable as thesis_ci_computable
+    if thesis_ci_computable(typographic_ok["metric_def"])[0]:  # thesis-ci 0.6.1 reads ÷, × and − as / * -
+        assert outputs.xbrl_metric_errors(thesis(typographic_ok)) == []
+    errors = outputs.xbrl_metric_errors(thesis(computable, unknown_function))
+    assert len(errors) == 1 and "T-Q3" in errors[0] and "median_margin" in errors[0]
+    assert "cannot compute" in errors[0] and "filing_text" in errors[0]
