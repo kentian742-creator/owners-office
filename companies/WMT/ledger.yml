@@ -1,0 +1,110 @@
+company: WMT
+entries:
+  # ---------- Management side ----------
+  - id: WMT-M01
+    side: management
+    kind: numeric_target
+    statement: "FY2027 constant-currency net sales growth of 4.0%–5.0% (guidance raised on 2026-08-20 from 3.5%–4.5% given on 2026-02-19) [src:WMT-8K-2026-08-20#EX-99.1]."
+    made_at: "2026-08-20"
+    due: "2027-01-31"
+    source: WMT-8K-2026-08-20#EX-99.1
+    status: pending
+    note: Settled against the constant-currency net sales growth stated in the FY2027 earnings release and 10-K.
+  - id: WMT-M02
+    side: management
+    kind: numeric_target
+    statement: "FY2027 constant-currency adjusted operating income growth of 7.0%–8.5% (guidance raised on 2026-08-20 from 6%–8% given on 2026-02-19) [src:WMT-8K-2026-08-20#EX-99.1]."
+    made_at: "2026-08-20"
+    due: "2027-01-31"
+    source: WMT-8K-2026-08-20#EX-99.1
+    status: pending
+    note: Settled against the company's FY2027 adjusted operating income growth in constant currency; the reconciliation of exclusions to reported operating income is to be recorded at settlement.
+  - id: WMT-M03
+    side: management
+    kind: capex_plan
+    statement: FY2027 capital expenditure of about 4.0% of net sales (guidance raised on 2026-08-20 from about 3.5%) [src:WMT-8K-2026-08-20#EX-99.1].
+    made_at: "2026-08-20"
+    due: "2027-01-31"
+    source: WMT-8K-2026-08-20#EX-99.1
+    status: pending
+    note: Settled against payments for property and equipment ÷ net sales in the FY2027 10-K.
+  - id: WMT-M04
+    side: management
+    kind: capex_plan
+    statement: FY2027 capital expenditure of $25bn–$27bn, as projected in the FY2026 annual report [src:WMT-10K-FY2026#Item7].
+    made_at: "2026-03-13"
+    due: "2027-01-31"
+    source: WMT-10K-FY2026#Item7
+    status: pending
+    note: Partly superseded by the percentage guidance of 2026-08-20 (WMT-M03); whether the dollar range was updated or dropped is for settlement to determine.
+  - id: WMT-M05
+    side: management
+    kind: other
+    statement: Walmart states the objective of growing operating income faster than net sales.
+    made_at: "2026-03-13"
+    due: "2027-01-31"
+    source: WMT-10K-FY2026#Item7
+    status: pending
+    note: Settled on FY2027 reported operating income growth against reported net sales growth; the company's adjusted constant-currency comparison is recorded beside it.
+  - id: WMT-M06
+    side: management
+    kind: capex_plan
+    statement: FY2022 capital expenditure of about $14bn, as projected in the FY2021 annual report [src:WMT-10K-FY2021#Item7].
+    made_at: "2021-03-19"
+    due: "2022-01-31"
+    source: WMT-10K-FY2021#Item7
+    status: pending
+    note: Already due; settled against payments for property and equipment for FY2022 in the FY2023 10-K cash flow statement.
+  - id: WMT-M07
+    side: management
+    kind: other
+    statement: "Management stated that, as it executes its financial framework, it believes returns on capital will improve over time."
+    made_at: "2021-03-19"
+    due: "2026-01-31"
+    source: WMT-10K-FY2021#Item7
+    status: pending
+    note: The statement carries no date; due is set at the end of FY2026, the latest fiscal year reported at registration. Settlement compares company ROI and an after-tax return on invested capital from FY2021 to FY2026.
+  # ---------- System side ----------
+  - id: WMT-P01
+    side: system
+    kind: prediction
+    statement: Walmart U.S. segment operating income ÷ segment net sales is at or above 5.0% in each of FY2027 through FY2031, on the allocation basis in force for each year.
+    probability: 0.70
+    made_at: "2026-10-11"
+    due: "2031-01-31"
+    source: WMT-10K-FY2026#Item7
+    status: pending
+    note: Kept if all five company-stated readings in 10-K Item 7 are 5.0% or higher on the reported basis; not kept if any reading is below 5.0%. FY2026 base reading 5.2%.
+  - id: WMT-P02
+    side: system
+    kind: prediction
+    statement: Walmart U.S. eCommerce net sales exceed 30% of Walmart U.S. segment net sales in at least one fiscal year up to and including FY2030.
+    probability: 0.65
+    made_at: "2026-10-11"
+    due: "2030-01-31"
+    source: WMT-10K-FY2026#Note11
+    status: pending
+    note: Computed from the disaggregated revenue note of each 10-K, company definition of eCommerce; kept if any of FY2027–FY2030 is above 30%. FY2026 base reading 20.6%.
+  - id: WMT-P03
+    side: system
+    kind: prediction
+    statement: Consolidated depreciation and amortization rises year on year in each of FY2027 and FY2028.
+    probability: 0.90
+    made_at: "2026-10-11"
+    due: "2028-01-31"
+    source: WMT-10K-FY2026#Item8
+    status: pending
+    note: Settled on depreciation and amortization in the FY2027 and FY2028 10-K cash flow statements; kept only if both years exceed the prior year. FY2026 base 14.203bn against 12.973bn in FY2025.
+# Buybacks: average prices as disclosed by the company. FY2019–FY2022 are converted from pre-split filings to the basis after the
+# 3-for-1 split of 2024-02-23 (price ÷ 3, shares × 3) [src:WMT-10K-FY2025#p58]; as filed: FY2019 93.18 / 79.5m, FY2020 105.98 / 53.9m,
+# FY2021 135.20 / 19.4m, FY2022 140.45 / 69.7m. Shares are absolute counts.
+buybacks:
+  - {period: FY2019, avg_price: 31.06, shares: 238500000, source: WMT-10K-FY2021#Item7}
+  - {period: FY2020, avg_price: 35.33, shares: 161700000, source: WMT-10K-FY2021#Item7}
+  - {period: FY2021, avg_price: 45.07, shares: 58200000, source: WMT-10K-FY2023#p45}
+  - {period: FY2022, avg_price: 46.82, shares: 209100000, source: WMT-10K-FY2023#p45}
+  - {period: FY2023, avg_price: 44.72, shares: 221800000, source: WMT-10K-FY2025#p45}
+  - {period: FY2024, avg_price: 50.87, shares: 54600000, source: WMT-10K-FY2026#Item7}
+  - {period: FY2025, avg_price: 72.72, shares: 61900000, source: WMT-10K-FY2026#Item7}
+  - {period: FY2026, avg_price: 95.13, shares: 85000000, source: WMT-10K-FY2026#Item7}
+  - {period: FY2027H1, avg_price: 120.71, shares: 42300000, source: WMT-10Q-FY2027Q2#Item2}
