@@ -586,10 +586,14 @@ class Checker:
 
     def _window(self, text: str, start: int, end: int) -> frozenset[str]:
         """The word stems around a number of a text: its line, or its paragraph, cut to WINDOW_BEFORE characters before
-        it and WINDOW_AFTER after it."""
+        it and WINDOW_AFTER after it. A line that holds only numbers before this one takes its label from the line
+        before it, as a filing's table row often breaks after its label."""
         key = (id(text), start)
         if key not in self._windows:
-            first = max(text.rfind("\n", 0, start) + 1, start - WINDOW_BEFORE)
+            line = text.rfind("\n", 0, start) + 1
+            if line > 0 and not re.search(r"[A-Za-z]", text[line:start]):
+                line = text.rfind("\n", 0, line - 1) + 1
+            first = max(line, start - WINDOW_BEFORE)
             last = text.find("\n", end)
             last = min(len(text) if last < 0 else last, end + WINDOW_AFTER)
             self._windows[key] = _stems(_WORD_RE.findall(text[first:last]))
