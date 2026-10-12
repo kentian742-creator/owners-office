@@ -64,6 +64,7 @@ entries:
   due: '2027'
   source: MCD-10K-FY2025#p11
   status: pending
+  note: The 10-Q filed 2026-08-07 repeats the FY2026 capex range but not the FY2027 increase [src:MCD-10Q-FY2026Q2#p31].
 - id: MCD-M08
   side: management
   kind: numeric_target

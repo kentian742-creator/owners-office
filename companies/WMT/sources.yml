@@ -63,6 +63,15 @@ sources:
     primary: true
     note: Excerpt supplied (Item 1); MD&A is in Exhibit 13, not supplied.
 
+  - tag: WMT-10K-FY2018
+    kind: filing
+    title: WMT 10-K filed 2018-03-30
+    form: 10-K
+    accession: 0000104169-18-000028
+    filed: '2018-03-30'
+    url: https://www.sec.gov/Archives/edgar/data/104169/000010416918000028/wmtform10-kx1312018.htm
+    primary: true
+    note: 'registered by HQ (ruling R22): cited in the thesis for FY2014–FY2017 revenue growth, FY2017 payables and FY2017–FY2018 balance sheets'
   - tag: WMT-10K-FY2019
     kind: filing
     title: WMT 10-K filed 2019-03-28
