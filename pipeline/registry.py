@@ -3244,11 +3244,21 @@ def _valuation(ctx: RunContext, name: str) -> BuiltInput:
     if ctx.step.step == "01C":  # the version 04C returned, to revise
         review = ctx.latest_run("04C", period=ctx.period)
         run = ctx.latest_run("01C", period=ctx.period)
-        if review is None or run is None or _valuation_decision(review) != "returned":
-            raise Omit("04C has not returned a valuation; 01C builds it from the dossier")
-        text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
-                                         f"The proposed valuation version of {company} that 04C returned ({run.rel}).")
-        return BuiltInput(text, "txt", sources, note=f"returned by {review.rel}: {run.rel}")
+        decision = _valuation_decision(review)
+        if review is not None and run is not None and decision == "returned":
+            text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
+                                             f"The proposed valuation version of {company} that 04C returned "
+                                             f"({run.rel}).")
+            return BuiltInput(text, "txt", sources, note=f"returned by {review.rel}: {run.rel}")
+        if (review is not None and run is not None and decision == "approved" and ctx.rerun > 1
+                and _reviewed_version(review) == run.rel and run.placed_file("valuation_md") is None):
+            # HQ's fact check found errors in the version 04C approved, before it was placed: the rerun corrects that
+            # version as HQ's rulings list, and 04C reviews the correction (decisions/0035)
+            text, sources = run_outputs_text(run, ["valuation_yml", "valuation_md"],
+                                             f"The valuation version of {company} that 04C approved ({run.rel}) and "
+                                             "HQ's fact check found wrong; HQ's rulings list the corrections.")
+            return BuiltInput(text, "txt", sources, note=f"approved by {review.rel}, under correction: {run.rel}")
+        raise Omit("04C has not returned a valuation; 01C builds it from the dossier")
     if ctx.step.step == "04C":
         run = ctx.latest_run("01C", period=ctx.period)
         if run is not None:
@@ -3319,6 +3329,14 @@ def _findings_04c(ctx: RunContext, name: str) -> BuiltInput:
     if not text or _outputs.is_empty_mark(text):
         raise Omit(f"04C returned the valuation without findings ({review.rel})")
     return BuiltInput(text, "yml", review.outputs_used(["findings"]), note=f"04C returned it: {review.rel}")
+
+
+def _reviewed_version(review: Any) -> str | None:
+    """The 01C run a 04C run's valuation_decision names as the version it reviewed (its `version` key), if any."""
+    text = review.read_output("valuation_decision") if review is not None else None
+    data = yaml.safe_load(text) if text else None
+    version = data.get("version") if isinstance(data, dict) else None
+    return str(version).strip().rstrip("/") if isinstance(version, str) and version.strip() else None
 
 
 def _valuation_decision(review: Any) -> str | None:

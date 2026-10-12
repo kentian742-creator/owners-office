@@ -30,3 +30,18 @@ twice, and a number of lines without their own source tags.
    The ruling tells 01A to change nothing else.
 4. **The gate checks the corrected dossier.** An item whose document, figure and context are unchanged keeps its
    verdict (0034, item 3), so only the corrected passages need review.
+
+## Amendment, 2026-10-11: a valuation 04C approved
+
+HQ recomputes every valuation from its own formulas and inputs before placing it (0034). On Costco's valuation, the
+recompute of the version 04C approved found figures 04C had passed: a present value dated today that is the value at
+the fiscal year-end; sensitivity multipliers on two bases that put a reversed value at $588 instead of $584; and four
+products off by up to 24 in the backtest. Placement would stop on them, and nothing let the valuation go back to its
+author.
+
+- **A rerun of 01C corrects the version 04C approved,** when three conditions hold: 04C's decision names that version
+  (`version` in valuation_decision), it is not yet placed, and the run is a rerun (`assemble 01C <TICKER> <PERIOD>
+  --rerun`). Its `valuation` input is then that version, and the note says it is under correction. There are no 04C
+  findings, and HQ's rulings list the corrections as for 01A.
+- **04C reviews the corrected version** like any other, and placement still needs its approval of that very run.
+- **An effective valuation,** one already placed, is corrected by HQ with a ruling, as placed documents are.
