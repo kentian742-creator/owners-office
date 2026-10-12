@@ -21,6 +21,10 @@ accession numbers in sources tables, and it finds the filing a source tag names,
 - **Earnings events:** for a domestic issuer, an 8-K with Item 2.02, closed when the 10-Q/10-K is filed or after 5
   business days, whichever comes first; for a foreign issuer (PDD), an earnings 6-K, recognized by the title of the
   press release in exhibit EX-99.1. Periods are written FY<year>Q<quarter> in the company's own fiscal year.
+- **Fiscal quarters:** a quarter ends at a month end, three months after the one before (a few days either way in a
+  52/53-week year). Where an issuer's own 10-Ks and 10-Qs show quarters this rule misplaces (Costco's second and third
+  quarters end in mid-February and early May), its quarter ends are the report dates of those filings, and those of
+  later years are projected 52 weeks on (fiscal_calendar).
 - **Next release date:** estimated by the rules of prompt 15A (announced date > announced window >
   release_history > lag of the latest period); the deadline is 23:59:59 US Eastern on the day before the release
   date, and the merge-by time is 72 actual elapsed hours before the deadline.
@@ -94,6 +98,11 @@ UTC = dt.timezone.utc
 MERGE_HOURS = 72  # pre-registrations are merged at least 72 hours before the deadline (15A)
 ESTIMATE_LEAD_DAYS = 3  # without an announced date: the earliest month-day of past years minus 3 calendar days (15A)
 HISTORY_YEARS = 3  # release_history: the same fiscal quarter in the past three years
+# Quarter ends learned from an issuer's 10-Ks and 10-Qs (fiscal_calendar): a quarter not yet reported is projected 52
+# weeks after the same quarter a year earlier, and a day within a week of a learned or projected end is that end, since
+# a 53-week year moves a projection by 7 days.
+PROJECTION_DAYS = 364
+QUARTER_MATCH_DAYS = 7
 
 DOMESTIC = "domestic"
 FOREIGN = "foreign_private_issuer"
@@ -1053,12 +1062,15 @@ def parse_period(value: str) -> tuple[int, int | None]:
 class FiscalCalendar:
     """The company's own fiscal year.
 
-    A fiscal year is named for the year in which it ends (MSFT's fiscal year ending 2026-06-30 is FY2026); quarter ends
-    are month ends.
+    A fiscal year is named for the year in which it ends (MSFT's fiscal year ending 2026-06-30 is FY2026). Quarter ends
+    are month ends, three months apart. A calendar learned from the issuer's own 10-Ks and 10-Qs (fiscal_calendar) also
+    holds the quarter ends they report, known_ends, and projects those of later fiscal years from them; every other
+    quarter keeps the month-end rule.
     """
 
     month: int
     day: int = 31
+    known_ends: tuple[tuple[dt.date, int, int], ...] = ()  # (period end, fiscal year, quarter), in date order
 
     @classmethod
     def parse(cls, value: Any) -> FiscalCalendar:
@@ -1074,7 +1086,33 @@ class FiscalCalendar:
     def label(self) -> str:
         return f"{self.month:02d}-{self.day:02d}"
 
+    @functools.cached_property
+    def _known(self) -> dict[tuple[int, int], dt.date]:
+        return {(fiscal_year, quarter): end for end, fiscal_year, quarter in self.known_ends}
+
+    @functools.cached_property
+    def _latest_known(self) -> dict[int, int]:
+        """Quarter -> the latest fiscal year with a known end of that quarter."""
+        latest: dict[int, int] = {}
+        for fiscal_year, quarter in self._known:
+            latest[quarter] = max(fiscal_year, latest.get(quarter, fiscal_year))
+        return latest
+
+    def _learned_end(self, fiscal_year: int, quarter: int) -> dt.date | None:
+        """The known end of a quarter or, in a fiscal year after every year known, its projection: the latest known
+        end of the same quarter, 364 days on for each year between. None for any other quarter."""
+        end = self._known.get((fiscal_year, quarter))
+        if end is not None or not self._known or fiscal_year <= max(self._latest_known.values()):
+            return end
+        base = self._latest_known.get(quarter)
+        if base is None:
+            return None
+        return self._known[(base, quarter)] + dt.timedelta(days=PROJECTION_DAYS * (fiscal_year - base))
+
     def quarter_end(self, fiscal_year: int, quarter: int) -> dt.date:
+        learned = self._learned_end(fiscal_year, quarter)
+        if learned is not None:
+            return learned
         month, year = self.month - 3 * (4 - quarter), fiscal_year
         while month <= 0:
             month += 12
@@ -1082,7 +1120,16 @@ class FiscalCalendar:
         return _month_end(year, month)
 
     def period_of(self, day: dt.date) -> tuple[int, int]:
-        """Which fiscal year and quarter a quarter end belongs to (allowing a few days' offset for 52/53-week years)."""
+        """Which fiscal year and quarter a quarter end belongs to: the one whose known or projected end is within a
+        week of it, else by the month-end rule, which allows a few days' offset for 52/53-week years."""
+        if self.known_ends:
+            learned = ((self._learned_end(fiscal_year, quarter), fiscal_year, quarter)
+                       for fiscal_year in (day.year - 1, day.year, day.year + 1) for quarter in (1, 2, 3, 4))
+            near = [(abs((day - end).days), fiscal_year, quarter) for end, fiscal_year, quarter in learned
+                    if end is not None and abs((day - end).days) <= QUARTER_MATCH_DAYS]
+            if near:
+                _, fiscal_year, quarter = min(near)
+                return fiscal_year, quarter
         snapped = _snap_to_month_end(day)
         offset = (snapped.month - self.month) % 12
         if offset % 3:
@@ -1099,16 +1146,49 @@ class FiscalCalendar:
         return f"FY{self.period_of(day)[0]}"
 
     def last_quarter_end_before(self, day: dt.date) -> dt.date:
-        year, month = day.year, day.month
-        for _ in range(16):
-            if (month - self.month) % 3 == 0:
-                end = _month_end(year, month)
-                if end < day:
-                    return end
-            month -= 1
-            if month == 0:
-                month, year = 12, year - 1
-        raise AssertionError("unreachable")
+        """The latest quarter end before a day, known, projected or by the month-end rule (quarter_end)."""
+        ends = (self.quarter_end(fiscal_year, quarter)
+                for fiscal_year in (day.year - 1, day.year, day.year + 1) for quarter in (1, 2, 3, 4))
+        return max(end for end in ends if end < day)
+
+
+def learn_quarter_ends(cal: FiscalCalendar, filings: Sequence[Filing]) -> FiscalCalendar:
+    """The calendar with the quarter ends the issuer's own periodic reports give (decisions/0017, amended 2026-10-11).
+
+    The report dates of its 10-Ks are its year ends, which the month-end rule places. The original 10-Qs with report
+    dates between two consecutive year ends are that year's first, second and third quarters, in order of report date;
+    a year with more or fewer than three keeps the month-end rule for those quarters, so a late or missing 10-Q never
+    shifts a quarter. An amendment shares its original's report date, and so its period. Where the month-end rule
+    already puts every quarter end found this way in its own quarter (Walmart, McDonald's, Apple), the month-end
+    calendar is returned.
+    """
+    plain = dataclasses.replace(cal, known_ends=())
+
+    def placed(day: dt.date) -> tuple[int, int] | None:
+        try:
+            return plain.period_of(day)
+        except ValueError:
+            return None
+
+    year_ends: dict[int, set[dt.date]] = {}
+    for f in filings:
+        period = placed(f.report_date) if f.form == "10-K" and f.report_date else None
+        if period is not None and period[1] == 4:
+            year_ends.setdefault(period[0], set()).add(f.report_date)
+    # a fiscal year whose 10-Ks give two different report dates has no year end to trust
+    ends = {fiscal_year: days.pop() for fiscal_year, days in year_ends.items() if len(days) == 1}
+    quarterly = sorted({f.report_date for f in filings if f.form == "10-Q" and f.report_date})
+    known = [(end, fiscal_year, 4) for fiscal_year, end in ends.items()]
+    for fiscal_year, end in ends.items():
+        start = ends.get(fiscal_year - 1)
+        if start is None:
+            continue
+        inside = [day for day in quarterly if start < day < end]
+        if len(inside) == 3:
+            known.extend((day, fiscal_year, quarter) for quarter, day in enumerate(inside, start=1))
+    if all(placed(end) == (fiscal_year, quarter) for end, fiscal_year, quarter in known):
+        return plain
+    return dataclasses.replace(plain, known_ends=tuple(sorted(known)))
 
 
 def _nth_weekday(year: int, month: int, weekday: int, n: int) -> dt.date:
@@ -1417,7 +1497,10 @@ def _foreign_events(subs: Submissions, cal: FiscalCalendar, since: dt.date | Non
     return sorted(events.values(), key=lambda e: (e.filing.filing_date, e.accession))
 
 
-def _calendar_for(subs: Submissions, fiscal_year_end: Any = None) -> FiscalCalendar:
+def fiscal_calendar(subs: Submissions, fiscal_year_end: Any = None) -> FiscalCalendar:
+    """The issuer's fiscal calendar: the fiscal year end passed in (filer.fiscal_year_end in thesis.yml), else EDGAR's,
+    with the quarter ends its 10-Ks and 10-Qs in subs give (learn_quarter_ends), so subs should reach back two fiscal
+    years or more."""
     value = fiscal_year_end or subs.fiscal_year_end
     if not value:
         raise EdgarDataError(f"CIK {subs.cik}: no fiscal year end given and none on EDGAR; pass fiscal_year_end "
@@ -1428,7 +1511,7 @@ def _calendar_for(subs: Submissions, fiscal_year_end: Any = None) -> FiscalCalen
         if edgar.month != cal.month:
             LOG.warning("CIK %s: the fiscal year end passed in (%s) differs from EDGAR's (%s); using the one passed in",
                         subs.cik, cal.label, edgar.label)
-    return cal
+    return learn_quarter_ends(cal, subs.filings)
 
 
 def earnings_events(cik: Any, fiscal_year_end: Any = None, *, filer_type: str | None = None,
@@ -1437,7 +1520,7 @@ def earnings_events(cik: Any, fiscal_year_end: Any = None, *, filer_type: str | 
     """Earnings events in since..until (by EDGAR filing date, both ends inclusive), in filing order."""
     client = client or default_client()
     subs = subs or submissions(cik, client=client, since=since)
-    cal = _calendar_for(subs, fiscal_year_end)
+    cal = fiscal_calendar(subs, fiscal_year_end)
     kind = filer_type or infer_filer_type(subs)
     if kind == FOREIGN:
         return _foreign_events(subs, cal, since, until, client)
@@ -1595,7 +1678,7 @@ def next_release(cik: Any, period: str, *, fiscal_year_end: Any = None, filer_ty
     # the continuation pages need only cover the past three fiscal years; one more year back is a margin in case
     # the fiscal year and the calendar year do not line up
     subs = submissions(cik, client=client, since=dt.date(fiscal_year - HISTORY_YEARS - 2, 1, 1))
-    cal = _calendar_for(subs, fiscal_year_end)
+    cal = fiscal_calendar(subs, fiscal_year_end)
     kind = filer_type or infer_filer_type(subs)
     form = form or ("6-K" if kind == FOREIGN else "8-K")
     period_end = cal.quarter_end(fiscal_year, quarter)
@@ -1841,7 +1924,7 @@ def _issuer(cik: str, company: Filer | None, client: EdgarClient, cache: dict[st
         subs = submissions(cik, client=client)
         fiscal_year_end = company.fiscal_year_end if company and company.cik == cik else None
         kind = company.type if company and company.cik == cik and company.type else infer_filer_type(subs)
-        cache[cik] = _Issuer(subs, _calendar_for(subs, fiscal_year_end), kind)
+        cache[cik] = _Issuer(subs, fiscal_calendar(subs, fiscal_year_end), kind)
     return cache[cik]
 
 
