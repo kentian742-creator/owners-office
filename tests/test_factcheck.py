@@ -250,6 +250,13 @@ def test_a_table_cell_is_named_by_its_column_header_and_row_label():
     assert check.figures[-1].names == "D&A FY2020"
 
 
+def test_a_line_of_numbers_takes_its_label_from_the_line_before():
+    item1 = "Membership\nPaid members1\n84,100 81,000 76,200\nCardholders 150,400 145,200 136,800\n"
+    check = checker({"COST-10K-FY2026": item1}).check(
+        "doc.md", "At the end of FY2026 there were 84.1 million paid members [src:COST-10K-FY2026#Item1].")
+    assert classes(check) == [("84.1 million", "found")]
+
+
 def test_a_number_whose_unit_is_another_kind_of_quantity_is_not_the_figure():
     assert checker().found_in(fc.Figure("d", 1, "3%", 3.0, "%", 0, [], [], ""), "margins rose 3 points") is None
     assert checker().found_in(fc.Figure("d", 1, "$45M", 45.0, "M", 0, [], [], ""), "a share of 45%") is None
