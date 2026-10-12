@@ -25,10 +25,13 @@ docs/decisions/0009):
    (00 §G6) is refused before any request is sent. Page images (rendered_pages) go into their <input> block as
    base64 image blocks.
 5. Output: split at <output name="...">, validated against the declared formats (pipeline/outputs.py: names,
-   required outputs, YAML, thesis-ci schema, front matter). If it is invalid, the errors are appended to the
-   original request, which is retried once; if the output is still invalid, LLMOutputInvalid is raised and nothing
-   is handed over. generated_by is injected into the front matter of every Markdown output; placement follows 00 §F2
-   (LLMResult.placements()).
+   required outputs, YAML, thesis-ci schema, front matter) and checked as the placement lint will check its source
+   tags. If it is invalid, the errors are appended to the original request, which is retried once; if the output
+   is still invalid, LLMOutputInvalid is raised and nothing is handed over. The retry asks only for what failed: an
+   output that passed is kept, and an output whose only fault is untagged fact numbers is repaired, not written
+   again, sentence by sentence (Markdown prose, the valuation's notes) or field by field (the free text of
+   thesis.yml and ledger.yml; docs/decisions/0036). generated_by is injected into the front matter of every Markdown
+   output; placement follows 00 §F2 (LLMResult.placements()).
 6. Backends (docs/decisions/0022). The same system prompt, user content, validation, retry and logging serve all
    three; only the transport differs:
    - claude-code (the default; OWNERS_OFFICE_BACKEND overrides it): the Claude Code CLI in print mode on the owner's
@@ -897,16 +900,19 @@ def _content_bytes(content: str | list[dict[str, Any]]) -> int:
     return sum(len(b["source"]["data"]) if b["type"] == "image" else len(b["text"].encode("utf-8")) for b in content)
 
 
-RETRY_MARK = "===== retry: only {} produced again; the other outputs are those of the first attempt ====="
-REPAIR_MARK = "===== retry: sentence repairs for {}; the other outputs are those of the first attempt ====="
+_MARK = "===== retry: {}; the other outputs are those of the first attempt ====="
+RETRY_MARK = _MARK.format("only {} produced again")
+REPAIR_MARK = _MARK.format("sentence repairs for {}")
+FIELD_REPAIR_MARK = _MARK.format("field repairs for {}")
 
 
-def _retry_mark(redo: Sequence[str] | None, repairs: Mapping[str, Any] | None) -> str:
-    if repairs and not redo:
-        return REPAIR_MARK.format(", ".join(repairs))
-    mark = RETRY_MARK.format(", ".join(redo or ()))
-    return mark if not repairs else mark.replace("produced again;", f"produced again, sentence repairs for "
-                                                                     f"{', '.join(repairs)};")
+def _retry_mark(redo: Sequence[str] | None, repairs: Mapping[str, Any] | None,
+                field_repairs: Mapping[str, Any] | None = None) -> str:
+    """The line between the two replies in the run's record: what the retry produced again and what it repaired."""
+    done = [f"only {', '.join(redo)} produced again"] if redo else []
+    done += [f"sentence repairs for {', '.join(repairs)}"] if repairs else []
+    done += [f"field repairs for {', '.join(field_repairs)}"] if field_repairs else []
+    return _MARK.format(", ".join(done))
 
 
 def failed_outputs(errors: Sequence[str], names: Sequence[str]) -> set[str] | None:
@@ -923,26 +929,51 @@ def failed_outputs(errors: Sequence[str], names: Sequence[str]) -> set[str] | No
 
 def _with_errors(content: str | list[dict[str, Any]], errors: Sequence[str],
                  redo: Sequence[str] | None = None, kept: Sequence[str] = (),
-                 repairs: Mapping[str, Sequence[str]] | None = None) -> str | list[dict[str, Any]]:
+                 repairs: Mapping[str, Sequence[str]] | None = None,
+                 field_repairs: Mapping[str, Sequence[_outputs.FactField]] | None = None,
+                 ) -> str | list[dict[str, Any]]:
     """Retry: append the validation errors to the original request. With `redo`, only those outputs are asked for
-    again; the outputs in `kept` passed and are kept as they were. With `repairs`, an output whose only fault is
-    untagged numbers is not written again: the model returns a replacement for each listed sentence."""
-    if repairs:
-        lines = [f"Do not write {', '.join(repairs)} again. Each of these sentences states a fact number without a "
-                 "[src:] tag (00 §E1). For each, return one item in a block of its own, "
-                 + ", ".join(f"<output name=\"{n}_repairs\">" for n in repairs) + ", "
-                 "as a YAML list of {find: the sentence exactly as listed, replace: the same sentence with the source "
-                 "tag of each number (a calculation cites its inputs' tags; a judgment names the facts it rests on, "
-                 "with their tags)}. Put every other output you are asked for in its own <output name=\"...\"> block."]
-        strict = [n for n in repairs if n in _outputs.TAG_REPAIRABLE_YAML]
-        if strict:
-            lines.append(f"In {', '.join(strict)}, replace is find with source tags added and nothing else changed "
-                         "(not a word or number); a figure the valuation computes itself cites its working, "
-                         "[src:<TICKER>-VAL-<run date>].")
-        for name, sentences in repairs.items():
-            lines.append(f"Sentences of {name}:")
-            lines += [f"{i}. {sentence}" for i, sentence in enumerate(sentences, 1)]
-        other = [e for e in errors if not any(_outputs.is_prose_error(e, n) for n in repairs)]
+    again; the outputs in `kept` passed and are kept as they were. An output whose only fault is untagged numbers is
+    not written again: with `repairs`, the model returns a replacement for each listed sentence (Markdown prose, the
+    valuation's notes); with `field_repairs`, the new text of each listed field (thesis.yml, ledger.yml)."""
+    if repairs or field_repairs:
+        lines = []
+        if repairs:
+            lines.append(f"Do not write {', '.join(repairs)} again. Each of these sentences states a fact number "
+                         "without a [src:] tag (00 §E1). For each, return one item in a block of its own, "
+                         + ", ".join(f"<output name=\"{n}_repairs\">" for n in repairs) + ", "
+                         "as a YAML list of {find: the sentence exactly as listed, replace: the same sentence with the "
+                         "source tag of each number (a calculation cites its inputs' tags; a judgment names the facts "
+                         "it rests on, with their tags)}.")
+            strict = [n for n in repairs if n in _outputs.TAG_REPAIRABLE_YAML]
+            if strict:
+                lines.append(f"In {', '.join(strict)}, replace is find with source tags added and nothing else changed "
+                             "(not a word or number); a figure the valuation computes itself cites its working, "
+                             "[src:<TICKER>-VAL-<run date>].")
+            for name, sentences in repairs.items():
+                lines.append(f"Sentences of {name}:")
+                lines += [f"{i}. {sentence}" for i, sentence in enumerate(sentences, 1)]
+        if field_repairs:
+            blocks = [f"<output name=\"{n}_repairs\">" for n in field_repairs]
+            example = next(iter(field_repairs.values()))[0].path
+            ask = (f"Return {blocks[0]}: a YAML mapping with one line for each field listed below" if len(blocks) == 1
+                   else f"Return {', '.join(blocks[:-1])} and {blocks[-1]}, each a YAML mapping with one line for each "
+                        "field listed under that output")
+            lines.append(f"Do not write {' or '.join(field_repairs)} again. Each field listed below states a fact "
+                         f"number without a [src:] tag (00 §E1). {ask}, its path and then its complete new text "
+                         f"({example}: \"the new text\"). In the new text, give each fact number the source tag your "
+                         "inputs cite for it (a figure computed from other facts cites their tags), and leave out a "
+                         "number that is not a fact, such as a threshold that a test's fail_if, warn_if or rule "
+                         "already holds. Keep the rest of the text as it is, and add no other path.")
+            for name, rows in field_repairs.items():
+                lines.append(f"Fields of {name}:")
+                for i, row in enumerate(rows, 1):
+                    lines += [f"{i}. {row.path}", "   text: " + _outputs.one_line_scalar(row.text, '"')]
+                    lines += [f"   error: fact number '{number}' has no [src:] tag in its sentence: {sentence}"
+                              for number, sentence in row.untagged]
+        lines.append("Put every other output you are asked for in its own <output name=\"...\"> block.")
+        other = [e for e in errors if not any(_outputs.is_prose_error(e, n) for n in repairs or {})
+                 and not any(_outputs.is_fact_field_error(e, n) for n in field_repairs or {})]
         ask_redo = f" Also produce {', '.join(redo)} again, complete, and avoid these errors:\n" + \
             "\n".join(f"- {e}" for e in other) if redo else ""
         note = ("<validation_errors>\nAn earlier attempt at this part failed the pipeline's validation. "
@@ -1578,7 +1609,10 @@ def complete(
     errors: list[str] = []
     kept: dict[str, _outputs.ParsedOutput] = {}  # outputs that passed in the first attempt (partial retry)
     redo: list[str] | None = None
-    repairs: dict[str, list[str]] | None = None  # outputs whose only fault is untagged numbers: patched, not rewritten
+    # Outputs whose only fault is untagged numbers are patched, not written again: Markdown prose and the valuation's
+    # notes sentence by sentence (repairs), thesis.yml and ledger.yml field by field (field_repairs).
+    repairs: dict[str, list[str]] | None = None
+    field_repairs: dict[str, list[_outputs.FactField]] | None = None
     first_text = ""
     for attempt in (1, 2):
         if backend != CLAUDE_CODE:
@@ -1613,7 +1647,8 @@ def complete(
             "cost_usd": 0.0,
             "stop_reason": None,
         }
-        attempt_content = content if attempt == 1 else _with_errors(content, errors, redo, list(kept), repairs)
+        attempt_content = content if attempt == 1 else _with_errors(content, errors, redo, list(kept), repairs,
+                                                                     field_repairs)
         try:
             if backend == CLAUDE_CODE:
                 reply = _claude_code_reply(model_id, chosen_effort, "\n\n".join(system_texts), attempt_content,
@@ -1702,16 +1737,16 @@ def complete(
                 raise LLMTruncated(result, record.get("cli_output_limit"))
             return result  # truncated replies are not validated and yield no outputs; the caller handles text itself
 
+        patched = [*(repairs or {}), *(field_repairs or {})]  # the outputs this retry repairs instead of rewriting
         repair_blocks: dict[str, str] = {}
         replied = text  # as the model wrote it, repair blocks included (the run's record)
-        if repairs:  # take the <name>_repairs blocks out before the reply is parsed against the part's outputs
-            for name in repairs:
-                match = re.search(rf'<output name="{re.escape(name)}_repairs">\n?(.*?)</output>', text, re.S)
-                if match:
-                    repair_blocks[name] = match.group(1)
-                    text = text.replace(match.group(0), "")
+        for name in patched:  # take the <name>_repairs blocks out before the reply is parsed against the part's outputs
+            match = re.search(rf'<output name="{re.escape(name)}_repairs">\n?(.*?)</output>', text, re.S)
+            if match:
+                repair_blocks[name] = match.group(1)
+                text = text.replace(match.group(0), "")
         declared = [(n, req and n not in kept) for n, req in call.outputs]  # kept outputs need not come again
-        if repairs and not redo:  # only repairs were asked for: nothing else to parse
+        if patched and not redo:  # only repairs were asked for: nothing else to parse
             parsed, errors = {}, []
         else:
             parsed, errors = _outputs.parse_reply(
@@ -1726,15 +1761,18 @@ def complete(
         if kept:  # the retry asked only for the failed outputs; the kept ones stand as they passed
             errors = [e for e in errors if failed_outputs([e], list(kept)) is None]
             parsed = {**kept, **{n: o for n, o in parsed.items() if n not in kept}}
-            for name in repairs or {}:
+            for name in patched:
                 if name not in repair_blocks:
-                    errors.append(f"{name}_repairs: missing; give one replacement for each sentence listed")
+                    listed = "field" if name in (field_repairs or {}) else "sentence"
+                    errors.append(f"{name}_repairs: missing; give one replacement for each {listed} listed")
                     continue
-                repaired, trouble = _outputs.apply_repairs(name, parsed[name], repair_blocks[name])
+                repaired, trouble = _outputs.apply_repairs(name, parsed[name], repair_blocks[name],
+                                                           validators=validators,
+                                                           pipeline_fields=(pipeline_fields or {}).get(name))
                 errors += trouble
                 if repaired is not None:
                     parsed[name] = repaired
-            result = dataclasses.replace(result, text=first_text + "\n\n" + _retry_mark(redo, repairs)
+            result = dataclasses.replace(result, text=first_text + "\n\n" + _retry_mark(redo, repairs, field_repairs)
                                          + "\n\n" + replied)
         errors = errors + _outputs.coverage_errors(call.label, inputs, parsed)  # all faults at once, parsed or not
         if errors:
@@ -1747,12 +1785,19 @@ def complete(
         names = [n for n, _ in call.outputs]
         failed = failed_outputs(errors, names)
         if failed is not None:
+            own = {n: [e for e in errors if failed_outputs([e], [n])] for n in failed}
             fixable = {n: _outputs.repairable_sentences(parsed[n]) for n in failed if n in parsed
-                       and n in _outputs.TAG_REPAIRABLE and all(_outputs.is_prose_error(e, n) for e in errors
-                                                                if failed_outputs([e], [n]))}
+                       and n in _outputs.TAG_REPAIRABLE and all(_outputs.is_prose_error(e, n) for e in own[n])}
             repairs = {n: sentences for n, sentences in fixable.items() if sentences} or None
-        if failed is not None and (failed != set(names) or repairs):
-            kept = {n: o for n, o in parsed.items() if n not in failed or n in (repairs or {})}
-            redo = [n for n in names if n in failed and n not in (repairs or {})]
+            # thesis.yml and ledger.yml: when every error names a free-text field with an untagged number, the
+            # retry asks for those fields' new text instead of the whole file, which would bring new errors
+            fixable_fields = {n: _outputs.fact_fields(n, parsed[n].data) for n in failed if n in parsed
+                              and n in _outputs.FIELD_REPAIRABLE
+                              and all(_outputs.is_fact_field_error(e, n) for e in own[n])}
+            field_repairs = {n: rows for n, rows in fixable_fields.items() if rows} or None
+        patched = [*(repairs or {}), *(field_repairs or {})]
+        if failed is not None and (failed != set(names) or patched):
+            kept = {n: o for n, o in parsed.items() if n not in failed or n in patched}
+            redo = [n for n in names if n in failed and n not in patched]
             first_text = text
     raise AssertionError("unreachable")  # pragma: no cover

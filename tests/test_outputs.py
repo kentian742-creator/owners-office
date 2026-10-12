@@ -420,12 +420,119 @@ def test_thesis_and_ledger_free_text_is_scanned_as_the_placement_lint_scans_it()
     errors = outputs.system_fact_errors(parsed)
     assert [e.split(": ")[1] for e in errors] == ["tests[0].claim", "tests[1].note", "entries[1].statement"]
     assert all("has no [src:] tag" in e and "fail_if, warn_if and rule hold it" in e for e in errors)
-    assert not any(outputs.is_prose_error(e, n) for e in errors for n in ("thesis", "ledger"))  # redone, not repaired
+    assert not any(outputs.is_prose_error(e, n) for e in errors for n in ("thesis", "ledger"))  # no sentence repairs:
+    assert all(outputs.is_fact_field_error(e, e.split(":")[0]) for e in errors)  # the retry replaces the fields
     assert outputs.coverage_errors("01B", {}, parsed) == errors
     thesis["tests"][0]["claim"] = "GAAP gross margin has not collapsed"
     thesis["tests"][1]["note"] = "The threshold flags borrowing early."
     ledger["entries"][1]["statement"] = "Capex will be about $6.0bn [src:X-10K-FY2026#Item7]."
     assert outputs.system_fact_errors(parsed) == []
+
+
+def test_a_field_with_untagged_numbers_is_listed_with_its_path_text_and_sentences():
+    thesis = {"category_rationale": "Revenue grew 4.7% in FY2026. Lynch's band is 10–12%.",
+              "tests": [{"id": "X-Q1", "note": f"Margin {i}.0% in FY2026."} for i in range(45)]}
+    first, second = outputs.fact_fields("thesis", thesis)[:2]
+    assert (first.path, first.where, first.text) == ("category_rationale", ("category_rationale",),
+                                                     thesis["category_rationale"])
+    assert first.untagged == (("4.7%", "Revenue grew 4.7% in FY2026."), ("12%", "Lynch's band is 10–12%."))
+    assert (second.path, second.where) == ("tests[0].note", ("tests", 0, "note"))
+    errors = outputs.fact_field_errors("thesis", thesis)  # each output's list is capped on its own
+    assert len(errors) == outputs.MAX_PROSE_ERRORS + 1
+    assert errors[-1] == "thesis: ... and 7 more sentences with an untagged number"
+    assert all(outputs.is_fact_field_error(e, "thesis") for e in errors)
+    assert not outputs.is_fact_field_error(errors[1], "ledger") and not outputs.is_fact_field_error(errors[1], "story")
+    assert not outputs.is_fact_field_error("thesis: thesis.schema.json /: 'as_of' is a required property", "thesis")
+
+
+def strict_thesis_validator(**properties):
+    """A thesis schema that rejects extra keys, as the real one does (so generated_by is not appended)."""
+    import jsonschema
+
+    return {"thesis": jsonschema.Draft202012Validator({
+        "type": "object", "additionalProperties": False,
+        "properties": {"company": {}, "trust_level": {}, "thesis": {}, "tests": {}, **properties}})}
+
+
+FIELDS_RAW = """# Kept as written: a comment.
+company: X
+thesis:
+  summary: Revenue grew 9% in FY2026.
+  permanent_loss_paths:
+    - 'Margins fell 3% in FY2025: a warning.'
+    - Untouched path [src:X-10K-FY2026#p2].
+tests:
+  - {id: X-Q1, note: Sales grew 4% in FY2026}
+  - id: X-Q2
+    claim: "Growth of 15% a year"   # a trailing comment
+    note: |
+      Free cash flow was $3bn
+      on two lines.
+  - id: X-Q3
+    note: >-
+      The template's 7% is
+      folded.
+trust_level: 1
+"""
+
+
+def test_a_field_repair_rewrites_only_the_listed_scalars_and_keeps_their_style_where_it_can():
+    """Only the scalar of each listed field is written again, in its old quoting where the new text fits it (a plain
+    scalar inside braces and a block scalar become double-quoted); comments and every other byte stay."""
+    out = outputs.ParsedOutput("thesis", outputs.YAML, FIELDS_RAW, outputs.load_yaml_text(FIELDS_RAW), schema="thesis")
+    assert [f.path for f in outputs.fact_fields("thesis", out.data)] == [
+        "thesis.summary", "thesis.permanent_loss_paths[0]", "tests[0].note", "tests[1].claim", "tests[1].note",
+        "tests[2].note"]
+    raw = ("thesis.summary: Revenue grew 9% in FY2026 [src:X-10K-FY2026#p1].\n"
+           "thesis.permanent_loss_paths[0]: 'Margins fell 3% in FY2025 [src:X-10K-FY2025#p9]: a warning.'\n"
+           "tests[0].note: Sales grew 4%, in FY2026 [src:X-10K-FY2026#p3]\n"
+           "tests[1].claim: Growth stays high\n"
+           "tests[1].note: |\n  Free cash flow was $3bn [src:X-10K-FY2026#p4].\n"
+           "tests[2].note: The template's threshold is lowered.\n")
+    fixed, problems = outputs.apply_repairs("thesis", out, raw, validators=strict_thesis_validator())
+    assert problems == []
+    expected = FIELDS_RAW
+    for old, new in (
+            ("summary: Revenue grew 9% in FY2026.", "summary: Revenue grew 9% in FY2026 [src:X-10K-FY2026#p1]."),
+            ("'Margins fell 3% in FY2025: a warning.'",
+             "'Margins fell 3% in FY2025 [src:X-10K-FY2025#p9]: a warning.'"),
+            ("note: Sales grew 4% in FY2026}", 'note: "Sales grew 4%, in FY2026 [src:X-10K-FY2026#p3]"}'),
+            ('"Growth of 15% a year"   # a trailing comment', '"Growth stays high"   # a trailing comment'),
+            ("|\n      Free cash flow was $3bn\n      on two lines.\n",
+             '"Free cash flow was $3bn [src:X-10K-FY2026#p4]."\n'),
+            (">-\n      The template's 7% is\n      folded.\n", "\"The template's threshold is lowered.\"\n")):
+        assert old in expected
+        expected = expected.replace(old, new)
+    assert fixed.text == expected
+    assert fixed.data["tests"][1]["note"] == "Free cash flow was $3bn [src:X-10K-FY2026#p4]."  # the text is trimmed
+    assert outputs.fact_fields("thesis", fixed.data) == []
+    wrapped, problems = outputs.apply_repairs("thesis", out, "thesis_repairs:\n  " + raw.replace("\n", "\n  "),
+                                              validators=strict_thesis_validator())
+    assert problems == [] and wrapped.text == fixed.text  # the mapping may come under the block's own name
+
+
+def test_a_field_repair_is_validated_again_like_a_new_output():
+    raw = "company: X\ntrust_level: 1\ntests:\n  - id: X-Q1\n    claim: Revenue grew 12% in FY2026\n"
+    out = outputs.ParsedOutput("thesis", outputs.YAML, raw, outputs.load_yaml_text(raw), schema="thesis")
+    validators = strict_thesis_validator(tests={"items": {"properties": {"claim": {"minLength": 4}}}})
+    _, problems = outputs.apply_repairs("thesis", out, "tests[0].claim: ''\n", validators=validators)
+    assert len(problems) == 1 and problems[0].startswith("thesis: thesis.schema.json /tests/0/claim: ")
+    fixed, problems = outputs.apply_repairs("thesis", out, "tests[0].claim: Revenue keeps growing\n",
+                                            validators=validators, pipeline_fields={"trust_level": 2})
+    assert problems == [] and fixed.pipeline_fields == ("trust_level",)
+    assert fixed.text == "company: X\ntrust_level: 2\ntests:\n  - id: X-Q1\n    claim: Revenue keeps growing\n"
+    for bad, message in (("[]", "should be a YAML mapping"), ("tests[0].claim: [a]", "must be a string, not a list"),
+                         ("tests: x", "tests was not listed"), ("'[0]': x", "[0] is not a field of the thesis")):
+        assert message in outputs.apply_repairs("thesis", out, bad, validators=validators)[1][0]
+
+
+def test_a_field_repair_dumps_the_data_whole_when_the_text_cannot_be_patched_in_place():
+    raw = "company: X\ntests:\n  - id: X-Q1\n    note: &n Sales grew 4% in FY2026.\n  - id: X-Q2\n    note: *n\n"
+    out = outputs.ParsedOutput("thesis", outputs.YAML, raw, outputs.load_yaml_text(raw), schema="thesis")
+    fixed, problems = outputs.apply_repairs("thesis", out, "tests[0].note: Sales grew.\ntests[1].note: Sales held.\n",
+                                            validators=strict_thesis_validator())
+    assert problems == [] and "&n" not in fixed.text  # one scalar behind two paths: written out again whole
+    assert [t["note"] for t in fixed.data["tests"]] == ["Sales grew.", "Sales held."]
 
 
 def test_a_model_review_returns_exactly_when_a_finding_is_must_fix():
