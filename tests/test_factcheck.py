@@ -208,6 +208,19 @@ def test_a_document_that_cites_itself_is_not_its_own_source():
         ("$5,462.9B", "found")]
 
 
+def test_an_exhibit_locator_reads_the_exhibit_written_with_or_without_its_hyphen():
+    sources = FakeSources({"SPGI-8K-2026-07-28": "Form 8-K cover page.",
+                           "SPGI-8K-2026-07-28#EX-99.1": "Revenue increased to $3,958 million."})
+    for tag in ("SPGI-8K-2026-07-28#EX-99.1", "SPGI-8K-2026-07-28#EX99.1-p3", "SPGI-8K-2026-07-28#ex99.1"):
+        text = f"Revenue rose to $3,958 million [src:{tag}]."
+        assert classes(fc.Checker(sources, "SPGI").check("companies/SPGI/dossier.md", text)) == [
+            ("$3,958 million", "found")], tag
+    assert fc.exhibit_of("EX99.1-Exh6") == ("EX-99.1", "Exh6")
+    assert fc.exhibit_of("Exh6") == (None, "Exh6")
+    assert fc.Checker(FakeSources(), "SPGI").unreadable(["SPGI-8K-2026-07-28#EX99.1-p3"]) == {
+        "SPGI-8K-2026-07-28#EX-99.1": "not among the test documents"}
+
+
 def test_another_companys_names_come_from_its_thesis_and_a_shared_first_word_is_not_one(tmp_path):
     roots = runner.Roots(tmp_path / "pub", tmp_path / "priv", tmp_path)
     for ticker, name in (("BRK", "Berkshire Hathaway Inc."), ("AXP", "American Express Company"),

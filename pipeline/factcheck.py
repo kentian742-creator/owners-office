@@ -331,7 +331,13 @@ class Sources:
 
 
 PRICE_TAG_RE = re.compile(r"^(?:[A-Z][A-Z0-9.]*-PRICES-|UST-PARYIELD-)\d{4}-\d{2}-\d{2}(?:#|$)")
-_EXHIBIT_RE = re.compile(r"EX-\d+(?:\.\d+)?")
+_EXHIBIT_RE = re.compile(r"EX-?(\d+(?:\.\d+)?)")
+
+
+def exhibit_of(locator: str) -> tuple[str | None, str]:
+    """A locator's exhibit, written EX-99.1 (archives also write EX99.1), and the rest of the locator."""
+    m = _EXHIBIT_RE.match(locator.upper()) if locator else None
+    return (f"EX-{m.group(1)}", locator[m.end():].lstrip("-")) if m else (None, locator)
 
 
 class Evidence(NamedTuple):
@@ -508,10 +514,8 @@ class Checker:
         if tag in self._cited:
             return self._cited[tag]
         base, _, locator = tag.partition("#")
-        exhibit = _EXHIBIT_RE.match(locator.upper()) if locator else None
-        source = self._document(base, exhibit.group(0) if exhibit else None)
-        if exhibit:
-            locator = locator[len(exhibit.group(0)):].lstrip("-")
+        exhibit, locator = exhibit_of(locator)
+        source = self._document(base, exhibit)
         whole = source.text
         if whole is None or not locator:
             cited = _Cited(whole, source.note, whole, False, source.path)
@@ -549,10 +553,10 @@ class Checker:
                     out.setdefault(tag, why)
                 continue
             base, _, locator = tag.partition("#")
-            exhibit = _EXHIBIT_RE.match(locator.upper()) if locator else None
-            source = self._document(base, exhibit.group(0) if exhibit else None)
+            exhibit, _ = exhibit_of(locator)
+            source = self._document(base, exhibit)
             if source.text is None:
-                out.setdefault(f"{base}#{exhibit.group(0)}" if exhibit else base, source.note)
+                out.setdefault(f"{base}#{exhibit}" if exhibit else base, source.note)
         return out
 
     # -- matching
