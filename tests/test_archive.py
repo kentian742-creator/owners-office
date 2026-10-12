@@ -131,10 +131,22 @@ def test_a_company_on_the_intake_list_is_known_before_its_thesis_exists(env):
     assert registry.variables_for(ctx)["status"] == "holding"
     fields = registry.STEPS["01B"].pipeline_fields(context(env, "01B"))
     assert fields["thesis"] == {"schema_version": "0.2", "company": "NEWCO", "name": "Newco Corporation",
-                                "status": "holding", "trust_level": 1,
+                                "status": "holding", "trust_level": 1, "as_of": "2026-09-28",
                                 "filer": {"cik": "0000000042", "type": "domestic", "fiscal_year_end": "12-31",
                                           "earnings_form": "8-K", "annual_form": "10-K"}}
     assert fields["ledger"] == {"company": "NEWCO"}
+
+
+def test_the_pipeline_dates_the_system_files_of_a_build_and_of_a_rebuild(env):
+    """Walmart's 01B (2026-10-11): prompt 01 leaves as_of to the pipeline, the model left it out, and the thesis
+    failed its schema. The pipeline writes the run date, the day the system files are written and reviewed."""
+    later = dt.date(2026, 10, 11)
+    assert registry.STEPS["01B"].pipeline_fields(context(env, "01B", run_date=later))["thesis"]["as_of"] == "2026-10-11"
+    fx.write(env.public / "companies" / "NEWCO" / "thesis.yml",  # built: a rebuild, no longer the intake list's
+             "company: NEWCO\nname: Newco Corporation\nstatus: holding\ntrust_level: 2\nas_of: \"2026-09-28\"\n")
+    rebuild = registry.STEPS["01B"].pipeline_fields(context(env, "01B", run_date=later))["thesis"]
+    assert rebuild["as_of"] == "2026-10-11" and rebuild["trust_level"] == 2  # the rest is copied, as by 03
+    assert "as_of" not in registry.STEPS["03R"].pipeline_fields(context(env, "03R", run_date=later))["thesis"]
 
 
 def test_the_first_draft_is_not_given_findings_and_a_company_off_the_list_needs_its_thesis(env):

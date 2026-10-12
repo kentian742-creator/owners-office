@@ -485,14 +485,19 @@ THESIS_SCHEMA_VERSION = "0.2"
 def _build_fields(ctx: RunContext) -> dict[str, dict[str, Any]]:
     """01B: the header fields the pipeline maintains (00 §G8). A new archive takes its name and status from
     companies/intake.yml, its filer block from EDGAR, and starts at trust level 1; a rebuild copies them from the
-    current thesis.yml, as a quarterly update does."""
+    current thesis.yml, as a quarterly update does. Either way as_of is the run date: prompt 01 leaves as_of to the
+    pipeline, and the system files are current as of the day 01B writes them, the day their parts are reviewed
+    (Walmart's 01B of 2026-10-11 failed one attempt on a thesis the model had left without as_of)."""
     if ctx.intake() is None:
-        return _update_fields(ctx)
+        fields = _update_fields(ctx)
+        fields["thesis"]["as_of"] = ctx.run_date.isoformat()
+        return fields
     thesis, filer = ctx.thesis(), ctx.filer()
     block = {"cik": filer.cik, "type": filer.type, "fiscal_year_end": filer.fiscal_year_end,
              "earnings_form": filer.earnings_form, "annual_form": filer.annual_form}
     fields = {"schema_version": THESIS_SCHEMA_VERSION, "company": ctx.company, "name": thesis.get("name"),
-              "status": thesis.get("status"), "filer": {k: v for k, v in block.items() if v}, "trust_level": 1}
+              "status": thesis.get("status"), "filer": {k: v for k, v in block.items() if v}, "trust_level": 1,
+              "as_of": ctx.run_date.isoformat()}
     return {"thesis": {k: v for k, v in fields.items() if v is not None}, "ledger": {"company": ctx.company}}
 
 
