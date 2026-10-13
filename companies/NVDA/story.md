@@ -11,7 +11,7 @@ category: cyclical
 
 **Why it is a good business.**
 - In FY2026 it turned 60.4% of revenue into operating income [src:NVDA-10K-FY2026#Item7].
-- It spent 2.8% of revenue on property, equipment and intangibles [src:NVDA-10K-FY2026#CF][src:NVDA-10K-FY2026#IS].
+- It spent 2.8% of revenue on property, equipment and intangibles [src:NVDA-10K-FY2026#CF][src:NVDA-10K-FY2026#IS], or 9.5% including the $13.0B paid for the Groq technology license and $1.5B of acquisitions [src:NVDA-10K-FY2026#CF][src:NVDA-10K-FY2026#IS][src:NVDA-10K-FY2026#Note2].
 - It moved from selling Hopper HGX systems to whole Blackwell data-center systems [src:NVDA-10K-FY2026#Item7]. It still earned a 75.0% gross margin in FY2027Q2 [src:NVDA-8K-2026-08-26#EX-99.1]. So customers pay for the integration and the software, not only for the chip.
 - Over 7.5 million developers use CUDA and NVIDIA tools [src:NVDA-10K-FY2026#Item1].
 

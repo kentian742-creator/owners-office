@@ -124,7 +124,7 @@ tests:
       period: FY2026
       source: WMT-10K-FY2026#Item8
       note: "Annual total revenues 713.163 / 680.985 − 1 [src:WMT-10K-FY2026#Item8]; quarterly readings are taken by the pipeline."
-    note: "Template thresholds rewritten. Reported total revenue growth was below 5% in five of the nine fiscal years FY2018–FY2026: 3.0%, 2.8%, 1.9%, 2.4% and 4.7% in FY2018, FY2019, FY2020, FY2022 and FY2026, computed from total revenues of 485.873, 500.343, 514.405, 523.964, 559.151, 572.754, 680.985 and 713.163 ($bn) [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2023#IS] [src:WMT-10K-FY2025#IS] [src:WMT-10K-FY2026#Item8], so the template would flag ordinary years. The new fail level sits below every annual reading in the record except FY2020 (1.9%), which followed the sale of 80% of Walmart Brazil in FY2019 [src:WMT-10K-FY2021#Item7]. Readings are reported, including currency and portfolio changes; International operations other than Canada are consolidated with a one-month lag [src:WMT-10K-FY2026#Note1]. A breach in a period affected by a divestiture is a basis question to be handled under §G3."
+    note: "Template thresholds rewritten. Reported total revenue growth was below 5% in five of the nine fiscal years FY2018–FY2026: 3.0%, 2.8%, 1.9%, 2.4% and 4.7% in FY2018, FY2019, FY2020, FY2022 and FY2026, computed from total revenues of 485.873, 500.343, 514.405, 523.964, 559.151, 572.754, 680.985 and 713.163 ($bn) [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2023#IS] [src:WMT-10K-FY2025#IS] [src:WMT-10K-FY2026#Item8], so the template would flag ordinary years. The new fail level sits below every annual reading of FY2018–FY2026 except FY2020 (1.9%), which followed the sale of 80% of Walmart Brazil in FY2019 [src:WMT-10K-FY2021#Item7]. It sits above all four readings of FY2014–FY2017: 1.6% in FY2014, 2.0% in FY2015 (1.96%), −0.7% in FY2016 and 0.8% in FY2017, when currency reduced net sales by $11.0bn (2.3%) [src:WMT-10K-FY2018#Item6] [src:WMT-10K-FY2018#Item7]. Readings are reported, including currency and portfolio changes; International operations other than Canada are consolidated with a one-month lag [src:WMT-10K-FY2026#Note1]. A breach in a period affected by a divestiture is a basis question to be handled under §G3."
 
   - id: WMT-Q2
     type: quantitative
@@ -166,8 +166,11 @@ tests:
       Diluted shares fell 14.1% from FY2017 (9,336m, converted from 3,112m as filed) to FY2026 (8,022m)
       [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2025#p58] [src:WMT-10K-FY2026#Item8]. In FY2026 the company retired 85m
       shares while 30m were added on the line the statement of shareholders' equity labels 'Other'
-      [src:WMT-10K-FY2026#Item8]. Unrecognized compensation cost of about $3bn at 2026-01-31 relates primarily to
-      subsidiary plans [src:WMT-10K-FY2026#Note3]; it dilutes subsidiary ownership, not Walmart share count.
+      [src:WMT-10K-FY2026#Item8]. Unrecognized compensation cost at 2026-01-31 was $2.239bn for restricted stock units
+      and $0.670bn for restricted stock and performance-based restricted stock units, which vest in Walmart shares
+      [src:WMT-10K-FY2026#Note3]; a
+      further $3bn or so relates primarily to subsidiary plans and dilutes subsidiary ownership, not Walmart's share count
+      [src:WMT-10K-FY2026#Note3].
 
   - id: WMT-Q4
     type: quantitative
@@ -189,7 +192,7 @@ tests:
       period: FY2026
       source: WMT-10K-FY2026#Item8
       note: "FCF 14.923 / net income attributable to Walmart 21.893 ($bn) [src:WMT-10K-FY2026#Item7] [src:WMT-10K-FY2026#Item8]."
-    note: "Template fail level moved to the warn level and a lower fail level added. FY2025 (12.660 / 19.436 = 65.1%) and FY2026 (68%) are both already below 70% [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Item7], because capital expenditure rose to 3.77% of net sales in FY2026 [src:WMT-10K-FY2026#Item8] and is guided to about 4.0% for FY2027 [src:WMT-8K-2026-08-20#EX-99.1]; a fail level at the template's threshold would only restate a known reading, while the warn keeps it in view and the fail catches deterioration beyond it. Net income includes fair-value changes of equity investments from FY2019 [src:WMT-10K-FY2019#p56], which can move the ratio without any change in cash. Over FY2017–FY2026 cumulative FCF was 116% of cumulative net income attributable to Walmart [src:WMT-10K-FY2019#CF] [src:WMT-10K-FY2021#CF] [src:WMT-10K-FY2023#CF] [src:WMT-10K-FY2025#CF] [src:WMT-10K-FY2026#Item8]."
+    note: "Template fail level moved to the warn level and a lower fail level added. FY2025 (12.660 / 19.436 = 65.1%) and FY2026 (68%) are both already below 70% [src:WMT-10K-FY2026#Item8] [src:WMT-10K-FY2026#Item7], because capital expenditure rose to 3.77% of net sales in FY2026 [src:WMT-10K-FY2026#Item8] and is guided to about 4.0% for FY2027 [src:WMT-8K-2026-08-20#EX-99.1]; a fail level at the template's threshold would only restate a known reading, while the warn keeps it in view and the fail catches deterioration beyond it. Net income includes fair-value changes of equity investments from FY2019 [src:WMT-10K-FY2019#p56], which can move the ratio without any change in cash. Over FY2017–FY2026 cumulative FCF was 116% of cumulative net income attributable to Walmart [src:WMT-10K-FY2019#CF] [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2021#CF] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2023#CF] [src:WMT-10K-FY2023#IS] [src:WMT-10K-FY2025#CF] [src:WMT-10K-FY2025#IS] [src:WMT-10K-FY2026#Item8]."
 
   - id: WMT-L1
     type: qualitative
@@ -519,7 +522,10 @@ tests:
     note: >-
       The company's own ROI is read beside it as a reported figure, not tested, because its numerator adds back
       depreciation, amortization and rent: 15.1% in FY2026 [src:WMT-10K-FY2026#Item7] and 15.4% for the twelve months
-      to 2026-07-31 [src:WMT-10Q-FY2027Q2#Item2]. FY2021 (10.8%) and FY2023 (10.1%) would have failed, both on tax rates
+      to 2026-07-31 [src:WMT-10Q-FY2027Q2#Item2]. FY2018 (11.8%), FY2019 (11.0%) and FY2020 (11.3%) would also have failed [src:WMT-10K-FY2018#BS]
+      [src:WMT-10K-FY2019#IS] [src:WMT-10K-FY2019#BS] [src:WMT-10K-FY2021#IS] [src:WMT-10K-FY2021#BS]. Operating lease
+      obligations appear on the balance sheet only from the FY2020 year-end, so on this definition those readings would
+      be lower still. FY2021 (10.8%) and FY2023 (10.1%) would have failed, both on tax rates
       inflated by items below operating income [src:WMT-10K-FY2021#Item7] [src:WMT-10K-FY2023#p41]. The FY2027 reading
       is raised by about $2.9bn of tariff refunds [src:WMT-10Q-FY2027Q2#Note5] and states the refund amount beside the
       reported figure.
@@ -616,7 +622,10 @@ tests:
       source: WMT-10K-FY2026#Item8
       note: "63.061 / 58.851 ($bn) [src:WMT-10K-FY2026#Item8]."
     note: >-
-      FY2022 (97.8%) and FY2023 (95.0%), when inventories rose sharply, would have warned [src:WMT-10K-FY2023#BS].
+      FY2016 (86.5%) would have failed [src:WMT-10K-FY2018#Item6] [src:WMT-10K-FY2018#Item7]. FY2017 (96.3%)
+      [src:WMT-10K-FY2018#BS] and FY2022 (97.8%, when inventories rose sharply) would have warned, and FY2023 (94.99%,
+      when payables fell while inventories held flat) would just have failed [src:WMT-10K-FY2021#BS]
+      [src:WMT-10K-FY2023#BS].
       $5.989bn of FY2026 year-end payables sat in supplier financing programs [src:WMT-10K-FY2026#Note1].
 todo:
   - >-

@@ -48,7 +48,7 @@ thesis:
     rack-scale systems [src:NVDA-10K-FY2026#Item7], hold GAAP gross margin at 75.0% in FY2027Q2
     [src:NVDA-8K-2026-08-26#EX-99.1], and turn 60.4% of FY2026 revenue into operating income
     [src:NVDA-10K-FY2026#Item7] while spending 2.8% of revenue on property, equipment and intangibles
-    [src:NVDA-10K-FY2026#CF][src:NVDA-10K-FY2026#IS]. The central risk is that current earnings are a cyclical peak
+    [src:NVDA-10K-FY2026#CF][src:NVDA-10K-FY2026#IS], or 9.5% including the $13.0B paid for the Groq technology license and $1.5B of acquisitions [src:NVDA-10K-FY2026#CF][src:NVDA-10K-FY2026#IS][src:NVDA-10K-FY2026#Note2]. The central risk is that current earnings are a cyclical peak
     that NVIDIA is partly financing itself.
   pillars:
     - id: P1
@@ -83,8 +83,9 @@ thesis:
       [src:NVDA-10Q-FY2027Q2#Note10] would produce inventory and purchase-obligation charges on a much larger base than
       the $4.5B H20 charge of FY2026Q1 [src:NVDA-10K-FY2026#Item7].
     - >-
-      Custom silicon at the largest customers erodes pricing power: two direct customers took 22% and 14% of FY2026
-      revenue [src:NVDA-10K-FY2026#Note16], and those customers build their own chips [src:NVDA-10K-FY2026#Item1].
+      Custom silicon at large cloud customers erodes pricing power: two direct customers, which the 10-K does not name,
+      took 22% and 14% of FY2026 revenue [src:NVDA-10K-FY2026#Note16], and large cloud services companies have internal
+      teams designing their own AI computing hardware [src:NVDA-10K-FY2026#Item1].
     - >-
       Political and regulatory loss of markets: China-headquartered customers fell from 19.2% of FY2025 revenue to 9.1%
       of FY2026 revenue [src:NVDA-10K-FY2026#Note16], the company states it was effectively foreclosed from China's
