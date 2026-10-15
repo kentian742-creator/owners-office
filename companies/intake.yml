@@ -36,3 +36,20 @@ companies:
     cik: "0001181412"
     status: candidate
     decided: "2026-10-09"
+  # Added by the owner on 2026-10-14 (decisions/0039): net-lease REITs, built after each one's third-quarter 10-Q,
+  # ahead of the other companies on this list.
+  - ticker: VICI
+    name: VICI Properties Inc.
+    cik: "0001705696"
+    status: candidate
+    decided: "2026-10-14"
+  - ticker: NNN
+    name: NNN REIT, Inc.
+    cik: "0000751364"
+    status: candidate
+    decided: "2026-10-14"
+  - ticker: ADC
+    name: Agree Realty Corporation
+    cik: "0000917251"
+    status: candidate
+    decided: "2026-10-14"
